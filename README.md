@@ -57,5 +57,3 @@ A project to analyze semantic patterns in SEC filings and CRSP/Compustat data us
     └── plots.py                <- Code to create visualizations
 ```
 
---------
-
