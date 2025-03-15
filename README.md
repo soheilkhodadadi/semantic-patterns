@@ -15,10 +15,14 @@ A project to analyze semantic patterns in SEC filings and CRSP/Compustat data us
 ├── data
 │   ├── external       <- Data from third party sources.
 │   ├── interim        <- Intermediate data that has been transformed.
+│   ├── metadata       <- Metadata related to the datasets.
 │   ├── processed      <- The final, canonical data sets for modeling.
 │   └── raw            <- The original, immutable data dump.
 │
 ├── docs               <- A default mkdocs project; see www.mkdocs.org for details
+│   ├── docs           <- Documentation files
+│   ├── mkdocs.yml     <- MkDocs configuration file
+│   └── README.md      <- Documentation README
 │
 ├── models             <- Trained and serialized models, model predictions, or model summaries
 │
@@ -45,7 +49,10 @@ A project to analyze semantic patterns in SEC filings and CRSP/Compustat data us
     │
     ├── config.py               <- Store useful variables and configuration
     │
-    ├── dataset.py              <- Scripts to download or generate data
+    ├── data                    <- Scripts to download, clean, and process data
+    │   ├── clean.py            <- Code to clean raw data
+    │   ├── download.py         <- Code to download raw data
+    │   └── __init__.py         <- Makes data a Python module
     │
     ├── features.py             <- Code to create features for modeling
     │
@@ -54,6 +61,8 @@ A project to analyze semantic patterns in SEC filings and CRSP/Compustat data us
     │   ├── predict.py          <- Code to run model inference with trained models          
     │   └── train.py            <- Code to train models
     │
-    └── plots.py                <- Code to create visualizations
+    ├── plots.py                <- Code to create visualizations
+    │
+    └── run_pipeline.py         <- Script to run the entire data pipeline
 ```
 
