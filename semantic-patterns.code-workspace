@@ -11,7 +11,6 @@
       "**/.DS_Store": true,
       "**/__pycache__": true,
       "**/*.log": true,
-      "data/": true
     },
     "python.linting.enabled": true,
     "python.formatting.provider": "black"

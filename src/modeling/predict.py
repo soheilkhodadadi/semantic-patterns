@@ -4,7 +4,7 @@ from loguru import logger
 from tqdm import tqdm
 import typer
 
-from semantic_patterns.config import MODELS_DIR, PROCESSED_DATA_DIR
+from src.config import MODELS_DIR, PROCESSED_DATA_DIR
 
 app = typer.Typer()
 
