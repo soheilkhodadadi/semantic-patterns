@@ -4,5 +4,16 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+  "settings": {
+    "python.pythonPath": "./venv/bin/python",
+    "files.exclude": {
+      "**/.git": true,
+      "**/.DS_Store": true,
+      "**/__pycache__": true,
+      "**/*.log": true,
+      "data/": true
+    },
+    "python.linting.enabled": true,
+    "python.formatting.provider": "black"
+  }
 }
