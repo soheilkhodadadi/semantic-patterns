@@ -20,13 +20,10 @@ requires-python = "~=3.10"
 
 [tool.ruff]
 line-length = 99
-src = ["semantic_patterns"]
-include = ["pyproject.toml", "semantic_patterns/**/*.py"]
-
-[tool.ruff.lint]
-extend-select = ["I"]  # Add import sorting
+src = ["src"]
+include = ["pyproject.toml", "src/**/*.py"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["semantic_patterns"]
+known-first-party = ["src"]
 force-sort-within-sections = true
 

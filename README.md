@@ -39,9 +39,9 @@ A project to analyze semantic patterns in SEC filings and CRSP/Compustat data us
 │
 ├── setup.cfg          <- Configuration file for flake8
 │
-└── semantic_patterns   <- Source code for use in this project.
+└── src                <- Source code for use in this project.
     │
-    ├── __init__.py             <- Makes semantic_patterns a Python module
+    ├── __init__.py             <- Makes src a Python module
     │
     ├── config.py               <- Store useful variables and configuration
     │
