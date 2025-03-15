@@ -28,13 +28,11 @@ output_path: Path = PROCESSED_DATA_DIR / "dataset.csv",
 if __name__ == "__main__":
     app()
 
+from src.config import PROCESSED_DATA_DIR, RAW_DATA_DIR
 
+from src.config import PROCESSED_DATA_DIR, RAW_DATA_DIR
 
-
-
-
-
-
+from src.config import PROCESSED_DATA_DIR, RAW_DATA_DIR
 
 [tool.ruff]
 known-first-party = ["src"]

@@ -5,6 +5,7 @@ from tqdm import tqdm
 import typer
 
 from src.config import PROCESSED_DATA_DIR
+from src.data.download import some_function  # Update the import statement for dataset.py
 
 app = typer.Typer()
 
