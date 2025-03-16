@@ -1,42 +1,33 @@
+from sec_edgar_downloader import Downloader
 from pathlib import Path
+import logging
+from src.config import SEC_CONFIG  # Import your config
 
-from loguru import logger
-from tqdm import tqdm
-import typer
-
-from src.config import PROCESSED_DATA_DIR, RAW_DATA_DIR
-
-app = typer.Typer()
-
-
-@app.command()
-def main(
-    # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----
-input_path: Path = RAW_DATA_DIR / "dataset.csv",
-output_path: Path = PROCESSED_DATA_DIR / "dataset.csv",
-    # ----------------------------------------------t.csv",
-):  # ----------------------------------------------
-    # ---- REPLACE THIS WITH YOUR OWN CODE ----
-    logger.info("Processing dataset...")
-    for i in tqdm(range(10), total=10):
-        if i == 5:
-            logger.info("Something happened for iteration 5.")
-    logger.success("Processing dataset complete.")
-    # -----------------------------------------
-    # -----------------------------------------
+def download_sec_filings():
+    """Download 10-K filings for specified tickers"""
+    # Initialize paths
+    raw_dir = Path("data/raw/sec_filings")
+    raw_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Initialize downloader
+    dl = Downloader(
+        company_name="Your Project Name",
+        email=SEC_CONFIG["email"],  # From config.py
+        download_folder=raw_dir
+    )
+    
+    # Download filings
+    for ticker in SEC_CONFIG["tickers"]:
+        try:
+            dl.get(
+                filing_type="10-K",
+                ticker_or_cik=ticker,
+                after_date=f"{SEC_CONFIG['start_year']}-01-01",
+                before_date=f"{SEC_CONFIG['end_year']}-12-31"
+            )
+            logging.info(f"✅ Downloaded {ticker} 10-K filings")
+        except Exception as e:
+            logging.error(f"❌ Failed to download {ticker}: {str(e)}")
 
 if __name__ == "__main__":
-    app()
-
-from src.config import PROCESSED_DATA_DIR, RAW_DATA_DIR
-
-from src.config import PROCESSED_DATA_DIR, RAW_DATA_DIR
-
-from src.config import PROCESSED_DATA_DIR, RAW_DATA_DIR
-
-[tool.ruff]
-known-first-party = ["src"]
-
-[tool.ruff.lint.isort]
-include = ["pyproject.toml", "src/**/*.py"]
-src = ["src"]
+    download_sec_filings()
