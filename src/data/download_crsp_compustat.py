@@ -1,3 +1,4 @@
+import logging
 import os
 import wrds
 import pandas as pd
@@ -17,7 +18,8 @@ def download_crsp_compustat_data():
     try:
         db = wrds.Connection(
             wrds_username=os.getenv("WRDS_USERNAME"),
-            wrds_password=os.getenv("WRDS_PASSWORD")
+            wrds_password=os.getenv("WRDS_PASSWORD"),
+            autocommit=True
         )
         logging.info("✅ Connected to WRDS")
     except Exception as e:
