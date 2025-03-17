@@ -35,7 +35,16 @@ def download_sec_filings():
     # Download filings
     for ticker in SEC_CONFIG["tickers"]:
         try:
-            # Updated method call
+            # Check if the filing already exists
+            ticker_dir = raw_dir / "sec-edgar-filings" / ticker / "10-K"
+            if ticker_dir.exists():
+                # Check for the full-submission.txt file
+                submission_files = list(ticker_dir.glob("**/full-submission.txt"))
+                if submission_files:
+                    logging.info(f"✅ Skipping {ticker} (already downloaded)")
+                    continue
+            
+            # Download the filing if it doesn't exist
             dl.get(
                 "10-K",  # Filing type
                 ticker,   # Ticker or CIK
@@ -46,6 +55,26 @@ def download_sec_filings():
         except Exception as e:
             logging.error(f"❌ Failed to download {ticker}: {str(e)}")
 
+def validate_downloads():
+    """
+    Validate that the downloaded SEC filings are not empty.
+    """
+    raw_dir = Path("data/raw/sec_filings")
+    
+    for ticker in SEC_CONFIG["tickers"]:
+        # Check if the ticker's folder exists
+        ticker_dir = raw_dir / "sec-edgar-filings" / ticker / "10-K"
+        if not ticker_dir.exists():
+            raise FileNotFoundError(f"Missing folder for {ticker}")
+        
+        # Check if the folder contains the full-submission.txt file
+        submission_files = list(ticker_dir.glob("**/full-submission.txt"))
+        if not submission_files:
+            raise ValueError(f"No full-submission.txt file found for {ticker}")
+        
+        logging.info(f"✅ Validated {ticker} 10-K filings")
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     download_sec_filings()
+    validate_downloads()  # Add validation after downloading
