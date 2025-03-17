@@ -41,10 +41,15 @@ def download_sec_filings():
                 # Check for the full-submission.txt file
                 submission_files = list(ticker_dir.glob("**/full-submission.txt"))
                 if submission_files:
-                    logging.info(f"✅ Skipping {ticker} (already downloaded)")
-                    continue
+                    # Check if the file is complete (size > 1 KB)
+                    file_size = submission_files[0].stat().st_size  # Size in bytes
+                    if file_size > 1024:  # 1 KB = 1024 bytes
+                        logging.info(f"✅ Skipping {ticker} (already downloaded)")
+                        continue
+                    else:
+                        logging.warning(f"⚠️ Partial download detected for {ticker}. Re-downloading...")
             
-            # Download the filing if it doesn't exist
+            # Download the filing if it doesn't exist or is incomplete
             dl.get(
                 "10-K",  # Filing type
                 ticker,   # Ticker or CIK
@@ -72,7 +77,12 @@ def validate_downloads():
         if not submission_files:
             raise ValueError(f"No full-submission.txt file found for {ticker}")
         
-        logging.info(f"✅ Validated {ticker} 10-K filings")
+        # Check if the file is complete (size > 1 KB)
+        file_size = submission_files[0].stat().st_size  # Size in bytes
+        if file_size <= 1024:  # 1 KB = 1024 bytes
+            raise ValueError(f"Partial download detected for {ticker} (file size: {file_size} bytes)")
+        
+        logging.info(f"✅ Validated {ticker} 10-K filings (file size: {file_size} bytes)")
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
