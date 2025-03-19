@@ -2,15 +2,15 @@ import os
 import spacy
 import pandas as pd
 
+# Define paths relative to the project root
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sec_filings_dir = os.path.join(project_root, "data", "raw", "sec_filings", "sec-edgar-filings")
+output_dir = os.path.join(project_root, "data", "interim")
+os.makedirs(output_dir, exist_ok=True)
+
 # Load spaCy's English language model
 nlp = spacy.load("en_core_web_sm")
-
-# Define the directory containing SEC filings
-sec_filings_dir = "data/raw/sec_filings/"
-
-# Define the output directory for interim data
-output_dir = "data/interim/"
-os.makedirs(output_dir, exist_ok=True)  # Create directory if it doesn't exist
+nlp.max_length = 15000000  # Increase max text length to 15 million characters
 
 # Initialize a list to store results
 results = []
@@ -46,9 +46,16 @@ for ticker in os.listdir(sec_filings_dir):
         with open(filing_path, "r", encoding="utf-8") as file:
             text = file.read()
         
+        # Logging: File size
+        print(f"    File size: {len(text)} characters.")
+        
         # Use spaCy to split the text into sentences
-        doc = nlp(text)
-        sentences = [sent.text for sent in doc.sents]
+        try:
+            doc = nlp(text)
+            sentences = [sent.text for sent in doc.sents]
+        except Exception as e:
+            print(f"    Error processing text: {e}")
+            continue
         
         # Logging: Number of sentences extracted
         print(f"    Extracted {len(sentences)} sentences.")
