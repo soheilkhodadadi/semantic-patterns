@@ -25,45 +25,35 @@ def process_file(file_path):
     
     return ai_sentences
 
-# Function to process large files in chunks
-def process_large_file(file_path, chunk_size=1000000):
-    with open(file_path, "r", encoding="utf-8") as file:
-        text = file.read()
-    
-    # Split text into chunks
-    chunks = [text[i:i + chunk_size] for i in range(0, len(text), chunk_size)]
-    
-    ai_sentences = []
-    for chunk in chunks:
-        sentences = segmenter.segment(chunk)
-        ai_sentences.extend([sentence for sentence in sentences if ai_pattern.search(sentence)])
-    
-    return ai_sentences
+# Main processing logic
+def main():
+    results = []
+    for ticker in os.listdir(sec_filings_dir):
+        ticker_dir = os.path.join(sec_filings_dir, ticker, "10-K")
+        if not os.path.exists(ticker_dir):
+            continue
+        
+        filing_paths = [os.path.join(ticker_dir, filing, "full-submission.txt") for filing in os.listdir(ticker_dir)]
+        
+        # Process files in parallel
+        with ProcessPoolExecutor() as executor:
+            ai_sentences = list(executor.map(process_file, filing_paths))
+        
+        for sentences in ai_sentences:
+            for sentence in sentences:
+                results.append({
+                    "ticker": ticker,
+                    "filing_date": os.path.basename(filing_paths[0])[:10],  # Extract date from filename
+                    "sentence": sentence
+                })
 
-# Main processing loop
-results = []
-for ticker in os.listdir(sec_filings_dir):
-    ticker_dir = os.path.join(sec_filings_dir, ticker, "10-K")
-    if not os.path.exists(ticker_dir):
-        continue
-    
-    filing_paths = [os.path.join(ticker_dir, filing, "full-submission.txt") for filing in os.listdir(ticker_dir)]
-    
-    # Process files in parallel
-    with ProcessPoolExecutor() as executor:
-        ai_sentences = list(executor.map(process_file, filing_paths))
-    
-    for sentences in ai_sentences:
-        for sentence in sentences:
-            results.append({
-                "ticker": ticker,
-                "filing_date": os.path.basename(filing_paths[0])[:10],  # Extract date from filename
-                "sentence": sentence
-            })
+    # Save results
+    df = pd.DataFrame(results)
+    df.to_parquet(os.path.join(output_dir, "sec_ai_sentences.parquet"), index=False)
 
-# Save results
-df = pd.DataFrame(results)
-df.to_parquet(os.path.join(output_dir, "sec_ai_sentences.parquet"), index=False)
+    print(f"Total AI-related sentences found: {len(df)}")
+    print(f"Saved results to {os.path.join(output_dir, 'sec_ai_sentences.parquet')}")
 
-print(f"Total AI-related sentences found: {len(df)}")
-print(f"Saved results to {os.path.join(output_dir, 'sec_ai_sentences.parquet')}")
+# Guard for multiprocessing
+if __name__ == "__main__":
+    main()
