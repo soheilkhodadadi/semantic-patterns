@@ -17,13 +17,17 @@ ai_pattern = re.compile(r"\b(artificial intelligence|machine learning|AI|deep le
 # Function to process a single file
 def process_file(file_path):
     try:
+        print(f"Reading file: {file_path}")
         with open(file_path, "r", encoding="utf-8") as file:
             text = file.read()
         
-        # Use PySBD for faster sentence segmentation
+        print(f"Segmenting sentences in: {file_path}")
         sentences = segmenter.segment(text)
+        
+        print(f"Filtering AI-related sentences in: {file_path}")
         ai_sentences = [sentence for sentence in sentences if ai_pattern.search(sentence)]
         
+        print(f"Found {len(ai_sentences)} AI-related sentences in: {file_path}")
         return ai_sentences
     except Exception as e:
         print(f"Error processing {file_path}: {e}")
@@ -32,19 +36,27 @@ def process_file(file_path):
 # Main processing logic
 def main():
     results = []
-    for ticker in os.listdir(sec_filings_dir):
+    tickers = os.listdir(sec_filings_dir)
+    print(f"Found {len(tickers)} tickers to process: {tickers}")
+    
+    for ticker in tickers:
         ticker_dir = os.path.join(sec_filings_dir, ticker, "10-K")
         if not os.path.exists(ticker_dir):
             print(f"Skipping {ticker}: 10-K directory not found.")
             continue
         
-        # Loop through each filing folder
-        filing_paths = [os.path.join(ticker_dir, filing, "full-submission.txt") for filing in os.listdir(ticker_dir)]
+        print(f"Processing ticker: {ticker}")
+        filings = os.listdir(ticker_dir)
+        print(f"Found {len(filings)} filings for {ticker}: {filings}")
+        
+        filing_paths = [os.path.join(ticker_dir, filing, "full-submission.txt") for filing in filings]
         
         # Process files in parallel
         try:
             with ProcessPoolExecutor(max_workers=4) as executor:
+                print(f"Starting parallel processing for {ticker} with {len(filing_paths)} files.")
                 futures = {executor.submit(process_file, path): path for path in filing_paths}
+                
                 for future in as_completed(futures):
                     path = futures[future]
                     try:
@@ -55,11 +67,11 @@ def main():
                                 "filing_date": os.path.basename(path)[:10],  # Extract date from filename
                                 "sentence": sentence
                             })
-                        print(f"Processed {path} - Found {len(ai_sentences)} AI-related sentences.")
+                        print(f"Completed processing: {path}")
                     except Exception as e:
                         print(f"Error processing {path}: {e}")
         except Exception as e:
-            print(f"Error in ProcessPoolExecutor: {e}")
+            print(f"Error in ProcessPoolExecutor for {ticker}: {e}")
 
     # Save results
     df = pd.DataFrame(results)
