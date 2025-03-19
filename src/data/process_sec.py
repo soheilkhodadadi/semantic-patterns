@@ -1,99 +1,69 @@
 import os
-import spacy
+import re
+from pysbd import Segmenter
+from concurrent.futures import ProcessPoolExecutor
 import pandas as pd
 
-# Define paths relative to the project root
+# Define paths
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sec_filings_dir = os.path.join(project_root, "data", "raw", "sec_filings", "sec-edgar-filings")
 output_dir = os.path.join(project_root, "data", "interim")
 os.makedirs(output_dir, exist_ok=True)
 
-# Load spaCy's English language model
-nlp = spacy.load("en_core_web_sm")
-nlp.max_length = 15000000  # Increase max text length to 15 million characters
+# Initialize segmenter and regex
+segmenter = Segmenter(language="en", clean=False)
+ai_pattern = re.compile(r"\b(artificial intelligence|machine learning|AI|deep learning)\b", re.IGNORECASE)
 
-# Initialize a list to store results
+# Function to process a single file
+def process_file(file_path):
+    with open(file_path, "r", encoding="utf-8") as file:
+        text = file.read()
+    
+    # Use PySBD for faster sentence segmentation
+    sentences = segmenter.segment(text)
+    ai_sentences = [sentence for sentence in sentences if ai_pattern.search(sentence)]
+    
+    return ai_sentences
+
+# Function to process large files in chunks
+def process_large_file(file_path, chunk_size=1000000):
+    with open(file_path, "r", encoding="utf-8") as file:
+        text = file.read()
+    
+    # Split text into chunks
+    chunks = [text[i:i + chunk_size] for i in range(0, len(text), chunk_size)]
+    
+    ai_sentences = []
+    for chunk in chunks:
+        sentences = segmenter.segment(chunk)
+        ai_sentences.extend([sentence for sentence in sentences if ai_pattern.search(sentence)])
+    
+    return ai_sentences
+
+# Main processing loop
 results = []
-
-# Logging: Start of the process
-print("Starting SEC text processing...")
-
-# Loop through each ticker's filings
 for ticker in os.listdir(sec_filings_dir):
     ticker_dir = os.path.join(sec_filings_dir, ticker, "10-K")
-    
-    # Check if the 10-K directory exists
     if not os.path.exists(ticker_dir):
-        print(f"Skipping {ticker}: 10-K directory not found.")
         continue
     
-    # Logging: Processing ticker
-    print(f"Processing ticker: {ticker}")
+    filing_paths = [os.path.join(ticker_dir, filing, "full-submission.txt") for filing in os.listdir(ticker_dir)]
     
-    # Loop through each filing
-    for filing in os.listdir(ticker_dir):
-        filing_path = os.path.join(ticker_dir, filing, "full-submission.txt")
-        
-        # Check if the full-submission.txt file exists
-        if not os.path.exists(filing_path):
-            print(f"Skipping {filing}: full-submission.txt not found.")
-            continue
-        
-        # Logging: Processing filing
-        print(f"  Processing filing: {filing}")
-        
-        # Read the filing text
-        with open(filing_path, "r", encoding="utf-8") as file:
-            text = file.read()
-        
-        # Logging: File size
-        print(f"    File size: {len(text)} characters.")
-        
-        # Use spaCy to split the text into sentences
-        try:
-            doc = nlp(text)
-            sentences = [sent.text for sent in doc.sents]
-        except Exception as e:
-            print(f"    Error processing text: {e}")
-            continue
-        
-        # Logging: Number of sentences extracted
-        print(f"    Extracted {len(sentences)} sentences.")
-        
-        # Filter sentences for AI-related keywords
-        ai_keywords = ["artificial intelligence", "machine learning", "AI", "deep learning"]
-        ai_sentences = [sentence for sentence in sentences if any(keyword.lower() in sentence.lower() for keyword in ai_keywords)]
-        
-        # Logging: Number of AI-related sentences
-        print(f"    Found {len(ai_sentences)} AI-related sentences.")
-        
-        # Store results with metadata
-        for sentence in ai_sentences:
+    # Process files in parallel
+    with ProcessPoolExecutor() as executor:
+        ai_sentences = list(executor.map(process_file, filing_paths))
+    
+    for sentences in ai_sentences:
+        for sentence in sentences:
             results.append({
                 "ticker": ticker,
-                "filing_date": filing[:10],  # Extract date from filename (e.g., "2022-01-01")
+                "filing_date": os.path.basename(filing_paths[0])[:10],  # Extract date from filename
                 "sentence": sentence
             })
 
-# Convert results to a DataFrame
+# Save results
 df = pd.DataFrame(results)
+df.to_parquet(os.path.join(output_dir, "sec_ai_sentences.parquet"), index=False)
 
-# Logging: Total number of AI-related sentences found
 print(f"Total AI-related sentences found: {len(df)}")
-
-# Save the results to an interim file
-output_path = os.path.join(output_dir, "sec_ai_sentences.parquet")
-df.to_parquet(output_path, index=False)
-
-# Logging: Output saved
-print(f"Saved results to {output_path}")
-
-# Validation: Check the output file
-if os.path.exists(output_path):
-    print("Validation: Output file created successfully.")
-    # Load the output file and display the first few rows
-    df_check = pd.read_parquet(output_path)
-    print("Sample of the output:")
-    print(df_check.head())
-else:
-    print("Validation: Output file not found. Check for errors.")
+print(f"Saved results to {os.path.join(output_dir, 'sec_ai_sentences.parquet')}")
