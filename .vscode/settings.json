@@ -1,0 +1,11 @@
+{
+  "python.pythonPath": "venv_py36/bin/python", 
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": true,
+  "python.linting.flake8Enabled": true,
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/__pycache__": true
+  }
+}
