@@ -1,7 +1,11 @@
-# Ignore everything under data/
-/data/
-# Except metadata folder
+# Ignore everything under data
+data/*
+
+# But NOT metadata and its technical_terms folder
 !data/metadata/
+!data/metadata/technical_terms/
+!data/metadata/technical_terms/concrete_terms.txt
+!data/metadata/technical_terms/vague_terms.txt
 
 # Mac OS-specific storage files
 .DS_Store
