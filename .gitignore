@@ -1,5 +1,7 @@
-# Data
+# Ignore everything under data/
 /data/
+# Except metadata folder
+!data/metadata/
 
 # Mac OS-specific storage files
 .DS_Store
