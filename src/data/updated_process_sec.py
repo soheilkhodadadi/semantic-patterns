@@ -87,29 +87,30 @@ def main():
         
         filing_paths = [os.path.join(ticker_dir, filing, "full-submission.txt") for filing in filings]
         
-        # Process files in parallel
+        print(f"Starting parallel processing for {ticker} with {len(filing_paths)} files.")
         try:
             with ProcessPoolExecutor(max_workers=4) as executor:
-                print(f"Starting parallel processing for {ticker} with {len(filing_paths)} files.")
                 futures = {executor.submit(process_file, path): path for path in filing_paths}
                 
-                
-for future in as_completed(futures):
-    path = futures[future]
-    try:
-        ai_sentences = future.result()
-        for sentence in ai_sentences:
-            results.append({
-                "ticker": ticker,
-                "filing_date": os.path.basename(os.path.dirname(path)),  # Extract folder name as date
-                "sentence": sentence["sentence"],
-                "score": sentence["score"],
-                "concrete_terms": sentence["concrete_terms"],
-                "vague_terms": sentence["vague_terms"]
-            })
-        print(f"Completed processing: {path}")
-    except Exception as e:
-        print(f"Error processing {path}: {e}")
+                for future in as_completed(futures):
+                    path = futures[future]
+                    try:
+                        ai_sentences = future.result()
+                        for sentence in ai_sentences:
+                            results.append({
+                                "ticker": ticker,
+                                "filing_date": os.path.basename(os.path.dirname(path)),  # Extract folder name as date
+                                "sentence": sentence["sentence"],
+                                "score": sentence["score"],
+                                "concrete_terms": sentence["concrete_terms"],
+                                "vague_terms": sentence["vague_terms"]
+                            })
+                        print(f"Completed processing: {path}")
+                    except Exception as e:
+                        print(f"Error processing {path}: {e}")
+        except Exception as e:
+            print(f"Error in ProcessPoolExecutor for {ticker}: {e}")
+
     # Save results
     df = pd.DataFrame(results)
     output_path = os.path.join(output_dir, "sec_ai_sentences.parquet")
