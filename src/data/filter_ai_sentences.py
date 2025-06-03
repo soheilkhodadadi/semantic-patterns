@@ -6,7 +6,7 @@ AI_KEYWORDS = [
 ]  
 
 # Step 2: Open the disclosure file  
-with open("data/external/sample_disclosure.txt", "r") as f:  
+with open("data/external/20241030_10-Q_edgar_data_1792789_0001628280-24-044312.txt", "r") as f:  
     sentences = [line.strip() for line in f if line.strip()]  
 
 # Step 3: Filter sentences containing AI keywords  
