@@ -22,9 +22,9 @@ with open(input_path, "r", encoding="utf-8") as f:
 nlp = spacy.load("en_core_web_lg")
 matcher = PhraseMatcher(nlp.vocab, attr="LOWER")  # match ignoring case
 
-# Add patterns to matcher
-matcher.add("CONCRETE", [nlp(term) for term in concrete_terms])
-matcher.add("VAGUE", [nlp(term) for term in vague_terms])
+# ✅ Replace nlp(term) with nlp.make_doc(term) for cleaner phrase matching
+matcher.add("CONCRETE", [nlp.make_doc(term) for term in concrete_terms])
+matcher.add("VAGUE", [nlp.make_doc(term) for term in vague_terms])
 
 # Step 4: Score sentences
 scored_sentences = []
