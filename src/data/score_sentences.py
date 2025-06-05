@@ -13,11 +13,13 @@ vague_terms = load_terms("data/metadata/technical_terms/vague_terms.txt")
 # Show loaded term lists
 print("\n[DEBUG] Concrete terms:")
 for term in concrete_terms:
-    print(f" - {term} → {[t.text for t in term.split()]}")
+    print(f" - {term} → {term.split()}")
+
 
 print("\n[DEBUG] Vague terms:")
 for term in vague_terms:
-    print(f" - {term} → {[t.text for t in term.split()]}")
+    print(f" - {term} → {term.split()}")
+
 
 # Load AI-related sentences
 input_path = "data/processed/sec/20241030_10-Q_edgar_data_1792789_0001628280-24-044312_ai_sentences.txt"
