@@ -11,7 +11,7 @@ concrete_terms = load_terms("data/metadata/technical_terms/concrete_terms.txt")
 vague_terms = load_terms("data/metadata/technical_terms/vague_terms.txt")
 
 # Step 2: Load AI-related sentences
-input_path = "data/interim/ai_sentences.txt"
+input_path = "data/processed/sec/20241030_10-Q_edgar_data_1792789_0001628280-24-044312_ai_sentences.txt"
 if not os.path.exists(input_path):
     raise FileNotFoundError(f"{input_path} not found. Run Phase 2 first.")
 
@@ -50,7 +50,8 @@ for sentence in ai_sentences:
     )
 
 # Step 5: Save output
-output_path = "data/processed/scored_sentences.txt"
+base_name = os.path.basename(input_path).replace("_ai_sentences.txt", "_scored.txt")
+output_path = os.path.join("data/processed/sec", base_name)
 os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
 with open(output_path, "w", encoding="utf-8") as f:
