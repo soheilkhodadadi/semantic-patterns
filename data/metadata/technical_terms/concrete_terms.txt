@@ -1,25 +1,20 @@
-convolutional neural networks
-recurrent neural networks
-transformer architecture
-natural language processing
-computer vision
-GPU clusters
-TPU infrastructure
-deep reinforcement learning
-unsupervised learning
-supervised learning
-self-supervised learning
-gradient boosting
-ensemble methods
-Bayesian optimization
-decision trees
-LSTM models
-transformer models
-sequence modeling
-multi-head attention
-token embedding
-pretrained models
-semantic parsing
-language models
-BERT architecture
-GPT architecture
+automated customer support
+fraud detection using AI
+AI-based document classification
+AI-assisted medical diagnosis
+machine learning model training
+AI models deployed in production
+chatbot integration
+personalized recommendation engine
+AI-powered supply chain optimization
+real-time risk assessment with AI
+natural language processing (NLP)
+AI-driven credit scoring
+computer vision for quality control
+robotic process automation (RPA)
+voice recognition systems
+speech-to-text transcription
+AI in customer segmentation
+logistics optimization using AI
+predictive maintenance systems
+AI in underwriting decisions
