@@ -15,7 +15,7 @@ def find_all_txt_files(root: str) -> List[str]:
     matches = []
     for root_dir, _, files in os.walk(root):
         for file in files:
-            if file.endswith(".txt"):
+            if file.endswith(".txt") and "10-K" in file:
                 matches.append(os.path.join(root_dir, file))
     return matches
 
@@ -33,7 +33,7 @@ def main():
     print(f"[✓] Loaded {len(target_ciks)} target CIKs.")
 
     txt_files = find_all_txt_files(SOURCE_ROOT)
-    print(f"[✓] Found {len(txt_files)} total .txt filings to search.")
+    print(f"[✓] Found {len(txt_files)} 10-K .txt filings to search.")
 
     match_count = 0
     for file_path in txt_files:
@@ -48,7 +48,7 @@ def main():
         except Exception as e:
             print(f"[x] Skipped: {file_path} ({str(e)})")
 
-    print(f"\n[✓] Done! {match_count} matching files copied to {DEST_FOLDER}")
+    print(f"\n[✓] Done! {match_count} matching 10-K files copied to {DEST_FOLDER}")
 
 if __name__ == "__main__":
     main()
