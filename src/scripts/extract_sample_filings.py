@@ -19,6 +19,8 @@ def find_all_txt_files(root: str) -> List[str]:
     return matches
 
 def extract_company_name_and_cik(file_path: str) -> tuple[str, str]:
+    name = ""
+    cik = ""
     with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
         for line in f:
             if "COMPANY CONFORMED NAME" in line:

@@ -1,10 +1,5 @@
-AAPL
-GOOGL
-MSFT
-META
-NVDA
-TSLA
-AMZN
-NFLX
-INTC
-DOORDASH
+doordash
+meta
+apple
+tesla
+alphabet
