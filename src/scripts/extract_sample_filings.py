@@ -1,14 +1,15 @@
 import os
 import shutil
+import pandas as pd
 from typing import List
 
 SOURCE_ROOT = "/Users/soheilkhodadadi/DataWork/10-X_C_2021-2124"
 DEST_FOLDER = "data/external"
-COMPANY_LIST_PATH = "data/metadata/company_lists/company_list.txt"
+COMPANY_LIST_PATH = "data/metadata/company_lists/company_list.csv"
 
-def load_company_list(path: str) -> List[str]:
-    with open(path, "r", encoding="utf-8") as f:
-        return [line.strip().lower() for line in f if line.strip()]
+def load_target_ciks(path: str) -> List[str]:
+    df = pd.read_csv(path)
+    return df["CIK"].astype(str).str.zfill(10).tolist()
 
 def find_all_txt_files(root: str) -> List[str]:
     matches = []
@@ -18,24 +19,18 @@ def find_all_txt_files(root: str) -> List[str]:
                 matches.append(os.path.join(root_dir, file))
     return matches
 
-def extract_company_name_and_cik(file_path: str) -> tuple[str, str]:
-    name = ""
-    cik = ""
+def extract_cik(file_path: str) -> str:
     with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
         for line in f:
-            if "COMPANY CONFORMED NAME" in line:
-                name = line.split(":", 1)[-1].strip().lower()
             if "CENTRAL INDEX KEY" in line:
-                cik = line.split(":", 1)[-1].strip()
-            if "STATE OF INCORPORATION" in line:  # end of company block
-                break
-    return name, cik
+                return line.split(":", 1)[-1].strip().zfill(10)
+    return ""
 
 def main():
     os.makedirs(DEST_FOLDER, exist_ok=True)
 
-    company_targets = load_company_list(COMPANY_LIST_PATH)
-    print(f"[✓] Loaded {len(company_targets)} target companies.")
+    target_ciks = set(load_target_ciks(COMPANY_LIST_PATH))
+    print(f"[✓] Loaded {len(target_ciks)} target CIKs.")
 
     txt_files = find_all_txt_files(SOURCE_ROOT)
     print(f"[✓] Found {len(txt_files)} total .txt filings to search.")
@@ -43,12 +38,12 @@ def main():
     match_count = 0
     for file_path in txt_files:
         try:
-            name, cik = extract_company_name_and_cik(file_path)
-            if any(target in name for target in company_targets):
+            cik = extract_cik(file_path)
+            if cik in target_ciks:
                 filename = os.path.basename(file_path)
                 dest_path = os.path.join(DEST_FOLDER, filename)
                 shutil.copyfile(file_path, dest_path)
-                print(f"[→] Copied: {filename} ({name})")
+                print(f"[→] Copied: {filename} (CIK: {cik})")
                 match_count += 1
         except Exception as e:
             print(f"[x] Skipped: {file_path} ({str(e)})")
