@@ -6,7 +6,7 @@ sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from sec_edgar_downloader import Downloader
 import logging
-from src.config import SEC_CONFIG  # Import your config
+from src.config.config import SEC_CONFIG  # Import your config
 
 def download_sec_filings():
     """Download 10-K filings for specified tickers"""
