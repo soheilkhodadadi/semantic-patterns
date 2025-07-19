@@ -3,6 +3,7 @@ import spacy
 from typing import List
 
 nlp = spacy.load("en_core_web_lg")
+nlp.max_length = 2_000_000
 
 def segment_sentences(text: str) -> List[str]:
     doc = nlp(text)
