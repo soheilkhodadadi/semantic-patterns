@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 from sentence_transformers import SentenceTransformer
-from src.classification.utils import load_centroids
+from .utils import load_centroids
 
 # Load the SentenceBERT model
 model = SentenceTransformer("all-MiniLM-L6-v2")
