@@ -28,3 +28,7 @@ for idx, row in df.iterrows():
 # Print final accuracy
 total = len(df)
 print(f"\n🎯 Accuracy: {correct} / {total} = {correct/total:.2%}")
+
+# Save results to CSV
+pd.DataFrame(results, columns=["sentence", "true_label", "predicted_label", "match", "scores"])\
+  .to_csv("data/validation/evaluation_results.csv", index=False)
