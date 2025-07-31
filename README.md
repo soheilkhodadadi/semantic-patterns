@@ -105,7 +105,7 @@ You can plug in new sentence sources or update the label definitions using:
 ## 📬 Contact
 
 Maintainer: Soheil Khodadadi  
-Project Supervisors: Kuntara Pukthuanthong, Thomas
+Project Supervisors: Thomas Walker, Kuntara Pukthuanthong
 
 ---
 
