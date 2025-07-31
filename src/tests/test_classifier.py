@@ -1,4 +1,10 @@
-from src.classification.classify_with_centroids import classify_sentence
+import sys
+import os
+
+# Add the src/ folder to the Python path dynamically
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from classification.classify_with_centroids import classify_sentence
 
 test_sentences = [
     "We launched a new generative AI engine for product personalization.",  # Actionable
