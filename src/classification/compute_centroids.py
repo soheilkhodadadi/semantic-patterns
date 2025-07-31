@@ -1,17 +1,15 @@
-# src/classification/compute_centroids.py
-
 import pandas as pd
 import torch
 import os
 import json
 import ast
 
-# Paths
-input_path = "data/validation/hand_labeled_ai_sentences_with_embeddings.csv"
-output_path = "data/validation/centroids.json"
+# Paths — updated to use revised file
+input_path = "data/validation/hand_labeled_ai_sentences_with_embeddings_revised.csv"
+output_path = "data/validation/centroids_revised.json"
 os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
-# Load DataFrame
+# Load data
 df = pd.read_csv(input_path)
 
 # Safe conversion from string to tensor
@@ -26,24 +24,18 @@ def safe_tensor(x):
     return None
 
 # Apply safe conversion
-df["embedding"] = df["embedding"].apply(safe_tensor)  # type: ignore
-
-# Drop malformed entries
-initial_len = len(df)
+df["embedding"] = df["embedding"].apply(safe_tensor) # type: ignore
 df = df[df["embedding"].notnull()]
-dropped = initial_len - len(df)
-print(f"[i] Dropped {dropped} rows with invalid or missing embeddings.")
 
-# Compute centroids
+# Compute centroids per label
 centroids = {}
 for label in df["label"].unique():
-    subset = df[df["label"] == label]
-    embeddings = torch.stack(subset["embedding"].tolist())
-    centroid = embeddings.mean(dim=0)
+    vectors = torch.stack(df[df["label"] == label]["embedding"].tolist())
+    centroid = vectors.mean(dim=0)
     centroids[label] = centroid.tolist()
 
-# Save centroids
+# Save to JSON
 with open(output_path, "w") as f:
     json.dump(centroids, f)
 
-print(f"[✓] Saved centroids for {len(centroids)} classes to: {output_path}")
+print(f"[✓] Computed centroids for {len(centroids)} classes and saved to: {output_path}")
