@@ -4,9 +4,9 @@ import pandas as pd
 from sentence_transformers import SentenceTransformer
 import os
 
-# Paths
-input_path = "data/validation/hand_labeled_ai_sentences_labeled_cleaned.csv"
-output_path = "data/validation/hand_labeled_ai_sentences_with_embeddings.csv"
+# Paths — updated to use the relabeled file
+input_path = "data/validation/hand_labeled_ai_sentences_labeled_cleaned_revised.csv"
+output_path = "data/validation/hand_labeled_ai_sentences_with_embeddings_revised.csv"
 os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
 # Load data
