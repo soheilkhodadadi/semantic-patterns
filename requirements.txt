@@ -89,3 +89,4 @@ wrapt==1.17.2
 wrds==3.3.0
 yfinance==0.2.40
 zipp==3.18.1
+sentence-transformers==2.2.2
