@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 from sentence_transformers import SentenceTransformer
-from src.classification.utils import load_centroids
+from classification.utils import load_centroids
 
 # Select device (e.g., MPS for Apple Silicon or fallback to CPU)
 device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
