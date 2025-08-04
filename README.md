@@ -1,8 +1,6 @@
 # Semantic Patterns: Detecting AI-Washing in Corporate Disclosures
 
-<a target="_blank" href="https://cookiecutter-data-science.drivendata.org/">
-    <img src="https://img.shields.io/badge/CCDS-Project%20template-328F97?logo=cookiecutter" />
-</a>
+[![CCDS Project template](https://img.shields.io/badge/CCDS-Project%20template-328F97?logo=cookiecutter)](https://cookiecutter-data-science.drivendata.org/)
 
 This project aims to identify and classify AI-related language in SEC 10-K filings to detect patterns of **"AI-washing"**—where companies mention artificial intelligence in vague or misleading ways. Using natural language processing (NLP), the project builds tools to detect **Actionable**, **Speculative**, and **Irrelevant** AI claims and study their relationship with financial behavior and investor response.
 
@@ -22,11 +20,10 @@ This project aims to identify and classify AI-related language in SEC 10-K filin
 
 This project follows the [Cookiecutter Data Science](https://drivendata.github.io/cookiecutter-data-science/) structure.
 
-```
 semantic-patterns/
 ├── data/
 │   ├── raw/                   # Original 10-K filings and CRSP/Compustat data
-│   ├── processed/             # Final structured AI sentence datasets
+│   ├── processed/             # Final structured AI sentence
 │   ├── validation/            # Hand-labeled sentence files, embeddings, centroids
 │
 ├── models/                    # (Optional) Serialized model objects
@@ -51,7 +48,6 @@ semantic-patterns/
 │
 ├── requirements.txt           # Python environment requirements
 └── README.md                  # This file
-```
 
 ---
 
