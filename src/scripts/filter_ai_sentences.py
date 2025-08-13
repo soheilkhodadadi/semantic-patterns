@@ -33,6 +33,9 @@ python src/scripts/filter_ai_sentences.py \
   --base-dir data/processed/sec \
   --keywords data/metadata/ai_keywords.txt \
   --force
+
+# Only process 2023–2024 10‑K
+python src/scripts/filter_ai_sentences.py --include-forms 10-K --years 2023,2024
 """
 
 from __future__ import annotations
@@ -58,6 +61,8 @@ DERIVED_SUFFIXES = (
     "_scored_ai_sentences.txt",
 )
 
+SKIP_SUBSTRINGS = ("_ai_sentences.txt", "_classified.txt", "_scored.txt", "_scored_ai_sentences.txt")
+
 
 def looks_like_year(name: str) -> bool:
     return name.isdigit() and len(name) == 4
@@ -78,7 +83,7 @@ def parse_form_from_filename(filename: str) -> Optional[str]:
     return None
 
 
-def iter_filings(base_dir: str, include_forms: Optional[Set[str]]) -> Iterator[str]:
+def iter_filings(base_dir: str, include_forms: Optional[Set[str]], include_years: Optional[Set[str]]) -> Iterator[str]:
     """
     Yield absolute paths to .txt filing files under base_dir **only inside year subfolders**,
     skipping derived outputs and (optionally) non-matching forms.
@@ -89,8 +94,12 @@ def iter_filings(base_dir: str, include_forms: Optional[Set[str]]) -> Iterator[s
         Root directory containing filing .txt files with year subfolders.
     include_forms : Optional[Set[str]]
         If provided, only files whose parsed form is in this set will be yielded.
+    include_years : Optional[Set[str]]
+        If provided, only year folders in this set will be scanned.
     """
     for year in sorted(os.listdir(base_dir)):
+        if include_years is not None and year not in include_years:
+            continue
         year_path = os.path.join(base_dir, year)
         if not os.path.isdir(year_path) or not looks_like_year(year):
             # Ignore root-level files and non-year folders
@@ -99,8 +108,11 @@ def iter_filings(base_dir: str, include_forms: Optional[Set[str]]) -> Iterator[s
             for fn in files:
                 if not fn.endswith(".txt"):
                     continue
-                # Skip derived outputs in any folder
-                if any(fn.endswith(suf) or suf in fn for suf in DERIVED_SUFFIXES):
+                # Skip derived/secondary outputs in any folder
+                base = fn
+                if any(base.endswith(suf) for suf in DERIVED_SUFFIXES):
+                    continue
+                if any(substr in base for substr in SKIP_SUBSTRINGS):
                     continue
                 fpath = os.path.join(root, fn)
                 if include_forms:
@@ -121,6 +133,10 @@ def process_file(path: str, keywords, force: bool) -> Tuple[str, int, str]:
         count  = number of AI sentences written
         out_path = output filepath
     """
+    base = os.path.basename(path)
+    if any(base.endswith(suf) for suf in DERIVED_SUFFIXES):
+        return "empty", 0, path[:-4] + "_ai_sentences.txt"
+
     out_path = path[:-4] + "_ai_sentences.txt"
     if (not force) and os.path.exists(out_path):
         return "skipped_exists", 0, out_path
@@ -159,6 +175,11 @@ def main() -> None:
         "--include-forms",
         default="10-K",
         help="Comma-separated list of form codes to include (default: 10-K). Use 'ALL' for no filter.",
+    )
+    ap.add_argument(
+        "--years",
+        default="ALL",
+        help="Comma-separated list of years to include (e.g., 2021,2022). Use 'ALL' for no filter.",
     )
     ap.add_argument(
         "--limit",
@@ -202,6 +223,12 @@ def main() -> None:
     else:
         include_forms = {tok.strip() for tok in args.include_forms.split(",") if tok.strip()}
 
+    include_years: Optional[Set[str]]
+    if args.years.strip().upper() == "ALL":
+        include_years = None
+    else:
+        include_years = {y.strip() for y in args.years.split(",") if y.strip()}
+
     totals = {"seen": 0, "wrote": 0, "skipped": 0, "empty": 0}
     per_year: Dict[str, int] = {}
 
@@ -211,11 +238,15 @@ def main() -> None:
         print("[i] Form filter       :  ALL")
     else:
         print(f"[i] Form filter       :  {sorted(include_forms)}")
+    if include_years is None:
+        print("[i] Years filter      :  ALL")
+    else:
+        print(f"[i] Years filter      :  {sorted(include_years)}")
     if args.limit:
         print(f"[i] Limit             :  {args.limit} filings")
 
     processed = 0
-    for path in iter_filings(args.base_dir, include_forms):
+    for path in iter_filings(args.base_dir, include_forms, include_years):
         # Stop early if limit is set
         if args.limit and processed >= args.limit:
             break

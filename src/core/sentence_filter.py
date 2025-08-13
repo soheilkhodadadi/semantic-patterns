@@ -1,117 +1,147 @@
 # src/core/sentence_filter.py
-import re
-from typing import List, Iterable, Pattern
+"""
+Core sentence filtering utilities for extracting AI-related sentences
+from plain-text SEC filings.
 
-# --- spaCy load with graceful fallback ---------------------------------------
-try:
-    import spacy  # type: ignore
+Public API:
+- load_keywords(path: str) -> list[str]
+- segment_sentences(text: str) -> list[str]
+- filter_ai_sentences(sentences: list[str], keywords: list[str]) -> list[str]
+"""
+
+from __future__ import annotations
+from functools import lru_cache
+from pathlib import Path
+from typing import Iterable, List
+import re
+
+# --- Keyword loading ---------------------------------------------------------
+
+def load_keywords(path: str) -> List[str]:
+    """
+    Load keywords/phrases (one per line) and return a normalized list.
+    - Strips comments after '#'
+    - Keeps phrases with spaces (quoted or not)
+    - Deduplicates and lowercases
+    """
+    p = Path(path)
+    if not p.exists():
+        return []
+
+    items: list[str] = []
+    for raw in p.read_text(encoding="utf-8", errors="ignore").splitlines():
+        # remove trailing comments
+        line = raw.split("#", 1)[0].strip()
+        if not line:
+            continue
+        # allow quoted phrases, but we ultimately store raw text
+        if (line.startswith('"') and line.endswith('"')) or (line.startswith("'") and line.endswith("'")):
+            line = line[1:-1].strip()
+        items.append(line.lower())
+
+    # dedupe while preserving order
+    seen = set()
+    out: list[str] = []
+    for it in items:
+        if it not in seen:
+            seen.add(it)
+            out.append(it)
+    return out
+
+
+# --- Sentence segmentation ---------------------------------------------------
+
+@lru_cache(maxsize=1)
+def _get_spacy():
+    """Lazy import/load of spaCy. Falls back to a regex splitter if unavailable."""
     try:
-        nlp = spacy.load("en_core_web_lg")
-    except Exception:
+        import spacy  # type: ignore
         try:
-            nlp = spacy.load("en_core_web_md")
+            return spacy.load("en_core_web_sm", disable=["ner", "tagger", "lemmatizer"])
         except Exception:
-            nlp = spacy.load("en_core_web_sm")
-    nlp.max_length = 2_000_000
-except Exception as e:  # pragma: no cover
-    raise RuntimeError(
-        "spaCy English model is not installed. Run one of:\n"
-        "  python -m spacy download en_core_web_lg\n"
-        "  python -m spacy download en_core_web_md\n"
-        "  python -m spacy download en_core_web_sm\n"
-        f"Original error: {e}"
-    )
+            # small fallback model if package name differs or not installed
+            return spacy.blank("en")
+    except Exception:
+        return None
+
+
+_SENT_END = re.compile(r"(?<=[\.\?!])\s+(?=[A-Z(])")
+
 
 def segment_sentences(text: str) -> List[str]:
     """
-    Split raw filing text into sentences using spaCy, trimming whitespace and dropping empties.
+    Split `text` into sentences.
+    - Uses spaCy if available (with sentencizer), else regex fallback.
+    - Normalizes whitespace and keeps non-empty sentences.
     """
-    doc = nlp(text)
-    return [sent.text.strip() for sent in doc.sents if sent.text and sent.text.strip()]
+    text = text.replace("\u00A0", " ").replace("\t", " ")
+    text = re.sub(r"[ ]{2,}", " ", text)
 
-def load_keywords(filepath: str) -> List[str]:
-    """
-    Load one keyword/phrase per line from a UTF-8 text file.
-    Empty lines are ignored. Whitespace is stripped.
-    """
-    with open(filepath, "r", encoding="utf-8") as f:
-        return [line.strip() for line in f if line.strip()]
+    nlp = _get_spacy()
+    if nlp is not None:
+        # ensure the pipeline has a sentencizer
+        if "sentencizer" not in nlp.pipe_names:
+            try:
+                nlp.add_pipe("sentencizer")
+            except Exception:
+                pass
+        try:
+            doc = nlp(text)
+            sents = [s.text.strip() for s in doc.sents]
+            return [s for s in sents if s]
+        except Exception:
+            pass
 
-# --- Heuristics ---------------------------------------------------------------
+    # fallback
+    parts = _SENT_END.split(text)
+    return [p.strip() for p in parts if p and p.strip()]
 
-def is_meaningful(sentence: str, min_words: int = 8) -> bool:
-    """
-    Heuristic to drop obvious junk such as headings, page numbers, and very short lines.
-    """
-    s = sentence.strip()
-    if not s:
-        return False
-    # length/shape
-    if len(s.split()) < min_words:
-        return False
-    # all caps blocks often are headings
-    if s.isupper():
-        return False
-    low = s.lower()
-    if "table of contents" in low:
-        return False
-    # "item 1", "item 1a", etc. (common in 10-K headings)
-    if re.match(r"^item\\s+\\d+[a-z]?(\\.|:|\\s|$)", low):
-        return False
-    # bare numbers or page marks
-    if re.match(r"^\\s*\\d+\\s*$", s):
-        return False
-    # lines that are mostly punctuation
-    if re.match(r"^[\\W_]+$", s):
-        return False
-    return True
 
-# --- Keyword compilation & matching ------------------------------------------
+# --- Matching ---------------------------------------------------------------
 
-def compile_keyword_patterns(keywords: Iterable[str]) -> List[Pattern]:
-    """
-    Precompile case-insensitive regex patterns with word boundaries for each keyword/phrase.
-    Example: 'natural language processing' → r'\\bnatural\\ language\\ processing\\b' (case-insensitive)
-    """
-    patterns: List[Pattern] = []
+_WORD = r"[A-Za-z0-9_\-\.]+"
+# Build a conservative token/phrase matcher. We allow:
+#   - exact tokens (e.g., "GPT‑4", "ChatGPT", "Autopilot")
+#   - multi-word phrases (e.g., "machine learning")
+#   - flexible whitespace between words
+def _compile_keyword_regex(keywords: Iterable[str]) -> re.Pattern:
+    tokens: list[str] = []
     for kw in keywords:
+        kw = kw.strip()
         if not kw:
             continue
-        # Use word boundaries around the whole phrase; escape inner punctuation safely
-        patt = re.compile(rf"\\b{re.escape(kw)}\\b", flags=re.IGNORECASE)
-        patterns.append(patt)
-    return patterns
+        # Escape punctuation but keep spaces flexible
+        parts = [re.escape(p) for p in kw.split()]
+        if len(parts) == 1:
+            # single token: use word-ish boundaries (don't require strict \b for hyphenated terms)
+            pat = rf"(?<![A-Za-z0-9]){parts[0]}(?![A-Za-z0-9])"
+        else:
+            # multi token: allow 1+ whitespace between escaped pieces
+            pat = r"\s+".join(parts)
+        tokens.append(pat)
 
-def sentence_has_any_pattern(sentence: str, patterns: List[Pattern]) -> bool:
-    """
-    True if the sentence matches any of the compiled keyword patterns.
-    """
-    for p in patterns:
-        if p.search(sentence):
-            return True
-    return False
+    if not tokens:
+        # match nothing
+        return re.compile(r"a^\Z")
+
+    combined = "|".join(tokens)
+    return re.compile(combined, flags=re.IGNORECASE)
+
 
 def filter_ai_sentences(sentences: List[str], keywords: List[str]) -> List[str]:
     """
-    Keep sentences that match at least one keyword/phrase and pass the 'meaningful' heuristic.
-    Deduplicates while preserving original order.
+    Return only sentences that contain any of the provided `keywords`.
+    Matching is done via a compiled regex that supports multi-word phrases.
     """
-    patterns = compile_keyword_patterns(keywords)
+    if not sentences or not keywords:
+        return []
 
-    ai_sentences = []
+    rx = _compile_keyword_regex(keywords)
+    out: list[str] = []
     for s in sentences:
-        if not sentence_has_any_pattern(s, patterns):
+        # cheap negative filter: skip very short or number-only lines
+        if len(s) < 4 or s.strip().isdigit():
             continue
-        if not is_meaningful(s):
-            continue
-        ai_sentences.append(s)
-
-    # Deduplicate while preserving order
-    seen = set()
-    unique_sentences = []
-    for s in ai_sentences:
-        if s not in seen:
-            unique_sentences.append(s)
-            seen.add(s)
-
-    return unique_sentences
+        if rx.search(s):
+            out.append(s.strip())
+    return out
