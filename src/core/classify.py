@@ -3,12 +3,16 @@ import torch.nn.functional as F
 from sentence_transformers import SentenceTransformer
 from classification.utils import load_centroids
 
+# Near top-level config (toggle here for different embedding backbones / centroids)
+MODEL_NAME = "sentence-transformers/all-mpnet-base-v2"  # change back to MiniLM if needed
+CENTROIDS_PATH = "data/validation/centroids_mpnet.json"
+
 # Select device (e.g., MPS for Apple Silicon or fallback to CPU)
 device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 
-# Load model and centroids
-model = SentenceTransformer("all-MiniLM-L6-v2").to(device)
-centroids = load_centroids("data/validation/centroids.json")
+# Load model and centroids (single instantiation to avoid device churn)
+model = SentenceTransformer(MODEL_NAME).to(device)
+centroids = load_centroids(CENTROIDS_PATH)
 centroids = {label: tensor.to(device) for label, tensor in centroids.items()}
 
 def classify_sentence(sentence: str) -> tuple[str, dict[str, float]]:
