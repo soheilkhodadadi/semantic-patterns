@@ -60,6 +60,28 @@ def load_ciks(csv_path: str) -> set:
     ciks = set(df["cik"].astype(str).str.extract(r"(\d+)")[0].dropna().tolist())
     return ciks
 
+# Build file patterns that include the CIK so we don't miss matches and so it runs faster
+# Examples that should match:
+#   20240125_10-K_edgar_data_10329_0001437749-24-002203.txt
+#   20240125_10-K-A_edgar_data_10329_0001437749-24-002203.txt
+#   20240125_10k_edgar_data_10329_... (case-insensitive safety)
+
+def find_files_for_cik(src_root: str, cik: str, years: set[int]) -> list[str]:
+    paths: list[str] = []
+    for y in sorted(years):
+        for q in (1, 2, 3, 4):
+            # Allow *_10-K* and case variants; always require edgar_data_<cik>_
+            # We search with two patterns to be robust to dashes/underscores around 10-K
+            base = os.path.join(src_root, str(y), f"QTR{q}")
+            patterns = [
+                os.path.join(base, f"*_10-K*_edgar_data_{cik}_*.txt"),
+                os.path.join(base, f"*10k*_edgar_data_{cik}_*.txt"),  # very rare, but cheap
+            ]
+            for pat in patterns:
+                paths.extend(glob.glob(pat))
+    # De-duplicate in case multiple patterns matched the same file
+    return sorted(set(paths))
+
 # ---- main -------------------------------------------------------------------
 
 def main():
@@ -75,48 +97,51 @@ def main():
             "Expected structure: <SRC_ROOT>/<YEAR>/QTR#/....txt  (e.g., 2024/QTR1/20240102_10-K_...txt)"
         )
 
-    os.makedirs(DEST_DIR, exist_ok=True)
+    print(f"[i] Scanning {len(YEARS)} years x 4 quarters for {len(ciks)} CIKs under: {src_root}")
 
-    # Find candidate files in /<YEAR>/QTR*/ subfolders (both .txt and *_text.txt are fine)
-    candidates = []
-    for y in sorted(YEARS):
-        for q in (1, 2, 3, 4):
-            pattern = os.path.join(src_root, str(y), f"QTR{q}", "*.txt")
-            candidates.extend(glob.glob(pattern))
-    print(f"[i] Found {len(candidates)} .txt files under {src_root} (scanned {len(YEARS)} years x 4 quarters)")
+    os.makedirs(DEST_DIR, exist_ok=True)
 
     copied, skipped_exists, skipped_filters = 0, 0, 0
     per_year = {y: 0 for y in YEARS}
 
-    for src in candidates:
-        fn = os.path.basename(src)
-        m = F_PAT.search(fn)
-        if not m:
-            skipped_filters += 1
-            continue
+    missing: list[tuple[str, int]] = []  # (cik, year) pairs with no 10-K found
 
-        year = int(m.group("date")[:4])
-        cik = m.group("cik")
+    # Search per‑CIK to avoid missing matches due to filename idiosyncrasies
+    for cik in sorted(ciks):
+        found_any_for_cik = False
+        for year in sorted(YEARS):
+            hits = find_files_for_cik(src_root, cik, {year})
+            if not hits:
+                missing.append((cik, year))
+                continue
 
-        # Only 10-Ks for our firms & years
-        if year not in YEARS or cik not in ciks or "_10-K" not in fn.upper():
-            skipped_filters += 1
-            continue
+            found_any_for_cik = True
+            year_dir = os.path.join(DEST_DIR, str(year))
+            os.makedirs(year_dir, exist_ok=True)
 
-        year_dir = os.path.join(DEST_DIR, str(year))
-        os.makedirs(year_dir, exist_ok=True)
-        dest = os.path.join(year_dir, fn)
+            for src in hits:
+                fn = os.path.basename(src)
+                dest = os.path.join(year_dir, fn)
+                if os.path.exists(dest):
+                    skipped_exists += 1
+                    continue
+                shutil.copy2(src, dest)
+                copied += 1
+                per_year[year] += 1
+                if copied % 10 == 0:
+                    print(f"[…] Copied {copied} so far…")
 
-        if os.path.exists(dest):
-            skipped_exists += 1
-            continue  # do NOT overwrite
+        if not found_any_for_cik:
+            # small note so you can quickly diagnose completely missing firms
+            print(f"[!] No 10‑K files found for CIK {cik} in {min(YEARS)}–{max(YEARS)}")
 
-        # Copy as-is (preserve timestamps)
-        shutil.copy2(src, dest)
-        copied += 1
-        per_year[year] += 1
-        if copied % 10 == 0:
-            print(f"[…] Copied {copied} so far…")
+    # Write a CSV report of missing cik-year combos for quick debugging
+    if missing:
+        rep_path = os.path.join(DEST_DIR, "_missing_10K_report.csv")
+        rep_df = pd.DataFrame(missing, columns=["cik", "year"]).sort_values(["cik", "year"]) \
+                 .reset_index(drop=True)
+        rep_df.to_csv(rep_path, index=False)
+        print(f"[!] Wrote missing report with {len(missing)} rows → {rep_path}")
 
     print("\n—— Summary ————————————————")
     print(f"Copied new files     : {copied}")
