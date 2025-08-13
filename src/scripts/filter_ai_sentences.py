@@ -171,7 +171,25 @@ def main() -> None:
         action="store_true",
         help="Overwrite existing *_ai_sentences.txt outputs.",
     )
+    ap.add_argument(
+        "--file",
+        default=None,
+        help="Path to a single filing file to process (overrides directory scanning).",
+    )
     args = ap.parse_args()
+
+    if args.file:
+        if not os.path.isfile(args.file):
+            raise FileNotFoundError(f"Specified file not found: {args.file}")
+        keywords = load_keywords(args.keywords)
+        status, count, out_path = process_file(args.file, keywords, args.force)
+        if status == "ok":
+            print(f"✓ {out_path}  ({count} AI sentences)")
+        elif status == "skipped_exists":
+            print(f"Skipped existing output: {out_path}")
+        else:
+            print(f"Empty filing: {args.file}")
+        return
 
     if not os.path.isdir(args.base_dir):
         raise FileNotFoundError(f"Base directory not found: {args.base_dir}")
