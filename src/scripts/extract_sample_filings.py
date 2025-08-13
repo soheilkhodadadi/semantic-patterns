@@ -11,7 +11,7 @@ Source:
      or ..._text.txt – we copy the file as-is)
 
 Outputs:
-  - data/processed/sec/<original_filename>.txt
+  - data/processed/sec/<YEAR>/<original_filename>.txt
 
 Notes:
   - Skips non-10-K files.
@@ -86,6 +86,7 @@ def main():
     print(f"[i] Found {len(candidates)} .txt files under {src_root} (scanned {len(YEARS)} years x 4 quarters)")
 
     copied, skipped_exists, skipped_filters = 0, 0, 0
+    per_year = {y: 0 for y in YEARS}
 
     for src in candidates:
         fn = os.path.basename(src)
@@ -102,7 +103,9 @@ def main():
             skipped_filters += 1
             continue
 
-        dest = os.path.join(DEST_DIR, fn)
+        year_dir = os.path.join(DEST_DIR, str(year))
+        os.makedirs(year_dir, exist_ok=True)
+        dest = os.path.join(year_dir, fn)
 
         if os.path.exists(dest):
             skipped_exists += 1
@@ -111,6 +114,7 @@ def main():
         # Copy as-is (preserve timestamps)
         shutil.copy2(src, dest)
         copied += 1
+        per_year[year] += 1
         if copied % 10 == 0:
             print(f"[…] Copied {copied} so far…")
 
@@ -120,12 +124,20 @@ def main():
     print(f"Skipped (not our targets): {skipped_filters}")
     print(f"Destination dir      : {os.path.abspath(DEST_DIR)}\n")
 
-    # Sanity: list a few examples
-    sample = sorted(
-        [p for p in glob.glob(os.path.join(DEST_DIR, "*.txt")) if "_10-K_" in p]
-    )[:5]
-    for s in sample:
-        print("✓", s)
+    print("Per-year copied counts:")
+    for y in sorted(YEARS):
+        print(f"  {y}: {per_year[y]}")
+
+    # Sanity: list a few examples per year
+    shown = 0
+    for y in sorted(YEARS):
+        year_glob = glob.glob(os.path.join(DEST_DIR, str(y), "*.txt"))
+        print(f"Year {y}: {len(year_glob)} files")
+        for s in sorted([p for p in year_glob if "_10-K_" in os.path.basename(p)])[:2]:
+            print("  ✓", s)
+            shown += 1
+    if shown == 0:
+        print("  (No 10-K files copied yet.)")
 
 if __name__ == "__main__":
     main()
