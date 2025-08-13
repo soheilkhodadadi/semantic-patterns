@@ -20,12 +20,20 @@ os.makedirs(os.path.dirname(OUT), exist_ok=True)
 random.seed(42)
 
 df = pd.read_csv(IN)
+df.columns = df.columns.str.strip()
+df = df.rename(columns=lambda c: c.strip())
+# Optional lower-case normalization
+df.columns = df.columns.str.lower()
 # Try to keep only US public names with both CIK & ticker
 keep_cols = [c for c in df.columns if c.lower() in {"cik","ticker","name","company_name"}]
 df = df[keep_cols].rename(columns={"name":"company_name"})
-df = df.dropna(subset=["cik"]).drop_duplicates(subset=["cik"])
+assert 'cik' in df.columns, f"Available columns: {df.columns}"
+df = df.dropna(subset=['cik']).drop_duplicates(subset=['cik'])
 df["cik"] = df["cik"].astype(str).str.extract(r"(\d+)")  # strip weird formatting
 df = df[df["cik"].str.len() > 0]
+
+if df.index.name and 'cik' in df.index.name.lower():
+    df = df.reset_index()
 
 # Sample 50 (or fewer if source is short)
 sample_n = min(50, len(df))
