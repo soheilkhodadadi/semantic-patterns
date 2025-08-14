@@ -4,3 +4,26 @@ machine learning
 deep learning
 neural network
 NLP
+convolutional neural networks
+recurrent neural networks
+transformer architecture
+natural language processing
+computer vision
+deep reinforcement learning
+unsupervised learning
+supervised learning
+self-supervised learning
+gradient boosting
+ensemble methods
+Bayesian optimization
+decision trees
+LSTM models
+transformer models
+sequence modeling
+multi-head attention
+token embedding
+pretrained models
+semantic parsing
+language models
+BERT architecture
+GPT architecture

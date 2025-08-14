@@ -1,71 +1,20 @@
 # Semantic Patterns: Detecting AI-Washing in Corporate Disclosures
 
-[![CCDS Project template](https://img.shields.io/badge/CCDS-Project%20template-328F97?logo=cookiecutter)](https://cookiecutter-data-science.drivendata.org/)
+## Introduction
 
-This project aims to identify and classify AI-related language in SEC 10-K filings to detect patterns of **"AI-washing"**—where companies mention artificial intelligence in vague or misleading ways. Using natural language processing (NLP), the project builds tools to detect **Actionable**, **Speculative**, and **Irrelevant** AI claims and study their relationship with financial behavior and investor response.
+This project addresses the growing concern of **AI-washing**—the practice where companies use ambiguous or exaggerated language about artificial intelligence (AI) in their corporate disclosures, particularly in SEC 10-K filings. By leveraging natural language processing (NLP) techniques, this project aims to identify and classify AI-related sentences into meaningful categories that reflect the nature and intent of AI mentions. Understanding these patterns can help investors, regulators, and researchers assess the authenticity and impact of AI claims in financial documents.
 
----
+## Research Context and Goals
 
-## 🧠 Research Goals
+- **Problem:** Companies often mention AI in vague or speculative ways to appear innovative or attract investment, without concrete evidence or initiatives.
+- **Objective:** Develop a semantic classification pipeline that distinguishes between **Actionable**, **Speculative**, and **Irrelevant** AI claims in 10-K filings.
+- **Outcomes:** Enable large-scale analysis of AI narratives, linking them to financial performance, patenting activity, and litigation risk.
 
-- Extract AI mentions from corporate filings using keyword-based filters
-- Manually label a gold standard dataset of AI-related sentences
-- Train a semantic classifier using SentenceBERT embeddings and class centroids
-- Classify all AI sentences across thousands of 10-Ks
-- Link AI narrative patterns to stock returns, patenting behavior, and litigation
+## End-to-End Usage Instructions
 
----
+### 1. Setup Environment
 
-## 📁 Project Structure
-
-This project follows the [Cookiecutter Data Science](https://drivendata.github.io/cookiecutter-data-science/) structure.
-
-semantic-patterns/
-├── data/
-│   ├── raw/                   # Original 10-K filings and CRSP/Compustat data
-│   ├── processed/             # Final structured AI sentence
-│   ├── validation/            # Hand-labeled sentence files, embeddings, centroids
-│
-├── models/                    # (Optional) Serialized model objects
-│
-├── notebooks/                 # EDA and analysis notebooks
-│
-├── src/
-│   ├── classification/        # Sentence classification pipeline
-│   │   ├── embed_labeled_sentences.py
-│   │   ├── compute_centroids.py
-│   │   ├── classify_with_centroids.py
-│   │   └── utils.py
-│   │
-│   ├── data/                  # Sentence extraction, filtering
-│   ├── plots.py               # Visualizations of sentence or label distribution
-│   └── run_pipeline.py        # Top-level script to run all stages
-│
-├── tests/                     # Evaluation and accuracy testing scripts
-│   └── evaluate_classifier_on_held_out.py
-│
-├── reports/                   # Exportable output for paper figures or audit
-│
-├── requirements.txt           # Python environment requirements
-└── README.md                  # This file
-
----
-
-## 🔍 Sentence Classification Task
-
-AI-related sentences are classified into three categories:
-
-| Label        | Description |
-|--------------|-------------|
-| **Actionable** | Concrete initiatives using AI (e.g., “We deployed AI to detect fraud.”) |
-| **Speculative** | Forward-looking or vague references (e.g., “We may explore AI in the future.”) |
-| **Irrelevant** | General industry trends or boilerplate (e.g., “AI is transforming the economy.”) |
-
----
-
-## 🛠️ How to Run the Pipeline
-
-### Setup
+Create and activate a Python virtual environment, then install dependencies:
 
 ```bash
 python -m venv venv
@@ -73,38 +22,112 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Embedding + Centroid Pipeline
+### 2. Data Preparation
+
+- Place raw 10-K filings and financial data in `data/raw/`.
+- Use provided keyword filters and extraction scripts to generate AI-related sentence datasets.
+
+### 3. Labeling
+
+- Manually label a subset of sentences in `data/validation/hand_labeled_ai_sentences_labeled_cleaned_revised.csv`.
+- Labels include:
+  - **Actionable:** Concrete AI initiatives (e.g., “We deployed AI to detect fraud.”)
+  - **Speculative:** Vague or forward-looking AI mentions (e.g., “We may explore AI in the future.”)
+  - **Irrelevant:** General or boilerplate AI references (e.g., “AI is transforming the economy.”)
+
+### 4. Embedding and Centroid Computation
+
+Generate sentence embeddings and compute class centroids:
 
 ```bash
-# Step 1: Generate embeddings from labeled sentences
 python src/classification/embed_labeled_sentences.py
-
-# Step 2: Compute centroids for each class
 python src/classification/compute_centroids.py
+```
 
-# Step 3: Evaluate on held-out validation examples
+### 5. Classification and Evaluation
+
+Classify sentences using centroid similarity and evaluate on held-out data:
+
+```bash
+python src/classification/classify_with_centroids.py
 python src/tests/evaluate_classifier_on_held_out.py
+```
+
+### 6. Analysis and Visualization
+
+Use `src/plots.py` to visualize label distributions, embedding clusters (via PCA/UMAP), and other insights.
+
+---
+
+## Detailed Explanation of Scripts and Their Purposes
+
+| Script                                     | Description                                                                 |
+|--------------------------------------------|-----------------------------------------------------------------------------|
+| `src/classification/embed_labeled_sentences.py` | Generate SentenceBERT embeddings for labeled AI sentences.                  |
+| `src/classification/compute_centroids.py`          | Compute centroid vectors representing each class label from embeddings.    |
+| `src/classification/classify_with_centroids.py`    | Classify new AI sentences by comparing embeddings to class centroids.       |
+| `src/classification/utils.py`                       | Utility functions for preprocessing, embedding, and classification tasks.  |
+| `src/data/`                                         | Scripts for extracting AI-related sentences from raw 10-K filings.         |
+| `src/plots.py`                                      | Visualization tools for sentence embeddings, label distributions, and clusters. |
+| `src/run_pipeline.py`                               | Top-level script to execute the full pipeline end-to-end.                   |
+| `tests/evaluate_classifier_on_held_out.py`         | Evaluate classification accuracy on a held-out validation dataset.          |
+
+---
+
+## Data Flow Diagram (Conceptual)
+
+```
+Raw 10-K Filings + Financial Data (data/raw/)
+          |
+          v
+Sentence Extraction & Filtering (src/data/)
+          |
+          v
+Labeled Dataset (data/validation/hand_labeled_ai_sentences_labeled_cleaned_revised.csv)
+          |
+          v
+Embedding Generation (src/classification/embed_labeled_sentences.py)
+          |
+          v
+Centroid Computation (src/classification/compute_centroids.py)
+          |
+          v
+Classification of Unlabeled Sentences (src/classification/classify_with_centroids.py)
+          |
+          v
+Evaluation & Analysis (tests/evaluate_classifier_on_held_out.py, src/plots.py)
 ```
 
 ---
 
-## 🧩 Extending the Project
+## Configuration Files and Parameters
 
-You can plug in new sentence sources or update the label definitions using:
-
-- `data/validation/hand_labeled_ai_sentences_labeled_cleaned_revised.csv`
-- Or replace the classifier with a fine-tuned transformer model
-- You can also run PCA/UMAP visualizations using `plots.py` to see cluster separation
-
----
-
-## 📬 Contact
-
-Developer & Maintainer: Soheil Khodadadi
-Project Supervisors: Thomas Walker, Kuntara Pukthuanthong
+- **`requirements.txt`**: Lists Python package dependencies required to run the project.
+- **Keyword Filters**: Located within `src/data/` scripts; these define AI-related keywords used to extract candidate sentences.
+- **Label Definitions**: Found in the labeled CSV file under `data/validation/`; labels can be updated or expanded as needed.
+- **Embedding Model**: Uses SentenceBERT by default; can be configured or replaced in `src/classification/utils.py`.
+- **Pipeline Parameters**: Thresholds and parameters for classification and evaluation can be adjusted in the respective scripts.
 
 ---
 
-## 📄 License
+## Extending the Project
 
-MIT License (if applicable)
+- Add new sources of AI-related sentences or update keyword filters.
+- Replace centroid-based classification with fine-tuned transformer models.
+- Incorporate additional metadata (e.g., company sector, time periods) into analyses.
+- Use dimensionality reduction techniques (PCA, UMAP) for more advanced visualization.
+
+---
+
+## Contact
+
+**Developer & Maintainer:** Soheil Khodadadi  
+**Project Supervisors:** Thomas Walker, Kuntara Pukthuanthong  
+
+For questions, suggestions, or collaboration inquiries, please reach out via email or GitHub.
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the `LICENSE` file for details.
