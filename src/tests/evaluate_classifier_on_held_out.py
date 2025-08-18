@@ -5,7 +5,7 @@ import pandas as pd
 # Add src/ to Python path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from classification.classify_with_centroids import classify_sentence
+from core.classify import classify_sentence
 
 # Load held-out validation file
 df = pd.read_csv("data/validation/held_out_sentences.csv")
