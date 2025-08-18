@@ -14,6 +14,12 @@ Usage examples:
 
   # Recompute even if *_classified.txt exists
   python src/classification/classify_all_ai_sentences.py --force
+
+  # Rebuild only files older than centroids (default)
+  python src/classification/classify_all_ai_sentences.py --years 2024
+
+  # Force rebuild of everything regardless of timestamps
+  python src/classification/classify_all_ai_sentences.py --years 2024 --force
 """
 
 import os
@@ -24,7 +30,7 @@ from typing import List, Optional
 # Ensure we can import from src/
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from core.classify import classify_sentence  # noqa: E402
+from core.classify import classify_sentence, CENTROIDS_PATH  # noqa: E402
 
 
 def find_ai_sentence_files(base_dir: str, years: Optional[List[str]] = None, limit: int = 0) -> List[str]:
@@ -96,12 +102,31 @@ def main():
     )
     parser.add_argument("--limit", type=int, default=0, help="Max files to process (0 = no limit).")
     parser.add_argument("--force", action="store_true", help="Recompute even if *_classified.txt exists.")
+    parser.add_argument(
+        "--refresh-if-centroids-newer",
+        action="store_true",
+        default=True,
+        help="Rebuild outputs if centroids file is newer than existing *_classified.txt (default: on)",
+    )
+    parser.add_argument(
+        "--no-refresh-if-centroids-newer",
+        dest="refresh_if_centroids_newer",
+        action="store_false",
+        help="Disable timestamp-based refresh logic",
+    )
     args = parser.parse_args()
+
+    refresh_if_centroids_newer = args.refresh_if_centroids_newer
 
     base_dir = args.base_dir
     years = args.years
     limit = args.limit
     force = args.force
+
+    try:
+        centroids_mtime = os.path.getmtime(CENTROIDS_PATH)
+    except Exception:
+        centroids_mtime = None
 
     if not os.path.isdir(base_dir):
         print(f"❌ Base directory not found: {base_dir}")
@@ -114,13 +139,27 @@ def main():
     skipped = 0
     for i, inp in enumerate(files, 1):
         outp = inp.replace("_ai_sentences.txt", "_classified.txt")
-        if not force and os.path.exists(outp):
-            skipped += 1
-            print(f"⏭️  {i:>4}/{len(files)} Skip (exists): {os.path.relpath(outp)}")
-            continue
+        # Decide whether to skip or rebuild
+        if os.path.exists(outp) and not force:
+            # If centroids are newer than the existing output, rebuild (unless disabled)
+            if refresh_if_centroids_newer and centroids_mtime is not None:
+                try:
+                    out_mtime = os.path.getmtime(outp)
+                except Exception:
+                    out_mtime = -1
+                if out_mtime < centroids_mtime:
+                    print(f"♻️  {i:>4}/{len(files)} Rebuild (centroids newer): {os.path.relpath(outp)}")
+                else:
+                    skipped += 1
+                    print(f"⏭️  {i:>4}/{len(files)} Skip (up-to-date): {os.path.relpath(outp)}")
+                    continue
+            else:
+                skipped += 1
+                print(f"⏭️  {i:>4}/{len(files)} Skip (exists): {os.path.relpath(outp)}")
+                continue
 
         print(f"🔍 {i:>4}/{len(files)} Classifying → {os.path.relpath(outp)}")
-        classify_file(inp, force=force)
+        classify_file(inp, force=True if force else False)
         processed += 1
 
     print("\n—— Summary ————————————————")
