@@ -15,12 +15,14 @@ This project addresses the growing concern of **AI-washing**—the practice wher
 > **Stack**: Python 3.10+, sentence-transformers (MPNet), PyTorch, pandas.
 >
 > **Data roots** (relative to repo):
+>
 > - Raw filings: `data/raw/edgar/10k/<year>/...`
 > - Extracted AI sentences: `data/processed/sec/<year>/*_ai_sentences.txt`
 > - Validation labels: `data/validation/hand_labeled_ai_sentences_labeled_cleaned.csv`
 > - MPNet outputs: `data/validation/hand_labeled_ai_sentences_with_embeddings_mpnet.csv`, `data/validation/centroids_mpnet.json`
 
 ### 1) Setup
+
 ```bash
 python -m venv venv
 source venv/bin/activate
@@ -28,13 +30,16 @@ pip install -r requirements.txt
 ```
 
 ### 2) Generate MPNet embeddings & centroids (labels → vectors → class means)
+
 ```bash
 python src/classification/embed_labeled_sentences_mpnet.py
 python src/classification/compute_centroids_mpnet.py
 ```
+
 This writes `centroids_mpnet.json` that the classifier will load.
 
 ### 3) Classify AI sentences across filings
+
 ```bash
 # classify only 2024
 python src/classification/classify_all_ai_sentences.py --years 2024
@@ -42,15 +47,19 @@ python src/classification/classify_all_ai_sentences.py --years 2024
 # classify multiple years (example)
 python src/classification/classify_all_ai_sentences.py --years 2021 2022 2023 2024
 ```
+
 Each `*_ai_sentences.txt` gets a sibling `*_classified.txt` with predicted labels and scores.
 
 ### 4) Evaluate on held‑out validation set
+
 ```bash
 python src/tests/evaluate_classifier_on_held_out.py
 ```
+
 Reads `data/validation/held_out_sentences.csv`, prints accuracy, and writes `data/validation/evaluation_results.csv`.
 
 ### 5) (Optional) Aggregate to firm‑year afterward
+
 Use the aggregation utilities in `src/aggregation/` once 2024 (and additional years) are classified to produce firm‑year counts and shares (Actionable/Speculative/Irrelevant). See the *Workflow & Stages* section below.
 
 ## Key Scripts & What They Do
@@ -66,7 +75,8 @@ Use the aggregation utilities in `src/aggregation/` once 2024 (and additional ye
 
 ## Workflow & Stages (Conceptual)
 
-**Stage 1 — NLP & Classification**
+### Stage 1 — NLP & Classification
+
 1) Raw filings → AI sentence extraction (regex + spaCy) → `data/processed/sec/<year>/*_ai_sentences.txt`  
 2) Labeled validation set → MPNet embeddings → centroids (A/S/I)  
 3) Apply MPNet+centroids to classify all extracted sentences → `*_classified.txt`  
@@ -83,8 +93,9 @@ Use the aggregation utilities in `src/aggregation/` once 2024 (and additional ye
 10) Baseline & FE regressions; clustered SEs  
 11) Export tables/figures + delivery memo
 
-**One‑line diagram**
-```
+### One‑line diagram
+
+```text
 Raw Filings → AI Sentence Extraction → MPNet Centroids → Sentence Classification →
 Firm‑Year Aggregation → Crosswalk/Patents/Controls Merge → Analysis → Tables/Delivery
 ```
@@ -127,14 +138,14 @@ Use this checklist to track progress on upgrading to MPNet embeddings and runnin
   python src/classification/embed_labeled_sentences_mpnet.py
   ```
 
-  _Outputs:_ `data/validation/hand_labeled_ai_sentences_with_embeddings_mpnet.csv`
+  *Outputs:* `data/validation/hand_labeled_ai_sentences_with_embeddings_mpnet.csv`
 - [ ] Compute centroids:
 
   ```bash
   python src/classification/compute_centroids_mpnet.py
   ```
 
-  _Outputs:_ `data/validation/centroids_mpnet.json`
+  *Outputs:* `data/validation/centroids_mpnet.json`
 
 - [ ] Verify `src/core/classify.py` uses:
   - `MODEL_NAME="sentence-transformers/all-mpnet-base-v2"`
@@ -154,8 +165,8 @@ Use this checklist to track progress on upgrading to MPNet embeddings and runnin
   python src/tests/evaluate_classifier_on_held_out.py
   ```
 
-  _Inputs:_ `data/validation/held_out_sentences.csv`  
-  _Outputs:_ `data/validation/evaluation_results.csv`
+  *Inputs:* `data/validation/held_out_sentences.csv`  
+  *Outputs:* `data/validation/evaluation_results.csv`
 
 ### 3) 2024 Classification Run
 
@@ -166,7 +177,7 @@ Use this checklist to track progress on upgrading to MPNet embeddings and runnin
   python src/classification/classify_all_ai_sentences.py --years 2024
   ```
 
-  _Outputs:_ `*_classified.txt` files alongside input
+  *Outputs:* `*_classified.txt` files alongside input
 
 ### 4) QA Gate
 
