@@ -161,38 +161,50 @@ Use this checklist to track progress on upgrading to MPNet embeddings and runnin
   python src/classification/compute_centroids_mpnet.py
   ```
   _Outputs:_ `data/validation/centroids_mpnet.json`
+
 - [ ] Verify `src/core/classify.py` uses:
   - `MODEL_NAME="sentence-transformers/all-mpnet-base-v2"`
   - `CENTROIDS_PATH="data/validation/centroids_mpnet.json"`
 
 ### 2) Held‑out Evaluation (target ≥ 80% accuracy)
+
 - [ ] Ensure `src/tests/evaluate_classifier_on_held_out.py` imports:
+
   ```python
   from core.classify import classify_sentence
   ```
+
 - [ ] Evaluate:
+
   ```bash
   python src/tests/evaluate_classifier_on_held_out.py
   ```
+
   _Inputs:_ `data/validation/held_out_sentences.csv`  
   _Outputs:_ `data/validation/evaluation_results.csv`
 
 ### 3) 2024 Classification Run
+
 - [ ] Confirm AI sentence files exist under `data/processed/sec/2024/`  
 - [ ] Run batch classification:
+
   ```bash
   python src/classification/classify_all_ai_sentences.py --years 2024
   ```
+
   _Outputs:_ `*_classified.txt` files alongside input
 
 ### 4) QA Gate
+
 - [ ] Held‑out accuracy ≥ 80%, confusion matrix looks reasonable  
 - [ ] 2024 fully classified with minimal errors  
 - [ ] Record metrics (accuracy, F1, thresholds) in commit message
 
 ### 5) Merge & Tag
+
 - [ ] Create PR `stage1-nlp-upgrade → main`  
 - [ ] Merge after review and tag release:
+
   ```bash
   git checkout main && git pull origin main
   git merge --no-ff stage1-nlp-upgrade
