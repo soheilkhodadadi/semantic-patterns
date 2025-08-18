@@ -10,127 +10,92 @@ This project addresses the growing concern of **AI-washing**—the practice wher
 - **Objective:** Develop a semantic classification pipeline that distinguishes between **Actionable**, **Speculative**, and **Irrelevant** AI claims in 10-K filings.
 - **Outcomes:** Enable large-scale analysis of AI narratives, linking them to financial performance, patenting activity, and litigation risk.
 
-## End-to-End Usage Instructions
+## End-to-End Usage Instructions (Quickstart)
 
-### 1. Setup Environment
+> **Stack**: Python 3.10+, sentence-transformers (MPNet), PyTorch, pandas.
+>
+> **Data roots** (relative to repo):
+> - Raw filings: `data/raw/edgar/10k/<year>/...`
+> - Extracted AI sentences: `data/processed/sec/<year>/*_ai_sentences.txt`
+> - Validation labels: `data/validation/hand_labeled_ai_sentences_labeled_cleaned.csv`
+> - MPNet outputs: `data/validation/hand_labeled_ai_sentences_with_embeddings_mpnet.csv`, `data/validation/centroids_mpnet.json`
 
-Create and activate a Python virtual environment, then install dependencies:
-
+### 1) Setup
 ```bash
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2. Data Preparation
-
-- Place raw 10-K filings and financial data in `data/raw/`.
-- Use provided keyword filters and extraction scripts to generate AI-related sentence datasets.
-
-### 3. Labeling
-
-- Manually label a subset of sentences in `data/validation/hand_labeled_ai_sentences_labeled_cleaned_revised.csv`.
-- Labels include:
-  - **Actionable:** Concrete AI initiatives (e.g., “We deployed AI to detect fraud.”)
-  - **Speculative:** Vague or forward-looking AI mentions (e.g., “We may explore AI in the future.”)
-  - **Irrelevant:** General or boilerplate AI references (e.g., “AI is transforming the economy.”)
-
-### 4. Embedding and Centroid Computation
-
-Generate sentence embeddings and compute class centroids:
-
+### 2) Generate MPNet embeddings & centroids (labels → vectors → class means)
 ```bash
-python src/classification/embed_labeled_sentences.py
-python src/classification/compute_centroids.py
+python src/classification/embed_labeled_sentences_mpnet.py
+python src/classification/compute_centroids_mpnet.py
 ```
+This writes `centroids_mpnet.json` that the classifier will load.
 
-### 5. Classification and Evaluation
-
-Classify sentences using centroid similarity and evaluate on held-out data:
-
+### 3) Classify AI sentences across filings
 ```bash
-python src/classification/classify_with_centroids.py
+# classify only 2024
+python src/classification/classify_all_ai_sentences.py --years 2024
+
+# classify multiple years (example)
+python src/classification/classify_all_ai_sentences.py --years 2021 2022 2023 2024
+```
+Each `*_ai_sentences.txt` gets a sibling `*_classified.txt` with predicted labels and scores.
+
+### 4) Evaluate on held‑out validation set
+```bash
 python src/tests/evaluate_classifier_on_held_out.py
 ```
+Reads `data/validation/held_out_sentences.csv`, prints accuracy, and writes `data/validation/evaluation_results.csv`.
 
-### 6. Analysis and Visualization
+### 5) (Optional) Aggregate to firm‑year afterward
+Use the aggregation utilities in `src/aggregation/` once 2024 (and additional years) are classified to produce firm‑year counts and shares (Actionable/Speculative/Irrelevant). See the *Workflow & Stages* section below.
 
-Use `src/plots.py` to visualize label distributions, embedding clusters (via PCA/UMAP), and other insights.
+## Key Scripts & What They Do
 
----
+- `src/classification/embed_labeled_sentences_mpnet.py` — Encode labeled sentences with `all-mpnet-base-v2`; saves a CSV with embeddings.
+- `src/classification/compute_centroids_mpnet.py` — Compute per‑label mean vectors (centroids) from MPNet embeddings; saves `centroids_mpnet.json`.
+- `src/core/classify.py` — Loads MPNet + centroids and exposes `classify_sentence()` used everywhere.
+- `src/classification/classify_all_ai_sentences.py` — Batch classifies every `*_ai_sentences.txt` under `data/processed/sec/<year>/` and writes `*_classified.txt`.
+- `src/tests/evaluate_classifier_on_held_out.py` — Evaluates the MPNet classifier on `held_out_sentences.csv` and writes a CSV of predictions.
+- `src/aggregation/aggregate_classification_counts.py` — Rolls sentence‑level classifications into firm‑year counts/shares for A/S/I.
+- `src/analysis/summarize_classification_counts.py` — Quick summaries/plots (e.g., distribution by year/industry).
+- `src/classification/utils.py` — Helpers for loading centroids and shared logic.
 
-## Detailed Explanation of Scripts and Their Purposes
+## Workflow & Stages (Conceptual)
 
-| Script                                     | Description                                                                 |
-|--------------------------------------------|-----------------------------------------------------------------------------|
-| `src/classification/embed_labeled_sentences.py` | Generate SentenceBERT embeddings for labeled AI sentences.                  |
-| `src/classification/compute_centroids.py`          | Compute centroid vectors representing each class label from embeddings.    |
-| `src/classification/classify_with_centroids.py`    | Classify new AI sentences by comparing embeddings to class centroids.       |
-| `src/classification/utils.py`                       | Utility functions for preprocessing, embedding, and classification tasks.  |
-| `src/data/`                                         | Scripts for extracting AI-related sentences from raw 10-K filings.         |
-| `src/plots.py`                                      | Visualization tools for sentence embeddings, label distributions, and clusters. |
-| `src/run_pipeline.py`                               | Top-level script to execute the full pipeline end-to-end.                   |
-| `tests/evaluate_classifier_on_held_out.py`         | Evaluate classification accuracy on a held-out validation dataset.          |
+**Stage 1 — NLP & Classification**
+1) Raw filings → AI sentence extraction (regex + spaCy) → `data/processed/sec/<year>/*_ai_sentences.txt`  
+2) Labeled validation set → MPNet embeddings → centroids (A/S/I)  
+3) Apply MPNet+centroids to classify all extracted sentences → `*_classified.txt`  
+4) Held‑out evaluation (target ≥ 80% accuracy)
 
----
+**Stage 2 — Integration (IDs, patents, controls)**
+5) Build CIK↔ticker↔GVKEY crosswalk, derive industries  
+6) Aggregate sentences to firm‑year A/S/I counts & shares  
+7) Retrieve/aggregate patent counts (AI vs total)  
+8) Pull Compustat controls via WRDS and merge into panel
 
-## Data Flow Diagram (Conceptual)
+**Stage 3 — Analysis & Delivery**
+9) Feature engineering (AI_intensity, shares, SpecMinusAct, Δyear)  
+10) Baseline & FE regressions; clustered SEs  
+11) Export tables/figures + delivery memo
 
+**One‑line diagram**
 ```
-Raw 10-K Filings + Financial Data (data/raw/)
-          |
-          v
-Sentence Extraction & Filtering (src/data/)
-          |
-          v
-Labeled Dataset (data/validation/hand_labeled_ai_sentences_labeled_cleaned_revised.csv)
-          |
-          v
-Embedding Generation (src/classification/embed_labeled_sentences.py)
-          |
-          v
-Centroid Computation (src/classification/compute_centroids.py)
-          |
-          v
-Classification of Unlabeled Sentences (src/classification/classify_with_centroids.py)
-          |
-          v
-Evaluation & Analysis (tests/evaluate_classifier_on_held_out.py, src/plots.py)
+Raw Filings → AI Sentence Extraction → MPNet Centroids → Sentence Classification →
+Firm‑Year Aggregation → Crosswalk/Patents/Controls Merge → Analysis → Tables/Delivery
 ```
-
----
 
 ## Configuration Files and Parameters
 
 - **`requirements.txt`**: Lists Python package dependencies required to run the project.
 - **Keyword Filters**: Located within `src/data/` scripts; these define AI-related keywords used to extract candidate sentences.
 - **Label Definitions**: Found in the labeled CSV file under `data/validation/`; labels can be updated or expanded as needed.
-- **Embedding Model**: Uses SentenceBERT by default; can be configured or replaced in `src/classification/utils.py`.
+- **Embedding Model**: Uses `sentence-transformers/all-mpnet-base-v2` by default; configured in `src/core/classify.py`.
 - **Pipeline Parameters**: Thresholds and parameters for classification and evaluation can be adjusted in the respective scripts.
-
----
-
-## Extending the Project
-
-- Add new sources of AI-related sentences or update keyword filters.
-- Replace centroid-based classification with fine-tuned transformer models.
-- Incorporate additional metadata (e.g., company sector, time periods) into analyses.
-- Use dimensionality reduction techniques (PCA, UMAP) for more advanced visualization.
-
----
-
-## Contact
-
-**Developer & Maintainer:** Soheil Khodadadi  
-**Project Supervisors:** Thomas Walker, Kuntara Pukthuanthong  
-
-For questions, suggestions, or collaboration inquiries, please reach out via email or GitHub.
-
----
-
-## License
-
-This project is licensed under the MIT License. See the `LICENSE` file for details.
 
 ---
 
@@ -139,27 +104,36 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 Use this checklist to track progress on upgrading to MPNet embeddings and running the end-to-end classification.
 
 ### Branch setup
+
 - [ ] Create and switch to branch:
+
   ```bash
   git checkout main && git pull origin main
   git checkout -b stage1-nlp-upgrade
   ```
+
 - [ ] Commit and push milestones:
+
   ```bash
   git add -A && git commit -m "Describe milestone"
   git push -u origin stage1-nlp-upgrade
   ```
 
 ### 1) Embeddings & Centroids
+
 - [ ] Run MPNet embedding script:
+
   ```bash
   python src/classification/embed_labeled_sentences_mpnet.py
   ```
+
   _Outputs:_ `data/validation/hand_labeled_ai_sentences_with_embeddings_mpnet.csv`
 - [ ] Compute centroids:
+
   ```bash
   python src/classification/compute_centroids_mpnet.py
   ```
+
   _Outputs:_ `data/validation/centroids_mpnet.json`
 
 - [ ] Verify `src/core/classify.py` uses:
