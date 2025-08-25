@@ -35,13 +35,17 @@ DEPLOYMENT_TERMS = re.compile(r"\b(deploy|deployed|launched?|rolled out|support 
 FOCUS_ON_AI = re.compile(r"focus(ed)? on .* (products|services).* based on AI", re.I)
 FUTURE_FEATURES = re.compile(r"future (features|services)", re.I)
 
-ANY_AI = re.compile(r"\b(ai|artificial intelligence)\b", re.I)
+ANY_AI = re.compile(r"\b(ai|artificial intelligence|machine learning|ml)\b", re.I)
 LAWSUITS_SUBJECT = re.compile(r"\b(subject to multiple lawsuits|subject of multiple lawsuits)\b", re.I)
 APPLY_LEARNINGS = re.compile(r"applying\s+.*\s+learnings\b", re.I)
 GLOBAL_SUBJECT_LAWS = re.compile(r"^global operations are subject to (complex|changing) laws and regulations", re.I)
 LAWS_LIST_INTRO = re.compile(r"^(these|our) laws and regulations (involve|include)", re.I)
 FOCUS_LIST = re.compile(r"focus(ed)?\s+on\s+.*\b(ai|artificial intelligence)\b", re.I)
 INFRASTRUCTURE_BROAD = re.compile(r"\b(ai|artificial intelligence)\s+infrastructure\s+.*\bsuch as\b.*\b(gpu|gpus|graphics processing units|accelerators)\b", re.I)
+
+OFFERING_ML = re.compile(r"\boffers? (?:a )?broad set of .* including .* (machine learning|ml)\b", re.I)
+PROVIDES_ML = re.compile(r"\b(provides|offer(?:s|ing)?)\b.*\b(machine learning|ml)\b", re.I)
+COMPLEX_ESTIMATE = re.compile(r"\brely upon? .* (techniques|algorithms|models).*(seek|seeks|aim) to estimate\b", re.I)
 
 
 def adjust_scores_v2(text: str, scores: dict) -> dict:
@@ -53,6 +57,15 @@ def adjust_scores_v2(text: str, scores: dict) -> dict:
         s["Speculative"] = s.get("Speculative", 0.0) + 0.05
     if DEPLOYMENT_TERMS.search(text):
         s["Actionable"] = s.get("Actionable", 0.0) + 0.08
+
+    # Treat AWS/offerings with ML as Actionable signals
+    if OFFERING_ML.search(text) or PROVIDES_ML.search(text):
+        s["Actionable"] = s.get("Actionable", 0.0) + 0.12
+
+    # Sentences describing complex modeling to estimate counts → Speculative (methodology/estimation)
+    if COMPLEX_ESTIMATE.search(text):
+        s["Speculative"] = s.get("Speculative", 0.0) + 0.12
+
     return s
 
 
@@ -155,6 +168,14 @@ def classify_two_stage(text: str, tau: float = 0.07, eps_irr: float = 0.03, min_
         if re.search(r"develop(?:ing)?\s+and\s+deploy(?:ing)?\s+ai", text, re.I):
             # explicit developing and deploying -> lean Actionable per your labels
             scores["Actionable"] = scores.get("Actionable", 0.0) + 0.1
+
+        # Future features/services should not look Actionable
+        if FUTURE_FEATURES.search(text):
+            scores["Actionable"] = max(0.0, scores.get("Actionable", 0.0) - 0.06)
+
+        # "applying ... learnings" tends to be non-deployed; nudge toward Irrelevant in filings context when no deployment term
+        if APPLY_LEARNINGS.search(text) and not DEPLOYMENT_TERMS.search(text):
+            scores["Irrelevant"] = scores.get("Irrelevant", 0.0) + 0.05
 
     # Hard override: explicit future/intent with no strong action cues
     if should_force_speculative(text):
