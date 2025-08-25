@@ -23,6 +23,23 @@ MODALS = re.compile(r"\b(may|might|could|will|would|should|intend(?:s|ed)?\s+to|
 ACTION_VERBS = re.compile(r"\b(use|uses|using|deploy|deployed|embed|embedded|launch(?:ed|es)?|implement(?:ed|s)?|roll(?:ed)?\s+out|in\s+production|operational|customers|currently\s+use|reduced|improved|increased|support\s+live\s+operations)\b", re.I)
 PCT_OR_NUM = re.compile(r"\b\d+(?:\.\d+)?%|\b\d{2,}\b")
 
+# Extra refinements for evaluation stage
+RISK_TERMS = re.compile(r"\b(risk|liability|lawsuit|lawsuits?|legal claim|legal liability|regulators?|regulation|compliance|reputation(al)?)\b", re.I)
+FUTURE_PHRASES = re.compile(r"\b(will|going to|in the future|expected to|plan(?:s|ned)? to|intend(?:s|ed)? to)\b", re.I)
+DEPLOYMENT_TERMS = re.compile(r"\b(deploy|deployed|launched?|rolled out|support live|operational|currently use)\b", re.I)
+
+
+def adjust_scores_v2(text: str, scores: dict) -> dict:
+    """Enhanced adjustment: risk/legal cues boost Speculative, deployment cues boost Actionable."""
+    s = dict(scores)
+    if RISK_TERMS.search(text):
+        s["Speculative"] = s.get("Speculative", 0.0) + 0.08
+    if FUTURE_PHRASES.search(text):
+        s["Speculative"] = s.get("Speculative", 0.0) + 0.05
+    if DEPLOYMENT_TERMS.search(text):
+        s["Actionable"] = s.get("Actionable", 0.0) + 0.08
+    return s
+
 
 def is_irrelevant_by_rules(text: str, min_tokens: int = 6) -> bool:
     """Lightweight coarse filter for obvious Irrelevant sentences.
@@ -88,6 +105,7 @@ def classify_two_stage(text: str, tau: float = 0.07, eps_irr: float = 0.03, min_
     label, scores = classify_sentence(text)
     if use_rule_boosts:
         scores = adjust_scores(text, scores)
+        scores = adjust_scores_v2(text, scores)
 
     # Hard override: explicit future/intent with no strong action cues
     if should_force_speculative(text):
