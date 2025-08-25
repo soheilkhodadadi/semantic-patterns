@@ -9,8 +9,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from core.classify import classify_sentence  # base centroid classifier (A/S/I)
 
-# ——— Quick two-stage helpers (rule gate + soft boosts; tuned) ———
-import re
 
 LISTY_TRIGGERS = re.compile(r"\b(including|such as|as well as|among other|and other)\b", re.I)
 CATEGORY_WORDS = re.compile(r"\b(internet|e[- ]?commerce|web services|devices|advertis(ing|ement)|privacy|data protection|tax|employment|antitrust|tariff|omnichannel|electronic|robotics|virtual reality|blockchain|iot|cloud|edge computing)\b", re.I)
