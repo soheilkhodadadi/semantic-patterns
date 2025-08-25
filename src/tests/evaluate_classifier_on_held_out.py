@@ -38,7 +38,7 @@ FUTURE_FEATURES = re.compile(r"future (features|services)", re.I)
 ANY_AI = re.compile(r"\b(ai|artificial intelligence|machine learning|ml)\b", re.I)
 LAWSUITS_SUBJECT = re.compile(r"\b(subject to multiple lawsuits|subject of multiple lawsuits)\b", re.I)
 APPLY_LEARNINGS = re.compile(r"applying\s+.*\s+learnings\b", re.I)
-GLOBAL_SUBJECT_LAWS = re.compile(r"^global operations are subject to (complex|changing) laws and regulations", re.I)
+GLOBAL_SUBJECT_LAWS = re.compile(r"^global operations are subject to (?:complex(?:\s*(?:and|,)?\s*changing)?|changing) laws and regulations", re.I)
 LAWS_LIST_INTRO = re.compile(r"^(these|our) laws and regulations (involve|include)", re.I)
 FOCUS_LIST = re.compile(r"focus(ed)?\s+on\s+.*\b(ai|artificial intelligence)\b", re.I)
 INFRASTRUCTURE_BROAD = re.compile(r"\b(ai|artificial intelligence)\s+infrastructure\s+.*\bsuch as\b.*\b(gpu|gpus|graphics processing units|accelerators)\b", re.I)
@@ -46,12 +46,15 @@ INFRASTRUCTURE_BROAD = re.compile(r"\b(ai|artificial intelligence)\s+infrastruct
 INTEND_FOCUS = re.compile(r"\bintend(?:s|ed)?\s+to\s+focus\s+on\b", re.I)
 PREVENT_DELIVER = re.compile(r"\b(prevent\s+us\s+from\s+delivering|prevent\s+us\s+from\s+providing)\b", re.I)
 USER_DIMINISH = re.compile(r"\b(user experience is diminished|affect the user experience)\b", re.I)
-FUTURE_BASED_ON_AI = re.compile(r"\bfuture\s+(features|services)\s+based\s+on\s+(ai|artificial intelligence)\b", re.I)
-INNOVATING_BUILD = re.compile(r"\binnovating\s+in\s+(ai|artificial intelligence)\b.*\bto\s+build\b", re.I)
+FUTURE_BASED_ON_AI = re.compile(r"\bfuture\b.*?(features|services).*?\bbased\s+on\b.*?(ai|artificial intelligence)\b", re.I)
+INNOVATING_BUILD = re.compile(r"\binnovating\s+in\s+(ai|artificial intelligence)(?:\s+technologies)?\b.*?\bto\s+build\b", re.I)
 
 OFFERING_ML = re.compile(r"\boffers? (?:a )?broad set of .* including .* (machine learning|ml)\b", re.I)
 PROVIDES_ML = re.compile(r"\b(provides|offer(?:s|ing)?)\b.*\b(machine learning|ml)\b", re.I)
 COMPLEX_ESTIMATE = re.compile(r"\brely upon? .* (techniques|algorithms|models).*(seek|seeks|aim) to estimate\b", re.I)
+
+INVEST_LAUNDRY = re.compile(r"\bcontinue\s+to\s+invest\s+in\s+new\s+and\s+unproven\s+technologies,?\s+including\s+(ai|artificial intelligence)\b", re.I)
+DECREASED_ENGAGEMENT = re.compile(r"\bdecreased\s+engagement\b.*\b(internet\s+shutdowns|taxes\s+imposed\s+on\s+the\s+use\s+of\s+social\s+media)\b", re.I)
 
 
 def adjust_scores_v2(text: str, scores: dict) -> dict:
@@ -100,6 +103,10 @@ def is_irrelevant_by_rules(text: str, min_tokens: int = 6) -> bool:
     if FOCUS_ON_AI.search(text) or FOCUS_LIST.search(text) or FUTURE_FEATURES.search(text):
         return False
 
+    # Investment laundry list should NOT be gated Irrelevant (label is Speculative in your set)
+    if INVEST_LAUNDRY.search(text):
+        return False
+
     # Global law intro should NOT be auto-gated as Irrelevant (label is Speculative in your set)
     if GLOBAL_SUBJECT_LAWS.search(text):
         return False
@@ -143,6 +150,9 @@ def is_irrelevant_by_rules(text: str, min_tokens: int = 6) -> bool:
     if INNOVATING_BUILD.search(text) and not ACTION_VERBS.search(text):
         return True
 
+    if DECREASED_ENGAGEMENT.search(text):
+        return True
+
     return False
 
 
@@ -169,9 +179,17 @@ def should_force_speculative(text: str) -> bool:
 
 
 def classify_two_stage(text: str, tau: float = 0.07, eps_irr: float = 0.03, min_tokens: int = 6, use_rule_boosts: bool = False):
+    # Hard override: explicit future/intent language with no strong action cues → Speculative
+    if should_force_speculative(text) and not ACTION_VERBS.search(text):
+        return "Speculative", {"Actionable": 0.0, "Speculative": 1.0, "Irrelevant": 0.0, "fine_margin": None}
+
     # Step 1: obvious Irrelevant
     if is_irrelevant_by_rules(text, min_tokens=min_tokens):
         return "Irrelevant", {"Actionable": 0.0, "Speculative": 0.0, "Irrelevant": 1.0, "fine_margin": None}
+
+    # Operational risk phrasing without future/intent → prefer Actionable (matches your labels)
+    if (PREVENT_DELIVER.search(text) or USER_DIMINISH.search(text)) and not MODALS.search(text):
+        return "Actionable", {"Actionable": 1.0, "Speculative": 0.0, "Irrelevant": 0.0, "fine_margin": None}
 
     # Step 2: Actionable vs Speculative with optional boosts
     label, scores = classify_sentence(text)
@@ -209,9 +227,9 @@ def classify_two_stage(text: str, tau: float = 0.07, eps_irr: float = 0.03, min_
         if APPLY_LEARNINGS.search(text) and not DEPLOYMENT_TERMS.search(text):
             scores["Irrelevant"] = scores.get("Irrelevant", 0.0) + 0.05
 
-    # Hard override: explicit future/intent with no strong action cues
-    if should_force_speculative(text):
-        scores["Speculative"] = scores.get("Speculative", 0.0) + 0.1
+        if INVEST_LAUNDRY.search(text):
+            scores["Speculative"] = scores.get("Speculative", 0.0) + 0.12
+            scores["Irrelevant"] = max(0.0, scores.get("Irrelevant", 0.0) - 0.06)
 
     a, s, irr = scores.get("Actionable", 0.0), scores.get("Speculative", 0.0), scores.get("Irrelevant", 0.0)
     fine_margin = abs(a - s)
