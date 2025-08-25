@@ -17,16 +17,23 @@ CATEGORY_WORDS = re.compile(r"\b(internet|e[- ]?commerce|web services|devices|ad
 ALONGSIDE_PHRASE = re.compile(r"\b(is|are)\s+(?:among|alongside|one of|together with)\b", re.I)
 GENERIC_MENTION = re.compile(r"\b(discussed|topic|focus|trend|coverage|buzzword|headline)\b", re.I)
 
+INFRASTRUCTURE = re.compile(r"\bAI infrastructure such as (GPU|GPUs|accelerators)\b", re.I)
+DATA_LEAKAGE = re.compile(r"^The use of AI .* (data leakage|exposure)", re.I)
+STRATEGY_REEVAL = re.compile(r"reevaluated .* strategy .* artificial intelligence", re.I)
+
 # Modals/intent; broadened to catch evaluating/exploring/future tense
 MODALS = re.compile(r"\b(may|might|could|will|would|should|intend(?:s|ed)?\s+to|plan(?:s|ned)?\s+to|aims?\s+to|anticipate|seek|hope|explor(?:e|ing)|evaluat(?:e|ing))\b", re.I)
 # Strong action cues for Actionable; prefer past/present deployments and ops
-ACTION_VERBS = re.compile(r"\b(use|uses|using|deploy|deployed|embed|embedded|launch(?:ed|es)?|implement(?:ed|s)?|roll(?:ed)?\s+out|in\s+production|operational|customers|currently\s+use|reduced|improved|increased|support\s+live\s+operations)\b", re.I)
+ACTION_VERBS = re.compile(r"\b(use|uses|using|deploy|deployed|embed|embedded|launch(?:ed|es)?|implement(?:ed|s)?|roll(?:ed)?\s+out|in\s+production|operational|customers|currently\s+use|reduced|improved|increased|support\s+live\s+operations|recommend|enhance|develop|build|apply|applied|applying|improve|improving|operate|operating)\b", re.I)
 PCT_OR_NUM = re.compile(r"\b\d+(?:\.\d+)?%|\b\d{2,}\b")
 
 # Extra refinements for evaluation stage
 RISK_TERMS = re.compile(r"\b(risk|liability|lawsuit|lawsuits?|legal claim|legal liability|regulators?|regulation|compliance|reputation(al)?)\b", re.I)
 FUTURE_PHRASES = re.compile(r"\b(will|going to|in the future|expected to|plan(?:s|ned)? to|intend(?:s|ed)? to)\b", re.I)
 DEPLOYMENT_TERMS = re.compile(r"\b(deploy|deployed|launched?|rolled out|support live|operational|currently use)\b", re.I)
+
+FOCUS_ON_AI = re.compile(r"focus(ed)? on .* (products|services).* based on AI", re.I)
+FUTURE_FEATURES = re.compile(r"future (features|services)", re.I)
 
 
 def adjust_scores_v2(text: str, scores: dict) -> dict:
@@ -65,7 +72,7 @@ def is_irrelevant_by_rules(text: str, min_tokens: int = 6) -> bool:
     and_count = text.lower().count(" and ")
     if has_category and (has_list_trigger or commas >= 1 or and_count >= 1):
         # light density check only when long enough
-        if len(toks) > 10:
+        if len(toks) > 10 and not ACTION_VERBS.search(text):
             return True
 
     # "AI is among/alongside/one of ..." patterns
@@ -74,6 +81,13 @@ def is_irrelevant_by_rules(text: str, min_tokens: int = 6) -> bool:
 
     # generic sector/media focus without firm action
     if GENERIC_MENTION.search(text) and CATEGORY_WORDS.search(text):
+        return True
+
+    if INFRASTRUCTURE.search(text):
+        return True
+    if DATA_LEAKAGE.search(text):
+        return True
+    if STRATEGY_REEVAL.search(text):
         return True
 
     return False
@@ -91,7 +105,7 @@ def adjust_scores(text: str, scores: dict) -> dict:
 
 def should_force_speculative(text: str) -> bool:
     """If explicit intent/future language appears and no strong action cues are present, force Speculative."""
-    if MODALS.search(text) and not ACTION_VERBS.search(text):
+    if (MODALS.search(text) and not ACTION_VERBS.search(text)) or FOCUS_ON_AI.search(text) or FUTURE_FEATURES.search(text):
         return True
     return False
 
