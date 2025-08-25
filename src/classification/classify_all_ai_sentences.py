@@ -26,76 +26,11 @@ import os
 import sys
 import argparse
 from typing import List, Optional
-import re
 
 # Ensure we can import from src/
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from core.classify import classify_sentence, CENTROIDS_PATH  # noqa: E402
-
-# ——— Quick two-stage helpers (rule gate + soft boosts) ———
-LISTY_TRIGGERS = re.compile(r"\b(including|such as|as well as|among other|and other)\b", re.I)
-CATEGORY_WORDS = re.compile(r"\b(internet|e[- ]?commerce|web services|devices|advertis(ing|ement)|privacy|data protection|tax|employment|antitrust|tariff|omnichannel|electronic|robotics|virtual reality)\b", re.I)
-MODALS = re.compile(r"\b(may|might|could|intend|plan|expect|aims?|anticipate|seek|hope)\b", re.I)
-ACTION_VERBS = re.compile(r"\b(use|uses|using|deploy|deployed|embed|embedded|launch(?:ed|es)?|implement(?:ed|s)?|roll(?:ed)? out|in production|customers|reduced|improved|increased)\b", re.I)
-PCT_OR_NUM = re.compile(r"\b\d+(?:\.\d+)?%|\b\d{2,}\b")
-
-
-def is_irrelevant_by_rules(text: str, min_tokens: int = 6) -> bool:
-    """Lightweight coarse filter for obvious Irrelevant sentences.
-    - Very short or header-like lines
-    - Laundry-list/regulatory lists where AI is one of many items
-    - Glossary/definition style lines
-    """
-    toks = text.split()
-    if len(toks) < min_tokens:
-        return True
-    if text.endswith(":") or text.isupper():
-        return True
-    # glossary / definition
-    if re.search(r"\b(glossary|definition|defined as)\b", text, re.I):
-        return True
-    # list/laundry-list style with AI among many items
-    commas = text.count(",")
-    if LISTY_TRIGGERS.search(text) and CATEGORY_WORDS.search(text) and commas >= 3:
-        # light density check so single appositives don't trigger
-        if (commas / max(1, len(toks))) >= 0.06 and len(toks) > 12:
-            return True
-    return False
-
-
-def adjust_scores(text: str, scores: dict) -> dict:
-    """Softly nudge scores using simple lexical cues."""
-    s = dict(scores)
-    if MODALS.search(text):
-        s["Speculative"] = s.get("Speculative", 0.0) + 0.03
-    if ACTION_VERBS.search(text) or PCT_OR_NUM.search(text):
-        s["Actionable"] = s.get("Actionable", 0.0) + 0.03
-    return s
-
-
-def classify_two_stage(text: str, tau: float = 0.05, eps_irr: float = 0.02, min_tokens: int = 6, use_rule_boosts: bool = False):
-    """Two-step decision using existing centroid classifier.
-    Step 1: rule gate obvious Irrelevant. Step 2: A vs S with optional soft boosts and margin logic.
-    Returns (label, scores_with_margin)
-    """
-    if is_irrelevant_by_rules(text, min_tokens=min_tokens):
-        return "Irrelevant", {"Actionable": 0.0, "Speculative": 0.0, "Irrelevant": 1.0, "fine_margin": None}
-
-    label, scores = classify_sentence(text)
-    if use_rule_boosts:
-        scores = adjust_scores(text, scores)
-    a, s, irr = scores.get("Actionable", 0.0), scores.get("Speculative", 0.0), scores.get("Irrelevant", 0.0)
-    fine_margin = abs(a - s)
-
-    # Prefer the stronger of A/S; if very close and Irrelevant is competitive, nudge toward Speculative to avoid over-claiming.
-    if fine_margin < tau and irr >= max(a, s) - eps_irr:
-        label = "Speculative" if s >= a else "Actionable"
-    else:
-        label = "Speculative" if s >= a else "Actionable"
-
-    scores["fine_margin"] = round(fine_margin, 3)
-    return label, scores
+from core.classify import classify_two_stage, CENTROIDS_PATH  # noqa: E402
 
 
 def find_ai_sentence_files(base_dir: str, years: Optional[List[str]] = None, limit: int = 0) -> List[str]:
@@ -155,13 +90,14 @@ def classify_file(
 
     for sent in sentences:
         try:
-            if quick_two_stage:
-                label, scores = classify_two_stage(sent, tau=tau, eps_irr=eps_irr, min_tokens=min_tokens, use_rule_boosts=rule_boosts)
-            else:
-                label, scores = classify_sentence(sent)
-                if rule_boosts:
-                    scores = adjust_scores(sent, scores)
-                    label = max(scores.items(), key=lambda x: x[1])[0]
+            label, scores = classify_two_stage(
+                sent,
+                two_stage=quick_two_stage,
+                rule_boosts=rule_boosts,
+                tau=tau,
+                eps_irr=eps_irr,
+                min_tokens=min_tokens,
+            )
             outputs.append(f"{sent} | Label: {label} | Scores: {scores}")
         except Exception as e:
             outputs.append(f"{sent} | Label: ERROR | Scores: {{}} | Error: {e}")
@@ -193,15 +129,17 @@ def main():
         action="store_false",
         help="Disable timestamp-based refresh logic",
     )
-    parser.add_argument("--quick-two-stage", action="store_true", help="Use rule gate for Irrelevant, then A/S with margin tweak")
-    parser.add_argument("--rule-boosts", action="store_true", help="Apply soft boosts to A/S scores based on lexical cues")
+    parser.add_argument("--two-stage", dest="two_stage", action="store_true", help="Enable Irrelevant gate + A/S margin logic (two-stage)")
+    parser.add_argument("--rule-boosts", dest="rule_boosts", action="store_true", help="Apply regex/lexical boosts used in evaluation")
+    # Back-compat aliases
+    parser.add_argument("--quick-two-stage", dest="two_stage", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--tau", type=float, default=0.05, help="Fine-stage A/S margin threshold (default 0.05)")
     parser.add_argument("--eps-irr", type=float, default=0.02, help="Irrelevant closeness epsilon (default 0.02)")
     parser.add_argument("--min-tokens", type=int, default=6, help="Minimum tokens to consider non-fragment (default 6)")
     args = parser.parse_args()
 
-    quick_two_stage = args.quick_two_stage
-    rule_boosts = args.rule_boosts
+    quick_two_stage = getattr(args, "two_stage", False)
+    rule_boosts = getattr(args, "rule_boosts", False)
     tau = args.tau
     eps_irr = args.eps_irr
     min_tokens = args.min_tokens
@@ -251,20 +189,18 @@ def main():
                 continue
 
         print(f"🔍 {i:>4}/{len(files)} Classifying → {os.path.relpath(outp)}")
-        classify_file(inp, force=True if force else False)
-        processed += 1
-
-        print(f"🔍 {i:>4}/{len(files)} Classifying → {os.path.relpath(outp)}")
         classify_file(
             inp,
-            force=True if force else False,
+            force=bool(force),
             quick_two_stage=quick_two_stage,
             rule_boosts=rule_boosts,
             tau=tau,
             eps_irr=eps_irr,
-            min_tokens=min_tokens
+            min_tokens=min_tokens,
         )
         processed += 1
+
+    print(f"[Summary] processed={processed}, skipped={skipped}, total={len(files)}")
     print(f"Base dir: {base_dir}")
     if years:
         print(f"Years: {', '.join(years)}")
