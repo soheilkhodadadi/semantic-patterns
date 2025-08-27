@@ -7,6 +7,7 @@
 ---
 
 ## Executive summary
+
 - **What changed:** Switched embeddings to **all-mpnet-base-v2** and added a **two‑stage classifier** (fast irrelevance gate → MPNet centroid A/S classifier with soft lexical boosts).
 - **Result (held‑out):** **26 / 31 = 83.87%** accuracy (prior runs: 58–71%). Largest gains came from the irrelevance gate and margin/boost tuning.
 - **Why it matters:** We now suppress generic “laundry‑list/regulatory” lines and fragments before A/S classification, reducing false Actionable spikes and improving separation.
@@ -15,16 +16,20 @@
 ---
 
 ## What changed (details)
+
 ### 1) Embeddings & centroids
+
 - Model: **sentence-transformers/all-mpnet-base-v2** (higher semantic fidelity than MiniLM).
 - Recomputed **class centroids** for **Actionable (A)**, **Speculative (S)**, **Irrelevant (I)** using the hand‑labeled training set.
 - Artifact: `data/validation/centroids.mpnet.json` (versioned by commit hash + timestamp).
 
 ### 2) Two‑stage classifier
+
 **Stage 0 — Irrelevance gate (fast, rule‑based)**  
 Purpose: filter out lines that mention AI only as part of long lists/regulatory boilerplate, incomplete fragments, and headers.
 
 Heuristics (configurable):
+
 - **Min tokens:** `--min-tokens=6` (discard fragments and headings).
 - **Listy triggers:** presence & density of terms like *including, such as, as well as, among other things, laws and regulations, regulatory*.
 - **Category density:** high ratio of comma‑separated categories (e.g., *privacy, data security, … artificial intelligence …*).
@@ -32,6 +37,7 @@ Heuristics (configurable):
 - **Keyword mix:** AI token present but **no operational verbs** (ship/launch/implement/support/run) and **no numerics** (%/#/dates).
 
 **Stage 1 — A vs. S (centroid + soft boosts)**  
+
 - Compute cosine similarity of MPNet embedding to class centroids.
 - **Margin rule**: if |A − S| &lt; **τ = 0.07**, prefer **S** when speculative modals dominate; otherwise prefer higher score.
 - **Lexical boosts** (small additive nudges):
@@ -40,13 +46,15 @@ Heuristics (configurable):
 - **Irrelevant epsilon:** if both A and S are weak and irrelevance patterns present, apply **ε\_irr = 0.03** to nudge toward I.
 
 CLI flags exposed in both entry points:
-```
+
+```bash
 --two-stage --rule-boosts --tau 0.07 --eps-irr 0.03 --min-tokens 6
 ```
 
 ---
 
 ## Code integration
+
 - **Core logic:** `core/classify.py` (MPNet encoder, centroid logic, irrelevance gate, lexical boosts).
 - **Evaluation:** `src/tests/evaluate_classifier_on_held_out.py`  
   Imports `core.classify: classify_sentence` and accepts the flags above. Writes per‑item results to `data/validation/evaluation_results.csv`.
@@ -59,6 +67,7 @@ CLI flags exposed in both entry points:
 ## How to reproduce
 
 ### A) Evaluate on the current held‑out set
+
 ```bash
 python src/tests/evaluate_classifier_on_held_out.py \
   --two-stage \
@@ -67,10 +76,12 @@ python src/tests/evaluate_classifier_on_held_out.py \
   --eps-irr 0.03 \
   --min-tokens 6
 ```
+
 - Output CSV: `data/validation/evaluation_results.csv`
 - Console summary shows per‑sentence preds + accuracy (latest: **26 / 31 = 83.87%**)
 
 ### B) Batch‑classify filings (2021–2024)
+
 ```bash
 python src/classification/classify_all_ai_sentences.py \
   --years 2021 2022 2023 2024 \
@@ -78,6 +89,7 @@ python src/classification/classify_all_ai_sentences.py \
   --rule-boosts \
   --tau 0.07 --eps-irr 0.03 --min-tokens 6
 ```
+
 - Input: `data/processed/sec/<YEAR>/**/*_ai_sentences.txt`
 - Output: `data/processed/sec/<YEAR>/**/*_classified.txt`
 - Rebuild condition: new centroids or run with `--force` (if available).
@@ -91,17 +103,19 @@ python src/classification/classify_all_ai_sentences.py \
 - **Typical remaining misses:** sentences mixing *future intent* with *partial deployment*; borderline robotics cross‑application.  
 
 **Ablation (short):**
+
 | Config | Acc. |
 |---|---|
 | Baseline MPNet, no rules | 0.58 |
 | + Two‑stage, default | 0.71 |
 | + Margin τ=0.07 & boosts | **0.84** |
 
-*(values are from successive runs on the same held‑out set)*
+(values are from successive runs on the same held‑out set)
 
 ---
 
 ## Reflexive workflow & iteration log
+
 - **Initial state (Aug 22):** MiniLM centroids, sparse labels, **~25–33%** on held‑out.  
 - **Iteration 1:** Switch to MPNet, recompute centroids → **~40–60%**.  
 - **Iteration 2:** Add irrelevance gate (min‑tokens + listy/regs) → **~58–71%**.  
@@ -112,6 +126,7 @@ python src/classification/classify_all_ai_sentences.py \
 ---
 
 ## Core algorithm (pseudo)
+
 ```text
 def classify_sentence(text, cfg):
   if is_fragment(text) or is_regulatory_list(text, cfg):
@@ -132,6 +147,7 @@ def classify_sentence(text, cfg):
 ---
 
 ## Artifacts delivered (today)
+
 - `data/validation/held_out_sentences.csv` (current eval set)
 - `data/validation/evaluation_results.csv` (per‑item predictions + summary)
 - `data/validation/centroids.mpnet.json` (MPNet centroids for A/S/I)
@@ -143,6 +159,7 @@ def classify_sentence(text, cfg):
 ---
 
 ## Known limitations & next fixes
+
 - **A↔S flips** when intent and deployment co‑occur (will add small edge‑case set).
 - **Regulatory mega‑lists** sometimes bleed through if AI appears with operational verbs (extend negative patterns).
 - **Domain verbs lexicon** could be expanded per‑industry (healthcare/finance/manufacturing).
@@ -150,6 +167,7 @@ def classify_sentence(text, cfg):
 ---
 
 ## Next steps (already started)
+
 - **Thu (Aug 28):** Patent‑matching subset + early regressions (link A/S/I frequencies with AI‑patent counts; simple FE specs).
 - **Aug 31:** Full panel regressions with Compustat controls + industry/year FE; deliver tables.
 - **Label quality:** 100+ manual checks and inter‑rater reliability; uncertainty sampling for hard cases.
@@ -157,4 +175,5 @@ def classify_sentence(text, cfg):
 ---
 
 ## Changelog
+
 - **2025‑08‑26:** MPNet centroids; two‑stage classifier; evaluation harness updated; batch classifier smart‑refresh; doc added.
