@@ -40,23 +40,32 @@ This writes `centroids_mpnet.json` that the classifier will load.
 
 ### 3) Classify AI sentences across filings
 
-```bash
-# classify only 2024
+# basic (single year)
 python src/classification/classify_all_ai_sentences.py --years 2024
 
-# classify multiple years (example)
-python src/classification/classify_all_ai_sentences.py --years 2021 2022 2023 2024
-```
+# recommended (two-stage + lexical boosts; will re-run files when centroids are newer)
+python src/classification/classify_all_ai_sentences.py \
+  --years 2021 2022 2023 2024 \
+  --two-stage \
+  --rule-boosts \
+  --tau 0.07 --eps-irr 0.03 --min-tokens 6
 
-Each `*_ai_sentences.txt` gets a sibling `*_classified.txt` with predicted labels and scores.
+Notes:
+- The script scans `data/processed/sec/<year>/*_ai_sentences.txt` and writes sibling `*_classified.txt` files.
+- Outputs are refreshed when `data/validation/centroids_mpnet.json` is newer than existing `*_classified.txt`.
 
 ### 4) Evaluate on held‑out validation set
 
 ```bash
-python src/tests/evaluate_classifier_on_held_out.py
+python src/tests/evaluate_classifier_on_held_out.py \
+  --two-stage \
+  --rule-boosts \
+  --tau 0.07 \
+  --eps-irr 0.03 \
+  --min-tokens 6
 ```
 
-Reads `data/validation/held_out_sentences.csv`, prints accuracy, and writes `data/validation/evaluation_results.csv`.
+*Reads* `data/validation/held_out_sentences.csv`, *prints* accuracy and confusion details, and *writes* `data/validation/evaluation_results.csv`.
 
 ### 5) (Optional) Aggregate to firm‑year afterward
 
@@ -72,6 +81,26 @@ Use the aggregation utilities in `src/aggregation/` once 2024 (and additional ye
 - `src/aggregation/aggregate_classification_counts.py` — Rolls sentence‑level classifications into firm‑year counts/shares for A/S/I.
 - `src/analysis/summarize_classification_counts.py` — Quick summaries/plots (e.g., distribution by year/industry).
 - `src/classification/utils.py` — Helpers for loading centroids and shared logic.
+
+## Two‑Stage Classifier (how it works & tunables)
+
+**Stage 1 — Irrelevance gate (fast heuristics):** Filters "laundry‑list/regulatory" lines, fragments, and headers using:
+- Minimum token length (`--min-tokens`, e.g., 6)
+- "Listy" triggers (e.g., *including, such as, as well as*) and category‑word density
+- Punctuation/structure cues (long semicolon lists, colon headers)
+- A small epsilon threshold for borderline cases (`--eps-irr`, e.g., 0.03)
+
+**Stage 2 — Actionable vs. Speculative (centroids + boosts):**
+- Cosine similarity to MPNet centroids (Actionable, Speculative)
+- Optional lexical boosts: modals (*may, plan, expect*) push toward Speculative; action verbs/numerics (*launched, implemented, %, customers*) push toward Actionable (`--rule-boosts`)
+- Margin rule to avoid over‑claiming when scores are close (`--tau`, e.g., 0.07)
+
+**Enable with flags** in both evaluation and batch classification:
+- `--two-stage` — turn on the two‑stage flow
+- `--rule-boosts` — apply small lexical nudges
+- `--tau` — decision margin for A vs. S (default 0.07 recommended)
+- `--eps-irr` — irrelevance epsilon (default 0.03 recommended)
+- `--min-tokens` — minimum token count for a valid sentence (default 6)
 
 ## Workflow & Stages (Conceptual)
 
@@ -107,6 +136,28 @@ Firm‑Year Aggregation → Crosswalk/Patents/Controls Merge → Analysis → Ta
 - **Label Definitions**: Found in the labeled CSV file under `data/validation/`; labels can be updated or expanded as needed.
 - **Embedding Model**: Uses `sentence-transformers/all-mpnet-base-v2` by default; configured in `src/core/classify.py`.
 - **Pipeline Parameters**: Thresholds and parameters for classification and evaluation can be adjusted in the respective scripts.
+- **Classifier flags (both eval & batch):** `--two-stage`, `--rule-boosts`, `--tau` (A↔S margin, rec. 0.07), `--eps-irr` (irrelevance epsilon, rec. 0.03), `--min-tokens` (rec. 6).
+
+## Reproducibility (Aug 26, 2025)
+
+**Evaluate on held‑out**
+```bash
+python src/tests/evaluate_classifier_on_held_out.py \
+  --two-stage --rule-boosts --tau 0.07 --eps-irr 0.03 --min-tokens 6
+```
+
+**Batch‑classify filings (refresh when centroids are newer)**
+```bash
+python src/classification/classify_all_ai_sentences.py \
+  --years 2021 2022 2023 2024 \
+  --two-stage --rule-boosts --tau 0.07 --eps-irr 0.03 --min-tokens 6
+```
+
+**Outputs & artifacts**
+- `data/validation/evaluation_results.csv` — latest evaluation log with per‑sentence predictions
+- `data/validation/held_out_sentences.csv` — current held‑out set
+- `data/validation/centroids_mpnet.json` — MPNet centroids
+- `data/processed/sec/<year>/*_classified.txt` — per‑filing sentence classifications
 
 ---
 
@@ -197,3 +248,9 @@ Use this checklist to track progress on upgrading to MPNet embeddings and runnin
   git tag -a v1-nlp -m "Stage 1 NLP upgrade (MPNet centroids, 2024 run)"
   git push origin v1-nlp
   ```
+
+## Changelog — 2025‑08‑26
+- Switched embeddings to `sentence-transformers/all-mpnet-base-v2` and recomputed centroids
+- Centralized classification in `src/core/classify.py` and updated tests to import from there
+- Added two‑stage logic (irrelevance gate → centroid A vs. S) with lexical boosts and tunables
+- Updated run commands and reproducibility instructions; latest held‑out accuracy ~84% (26/31)
