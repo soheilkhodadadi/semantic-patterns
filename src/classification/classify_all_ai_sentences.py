@@ -3,28 +3,30 @@ Batch classifier for AI-related sentences using SentenceBERT and cosine similari
 
 This script searches for *_ai_sentences.txt files under data/processed/sec (including
 year subfolders like 2021/, 2022/ ...), classifies each sentence using the classify_sentence() function,
-and writes results to sibling *_classified.txt files.
+and writes results to sibling *_classified.csv files.
 
 Usage examples:
-  # Scan everything recursively under the default base dir
-  python src/classification/classify_all_ai_sentences.py
+    # Scan everything recursively under the default base dir
+    python src/classification/classify_all_ai_sentences.py
 
-  # Only scan specific years and cap work for a quick check
-  python src/classification/classify_all_ai_sentences.py --years 2021 2022 --limit 10
+    # Only scan specific years and cap work for a quick check
+    python src/classification/classify_all_ai_sentences.py --years 2021 2022 --limit 10
 
-  # Recompute even if *_classified.txt exists
-  python src/classification/classify_all_ai_sentences.py --force
+    # Recompute even if *_classified.csv exists
+    python src/classification/classify_all_ai_sentences.py --force
 
-  # Rebuild only files older than centroids (default)
-  python src/classification/classify_all_ai_sentences.py --years 2024
+    # Rebuild only files older than centroids (default)
+    python src/classification/classify_all_ai_sentences.py --years 2024
 
-  # Force rebuild of everything regardless of timestamps
-  python src/classification/classify_all_ai_sentences.py --years 2024 --force
+    # Force rebuild of everything regardless of timestamps
+    python src/classification/classify_all_ai_sentences.py --years 2024 --force
 """
+
 
 import os
 import sys
 import argparse
+import csv
 from typing import List, Optional
 
 # Ensure we can import from src/
@@ -62,6 +64,7 @@ def find_ai_sentence_files(base_dir: str, years: Optional[List[str]] = None, lim
     return candidates
 
 
+
 def classify_file(
     input_path: str,
     force: bool = False,
@@ -74,9 +77,9 @@ def classify_file(
     """
     Classify the sentences in a single *_ai_sentences.txt file.
 
-    Returns the output path for the written *_classified.txt file (or existing one if skipped).
+    Returns the output path for the written *_classified.csv file (or existing one if skipped).
     """
-    output_path = input_path.replace("_ai_sentences.txt", "_classified.txt")
+    output_path = input_path.replace("_ai_sentences.txt", "_classified.csv")
 
     # Skip if already classified and not forcing
     if not force and os.path.exists(output_path):
@@ -86,7 +89,49 @@ def classify_file(
     with open(input_path, "r", encoding="utf-8") as f:
         sentences = [line.strip() for line in f if line.strip()]
 
-    outputs = []
+    # Prepare rows for CSV
+    rows = []
+
+    def _unpack_scores(scores_obj):
+        """
+        Try to read probabilities and/or cosine similarities for A/S/I from a variety of dict shapes.
+        Returns: (pA, pS, pI, cA, cS, cI) possibly None if not available.
+        """
+        pA = pS = pI = None
+        cA = cS = cI = None
+
+        if isinstance(scores_obj, dict):
+            # First pass: flat keys
+            for k, v in scores_obj.items():
+                kk = str(k).lower()
+                if kk in ("a", "actionable", "p_actionable"):
+                    pA = v
+                elif kk in ("s", "speculative", "p_speculative"):
+                    pS = v
+                elif kk in ("i", "irrelevant", "p_irrelevant"):
+                    pI = v
+                elif kk in ("cos_a", "cos_to_a", "sim_a"):
+                    cA = v
+                elif kk in ("cos_s", "cos_to_s", "sim_s"):
+                    cS = v
+                elif kk in ("cos_i", "cos_to_i", "sim_i"):
+                    cI = v
+            # Second pass: common nests
+            for nest in ("probs", "scores", "sims", "cos", "cosines"):
+                sub = scores_obj.get(nest)
+                if isinstance(sub, dict):
+                    pA2, pS2, pI2, cA2, cS2, cI2 = _unpack_scores(sub)
+                    pA = pA if pA is not None else pA2
+                    pS = pS if pS is not None else pS2
+                    pI = pI if pI is not None else pI2
+                    cA = cA if cA is not None else cA2
+                    cS = cS if cS is not None else cS2
+                    cI = cI if cI is not None else cI2
+        elif isinstance(scores_obj, (list, tuple)) and len(scores_obj) >= 3:
+            # Heuristic: treat as [pA, pS, pI]
+            pA, pS, pI = scores_obj[:3]
+
+        return pA, pS, pI, cA, cS, cI
 
     for sent in sentences:
         try:
@@ -98,13 +143,47 @@ def classify_file(
                 eps_irr=eps_irr,
                 min_tokens=min_tokens,
             )
-            outputs.append(f"{sent} | Label: {label} | Scores: {scores}")
-        except Exception as e:
-            outputs.append(f"{sent} | Label: ERROR | Scores: {{}} | Error: {e}")
+            pA, pS, pI, cA, cS, cI = _unpack_scores(scores)
+            rows.append({
+                "sentence": sent,
+                "label_pred": label,
+                "p_actionable": pA,
+                "p_speculative": pS,
+                "p_irrelevant": pI,
+                "cos_to_A": cA,
+                "cos_to_S": cS,
+                "cos_to_I": cI,
+                "tau": tau,
+                "eps_irr": eps_irr,
+                "min_tokens": min_tokens,
+            })
+        except Exception:
+            rows.append({
+                "sentence": sent,
+                "label_pred": "ERROR",
+                "p_actionable": None,
+                "p_speculative": None,
+                "p_irrelevant": None,
+                "cos_to_A": None,
+                "cos_to_S": None,
+                "cos_to_I": None,
+                "tau": tau,
+                "eps_irr": eps_irr,
+                "min_tokens": min_tokens,
+            })
 
-    # Write results next to the input
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write("\n".join(outputs))
+    # Ensure directory exists and write CSV (held-out-friendly columns)
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    fieldnames = [
+        "sentence", "label_pred",
+        "p_actionable", "p_speculative", "p_irrelevant",
+        "cos_to_A", "cos_to_S", "cos_to_I",
+        "tau", "eps_irr", "min_tokens"
+    ]
+    with open(output_path, "w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
 
     return output_path
 
@@ -116,12 +195,12 @@ def main():
         "--years", nargs="*", default=None, help="Optional list of year folders to scan (e.g., 2021 2022 2023 2024)."
     )
     parser.add_argument("--limit", type=int, default=0, help="Max files to process (0 = no limit).")
-    parser.add_argument("--force", action="store_true", help="Recompute even if *_classified.txt exists.")
+    parser.add_argument("--force", action="store_true", help="Recompute even if *_classified.csv exists.")
     parser.add_argument(
         "--refresh-if-centroids-newer",
         action="store_true",
         default=True,
-        help="Rebuild outputs if centroids file is newer than existing *_classified.txt (default: on)",
+    help="Rebuild outputs if centroids file is newer than existing *_classified.csv (default: on)",
     )
     parser.add_argument(
         "--no-refresh-if-centroids-newer",
@@ -168,7 +247,7 @@ def main():
     processed = 0
     skipped = 0
     for i, inp in enumerate(files, 1):
-        outp = inp.replace("_ai_sentences.txt", "_classified.txt")
+        outp = inp.replace("_ai_sentences.txt", "_classified.csv")
         # Decide whether to skip or rebuild
         if os.path.exists(outp) and not force:
             # If centroids are newer than the existing output, rebuild (unless disabled)
