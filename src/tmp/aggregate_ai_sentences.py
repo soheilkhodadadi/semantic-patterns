@@ -1,9 +1,8 @@
 # File: src/tmp/aggregate_ai_sentences.py
 
 import os
-from glob import glob
 import csv
-import re
+from glob import glob
 input_dir = "data/processed/sec"  # where *_ai_sentences.txt are located
 output_file = "data/validation/collected_ai_sentences.txt"
 os.makedirs(os.path.dirname(output_file), exist_ok=True)
@@ -23,70 +22,69 @@ print(f"[✓] Collected {len(collected_sentences)} AI-related sentences into {ou
 
 
 # --- replace your existing classified OUTPUT_FILE vars with these ---
-# Only scan classified files under specific year subfolders
-INPUT_ROOT = "data/processed/sec"
-YEARS = ["2021", "2022", "2023", "2024"]
-OUTPUT_TXT = "data/validation/collected_ai_sentences_classified.txt"
-OUTPUT_CSV = "data/validation/collected_ai_sentences_classified.csv"  # held-out style: sentence,label
 
-os.makedirs(os.path.dirname(OUTPUT_TXT), exist_ok=True)
 
-# Helper: parse a classified line into (label, sentence)
-LABELS = {"Actionable", "Speculative", "Irrelevant"}
-label_prefix_re = re.compile(r"^\s*(Actionable|Speculative|Irrelevant)\s*[:\-\t]\s*(.*)$", re.IGNORECASE)
+# --- Aggregate classified CSVs across the entire SEC folder ---
+# Goal: read every *_classified.csv under data/processed/sec/** and
+# write a single held-out style CSV with two columns: sentence,label
 
-def parse_labeled_line(line: str):
-    # Try TAB-delimited: LABEL\tSENTENCE
-    parts = line.split("\t", 1)
-    if len(parts) == 2 and parts[0].strip():
-        lab = parts[0].strip().capitalize()
-        sent = parts[1].strip()
-        if lab in LABELS:
-            return lab, sent
-    # Try prefix like "Actionable: ..." or "Speculative - ..."
-    m = label_prefix_re.match(line)
-    if m:
-        lab = m.group(1).capitalize()
-        sent = m.group(2).strip()
-        return lab, sent
-    # Fallback: unknown format → empty label, full line as sentence
-    return "", line.strip()
+CLASSIFIED_ROOT = "data/processed/sec"
+AGG_OUTPUT_CSV = "data/validation/CollectedAiSentencesClassified.csv"
 
-# Collect classified lines and also build CSV rows
-collected_sentences = []  # plain text for TXT (preserve current behavior)
-rows = []                 # list of {"sentence": ..., "label": ...}
+os.makedirs(os.path.dirname(AGG_OUTPUT_CSV), exist_ok=True)
+
+# Find every classified CSV recursively (no year restriction)
+classified_paths = sorted(glob(os.path.join(CLASSIFIED_ROOT, "**", "*_classified.csv"), recursive=True))
+
+rows = []          # aggregated rows with keys: sentence, label
 files_read = 0
+skipped_files = 0
 
-for year in YEARS:
-    year_dir = os.path.join(INPUT_ROOT, year)
-    if not os.path.isdir(year_dir):
-        print(f"[!] Missing year directory: {year_dir} — skipping")
+for path in classified_paths:
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            if not reader.fieldnames:
+                skipped_files += 1
+                continue
+            # Determine sentence and label columns from common variants
+            fns = {name.strip().lower(): name for name in reader.fieldnames}
+            sentence_col = fns.get("sentence") or fns.get("sent_text")
+            label_col = fns.get("label") or fns.get("label_pred")
+            if not sentence_col or not label_col:
+                # cannot interpret this file format
+                skipped_files += 1
+                continue
+
+            files_read += 1
+            for row in reader:
+                sent = (row.get(sentence_col) or "").strip()
+                lab = (row.get(label_col) or "").strip()
+                if not sent:
+                    continue
+                # Skip error placeholders if present
+                if lab.upper() == "ERROR" or lab == "":
+                    continue
+                rows.append({"sentence": sent, "label": lab})
+    except Exception:
+        skipped_files += 1
         continue
 
-    pattern = os.path.join(year_dir, "**", "*_classified.txt")
-    for path in sorted(glob(pattern, recursive=True)):
-        files_read += 1
-        with open(path, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if not line:
-                    continue
-                collected_sentences.append(line)
-                label, sentence = parse_labeled_line(line)
-                rows.append({"sentence": sentence, "label": label})
+# Optional: deduplicate while preserving order
+seen = set()
+unique_rows = []
+for r in rows:
+    key = (r["sentence"], r["label"])
+    if key in seen:
+        continue
+    seen.add(key)
+    unique_rows.append(r)
 
-# Write TXT (unchanged behavior)
-with open(OUTPUT_TXT, "w", encoding="utf-8") as f:
-    f.write("\n".join(collected_sentences))
-
-# Write CSV in held-out format: sentence,label
-with open(OUTPUT_CSV, "w", encoding="utf-8", newline="") as f:
+with open(AGG_OUTPUT_CSV, "w", encoding="utf-8", newline="") as f:
     writer = csv.DictWriter(f, fieldnames=["sentence", "label"])
     writer.writeheader()
-    writer.writerows(rows)
+    writer.writerows(unique_rows)
 
-print(f"[✓] Years scanned: {', '.join(YEARS)}")
-print(f"[✓] Files read: {files_read}")
-print(f"[✓] Sentences collected: {len(collected_sentences)}")
-print(f"[✓] Output written to: {OUTPUT_TXT}")
-print(f"[✓] CSV written to: {OUTPUT_CSV}")
+print(f"[✓] Classified CSV files scanned: {len(classified_paths)} (read={files_read}, skipped={skipped_files})")
+print(f"[✓] Aggregated rows (unique): {len(unique_rows)}")
+print(f"[✓] Output written to: {AGG_OUTPUT_CSV}")
