@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Clean an aggregated CSV of AI sentences by removing likely-incomplete lines and duplicates.
 
@@ -29,7 +28,7 @@ import csv
 import os
 import re
 import sys
-from typing import Tuple, Dict
+from typing import Dict
 
 try:
     import pandas as pd
