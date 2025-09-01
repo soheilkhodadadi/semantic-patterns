@@ -277,6 +277,22 @@ def compute_controls(funda: pd.DataFrame, align: str="fyear") -> pd.DataFrame:
 # QC report
 # ---------------------------
 
+def df_to_markdown_fallback(df: pd.DataFrame, index: bool = False) -> str:
+    """
+    Try DataFrame.to_markdown(); if 'tabulate' is missing, emit a minimal pipe-table instead.
+    """
+    try:
+        return df.to_markdown(index=index)
+    except Exception:
+        cols = list(df.columns)
+        out = []
+        out.append("| " + " | ".join(cols) + " |")
+        out.append("| " + " | ".join(["---"] * len(cols)) + " |")
+        for _, row in df.iterrows():
+            vals = ["" if pd.isna(row[c]) else str(row[c]) for c in cols]
+            out.append("| " + " | ".join(vals) + " |")
+        return "\n".join(out)
+
 def write_qc_report(path_md: str, cross: pd.DataFrame, controls: pd.DataFrame, start_year: int, end_year: int):
     lines = []
     lines.append("# Controls QC\n")
@@ -289,8 +305,7 @@ def write_qc_report(path_md: str, cross: pd.DataFrame, controls: pd.DataFrame, s
         lines.append(f"- Year span in controls: {yr_min}–{yr_max}")
         miss_rate = controls.isna().mean().round(3)
         miss_tbl = miss_rate.to_frame("missing_share").reset_index().rename(columns={"index":"column"})
-        lines.append("\n## Missingness\n")
-        lines.append(miss_tbl.to_markdown(index=False))
+        lines.append(df_to_markdown_fallback(miss_tbl, index=False))
     with open(path_md, "w") as f:
         f.write("\n".join(lines))
     print(f"[✓] Wrote QC report: {path_md}")
