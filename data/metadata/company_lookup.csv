@@ -1,11 +1,51 @@
-cik,name,name_clean
-0000320193,Apple Inc.,apple
-0001652044,DoorDash Inc.,doordash
-0001321569,Palantir Technologies Inc.,palantir technologies
-0000789019,Microsoft Corporation,microsoft
-0001652044,Alphabet Inc.,alphabet
-0001318605,Tesla Inc.,tesla
-0001018724,Amazon.com Inc.,amazoncom
-0001326801,Meta Platforms Inc.,meta platforms
-0001045810,NVIDIA Corporation,nvidia
-0000051143,International Business Machines Corporation,international business machines
+cik,name,name_clean,ticker
+0000824142,Aaon Inc,aaon,AAON
+0001086222,Akamai Technologies Inc,akamai technologies,AKAM
+0000006176,Ampco Pittsburgh Corp,ampco pittsburgh,AP
+0001091748,Argo Group International Holdings LTD,argo group international,AGII
+0000894405,Arkansas Best Corp,arkansas best,ABFS
+0000790051,Carlisle Companies Inc,carlisle companies,CSL
+0001100682,Charles River Laboratories International Inc,charles river laboratories international,CRL
+0001117480,Chimerix Inc,chimerix,CMRX
+0001556266,China Commercial Credit Inc,china commercial credit,CCCR
+0000021344,Coca Cola Co,coca cola,KO
+0001347652,Corenergy Infrastructure Trust Inc,corenergy infrastructure trust,CORR
+0001020710,DXP Enterprises Inc,dxp enterprises,DXPE
+0001352010,Epam Systems Inc,epam systems,EPAM
+0000895417,Equity Lifestyle Properties Inc,equity lifestyle properties,ELS
+0001026214,Federal Home Loan Mortgage Corp,federal home loan mortgage,FMCC
+0000723646,Franklin Financial Services Corp,franklin financial services,FRAF
+0000923796,Geo Group Inc,geo,GGI
+0001076930,Gsi Group Inc,gsi,GSIG
+0000109177,Harbinger Group Inc,harbinger,HRG
+0001564618,Independent Bank Group Inc,independent bank,IBTX
+0001571949,Intercontinentalexchange Group Inc,intercontinentalexchange,ICE
+0001418819,Iridium Communications Inc,iridium communications,IRDM
+0000860748,Kemper Corp,kemper,KMPR
+0000885639,Kohls Corp,kohls,KSS
+0001341318,Lake Shore Bancorp Inc,lake shore bancorp,LSBK
+0000061004,LGL Group Inc,lgl,LGL
+0001374567,Liberator Inc,liberator,WSCU
+0000835662,Mercari Communications Group LTD,mercari communications,MCAR
+0001436126,Mistras Group Inc,mistras,MG
+0001084267,Mobiquity Technologies Inc,mobiquity technologies,MOBQ
+0001439095,MRC Global Inc,mrc global,MRC
+0001021860,National Oilwell Varco Inc,national oilwell varco,NOV
+0001004702,Oceanfirst Financial Corp,oceanfirst financial,OCFC
+0001138476,Pacific Health Care Organization Inc,pacific health care organization,PHCO
+0001315399,Parke Bancorp Inc,parke bancorp,PKBK
+0001357878,Peptide Technologies Inc,peptide technologies,PEPT
+0001038357,Pioneer Natural Resources Co,pioneer natural resources,PXD
+0000315545,Provectus Biopharmaceuticals Inc,provectus biopharmaceuticals,PVCT
+0001393311,Public Storage,public storage,PSA
+0000716634,Reading International Inc,reading international,RDI
+0001438533,Retrophin Inc,retrophin,RTRX
+0000835324,S Y Bancorp Inc,s y bancorp,SYBT
+0000886136,Saga Communications Inc,saga communications,SGA
+0000316709,Schwab Charles Corp,schwab charles,SCHW
+0001023994,SG Blocks Inc,sg blocks,CSDI
+0001171838,Sundance Strategies Inc,sundance strategies,JVEX
+0001083490,Sunrise Real Estate Group Inc,sunrise real estate,SRRE
+0001177394,Synnex Corp,synnex,SNX
+0000059255,Valhi Inc,valhi,VHI
+0000933136,Wmi Holdings Corp,wmi,WM
