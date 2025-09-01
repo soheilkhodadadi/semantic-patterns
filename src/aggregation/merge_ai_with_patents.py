@@ -73,13 +73,18 @@ def main():
 
     # Keep only the columns we need for merge; rename to avoid name collision
     keep_cols = ["cik", "year"]
-    if "patents_ai" in pt.columns: keep_cols.append("patents_ai")
-    if "patents_total" in pt.columns: keep_cols.append("patents_total")
-    if "ai_share" in pt.columns: keep_cols.append("ai_share")
+    if "patents_ai" in pt.columns:
+        keep_cols.append("patents_ai")
+    if "patents_total" in pt.columns:
+        keep_cols.append("patents_total")
+    if "ai_share" in pt.columns:
+        keep_cols.append("ai_share")
 
     pt = pt[keep_cols].copy()
-    if "patents_ai" not in pt.columns:   pt["patents_ai"] = 0
-    if "patents_total" not in pt.columns: pt["patents_total"] = 0
+    if "patents_ai" not in pt.columns:
+        pt["patents_ai"] = 0
+    if "patents_total" not in pt.columns:
+        pt["patents_total"] = 0
     # Guard against division by zero
     pt["ai_share"] = pt.get("ai_share", pd.Series([pd.NA]*len(pt)))
     pt["patents_ai"] = pd.to_numeric(pt["patents_ai"], errors="coerce").fillna(0).astype(int)
