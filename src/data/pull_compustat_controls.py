@@ -117,15 +117,29 @@ def build_cik_gvkey_crosswalk(conn, companies: pd.DataFrame) -> pd.DataFrame:
       3) Keep only rows whose CIK or Ticker matches your 50-firm list.
       4) Deduplicate (prefer CIK matches over ticker-only).
     """
-    sql = dedent("""
-        SELECT gvkey,
-               CASE WHEN cik IS NULL THEN NULL ELSE cik::text END AS cik,
-               UPPER(tic) AS ticker_comp,
-               conm      AS name_comp,
-               sic
-        FROM comp.company
-    """)
-    comp = pd.read_sql(sql, conn)
+    # Try selecting ticker from comp.company; some WRDS setups don't expose `tic` in this table
+    try:
+        sql = dedent("""
+            SELECT gvkey,
+                   CASE WHEN cik IS NULL THEN NULL ELSE cik::text END AS cik,
+                   UPPER(tic) AS ticker_comp,
+                   conm      AS name_comp,
+                   sic
+            FROM comp.company
+        """)
+        comp = pd.read_sql(sql, conn)
+    except Exception as e:
+        print("[!] 'tic' not found in comp.company (or SELECT failed). Falling back to CIK/name only.")
+        sql = dedent("""
+            SELECT gvkey,
+                   CASE WHEN cik IS NULL THEN NULL ELSE cik::text END AS cik,
+                   conm      AS name_comp,
+                   sic
+            FROM comp.company
+        """)
+        comp = pd.read_sql(sql, conn)
+        comp["ticker_comp"] = ""
+
     comp["cik"] = comp["cik"].apply(normalize_cik)
     comp["ticker_comp"] = comp["ticker_comp"].fillna("").astype(str).str.upper().str.strip()
 
@@ -134,7 +148,10 @@ def build_cik_gvkey_crosswalk(conn, companies: pd.DataFrame) -> pd.DataFrame:
     tics = set([t for t in companies["ticker_src"].tolist() if t])
 
     # Keep rows with CIK or Ticker hit
-    comp_keep = comp[(comp["cik"].isin(ciks)) | (comp["ticker_comp"].isin(tics))].copy()
+    if "ticker_comp" in comp.columns and comp["ticker_comp"].notna().any():
+        comp_keep = comp[(comp["cik"].isin(ciks)) | (comp["ticker_comp"].isin(tics))].copy()
+    else:
+        comp_keep = comp[(comp["cik"].isin(ciks))].copy()
 
     # If both empty (e.g., list lacks cik/ticker), fallback to fuzzy on name (very light)
     if comp_keep.empty:
@@ -151,7 +168,10 @@ def build_cik_gvkey_crosswalk(conn, companies: pd.DataFrame) -> pd.DataFrame:
     # Build a consolidated mapping
     # First, if we have cik: one row per cik
     have_cik = comp_keep[comp_keep["match_key"]=="cik"]
-    have_tic = comp_keep[(comp_keep["match_key"]=="ticker") & (~comp_keep["ticker_comp"].isin(have_cik["ticker_comp"]))]
+    if "ticker_comp" in comp_keep.columns and comp_keep["ticker_comp"].notna().any():
+        have_tic = comp_keep[(comp_keep["match_key"]=="ticker") & (~comp_keep["ticker_comp"].isin(have_cik["ticker_comp"]))]  # may be empty
+    else:
+        have_tic = comp_keep.iloc[0:0].copy()
 
     cross = pd.concat([have_cik.drop_duplicates(subset=["cik"]),
                        have_tic.drop_duplicates(subset=["ticker_comp"])], ignore_index=True)
