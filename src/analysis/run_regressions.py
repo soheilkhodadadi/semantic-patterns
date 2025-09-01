@@ -6,6 +6,12 @@ import pandas as pd
 import statsmodels.formula.api as smf
 from statsmodels.iolib.summary2 import summary_col
 
+# Optional Word export
+try:
+    from docx import Document  # python-docx
+except Exception:
+    Document = None
+
 # ---------- Helpers to make column names robust ----------
 ALT_NAMES = {
     "n_A": ["n_A", "n_actionable", "actionable", "nA", "count_actionable", "act_count", "A_count"],
@@ -23,6 +29,33 @@ ALT_NAMES = {
     "roa": ["roa", "return_on_assets"],
     "sales_growth": ["sales_growth", "sales_g", "g_sales"],
     "emp": ["emp", "employees", "employment"],
+}
+
+# Pretty names for output tables
+VAR_LABELS = {
+    "n_A": "Actionable (count)",
+    "n_S": "Speculative (count)",
+    "ActShare": "Actionable share",
+    "SpecShare": "Speculative share",
+    "log_docs": "log(# AI sentences)",
+    "ln_assets": "log(Assets)",
+    "leverage": "Leverage",
+    "cash": "Cash/Assets",
+    "rd_intensity": "R&amp;D/Assets",
+    "capx_at": "CAPX/Assets",
+    "roa": "ROA",
+    "sales_growth": "Sales growth",
+    "emp": "Employees (k)",
+    "Intercept": "Constant"
+}
+
+MODEL_TITLES = {
+    "OLS_k0_levels": "OLS FE (t), levels",
+    "OLS_k0_shares": "OLS FE (t), shares",
+    "OLS_k1_levels": "OLS FE (t+1), levels",
+    "OLS_k1_shares": "OLS FE (t+1), shares",
+    "OLS_k2_levels": "OLS FE (t+2), levels",
+    "LPM_anypat_k1": "LPM FE (1{patents t+1&gt;0})"
 }
 
 REQ_KEYS = ["cik", "year"]
@@ -116,6 +149,64 @@ def _available_controls(df: pd.DataFrame):
     cand = ["ln_assets","leverage","cash","rd_intensity","capx_at","roa","sales_growth","emp"]
     return [c for c in cand if c in df.columns]
 
+def _star_str(p):
+    if p < 0.01:
+        return "***"
+    if p < 0.05:
+        return "**"
+    if p < 0.10:
+        return "*"
+    return ""
+
+def build_clean_table(results_dict):
+    """
+    Create a compact, journal-friendly table:
+    - Rows: selected regressors with pretty labels
+    - Columns: each estimated model
+    - Cells: coef (se) with significance stars
+    Adds bottom notes for N, Firm FE, Year FE.
+    """
+    # Select the order of terms we want to display
+    preferred_order = [
+        "n_A", "n_S", "ActShare", "SpecShare", "log_docs",
+        "ln_assets", "leverage", "cash", "rd_intensity",
+        "capx_at", "roa", "sales_growth", "emp", "Intercept"
+    ]
+    # Determine which terms actually appear
+    present = set()
+    for m in results_dict.values():
+        present.update(m.params.index.tolist())
+    terms = [t for t in preferred_order if t in present]
+    # Build a table of formatted coef(se)
+    cols = []
+    col_names = []
+    for key, m in results_dict.items():
+        pretty_name = MODEL_TITLES.get(key, key)
+        col_names.append(pretty_name)
+        col_vals = []
+        for t in terms:
+            if t in m.params.index:
+                coef = m.params[t]
+                se = m.bse[t]
+                stars = _star_str(m.pvalues[t])
+                col_vals.append(f"{coef:.3f}{stars} ({se:.3f})")
+            else:
+                col_vals.append("")
+        cols.append(col_vals)
+    # Assemble DataFrame
+    import pandas as _pd
+    idx = [VAR_LABELS.get(t, t) for t in terms]
+    table = _pd.DataFrame({name: col for name, col in zip(col_names, cols)}, index=idx)
+    # Add bottom panel
+    N_row = {MODEL_TITLES.get(k, k): int(v.nobs) for k, v in results_dict.items()}
+    FE_row_firm = {MODEL_TITLES.get(k, k): "Yes" for k in results_dict}
+    FE_row_year = {MODEL_TITLES.get(k, k): "Yes" for k in results_dict}
+    # Append as rows
+    table.loc["N"] = _pd.Series(N_row)
+    table.loc["Firm FE"] = _pd.Series(FE_row_firm)
+    table.loc["Year FE"] = _pd.Series(FE_row_year)
+    return table
+
 def run_all_models(df, outdir):
     os.makedirs(outdir, exist_ok=True)
     results = {}
@@ -183,11 +274,17 @@ def run_all_models(df, outdir):
         raise RuntimeError("No models were estimated. Check that required columns exist and are non-missing.")
 
     # ---- Save stacked table (TXT + LaTeX) and CSV of coefficients
-    ordered_keys = sorted(results.keys())
+    order_pref = ["OLS_k0_levels","OLS_k0_shares","OLS_k1_levels","OLS_k1_shares","OLS_k2_levels","LPM_anypat_k1"]
+    ordered_keys = [k for k in order_pref if k in results] + [k for k in results.keys() if k not in order_pref]
     ordered = [results[k] for k in ordered_keys]
-    sc = summary_col(ordered, stars=True, float_format="%.3f",
-                     model_names=ordered_keys,
-                     info_dict={"N": lambda x: f"{int(x.nobs)}"})
+    readable_names = [MODEL_TITLES.get(k, k) for k in ordered_keys]
+    sc = summary_col(
+        ordered,
+        stars=True,
+        float_format="%.3f",
+        model_names=readable_names,  # Use readable names here
+        info_dict={"N": lambda x: f"{int(x.nobs)}"}
+    )
     with open(os.path.join(outdir, "baseline_table.txt"), "w") as f:
         f.write(sc.as_text())
     with open(os.path.join(outdir, "baseline_table.tex"), "w") as f:
@@ -205,6 +302,36 @@ def run_all_models(df, outdir):
     out = pd.concat(rows, ignore_index=True)
     out.to_csv(os.path.join(outdir, "baseline_coefficients.csv"), index=False)
 
+    # ----- Pretty, journal-style table (Markdown / HTML / optional DOCX)
+    clean_tbl = build_clean_table(results)
+    md_path = os.path.join(outdir, "baseline_table_clean.md")
+    html_path = os.path.join(outdir, "baseline_table_clean.html")
+    clean_tbl.to_markdown(md_path)
+    clean_tbl.to_html(html_path)
+
+    # Optional Word export if python-docx is available
+    if Document is not None:
+        try:
+            doc = Document()
+            doc.add_heading("Baseline regressions", level=1)
+            # Add a brief note
+            doc.add_paragraph("Entries are coefficients with standard errors in parentheses. *, **, *** denote p&lt;0.10, p&lt;0.05, p&lt;0.01 respectively. All specifications include firm and year fixed effects; SEs clustered by firm.")
+            # Add table (simple grid)
+            t = doc.add_table(rows=1, cols=1 + len(clean_tbl.columns))
+            hdr_cells = t.rows[0].cells
+            hdr_cells[0].text = ""
+            for j, col in enumerate(clean_tbl.columns, start=1):
+                hdr_cells[j].text = str(col)
+            for i, (row_name, row) in enumerate(clean_tbl.iterrows()):
+                r = t.add_row().cells
+                r[0].text = str(row_name)
+                for j, col in enumerate(clean_tbl.columns, start=1):
+                    r[j].text = str(row[col])
+            doc.save(os.path.join(outdir, "baseline_table_clean.docx"))
+        except Exception as _e:
+            # If anything goes wrong, silently continue after writing md/html
+            pass
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--panel", default="data/processed/panel/panel_reg_ready.csv")
@@ -217,6 +344,8 @@ def main():
 
     # Do NOT aggressively drop here; each model drops what's required just-in-time
     run_all_models(df, args.outdir)
+
+    print(f"[✓] Wrote clean tables to {args.outdir} (Markdown/HTML and DOCX if available).")
 
 if __name__ == "__main__":
     main()
