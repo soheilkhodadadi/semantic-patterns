@@ -2,343 +2,115 @@
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>OLS FE (t), levels</th>
-      <th>OLS FE (t), shares</th>
-      <th>OLS FE (t), log-counts</th>
-      <th>OLS FE (t), dummies</th>
-      <th>OLS FE (t+1), levels</th>
-      <th>OLS FE (t+1), shares</th>
-      <th>OLS FE (t+1), log-counts</th>
-      <th>OLS FE (t+1), dummies</th>
-      <th>OLS FE (t+2), levels</th>
-      <th>OLS FE (t+2), log-counts</th>
-      <th>OLS FE (t+2), dummies</th>
-      <th>LPM FE (1{patents t+1&amp;gt;0})</th>
-      <th>LPM FE (1{patents t+1&amp;gt;0}), log-counts</th>
-      <th>LPM FE (1{patents t+1&amp;gt;0}), dummies</th>
+      <th>Patents t+1 (log) ~ log mentions (t) + FE</th>
+      <th>Patents t+1 (log) ~ disclosure dummies (t) + FE</th>
+      <th>Patents t (log) ~ log mentions (t) + FE</th>
+      <th>Any AI patent t+1 (LPM) ~ disclosure dummies (t) + FE</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th>Actionable (count)</th>
-      <td>0.134*** (0.043)</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>-0.155*** (0.045)</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>0.175 (0.144)</td>
-      <td></td>
-      <td></td>
-      <td>-0.165 (nan)</td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
-      <th>Speculative (count)</th>
-      <td>-0.167*** (0.055)</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>-0.000 (0.000)</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>0.000 (0.000)</td>
-      <td></td>
-      <td></td>
-      <td>-0.100 (nan)</td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
-      <th>Actionable share</th>
-      <td></td>
-      <td>-0.195 (nan)</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>-0.345 (nan)</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>-0.082 (nan)</td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
-      <th>Speculative share</th>
-      <td></td>
-      <td>0.936 (nan)</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>0.000 (-0.000)</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>-0.003 (nan)</td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
       <th>log(Actionable mentions + 1)</th>
-      <td></td>
-      <td></td>
-      <td>0.244*** (0.080)</td>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>-0.282*** (0.082)</td>
       <td></td>
-      <td></td>
-      <td>0.208 (0.171)</td>
-      <td></td>
-      <td></td>
-      <td>-0.699*** (0.226)</td>
+      <td>0.244*** (0.080)</td>
       <td></td>
     </tr>
     <tr>
       <th>log(Speculative mentions + 1)</th>
-      <td></td>
+      <td>-0.000* (0.000)</td>
       <td></td>
       <td>-0.274** (0.124)</td>
       <td></td>
-      <td></td>
-      <td></td>
-      <td>-0.000* (0.000)</td>
-      <td></td>
-      <td></td>
-      <td>0.000 (0.000)</td>
-      <td></td>
-      <td></td>
-      <td>-0.488 (0.406)</td>
-      <td></td>
     </tr>
     <tr>
-      <th>Any Actionable (dummy)</th>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>0.280*** (0.092)</td>
-      <td></td>
-      <td></td>
+      <th>Actionable disclosure (dummy)</th>
       <td></td>
       <td>-0.309*** (0.090)</td>
-      <td></td>
-      <td></td>
-      <td>0.207 (0.170)</td>
-      <td></td>
       <td></td>
       <td>-0.718*** (0.252)</td>
     </tr>
     <tr>
-      <th>Speculative-only (dummy)</th>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>-0.201 (0.174)</td>
-      <td></td>
-      <td></td>
+      <th>Speculative-only disclosure (dummy)</th>
       <td></td>
       <td>-0.000 (0.000)</td>
-      <td></td>
-      <td></td>
-      <td>-0.000 (0.000)</td>
-      <td></td>
       <td></td>
       <td>-0.277 (0.515)</td>
     </tr>
     <tr>
       <th>log(# AI sentences)</th>
-      <td>0.124* (0.073)</td>
-      <td>-0.464 (nan)</td>
+      <td>-0.142* (0.080)</td>
+      <td>-0.142* (0.080)</td>
       <td>0.124* (0.074)</td>
-      <td>0.112 (0.078)</td>
-      <td>-0.142* (0.080)</td>
-      <td>0.130 (nan)</td>
-      <td>-0.142* (0.080)</td>
-      <td>-0.142* (0.080)</td>
-      <td>0.096 (0.079)</td>
-      <td>0.208 (0.171)</td>
-      <td>0.227 (0.187)</td>
-      <td>1.352 (nan)</td>
-      <td>0.007 (0.145)</td>
       <td>-0.042 (0.154)</td>
     </tr>
     <tr>
       <th>log(Assets)</th>
-      <td>-0.519* (0.305)</td>
-      <td>0.251 (nan)</td>
+      <td>0.648 (0.875)</td>
+      <td>0.648 (0.875)</td>
       <td>-0.536* (0.309)</td>
-      <td>-0.570* (0.317)</td>
-      <td>0.648 (0.875)</td>
-      <td>0.457 (nan)</td>
-      <td>0.648 (0.875)</td>
-      <td>0.648 (0.875)</td>
-      <td>-0.279 (2.346)</td>
-      <td>-0.279 (2.346)</td>
-      <td>-0.279 (2.346)</td>
-      <td>-0.141 (nan)</td>
-      <td>-0.293 (0.715)</td>
       <td>-0.354 (0.731)</td>
     </tr>
     <tr>
       <th>Leverage</th>
-      <td>-0.695 (0.535)</td>
-      <td>-0.184 (nan)</td>
+      <td>-0.216 (0.496)</td>
+      <td>-0.216 (0.496)</td>
       <td>-0.681 (0.533)</td>
-      <td>-0.655 (0.530)</td>
-      <td>-0.216 (0.496)</td>
-      <td>-0.028 (nan)</td>
-      <td>-0.216 (0.496)</td>
-      <td>-0.216 (0.496)</td>
-      <td>1.573 (1.921)</td>
-      <td>1.573 (1.921)</td>
-      <td>1.573 (1.921)</td>
-      <td>-0.173 (nan)</td>
-      <td>1.346** (0.617)</td>
       <td>1.390** (0.644)</td>
     </tr>
     <tr>
       <th>Cash/Assets</th>
-      <td>0.717 (0.632)</td>
-      <td>-0.106 (nan)</td>
+      <td>1.497 (2.064)</td>
+      <td>1.497 (2.064)</td>
       <td>0.698 (0.646)</td>
-      <td>0.655 (0.681)</td>
-      <td>1.497 (2.064)</td>
-      <td>0.023 (nan)</td>
-      <td>1.497 (2.064)</td>
-      <td>1.497 (2.064)</td>
-      <td>2.501 (4.301)</td>
-      <td>2.501 (4.301)</td>
-      <td>2.501 (4.301)</td>
-      <td>-0.087 (nan)</td>
-      <td>2.606** (1.054)</td>
       <td>2.513** (1.132)</td>
     </tr>
     <tr>
-      <th>R&amp;amp;D/Assets</th>
-      <td>-0.334 (0.307)</td>
-      <td>-0.107 (nan)</td>
+      <th>R&amp;D/Assets</th>
+      <td>-0.118 (0.716)</td>
+      <td>-0.118 (0.716)</td>
       <td>-0.338 (0.313)</td>
-      <td>-0.352 (0.324)</td>
-      <td>-0.118 (0.716)</td>
-      <td>0.027 (nan)</td>
-      <td>-0.118 (0.716)</td>
-      <td>-0.118 (0.716)</td>
-      <td>-1.366 (6.304)</td>
-      <td>-1.366 (6.304)</td>
-      <td>-1.366 (6.304)</td>
-      <td>-0.078 (nan)</td>
-      <td>-0.556 (0.686)</td>
       <td>-0.598 (0.686)</td>
     </tr>
     <tr>
       <th>CAPX/Assets</th>
-      <td>8.566* (4.916)</td>
-      <td>0.073 (nan)</td>
+      <td>-13.857*** (4.093)</td>
+      <td>-13.857*** (4.093)</td>
       <td>8.628* (4.905)</td>
-      <td>8.761* (4.882)</td>
-      <td>-13.857*** (4.093)</td>
-      <td>-0.009 (nan)</td>
-      <td>-13.857*** (4.093)</td>
-      <td>-13.857*** (4.093)</td>
-      <td>20.410 (20.725)</td>
-      <td>20.410 (20.725)</td>
-      <td>20.410 (20.725)</td>
-      <td>0.004 (nan)</td>
-      <td>-4.684 (7.397)</td>
       <td>-4.423 (7.251)</td>
     </tr>
     <tr>
       <th>ROA</th>
-      <td>-0.127 (0.110)</td>
-      <td>0.188 (nan)</td>
+      <td>-0.477 (0.646)</td>
+      <td>-0.477 (0.646)</td>
       <td>-0.125 (0.112)</td>
-      <td>-0.121 (0.117)</td>
-      <td>-0.477 (0.646)</td>
-      <td>0.043 (nan)</td>
-      <td>-0.477 (0.646)</td>
-      <td>-0.477 (0.646)</td>
-      <td>0.667 (1.999)</td>
-      <td>0.667 (1.999)</td>
-      <td>0.667 (1.999)</td>
-      <td>0.317 (nan)</td>
-      <td>-0.411* (0.236)</td>
       <td>-0.408* (0.243)</td>
     </tr>
     <tr>
       <th>Sales growth</th>
+      <td>0.015 (0.030)</td>
+      <td>0.015 (0.030)</td>
       <td>0.025* (0.013)</td>
-      <td>-0.009 (nan)</td>
-      <td>0.025* (0.013)</td>
-      <td>0.025* (0.014)</td>
-      <td>0.015 (0.030)</td>
-      <td>0.030 (nan)</td>
-      <td>0.015 (0.030)</td>
-      <td>0.015 (0.030)</td>
-      <td>-0.140 (0.295)</td>
-      <td>-0.140 (0.295)</td>
-      <td>-0.140 (0.295)</td>
-      <td>-0.268 (nan)</td>
-      <td>0.038* (0.023)</td>
       <td>0.037 (0.023)</td>
     </tr>
     <tr>
       <th>Employees (k)</th>
-      <td>-0.002 (0.010)</td>
-      <td>-0.008 (nan)</td>
+      <td>-0.032 (0.062)</td>
+      <td>-0.032 (0.062)</td>
       <td>-0.002 (0.011)</td>
-      <td>-0.003 (0.011)</td>
-      <td>-0.032 (0.062)</td>
-      <td>-0.437 (nan)</td>
-      <td>-0.032 (0.062)</td>
-      <td>-0.032 (0.062)</td>
-      <td>0.003 (0.045)</td>
-      <td>0.003 (0.045)</td>
-      <td>0.003 (0.045)</td>
-      <td>0.006 (nan)</td>
-      <td>0.021 (0.062)</td>
       <td>0.018 (0.061)</td>
     </tr>
     <tr>
       <th>Constant</th>
-      <td>3.062* (1.786)</td>
-      <td>0.124 (nan)</td>
+      <td>-3.578 (5.331)</td>
+      <td>-3.578 (5.331)</td>
       <td>3.164* (1.811)</td>
-      <td>3.370* (1.857)</td>
-      <td>-3.578 (5.331)</td>
-      <td>0.022 (nan)</td>
-      <td>-3.578 (5.331)</td>
-      <td>-3.578 (5.331)</td>
-      <td>0.873 (15.395)</td>
-      <td>0.873 (15.395)</td>
-      <td>0.873 (15.395)</td>
-      <td>-0.023 (nan)</td>
-      <td>1.575 (4.276)</td>
       <td>1.952 (4.388)</td>
     </tr>
     <tr>
       <th>N</th>
-      <td>63</td>
-      <td>10</td>
-      <td>63</td>
-      <td>63</td>
-      <td>47</td>
-      <td>3</td>
       <td>47</td>
       <td>47</td>
-      <td>31</td>
-      <td>31</td>
-      <td>31</td>
-      <td>10</td>
       <td>63</td>
       <td>63</td>
     </tr>
@@ -348,29 +120,9 @@
       <td>Yes</td>
       <td>Yes</td>
       <td>Yes</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>Yes</td>
     </tr>
     <tr>
       <th>Year FE</th>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>Yes</td>
-      <td>Yes</td>
       <td>Yes</td>
       <td>Yes</td>
       <td>Yes</td>
