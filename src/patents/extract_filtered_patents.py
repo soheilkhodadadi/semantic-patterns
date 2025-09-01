@@ -15,7 +15,6 @@ Run:
 import pandas as pd
 import os
 import re
-from tqdm import tqdm
 
 # Updated file location
 data_root = "/Users/soheilkhodadadi/DataWork/patentsview"
