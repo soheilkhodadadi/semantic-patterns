@@ -128,7 +128,7 @@ def build_cik_gvkey_crosswalk(conn, companies: pd.DataFrame) -> pd.DataFrame:
             FROM comp.company
         """)
         comp = pd.read_sql(sql, conn)
-    except Exception as e:
+    except Exception:
         print("[!] 'tic' not found in comp.company (or SELECT failed). Falling back to CIK/name only.")
         sql = dedent("""
             SELECT gvkey,
@@ -218,7 +218,7 @@ def pull_funda(conn, gvkeys: list, start_year: int, end_year: int) -> pd.DataFra
 
     sql = dedent(f"""
         SELECT gvkey, datadate, fyear, fyr, indfmt, consol, datafmt, popsrc,
-               at, dltt, che, xrd, capx, ib, ni, oibdp, sale, emp, sic
+               at, dltt, che, xrd, capx, ib, ni, oibdp, sale, emp
         FROM comp.funda
         WHERE indfmt='INDL' AND consol='C' AND datafmt='STD' AND popsrc='D'
           AND gvkey IN ({placeholders})
@@ -269,7 +269,7 @@ def compute_controls(funda: pd.DataFrame, align: str="fyear") -> pd.DataFrame:
         funda[col] = funda.groupby("year")[col].transform(winsorize01_series)
 
     # Keep relevant columns
-    keep = ["gvkey","sic","year","ln_assets","leverage","cash","rd_intensity","capx_at","roa","sales_growth","emp"]
+    keep = ["gvkey","year","ln_assets","leverage","cash","rd_intensity","capx_at","roa","sales_growth","emp"]
     funda = funda[keep].copy()
     return funda
 
@@ -342,7 +342,7 @@ def main():
 
     # Compute controls and merge back to cik via crosswalk
     controls = compute_controls(funda, align=args.align)
-    controls = controls.merge(cross[["cik","gvkey"]].drop_duplicates(), on="gvkey", how="left")
+    controls = controls.merge(cross[["cik","gvkey","sic"]].drop_duplicates(), on="gvkey", how="left")
     # Zero-pad CIK
     controls["cik"] = controls["cik"].apply(normalize_cik)
 
