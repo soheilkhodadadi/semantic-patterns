@@ -139,7 +139,6 @@ def run_all_models(df, outdir):
         if dep not in df.columns:
             continue
         fe = "+ C(cik) + C(year)"
-        ctrl = (" + " + " + ".join(controls)) if controls else ""
 
         # Levels (if counts available)
         if have_counts:
