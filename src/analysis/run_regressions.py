@@ -41,7 +41,7 @@ VAR_LABELS = {
     "ln_assets": "log(Assets)",
     "leverage": "Leverage",
     "cash": "Cash/Assets",
-    "rd_intensity": "R&amp;D/Assets",
+    "rd_intensity": "R&D/Assets",
     "capx_at": "CAPX/Assets",
     "roa": "ROA",
     "sales_growth": "Sales growth",
@@ -50,25 +50,25 @@ VAR_LABELS = {
     "log_n_A": "log(Actionable mentions + 1)",
     "log_n_S": "log(Speculative mentions + 1)",
     "log_n_I": "log(Irrelevant mentions + 1)",
-    "has_actionable": "Any Actionable (dummy)",
-    "has_spec_only": "Speculative-only (dummy)"
+    "has_actionable": "Actionable disclosure (dummy)",
+    "has_spec_only": "Speculative-only disclosure (dummy)",
 }
 
 MODEL_TITLES = {
+    "OLS_k1_logcounts": "Patents t+1 (log) ~ log mentions (t) + FE",
+    "OLS_k1_dummies":   "Patents t+1 (log) ~ disclosure dummies (t) + FE",
+    "OLS_k0_logcounts": "Patents t (log) ~ log mentions (t) + FE",
+    "LPM_anypat_k1_dummies": "Any AI patent t+1 (LPM) ~ disclosure dummies (t) + FE",
+    # Legacy names kept for compatibility if user runs --mode full
     "OLS_k0_levels": "OLS FE (t), levels",
     "OLS_k0_shares": "OLS FE (t), shares",
+    "OLS_k2_logcounts": "OLS FE (t+2), log-counts",
+    "OLS_k2_dummies": "OLS FE (t+2), dummies",
+    "LPM_anypat_k1": "LPM FE (1{patents t+1>0})",
+    "LPM_anypat_k1_logcounts": "LPM FE (1{patents t+1>0}), log-counts",
+    "OLS_k0_dummies": "OLS FE (t), dummies",
     "OLS_k1_levels": "OLS FE (t+1), levels",
     "OLS_k1_shares": "OLS FE (t+1), shares",
-    "OLS_k2_levels": "OLS FE (t+2), levels",
-    "LPM_anypat_k1": "LPM FE (1{patents t+1&gt;0})",
-    "OLS_k0_logcounts": "OLS FE (t), log-counts",
-    "OLS_k1_logcounts": "OLS FE (t+1), log-counts",
-    "OLS_k2_logcounts": "OLS FE (t+2), log-counts",
-    "OLS_k0_dummies": "OLS FE (t), dummies",
-    "OLS_k1_dummies": "OLS FE (t+1), dummies",
-    "OLS_k2_dummies": "OLS FE (t+2), dummies",
-    "LPM_anypat_k1_logcounts": "LPM FE (1{patents t+1&gt;0}), log-counts",
-    "LPM_anypat_k1_dummies": "LPM FE (1{patents t+1&gt;0}), dummies"
 }
 
 REQ_KEYS = ["cik", "year"]
@@ -147,8 +147,8 @@ def add_engineered_cols(df: pd.DataFrame) -> pd.DataFrame:
     else:
         df["has_actionable"] = np.nan
     if "n_S" in df.columns:
-        # Speculative-only = has speculative and NO actionable
-        df["has_spec_only"] = ((df["n_S"].fillna(0) > 0) & (df.get("n_A", 0) == 0)).astype(int)
+        nA = df["n_A"] if "n_A" in df.columns else 0
+        df["has_spec_only"] = ((df["n_S"].fillna(0) > 0) & (pd.Series(nA).fillna(0) == 0)).astype(int)
     else:
         df["has_spec_only"] = np.nan
 
@@ -243,7 +243,7 @@ def build_clean_table(results_dict):
     table.loc["Year FE"] = _pd.Series(FE_row_year)
     return table
 
-def run_all_models(df, outdir):
+def run_all_models(df, outdir, mode="minimal"):
     os.makedirs(outdir, exist_ok=True)
     results = {}
 
@@ -260,106 +260,146 @@ def run_all_models(df, outdir):
         raise RuntimeError("Your panel lacks 'n_A'/'n_S' or 'ActShare'/'SpecShare'. "
                            "If you used prepare_panel_for_regression.py, ensure it wrote ActShare/SpecShare.")
 
-    # ---- Baseline OLS FE, k = 0,1,2 on log patents
-    for k in [0,1,2]:
-        dep = f"log_patents_ai_lead{k}"
-        if dep not in df.columns:
-            continue
-        fe = "+ C(cik) + C(year)"
-
-        # Levels (if counts available)
-        if have_counts:
-            rhs_terms = ["n_A","n_S"] + (["log_docs"] if "log_docs" in df.columns else []) + controls
-            f1 = f"{dep} ~ {' + '.join(rhs_terms)} {fe}"
+    if mode == "minimal":
+        # Ensure any_pat_1 exists
+        if "patents_ai_lead1" in df.columns:
+            df = df.assign(any_pat_1=(df["patents_ai_lead1"] > 0).astype(float))
+        # 1) t+1, log-counts
+        if have_counts and all(c in df.columns for c in ["log_n_A","log_n_S"]) and "log_patents_ai_lead1" in df.columns:
+            rhs = ["log_n_A","log_n_S"] + (["log_docs"] if "log_docs" in df.columns else []) + controls
+            f = f"log_patents_ai_lead1 ~ {' + '.join(rhs)} + C(cik) + C(year)"
             try:
-                res1 = fit_ols_fe(f1, df, needed=[dep] + rhs_terms + ["cik","year"])
-                results[f"OLS_k{k}_levels"] = res1
+                results["OLS_k1_logcounts"] = fit_ols_fe(f, df, needed=["log_patents_ai_lead1"] + rhs + ["cik","year"])
             except Exception as e:
-                print(f"[warn] Levels model k={k} failed: {e}")
-
-        # Shares model if shares available
-        if have_shares:
-            rhs_terms = ["ActShare","SpecShare"] + (["log_docs"] if "log_docs" in df.columns else []) + controls
-            f2 = f"{dep} ~ {' + '.join(rhs_terms)} {fe}"
+                print(f"[warn] Minimal: OLS_k1_logcounts failed: {e}")
+        # 2) t+1, dummies
+        if have_counts and all(c in df.columns for c in ["has_actionable","has_spec_only"]) and "log_patents_ai_lead1" in df.columns:
+            rhs = ["has_actionable","has_spec_only"] + (["log_docs"] if "log_docs" in df.columns else []) + controls
+            f = f"log_patents_ai_lead1 ~ {' + '.join(rhs)} + C(cik) + C(year)"
             try:
-                res2 = fit_ols_fe(f2, df, needed=[dep] + rhs_terms + ["cik","year"])
-                results[f"OLS_k{k}_shares"] = res2
+                results["OLS_k1_dummies"] = fit_ols_fe(f, df, needed=["log_patents_ai_lead1"] + rhs + ["cik","year"])
             except Exception as e:
-                print(f"[warn] Shares model k={k} failed: {e}")
-
-        # Log-counts models (only if counts exist)
-        if have_counts and all(c in df.columns for c in ["log_n_A","log_n_S"]):
-            rhs_terms = ["log_n_A","log_n_S"] + (["log_docs"] if "log_docs" in df.columns else []) + controls
-            f_log = f"{dep} ~ {' + '.join(rhs_terms)} {fe}"
+                print(f"[warn] Minimal: OLS_k1_dummies failed: {e}")
+        # 3) t, log-counts (contemporaneous)
+        if have_counts and all(c in df.columns for c in ["log_n_A","log_n_S"]) and "log_patents_ai_lead0" in df.columns:
+            rhs = ["log_n_A","log_n_S"] + (["log_docs"] if "log_docs" in df.columns else []) + controls
+            f = f"log_patents_ai_lead0 ~ {' + '.join(rhs)} + C(cik) + C(year)"
             try:
-                res_log = fit_ols_fe(f_log, df, needed=[dep] + rhs_terms + ["cik","year"])
-                results[f"OLS_k{k}_logcounts"] = res_log
+                results["OLS_k0_logcounts"] = fit_ols_fe(f, df, needed=["log_patents_ai_lead0"] + rhs + ["cik","year"])
             except Exception as e:
-                print(f"[warn] Log-counts model k={k} failed: {e}")
-
-        # Dummies models (only if counts exist)
-        if have_counts and all(c in df.columns for c in ["has_actionable","has_spec_only"]):
-            rhs_terms = ["has_actionable","has_spec_only"] + (["log_docs"] if "log_docs" in df.columns else []) + controls
-            f_dum = f"{dep} ~ {' + '.join(rhs_terms)} {fe}"
+                print(f"[warn] Minimal: OLS_k0_logcounts failed: {e}")
+        # 4) any patent next year, LPM with dummies
+        if have_counts and all(c in df.columns for c in ["has_actionable","has_spec_only"]) and "any_pat_1" in df.columns:
+            rhs = ["has_actionable","has_spec_only"] + (["log_docs"] if "log_docs" in df.columns else []) + controls
+            f = f"any_pat_1 ~ {' + '.join(rhs)} + C(cik) + C(year)"
             try:
-                res_dum = fit_ols_fe(f_dum, df, needed=[dep] + rhs_terms + ["cik","year"])
-                results[f"OLS_k{k}_dummies"] = res_dum
+                results["LPM_anypat_k1_dummies"] = fit_ols_fe(f, df, needed=["any_pat_1"] + rhs + ["cik","year"])
             except Exception as e:
-                print(f"[warn] Dummies model k={k} failed: {e}")
+                print(f"[warn] Minimal: LPM_anypat_k1_dummies failed: {e}")
+    else:
+        # ---- Baseline OLS FE, k = 0,1,2 on log patents
+        for k in [0,1,2]:
+            dep = f"log_patents_ai_lead{k}"
+            if dep not in df.columns:
+                continue
+            fe = "+ C(cik) + C(year)"
 
-    # ---- Binary any AI patent (k=1), if patents present
-    if "patents_ai_lead1" in df.columns:
-        df = df.assign(any_pat_1=(df["patents_ai_lead1"] > 0).astype(float))
-        rhs_terms = []
-        if have_counts:
-            rhs_terms += ["n_A","n_S"]
-        if have_shares:
-            rhs_terms += ["ActShare","SpecShare"]
-        rhs_terms += controls
-        if "log_docs" in df.columns:
-            rhs_terms += ["log_docs"]
-        if rhs_terms:
-            f_bin = f"any_pat_1 ~ {' + '.join(rhs_terms)} + C(cik) + C(year)"
-            try:
-                res_bin = fit_ols_fe(f_bin, df, needed=["any_pat_1"] + rhs_terms + ["cik","year"])
-                results["LPM_anypat_k1"] = res_bin
-            except Exception as e:
-                print(f"[warn] LPM anypat failed: {e}")
+            # Levels (if counts available)
+            if have_counts:
+                rhs_terms = ["n_A","n_S"] + (["log_docs"] if "log_docs" in df.columns else []) + controls
+                f1 = f"{dep} ~ {' + '.join(rhs_terms)} {fe}"
+                try:
+                    res1 = fit_ols_fe(f1, df, needed=[dep] + rhs_terms + ["cik","year"])
+                    results[f"OLS_k{k}_levels"] = res1
+                except Exception as e:
+                    print(f"[warn] Levels model k={k} failed: {e}")
 
-        # LPM with log-counts
-        if have_counts and all(c in df.columns for c in ["log_n_A","log_n_S"]):
-            rhs_terms_log = ["log_n_A","log_n_S"] + controls
+            # Shares model if shares available
+            if have_shares:
+                rhs_terms = ["ActShare","SpecShare"] + (["log_docs"] if "log_docs" in df.columns else []) + controls
+                f2 = f"{dep} ~ {' + '.join(rhs_terms)} {fe}"
+                try:
+                    res2 = fit_ols_fe(f2, df, needed=[dep] + rhs_terms + ["cik","year"])
+                    results[f"OLS_k{k}_shares"] = res2
+                except Exception as e:
+                    print(f"[warn] Shares model k={k} failed: {e}")
+
+            # Log-counts models (only if counts exist)
+            if have_counts and all(c in df.columns for c in ["log_n_A","log_n_S"]):
+                rhs_terms = ["log_n_A","log_n_S"] + (["log_docs"] if "log_docs" in df.columns else []) + controls
+                f_log = f"{dep} ~ {' + '.join(rhs_terms)} {fe}"
+                try:
+                    res_log = fit_ols_fe(f_log, df, needed=[dep] + rhs_terms + ["cik","year"])
+                    results[f"OLS_k{k}_logcounts"] = res_log
+                except Exception as e:
+                    print(f"[warn] Log-counts model k={k} failed: {e}")
+
+            # Dummies models (only if counts exist)
+            if have_counts and all(c in df.columns for c in ["has_actionable","has_spec_only"]):
+                rhs_terms = ["has_actionable","has_spec_only"] + (["log_docs"] if "log_docs" in df.columns else []) + controls
+                f_dum = f"{dep} ~ {' + '.join(rhs_terms)} {fe}"
+                try:
+                    res_dum = fit_ols_fe(f_dum, df, needed=[dep] + rhs_terms + ["cik","year"])
+                    results[f"OLS_k{k}_dummies"] = res_dum
+                except Exception as e:
+                    print(f"[warn] Dummies model k={k} failed: {e}")
+
+        # ---- Binary any AI patent (k=1), if patents present
+        if "patents_ai_lead1" in df.columns:
+            df = df.assign(any_pat_1=(df["patents_ai_lead1"] > 0).astype(float))
+            rhs_terms = []
+            if have_counts:
+                rhs_terms += ["n_A","n_S"]
+            if have_shares:
+                rhs_terms += ["ActShare","SpecShare"]
+            rhs_terms += controls
             if "log_docs" in df.columns:
-                rhs_terms_log += ["log_docs"]
-            f_bin_log = f"any_pat_1 ~ {' + '.join(rhs_terms_log)} + C(cik) + C(year)"
-            try:
-                res_bin_log = fit_ols_fe(f_bin_log, df, needed=["any_pat_1"] + rhs_terms_log + ["cik","year"])
-                results["LPM_anypat_k1_logcounts"] = res_bin_log
-            except Exception as e:
-                print(f"[warn] LPM anypat (log-counts) failed: {e}")
+                rhs_terms += ["log_docs"]
+            if rhs_terms:
+                f_bin = f"any_pat_1 ~ {' + '.join(rhs_terms)} + C(cik) + C(year)"
+                try:
+                    res_bin = fit_ols_fe(f_bin, df, needed=["any_pat_1"] + rhs_terms + ["cik","year"])
+                    results["LPM_anypat_k1"] = res_bin
+                except Exception as e:
+                    print(f"[warn] LPM anypat failed: {e}")
 
-        # LPM with dummies
-        if have_counts and all(c in df.columns for c in ["has_actionable","has_spec_only"]):
-            rhs_terms_dum = ["has_actionable","has_spec_only"] + controls
-            if "log_docs" in df.columns:
-                rhs_terms_dum += ["log_docs"]
-            f_bin_dum = f"any_pat_1 ~ {' + '.join(rhs_terms_dum)} + C(cik) + C(year)"
-            try:
-                res_bin_dum = fit_ols_fe(f_bin_dum, df, needed=["any_pat_1"] + rhs_terms_dum + ["cik","year"])
-                results["LPM_anypat_k1_dummies"] = res_bin_dum
-            except Exception as e:
-                print(f"[warn] LPM anypat (dummies) failed: {e}")
+            # LPM with log-counts
+            if have_counts and all(c in df.columns for c in ["log_n_A","log_n_S"]):
+                rhs_terms_log = ["log_n_A","log_n_S"] + controls
+                if "log_docs" in df.columns:
+                    rhs_terms_log += ["log_docs"]
+                f_bin_log = f"any_pat_1 ~ {' + '.join(rhs_terms_log)} + C(cik) + C(year)"
+                try:
+                    res_bin_log = fit_ols_fe(f_bin_log, df, needed=["any_pat_1"] + rhs_terms_log + ["cik","year"])
+                    results["LPM_anypat_k1_logcounts"] = res_bin_log
+                except Exception as e:
+                    print(f"[warn] LPM anypat (log-counts) failed: {e}")
+
+            # LPM with dummies
+            if have_counts and all(c in df.columns for c in ["has_actionable","has_spec_only"]):
+                rhs_terms_dum = ["has_actionable","has_spec_only"] + controls
+                if "log_docs" in df.columns:
+                    rhs_terms_dum += ["log_docs"]
+                f_bin_dum = f"any_pat_1 ~ {' + '.join(rhs_terms_dum)} + C(cik) + C(year)"
+                try:
+                    res_bin_dum = fit_ols_fe(f_bin_dum, df, needed=["any_pat_1"] + rhs_terms_dum + ["cik","year"])
+                    results["LPM_anypat_k1_dummies"] = res_bin_dum
+                except Exception as e:
+                    print(f"[warn] LPM anypat (dummies) failed: {e}")
 
     if not results:
         raise RuntimeError("No models were estimated. Check that required columns exist and are non-missing.")
 
     # ---- Save stacked table (TXT + LaTeX) and CSV of coefficients
-    order_pref = [
-        "OLS_k0_levels","OLS_k0_shares","OLS_k0_logcounts","OLS_k0_dummies",
-        "OLS_k1_levels","OLS_k1_shares","OLS_k1_logcounts","OLS_k1_dummies",
-        "OLS_k2_levels","OLS_k2_logcounts","OLS_k2_dummies",
-        "LPM_anypat_k1","LPM_anypat_k1_logcounts","LPM_anypat_k1_dummies"
-    ]
+    if mode == "minimal":
+        order_pref = ["OLS_k1_logcounts","OLS_k1_dummies","OLS_k0_logcounts","LPM_anypat_k1_dummies"]
+    else:
+        order_pref = [
+            "OLS_k0_levels","OLS_k0_shares","OLS_k0_logcounts","OLS_k0_dummies",
+            "OLS_k1_levels","OLS_k1_shares","OLS_k1_logcounts","OLS_k1_dummies",
+            "OLS_k2_levels","OLS_k2_logcounts","OLS_k2_dummies",
+            "LPM_anypat_k1","LPM_anypat_k1_logcounts","LPM_anypat_k1_dummies"
+        ]
     ordered_keys = [k for k in order_pref if k in results] + [k for k in results.keys() if k not in order_pref]
     ordered = [results[k] for k in ordered_keys]
     readable_names = [MODEL_TITLES.get(k, k) for k in ordered_keys]
@@ -400,7 +440,7 @@ def run_all_models(df, outdir):
             doc = Document()
             doc.add_heading("Baseline regressions", level=1)
             # Add a brief note
-            doc.add_paragraph("Entries are coefficients with standard errors in parentheses. *, **, *** denote p&lt;0.10, p&lt;0.05, p&lt;0.01 respectively. All specifications include firm and year fixed effects; SEs clustered by firm.")
+            doc.add_paragraph("Entries are coefficients with standard errors in parentheses. *, **, *** denote p<0.10, p<0.05, p<0.01 respectively. All specifications include firm and year fixed effects; SEs clustered by firm.")
             # Add table (simple grid)
             t = doc.add_table(rows=1, cols=1 + len(clean_tbl.columns))
             hdr_cells = t.rows[0].cells
@@ -421,6 +461,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--panel", default="data/processed/panel/panel_reg_ready.csv")
     ap.add_argument("--outdir", default="results/01_baseline/tables")
+    ap.add_argument("--mode", choices=["minimal","full"], default="minimal",
+                    help="minimal = only the 3–4 core models for the paper; full = all variants.")
     args = ap.parse_args()
 
     df = pd.read_csv(args.panel)
@@ -428,7 +470,7 @@ def main():
     df = add_engineered_cols(df)
 
     # Do NOT aggressively drop here; each model drops what's required just-in-time
-    run_all_models(df, args.outdir)
+    run_all_models(df, args.outdir, mode=args.mode)
 
     print(f"[✓] Wrote clean tables to {args.outdir} (Markdown/HTML and DOCX if available).")
 
