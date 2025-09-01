@@ -8,12 +8,12 @@ from statsmodels.iolib.summary2 import summary_col
 
 # ---------- Helpers to make column names robust ----------
 ALT_NAMES = {
-    "n_A": ["n_A", "n_actionable", "actionable", "nA", "count_actionable", "act_count"],
-    "n_S": ["n_S", "n_speculative", "speculative", "nS", "count_speculative", "spec_count"],
-    "n_I": ["n_I", "n_irrelevant", "irrelevant", "nI", "count_irrelevant", "irr_count"],
+    "n_A": ["n_A", "n_actionable", "actionable", "nA", "count_actionable", "act_count", "A_count"],
+    "n_S": ["n_S", "n_speculative", "speculative", "nS", "count_speculative", "spec_count", "S_count"],
+    "n_I": ["n_I", "n_irrelevant", "irrelevant", "nI", "count_irrelevant", "irr_count", "I_count"],
     "n_total": ["n_total", "total_sentences", "doc_count", "sent_count", "total_count"],
-    "share_A": ["share_A", "ActShare", "actionable_share", "share_actionable"],
-    "share_S": ["share_S", "SpecShare", "speculative_share", "share_speculative"],
+    "share_A": ["share_A", "ActShare", "actionable_share", "share_actionable", "AI_frequencyA"],
+    "share_S": ["share_S", "SpecShare", "speculative_share", "share_speculative", "AI_frequencyS"],
     "patents_ai": ["patents_ai", "ai_patents", "patent_ai", "patentsAI"],
     "ln_assets": ["ln_assets", "log_assets", "size", "ln_at"],
     "leverage": ["leverage", "lev", "dltt_at", "debt_ratio"],
