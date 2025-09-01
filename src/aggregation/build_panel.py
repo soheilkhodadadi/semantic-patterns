@@ -2,8 +2,6 @@
 import os
 import argparse
 import pandas as pd
-import numpy as np
-from textwrap import dedent
 
 def normalize_cik(x):
     s = "".join([c for c in str(x) if c.isdigit()])
