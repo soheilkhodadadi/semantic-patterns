@@ -1,7 +1,7 @@
 """
 Filter AI-related sentences from EDGAR filings.
 
-This script walks a base directory (default: data/processed/sec) that contains
+This script walks an input directory (default: data/processed/sec) that contains
 year subfolders (e.g., 2021, 2022, 2023, 2024) and extracts AI-related
 sentences into sibling files named *_ai_sentences.txt.
 
@@ -30,7 +30,7 @@ python src/scripts/filter_ai_sentences.py --include-forms 10-K --limit 2
 
 # Explicit paths and overwrite
 python src/scripts/filter_ai_sentences.py \
-  --base-dir data/processed/sec \
+  --input-dir data/processed/sec \
   --keywords data/metadata/ai_keywords.txt \
   --force
 
@@ -51,7 +51,12 @@ SRC_ROOT = os.path.abspath(os.path.join(THIS_DIR, ".."))
 if SRC_ROOT not in sys.path:
     sys.path.append(SRC_ROOT)
 
-from core.sentence_filter import segment_sentences, load_keywords, filter_ai_sentences  # noqa: E402
+from core.sentence_filter import (  # noqa: E402
+    filter_ai_sentences,
+    load_keywords,
+    merge_sentence_fragments,
+    segment_sentences,
+)
 
 
 DERIVED_SUFFIXES = (
@@ -151,7 +156,8 @@ def process_file(path: str, keywords, force: bool) -> Tuple[str, int, str]:
         return "empty", 0, out_path
 
     sentences = segment_sentences(text)
-    ai_sents = filter_ai_sentences(sentences, keywords)
+    merged = merge_sentence_fragments(sentences)
+    ai_sents = filter_ai_sentences(merged, keywords)
 
     with open(out_path, "w", encoding="utf-8") as f:
         f.write("\n".join(ai_sents))
@@ -162,7 +168,7 @@ def process_file(path: str, keywords, force: bool) -> Tuple[str, int, str]:
 def main() -> None:
     ap = argparse.ArgumentParser(description="Extract AI-related sentences from filings.")
     ap.add_argument(
-        "--base-dir",
+        "--input-dir",
         default="data/processed/sec",
         help="Root directory containing filing .txt files (nested by year).",
     )
@@ -212,8 +218,8 @@ def main() -> None:
             print(f"Empty filing: {args.file}")
         return
 
-    if not os.path.isdir(args.base_dir):
-        raise FileNotFoundError(f"Base directory not found: {args.base_dir}")
+    if not os.path.isdir(args.input_dir):
+        raise FileNotFoundError(f"Input directory not found: {args.input_dir}")
 
     keywords = load_keywords(args.keywords)
 
@@ -232,7 +238,7 @@ def main() -> None:
     totals = {"seen": 0, "wrote": 0, "skipped": 0, "empty": 0}
     per_year: Dict[str, int] = {}
 
-    print(f"[i] Walking filings under: {args.base_dir}")
+    print(f"[i] Walking filings under: {args.input_dir}")
     print(f"[i] Using keywords from :  {args.keywords}")
     if include_forms is None:
         print("[i] Form filter       :  ALL")
@@ -246,7 +252,7 @@ def main() -> None:
         print(f"[i] Limit             :  {args.limit} filings")
 
     processed = 0
-    for path in iter_filings(args.base_dir, include_forms, include_years):
+    for path in iter_filings(args.input_dir, include_forms, include_years):
         # Stop early if limit is set
         if args.limit and processed >= args.limit:
             break

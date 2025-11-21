@@ -97,6 +97,87 @@ def segment_sentences(text: str) -> List[str]:
     return [p.strip() for p in parts if p and p.strip()]
 
 
+# --- Post-processing --------------------------------------------------------
+
+_PUNCTUATION_END = re.compile(r"[\.\?!]$")
+
+
+def _should_skip_fragment(fragment: str) -> bool:
+    """Return True if the fragment is just a page number or boilerplate."""
+    stripped = fragment.strip()
+    if not stripped:
+        return True
+    lowered = stripped.lower()
+    return stripped.isdigit() or lowered == "table of contents"
+
+
+def _is_incomplete(fragment: str) -> bool:
+    """Detect fragments that likely need to be merged with the next line."""
+    frag = fragment.strip()
+    if not frag:
+        return False
+    if frag.endswith(";"):
+        return True
+    return _PUNCTUATION_END.search(frag) is None
+
+
+def _starts_with_lower(fragment: str) -> bool:
+    frag = fragment.lstrip()
+    return bool(frag) and frag[0].islower()
+
+
+def merge_sentence_fragments(sentences: List[str]) -> List[str]:
+    """
+    Merge sentence fragments produced by segmentation to handle page numbers and
+    bullet/list continuations.
+
+    - Skips standalone page numbers and "Table of Contents" boilerplate.
+    - Merges fragments ending with semicolons or lacking sentence-ending
+      punctuation when followed by a lowercase-starting continuation.
+    - Normalizes capitalization and ensures a closing period if missing.
+    """
+
+    merged: list[str] = []
+    idx = 0
+
+    while idx < len(sentences):
+        current = sentences[idx].strip()
+        idx += 1
+
+        if _should_skip_fragment(current):
+            continue
+
+        combined = current
+
+        while _is_incomplete(combined):
+            # Advance to the next non-skipped fragment
+            while idx < len(sentences) and _should_skip_fragment(sentences[idx]):
+                idx += 1
+
+            if idx >= len(sentences):
+                break
+
+            nxt = sentences[idx].strip()
+
+            if not _starts_with_lower(nxt):
+                break
+
+            # Consume and merge the continuation
+            combined = combined.rstrip(" ;") + " " + nxt.lstrip()
+            idx += 1
+
+        combined = combined.strip()
+        if combined and combined[0].islower():
+            combined = combined[0].upper() + combined[1:]
+        if combined and _PUNCTUATION_END.search(combined) is None:
+            combined += "."
+
+        if combined:
+            merged.append(combined)
+
+    return merged
+
+
 # --- Matching ---------------------------------------------------------------
 
 _WORD = r"[A-Za-z0-9_\-\.]+"
