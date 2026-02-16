@@ -43,6 +43,7 @@ python src/scripts/filter_ai_sentences.py --include-forms 10-K --years 2023,2024
 from __future__ import annotations
 
 import argparse
+import logging
 import os
 import sys
 from typing import Dict, Iterator, Tuple, Optional, Set
@@ -75,6 +76,9 @@ SKIP_SUBSTRINGS = (
     "_scored.txt",
     "_scored_ai_sentences.txt",
 )
+
+SENTENCE_ENDINGS = (".", "!", "?")
+logger = logging.getLogger(__name__)
 
 
 def looks_like_year(name: str) -> bool:
@@ -144,7 +148,7 @@ def process_file(path: str, keywords, force: bool) -> Tuple[str, int, str]:
     Returns
     -------
     (status, count, out_path) : Tuple[str, int, str]
-        status in {"ok", "skipped_exists", "empty"}
+        status in {"ok", "skipped_exists", "empty", "error"}
         count  = number of AI sentences written
         out_path = output filepath
     """
@@ -156,24 +160,55 @@ def process_file(path: str, keywords, force: bool) -> Tuple[str, int, str]:
     if (not force) and os.path.exists(out_path):
         return "skipped_exists", 0, out_path
 
-    # Defensive read: some EDGAR text can contain odd encodings / control chars
-    with open(path, "r", encoding="utf-8", errors="ignore") as f:
-        text = f.read()
+    try:
+        # Defensive read: some EDGAR text can contain odd encodings / control chars
+        with open(path, "r", encoding="utf-8", errors="ignore") as f:
+            text = f.read()
 
-    if not text.strip():
-        # Touch an empty output to mark it processed
-        open(out_path, "w", encoding="utf-8").close()
-        return "empty", 0, out_path
+        if not text.strip():
+            # Touch an empty output to mark it processed
+            open(out_path, "w", encoding="utf-8").close()
+            return "empty", 0, out_path
 
-    sentences = segment_sentences(text)
-    page_merged = merge_page_fragments(sentences, raw_text=text)
-    merged = merge_sentence_fragments(page_merged)
-    ai_sents = filter_ai_sentences(merged, keywords)
+        sentences = segment_sentences(text)
+        page_merged = merge_page_fragments(sentences, raw_text=text)
+        merged = merge_sentence_fragments(page_merged)
+        validate_sentence_completion(merged, path)
+        ai_sents = filter_ai_sentences(merged, keywords)
 
-    with open(out_path, "w", encoding="utf-8") as f:
-        f.write("\n".join(ai_sents))
+        with open(out_path, "w", encoding="utf-8") as f:
+            f.write("\n".join(ai_sents))
 
-    return "ok", len(ai_sents), out_path
+        return "ok", len(ai_sents), out_path
+    except Exception:
+        logger.exception("Failed to process filing: %s", path)
+        return "error", 0, out_path
+
+
+def validate_sentence_completion(sentences: list[str], source_path: str) -> None:
+    """
+    Warn when sentence completion checks fail after merge steps.
+    Checks:
+    - starts with capital letter
+    - ends with terminal punctuation (., !, ?)
+    """
+    for idx, sentence in enumerate(sentences, start=1):
+        text = sentence.strip()
+        if not text:
+            logger.warning("Incomplete sentence in %s [idx=%d]: empty sentence", source_path, idx)
+            continue
+        starts_with_capital = text[0].isupper()
+        ends_with_terminal_punct = text.endswith(SENTENCE_ENDINGS)
+        if not starts_with_capital or not ends_with_terminal_punct:
+            logger.warning(
+                "Incomplete sentence in %s [idx=%d]: starts_with_capital=%s "
+                "ends_with_terminal_punct=%s sentence=%r",
+                source_path,
+                idx,
+                starts_with_capital,
+                ends_with_terminal_punct,
+                text,
+            )
 
 
 def main() -> None:
@@ -218,19 +253,23 @@ def main() -> None:
 
     if args.file:
         if not os.path.isfile(args.file):
-            raise FileNotFoundError(f"Specified file not found: {args.file}")
+            logger.error("Specified file not found: %s", args.file)
+            return
         keywords = load_keywords(args.keywords)
         status, count, out_path = process_file(args.file, keywords, args.force)
         if status == "ok":
             print(f"✓ {out_path}  ({count} AI sentences)")
         elif status == "skipped_exists":
             print(f"Skipped existing output: {out_path}")
+        elif status == "error":
+            print(f"Error processing filing: {args.file}")
         else:
             print(f"Empty filing: {args.file}")
         return
 
     if not os.path.isdir(args.input_dir):
-        raise FileNotFoundError(f"Input directory not found: {args.input_dir}")
+        logger.error("Input directory not found: %s", args.input_dir)
+        return
 
     keywords = load_keywords(args.keywords)
 
@@ -246,7 +285,7 @@ def main() -> None:
     else:
         include_years = {y.strip() for y in args.years.split(",") if y.strip()}
 
-    totals = {"seen": 0, "wrote": 0, "skipped": 0, "empty": 0}
+    totals = {"seen": 0, "wrote": 0, "skipped": 0, "empty": 0, "errors": 0}
     per_year: Dict[str, int] = {}
 
     print(f"[i] Walking filings under: {args.input_dir}")
@@ -280,6 +319,8 @@ def main() -> None:
             print(f"✓ {out_path}  ({count} AI sentences)")
         elif status == "skipped_exists":
             totals["skipped"] += 1
+        elif status == "error":
+            totals["errors"] += 1
         else:
             totals["empty"] += 1
 
@@ -289,6 +330,7 @@ def main() -> None:
     print(f"Wrote new outputs : {totals['wrote']}")
     print(f"Skipped (exists)  : {totals['skipped']}")
     print(f"Empty filings     : {totals['empty']}")
+    print(f"Errors            : {totals['errors']}")
     if per_year:
         print("Per-year scanned:")
         for y in sorted(per_year):
