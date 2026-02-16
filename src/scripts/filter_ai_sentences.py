@@ -7,6 +7,8 @@ sentences into sibling files named *_ai_sentences.txt.
 
 It uses core/sentence_filter.py for:
   - segment_sentences()
+  - merge_page_fragments()
+  - merge_sentence_fragments()
   - load_keywords()
   - filter_ai_sentences()
 
@@ -54,6 +56,7 @@ if SRC_ROOT not in sys.path:
 from core.sentence_filter import (  # noqa: E402
     filter_ai_sentences,
     load_keywords,
+    merge_page_fragments,
     merge_sentence_fragments,
     segment_sentences,
 )
@@ -66,7 +69,12 @@ DERIVED_SUFFIXES = (
     "_scored_ai_sentences.txt",
 )
 
-SKIP_SUBSTRINGS = ("_ai_sentences.txt", "_classified.txt", "_scored.txt", "_scored_ai_sentences.txt")
+SKIP_SUBSTRINGS = (
+    "_ai_sentences.txt",
+    "_classified.txt",
+    "_scored.txt",
+    "_scored_ai_sentences.txt",
+)
 
 
 def looks_like_year(name: str) -> bool:
@@ -88,7 +96,9 @@ def parse_form_from_filename(filename: str) -> Optional[str]:
     return None
 
 
-def iter_filings(base_dir: str, include_forms: Optional[Set[str]], include_years: Optional[Set[str]]) -> Iterator[str]:
+def iter_filings(
+    base_dir: str, include_forms: Optional[Set[str]], include_years: Optional[Set[str]]
+) -> Iterator[str]:
     """
     Yield absolute paths to .txt filing files under base_dir **only inside year subfolders**,
     skipping derived outputs and (optionally) non-matching forms.
@@ -156,7 +166,8 @@ def process_file(path: str, keywords, force: bool) -> Tuple[str, int, str]:
         return "empty", 0, out_path
 
     sentences = segment_sentences(text)
-    merged = merge_sentence_fragments(sentences)
+    page_merged = merge_page_fragments(sentences, raw_text=text)
+    merged = merge_sentence_fragments(page_merged)
     ai_sents = filter_ai_sentences(merged, keywords)
 
     with open(out_path, "w", encoding="utf-8") as f:

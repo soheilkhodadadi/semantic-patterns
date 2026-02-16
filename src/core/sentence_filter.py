@@ -6,16 +6,19 @@ from plain-text SEC filings.
 Public API:
 - load_keywords(path: str) -> list[str]
 - segment_sentences(text: str) -> list[str]
+- merge_page_fragments(sentences: list[str], raw_text: str | None = None) -> list[str]
+- merge_sentence_fragments(sentences: list[str]) -> list[str]
 - filter_ai_sentences(sentences: list[str], keywords: list[str]) -> list[str]
 """
 
 from __future__ import annotations
 from functools import lru_cache
 from pathlib import Path
-from typing import Iterable, List
+from typing import Iterable, List, Optional
 import re
 
 # --- Keyword loading ---------------------------------------------------------
+
 
 def load_keywords(path: str) -> List[str]:
     """
@@ -35,7 +38,9 @@ def load_keywords(path: str) -> List[str]:
         if not line:
             continue
         # allow quoted phrases, but we ultimately store raw text
-        if (line.startswith('"') and line.endswith('"')) or (line.startswith("'") and line.endswith("'")):
+        if (line.startswith('"') and line.endswith('"')) or (
+            line.startswith("'") and line.endswith("'")
+        ):
             line = line[1:-1].strip()
         items.append(line.lower())
 
@@ -51,11 +56,13 @@ def load_keywords(path: str) -> List[str]:
 
 # --- Sentence segmentation ---------------------------------------------------
 
+
 @lru_cache(maxsize=1)
 def _get_spacy():
     """Lazy import/load of spaCy. Falls back to a regex splitter if unavailable."""
     try:
         import spacy  # type: ignore
+
         try:
             return spacy.load("en_core_web_sm", disable=["ner", "tagger", "lemmatizer"])
         except Exception:
@@ -74,7 +81,7 @@ def segment_sentences(text: str) -> List[str]:
     - Uses spaCy if available (with sentencizer), else regex fallback.
     - Normalizes whitespace and keeps non-empty sentences.
     """
-    text = text.replace("\u00A0", " ").replace("\t", " ")
+    text = text.replace("\u00a0", " ").replace("\t", " ")
     text = re.sub(r"[ ]{2,}", " ", text)
 
     nlp = _get_spacy()
@@ -100,6 +107,8 @@ def segment_sentences(text: str) -> List[str]:
 # --- Post-processing --------------------------------------------------------
 
 _PUNCTUATION_END = re.compile(r"[\.\?!]$")
+_PAGE_MARKER = re.compile(r"[\-\u2013\u2014]\s*\d+\s*[\-\u2013\u2014]")
+_PAGE_MARKER_LINE = re.compile(r"^\s*[\-\u2013\u2014]\s*\d+\s*[\-\u2013\u2014]\s*$")
 
 
 def _should_skip_fragment(fragment: str) -> bool:
@@ -124,6 +133,153 @@ def _is_incomplete(fragment: str) -> bool:
 def _starts_with_lower(fragment: str) -> bool:
     frag = fragment.lstrip()
     return bool(frag) and frag[0].islower()
+
+
+def _starts_with_upper(fragment: str) -> bool:
+    frag = fragment.lstrip()
+    return bool(frag) and frag[0].isupper()
+
+
+def _normalize_sentence(fragment: str) -> str:
+    cleaned = re.sub(r"\s+", " ", fragment).strip()
+    cleaned = _PAGE_MARKER.sub(" ", cleaned)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip(" ;,-")
+    if cleaned and cleaned[0].islower():
+        cleaned = cleaned[0].upper() + cleaned[1:]
+    if cleaned and _PUNCTUATION_END.search(cleaned) is None:
+        cleaned += "."
+    return cleaned
+
+
+def _is_page_fragment(fragment: str) -> bool:
+    return bool(_PAGE_MARKER.search(fragment))
+
+
+def _match_key(fragment: str) -> str:
+    cleaned = _PAGE_MARKER.sub(" ", fragment)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip().lower()
+    return cleaned.strip(" .?!;,-")
+
+
+def _is_incomplete_page_fragment(fragment: str) -> bool:
+    frag = fragment.strip()
+    if not frag:
+        return False
+    if _PAGE_MARKER_LINE.match(frag):
+        return True
+    return (not _starts_with_upper(frag)) or (_PUNCTUATION_END.search(frag) is None)
+
+
+def _reconstruct_with_raw_context(
+    raw_text: str, fragment: str, context_chars: int = 180
+) -> Optional[str]:
+    """
+    Rebuild a broken sentence around `fragment` using nearby raw text.
+    Returns None if the fragment cannot be found robustly.
+    """
+    if not raw_text or not fragment.strip():
+        return None
+
+    # Try exact match first.
+    start = raw_text.find(fragment)
+    end = start + len(fragment) if start >= 0 else -1
+
+    if start < 0:
+        # Fallback: match flexible whitespace around non-empty tokens.
+        parts = [re.escape(tok) for tok in fragment.split() if tok]
+        if not parts:
+            return None
+        rx = re.compile(r"\s+".join(parts), flags=re.DOTALL)
+        m = rx.search(raw_text)
+        if not m:
+            return None
+        start, end = m.span()
+
+    left = max(0, start - context_chars)
+    right = min(len(raw_text), end + context_chars)
+    local = raw_text[left:right]
+    local_start = start - left
+    local_end = end - left
+
+    sentence_left = local.rfind(".", 0, local_start)
+    sentence_q = local.rfind("?", 0, local_start)
+    sentence_bang = local.rfind("!", 0, local_start)
+    sentence_start = max(sentence_left, sentence_q, sentence_bang)
+    sentence_start = sentence_start + 1 if sentence_start >= 0 else 0
+
+    candidates = [
+        pos
+        for pos in (
+            local.find(".", local_end),
+            local.find("?", local_end),
+            local.find("!", local_end),
+        )
+        if pos >= 0
+    ]
+    sentence_end = min(candidates) + 1 if candidates else len(local)
+
+    rebuilt = local[sentence_start:sentence_end]
+    rebuilt = _PAGE_MARKER.sub(" ", rebuilt)
+    rebuilt = re.sub(r"\s+", " ", rebuilt).strip()
+    return rebuilt or None
+
+
+def merge_page_fragments(
+    sentences: List[str], raw_text: Optional[str] = None, context_chars: int = 180
+) -> List[str]:
+    """
+    Merge fragments around page markers like "- 12 -" or "— 12 —".
+
+    A sentence is treated as an incomplete page fragment if it contains a page
+    marker token and either does not start with a capital letter or lacks
+    sentence-ending punctuation.
+
+    If `raw_text` is provided, nearby characters are used to reconstruct a more
+    faithful full sentence. Otherwise, neighboring sentence fragments are used.
+    """
+    out: list[str] = []
+    idx = 0
+
+    while idx < len(sentences):
+        current = sentences[idx].strip()
+        if not current:
+            idx += 1
+            continue
+
+        if not (_is_page_fragment(current) and _is_incomplete_page_fragment(current)):
+            out.append(current)
+            idx += 1
+            continue
+
+        rebuilt = (
+            _reconstruct_with_raw_context(raw_text, current, context_chars) if raw_text else None
+        )
+
+        used_next = False
+        if rebuilt is not None:
+            rebuilt_key = _match_key(rebuilt)
+            if out and _match_key(out[-1]) and _match_key(out[-1]) in rebuilt_key:
+                out.pop()
+            if idx + 1 < len(sentences):
+                next_fragment = sentences[idx + 1].strip()
+                next_key = _match_key(next_fragment)
+                used_next = bool(next_key and next_key in rebuilt_key)
+        else:
+            prev = out.pop() if out else ""
+            nxt = ""
+            if idx + 1 < len(sentences):
+                nxt = sentences[idx + 1].strip()
+                used_next = bool(nxt)
+            center = _PAGE_MARKER.sub(" ", current).strip()
+            rebuilt = " ".join(part for part in (prev, center, nxt) if part)
+
+        normalized = _normalize_sentence(rebuilt)
+        if normalized:
+            out.append(normalized)
+
+        idx += 2 if used_next else 1
+
+    return out
 
 
 def merge_sentence_fragments(sentences: List[str]) -> List[str]:
@@ -166,11 +322,7 @@ def merge_sentence_fragments(sentences: List[str]) -> List[str]:
             combined = combined.rstrip(" ;") + " " + nxt.lstrip()
             idx += 1
 
-        combined = combined.strip()
-        if combined and combined[0].islower():
-            combined = combined[0].upper() + combined[1:]
-        if combined and _PUNCTUATION_END.search(combined) is None:
-            combined += "."
+        combined = _normalize_sentence(combined)
 
         if combined:
             merged.append(combined)
@@ -181,6 +333,8 @@ def merge_sentence_fragments(sentences: List[str]) -> List[str]:
 # --- Matching ---------------------------------------------------------------
 
 _WORD = r"[A-Za-z0-9_\-\.]+"
+
+
 # Build a conservative token/phrase matcher. We allow:
 #   - exact tokens (e.g., "GPT‑4", "ChatGPT", "Autopilot")
 #   - multi-word phrases (e.g., "machine learning")
