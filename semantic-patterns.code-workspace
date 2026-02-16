@@ -13,6 +13,7 @@
       "**/*.log": true,
     },
     "python.linting.enabled": true,
-    "python.formatting.provider": "black"
+    "python.formatting.provider": "black",
+    "chatgpt.openOnStartup": true
   }
 }

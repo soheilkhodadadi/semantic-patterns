@@ -3,12 +3,14 @@
 This document provides project-specific guidance for AI coding agents (like OpenAI Codex) working on the semantic-patterns repository. It covers how to run linting and tests, describes the repository structure and key scripts, and defines what “done” means for tasks in this project.
 
 ## Linting and Formatting
+
 - Linting Tool: This project uses Ruff exclusively for Python linting and formatting. No other linters or formatters (like Flake8 or Black) are used.
 - Configuration: The pyproject.toml contains Ruff configurations (e.g. line length, file include/exclude patterns under [tool.ruff]).
 - How to Lint: Run make lint to check code style (this invokes ruff check .). All code should pass Ruff with no warnings or errors.
 - How to Format: Run make format to automatically format the code (this uses ruff format .). Ensure the code is formatted according to Ruff’s rules before committing.
 
 ## Testing and Validation
+
 - No Unit Test Suite: The repository does not use a standard test framework like PyTest or unittest. Instead, testing and validation are performed via dedicated scripts.
 - Classifier Evaluation: Use python src/tests/evaluate_classifier_on_held_out.py to evaluate the AI classifier on a held-out dataset. This script will output the model’s accuracy and other metrics, and it typically saves results (like a confusion matrix). It should complete without errors.
 - Manual Spot-Check: Use python src/tests/spot_check_classifications.py to perform a manual spot check of classifications. This script prints a random sample of sentences with their predicted labels for review, helping to qualitatively assess the model’s outputs.
@@ -17,6 +19,7 @@ This document provides project-specific guidance for AI coding agents (like Open
 ## Repository Structure & Key Scripts
 
 The project is organized under the src/ directory with sub-packages for different components (e.g. classification, scripts, tests, aggregation, patents). There is no single CLI entry point; instead, a series of scripts handle data processing, model training, and evaluation. Below are the main scripts and their purposes (with typical usage):
+
 - Sentence Extraction: src/scripts/filter_ai_sentences.py – Extracts AI-related sentences from raw text filings. Run this script to generate files (e.g., *_ai_sentences.txt) containing sentences about AI for each source document.
 - Sentence Classification: src/classification/classify_all_ai_sentences.py – Classifies all extracted sentences using the AI-washing classifier. Running this script produces CSV files (e.g., *_classified.csv) with each sentence and its predicted label/probability.
 - Embed Labeled Sentences: src/classification/embed_labeled_sentences_mpnet.py – (For model updates) Generates vector embeddings for labeled sentences using a MPNet model. This is typically run when updating the classifier, to compute embeddings for the training data.
@@ -31,20 +34,21 @@ Usage: Most of these scripts are standalone and assume default file paths or con
 ## Definition of Done (Completion Criteria)
 
 For any code contribution or task in this repository, the following criteria define when the task is “done” and ready for review/merge:
+
 - Lint & Format Clean: All Python code must pass Ruff linting with no errors, and be properly formatted according to Ruff’s rules. (Use make lint and make format to verify.)
 - Accuracy ≥ 80%: The classifier must achieve at least 80% accuracy on the held-out evaluation set (this is the minimum quality gate per project guidelines). Run python src/tests/evaluate_classifier_on_held_out.py and confirm the accuracy meets or exceeds 0.80. Additionally, check that the confusion matrix from this evaluation looks reasonable (no unexpected pattern of misclassifications).
 - Data Processed: If the task involved adding or updating data (e.g., new documents or a new year of filings):
-	- Ensure filter_ai_sentences.py has been run to extract AI-related sentences from the new/updated data.
-	- Run classify_all_ai_sentences.py on the latest dataset so all new sentences are classified with the current model.
-	- If applicable, run aggregate_classification_counts.py to update any aggregated metrics or summary files (such as firm-year classification counts).
-	- Verify that any new data (for example, all 2024 filings) are fully processed and included in the outputs.
+  - Ensure filter_ai_sentences.py has been run to extract AI-related sentences from the new/updated data.
+  - Run classify_all_ai_sentences.py on the latest dataset so all new sentences are classified with the current model.
+  - If applicable, run aggregate_classification_counts.py to update any aggregated metrics or summary files (such as firm-year classification counts).
+  - Verify that any new data (for example, all 2024 filings) are fully processed and included in the outputs.
 - Documentation & Logging: Document the outcome of the changes:
-	- Update or create relevant documentation (README, etc.) if any processes or results have changed.
-	- In the commit message or PR description, note key metrics and results (e.g., “Held-out accuracy = 82%, F1 improved by 5%, adjusted threshold to 0.7”).
-	- If the task was performed via an interactive Codex session, ensure that all code diffs were shown for review and that logs/output from test scripts (like accuracy results) are captured for the record.
+  - Update or create relevant documentation (README, etc.) if any processes or results have changed.
+  - In the commit message or PR description, note key metrics and results (e.g., “Held-out accuracy = 82%, F1 improved by 5%, adjusted threshold to 0.7”).
+  - If the task was performed via an interactive Codex session, ensure that all code diffs were shown for review and that logs/output from test scripts (like accuracy results) are captured for the record.
 - Scope and Review: Confirm that code changes are confined to the intended scope of the task:
-	- Typically, modifications should be made within the src/ directory (in the relevant module/package) unless explicitly directed otherwise.
-	- Do not modify files outside of src/ or unrelated components without explicit instruction.
-	- After implementing changes, review the diff to ensure only the expected files and lines were changed. (Automated agents should always present diffs for verification before finalizing any commit.)
+  - Typically, modifications should be made within the src/ directory (in the relevant module/package) unless explicitly directed otherwise.
+  - Do not modify files outside of src/ or unrelated components without explicit instruction.
+  - After implementing changes, review the diff to ensure only the expected files and lines were changed. (Automated agents should always present diffs for verification before finalizing any commit.)
 
 By fulfilling the above criteria, the project maintains both code quality and functional integrity. Codex (and other AI agents) should use these guidelines to autonomously run checks (linting, evaluation) and to decide when a code-editing task is complete.
