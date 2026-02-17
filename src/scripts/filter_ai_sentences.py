@@ -45,6 +45,7 @@ from __future__ import annotations
 import argparse
 import logging
 import os
+import re
 import sys
 from typing import Dict, Iterator, Tuple, Optional, Set
 
@@ -78,6 +79,7 @@ SKIP_SUBSTRINGS = (
 )
 
 SENTENCE_ENDINGS = (".", "!", "?")
+PAGE_MARKER_REGEX = re.compile(r"[\-\u2013\u2014]\s*\d+\s*[\-\u2013\u2014]")
 logger = logging.getLogger(__name__)
 
 
@@ -171,15 +173,30 @@ def process_file(path: str, keywords, force: bool) -> Tuple[str, int, str]:
             return "empty", 0, out_path
 
         sentences = segment_sentences(text)
+        page_marker_candidate_count = sum(1 for s in sentences if PAGE_MARKER_REGEX.search(s))
+        segmented_count = len(sentences)
         page_merged = merge_page_fragments(sentences, raw_text=text)
+        after_page_merge_count = len(page_merged)
         merged = merge_sentence_fragments(page_merged)
+        after_sentence_merge_count = len(merged)
         validate_sentence_completion(merged, path)
         ai_sents = filter_ai_sentences(merged, keywords)
+        ai_sentence_count = len(ai_sents)
+        logger.info(
+            "Merge summary for %s: segmented_count=%d page_marker_candidate_count=%d "
+            "after_page_merge_count=%d after_sentence_merge_count=%d ai_sentence_count=%d",
+            path,
+            segmented_count,
+            page_marker_candidate_count,
+            after_page_merge_count,
+            after_sentence_merge_count,
+            ai_sentence_count,
+        )
 
         with open(out_path, "w", encoding="utf-8") as f:
             f.write("\n".join(ai_sents))
 
-        return "ok", len(ai_sents), out_path
+        return "ok", ai_sentence_count, out_path
     except Exception:
         logger.exception("Failed to process filing: %s", path)
         return "error", 0, out_path
@@ -212,6 +229,12 @@ def validate_sentence_completion(sentences: list[str], source_path: str) -> None
 
 
 def main() -> None:
+    if not logging.getLogger().handlers:
+        logging.basicConfig(
+            level=logging.INFO,
+            format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+        )
+
     ap = argparse.ArgumentParser(description="Extract AI-related sentences from filings.")
     ap.add_argument(
         "--input-dir",
