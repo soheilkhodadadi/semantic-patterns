@@ -1,23 +1,16 @@
-# src/classification/embed_labeled_sentences.py
+"""Legacy compatibility shim.
 
-import pandas as pd
-from sentence_transformers import SentenceTransformer
-import os
+TODO: remove after Iteration 1 deprecation window.
+"""
 
-# Paths — updated to use the relabeled file
-input_path = "data/validation/hand_labeled_ai_sentences_labeled_cleaned_revised.csv"
-output_path = "data/validation/hand_labeled_ai_sentences_with_embeddings_revised.csv"
-os.makedirs(os.path.dirname(output_path), exist_ok=True)
+from pathlib import Path
+import sys
 
-# Load data
-df = pd.read_csv(input_path)
+SRC_ROOT = Path(__file__).resolve().parents[1]
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
 
-# Load SentenceBERT model
-model = SentenceTransformer("all-MiniLM-L6-v2")
+from semantic_ai_washing.classification.embed_labeled_sentences import *  # noqa: F401,F403
 
-# Encode sentences into embeddings
-df["embedding"] = df["sentence"].apply(lambda x: model.encode(x, convert_to_tensor=True).tolist())
-
-# Save result
-df.to_csv(output_path, index=False)
-print(f"[✓] Saved {len(df)} embedded sentences to: {output_path}")
+if __name__ == "__main__" and "main" in globals():
+    main()

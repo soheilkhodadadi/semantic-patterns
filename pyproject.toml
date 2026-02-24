@@ -17,6 +17,8 @@ classifiers = [
 ]
 requires-python = "~=3.10"
 
+[tool.flit.module]
+name = "semantic_ai_washing"
 
 [tool.ruff]
 line-length = 99
@@ -24,6 +26,5 @@ src = ["src"]
 include = ["pyproject.toml", "src/**/*.py"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["src"]
+known-first-party = ["semantic_ai_washing", "src"]
 force-sort-within-sections = true
-

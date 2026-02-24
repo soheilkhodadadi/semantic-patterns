@@ -1,22 +1,16 @@
-"""
-Summarize classification counts for each AI sentence file.
-Outputs the label distribution for each firm-year.
+"""Legacy compatibility shim.
 
-Run: python src/analysis/summarize_classification_counts.py
+TODO: remove after Iteration 1 deprecation window.
 """
 
-import os
-from collections import Counter
+from pathlib import Path
+import sys
 
-ai_sentence_dir = "data/processed/sec"
+SRC_ROOT = Path(__file__).resolve().parents[1]
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
 
-print("\n📊 Classification Label Counts per File")
-print("–" * 50)
+from semantic_ai_washing.analysis.summarize_classification_counts import *  # noqa: F401,F403
 
-for filename in os.listdir(ai_sentence_dir):
-    if filename.endswith("_classified.txt"):
-        path = os.path.join(ai_sentence_dir, filename)
-        with open(path, "r", encoding="utf-8") as f:
-            labels = [line.split(" | Label: ")[1].split(" |")[0] for line in f if " | Label: " in line]
-            counts = Counter(labels)
-            print(f"{filename}: {dict(counts)}")
+if __name__ == "__main__" and "main" in globals():
+    main()

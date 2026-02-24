@@ -1,20 +1,16 @@
+"""Legacy compatibility shim.
+
+TODO: remove after Iteration 1 deprecation window.
+"""
+
+from pathlib import Path
 import sys
-import os
 
-# Add the src/ folder to the Python path dynamically
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+SRC_ROOT = Path(__file__).resolve().parents[1]
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
 
-# Import classifier
-from classification.classify_with_centroids import classify_sentence
+from semantic_ai_washing.tests.test_classifier import *  # noqa: F401,F403
 
-# Define a few sample sentences to test
-test_sentences = [
-    "We launched a new generative AI engine for product personalization.",  # Should be Actionable
-    "We are exploring AI capabilities for internal operations.",             # Should be Speculative
-    "AI is one of many technologies transforming the industry."              # Should be Irrelevant
-]
-
-# Run the classifier and print results
-for sent in test_sentences:
-    label, score = classify_sentence(sent)
-    print(f"\n📝 Sentence: {sent}\n📌 Predicted: {label}\n📊 Scores: {score}")
+if __name__ == "__main__" and "main" in globals():
+    main()

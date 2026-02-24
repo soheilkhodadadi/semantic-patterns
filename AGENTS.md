@@ -11,32 +11,34 @@ This document provides project-specific guidance for AI coding agents (like Open
 
 ## Testing and Validation
 
+- Canonical Namespace: Use `semantic_ai_washing.*` imports for all new code. Legacy `src/*` module paths are transitional compatibility shims only.
+- Canonical Script Invocation: Prefer `PYTHONPATH=src python -m semantic_ai_washing.<domain>.<module>` (or equivalent environment setup) over direct `python src/...` execution.
 - No Unit Test Suite: The repository does not use a standard test framework like PyTest or unittest. Instead, testing and validation are performed via dedicated scripts.
-- Classifier Evaluation: Use python src/tests/evaluate_classifier_on_held_out.py to evaluate the AI classifier on a held-out dataset. This script will output the model’s accuracy and other metrics, and it typically saves results (like a confusion matrix). It should complete without errors.
-- Manual Spot-Check: Use python src/tests/spot_check_classifications.py to perform a manual spot check of classifications. This script prints a random sample of sentences with their predicted labels for review, helping to qualitatively assess the model’s outputs.
+- Classifier Evaluation: Use `python -m semantic_ai_washing.tests.evaluate_classifier_on_held_out` to evaluate the AI classifier on a held-out dataset. This script will output the model’s accuracy and other metrics, and it typically saves results (like a confusion matrix). It should complete without errors.
+- Manual Spot-Check: Use `python -m semantic_ai_washing.tests.spot_check_classifications` to perform a manual spot check of classifications. This script prints a random sample of sentences with their predicted labels for review, helping to qualitatively assess the model’s outputs.
 - Interpretation: Consider the evaluation successful if the accuracy meets the project’s quality threshold (see Definition of Done below) and the confusion matrix or sample outputs look reasonable (e.g. the model isn’t consistently mislabeling one category).
 
 ## Repository Structure & Key Scripts
 
 The project is organized under the src/ directory with sub-packages for different components (e.g. classification, scripts, tests, aggregation, patents). There is no single CLI entry point; instead, a series of scripts handle data processing, model training, and evaluation. Below are the main scripts and their purposes (with typical usage):
 
-- Sentence Extraction: src/scripts/filter_ai_sentences.py – Extracts AI-related sentences from raw text filings. Run this script to generate files (e.g., *_ai_sentences.txt) containing sentences about AI for each source document.
-- Sentence Classification: src/classification/classify_all_ai_sentences.py – Classifies all extracted sentences using the AI-washing classifier. Running this script produces CSV files (e.g., *_classified.csv) with each sentence and its predicted label/probability.
-- Embed Labeled Sentences: src/classification/embed_labeled_sentences_mpnet.py – (For model updates) Generates vector embeddings for labeled sentences using a MPNet model. This is typically run when updating the classifier, to compute embeddings for the training data.
-- Compute Centroids: src/classification/compute_centroids_mpnet.py – Computes class centroids from the embedded sentences. The classifier uses these centroids as references for labeling new sentences.
-- Evaluate Classifier: src/tests/evaluate_classifier_on_held_out.py – Evaluates the classifier’s performance on a held-out test set. (As noted above, run this to get accuracy metrics and ensure the model meets quality targets.)
-- Spot-Check Classifications: src/tests/spot_check_classifications.py – Prints random classified sentences and their labels for manual verification of classification quality.
-- Aggregate Results: src/aggregation/aggregate_classification_counts.py – Aggregates per-sentence classification results into higher-level counts (for example, counting how many sentences of each class per document or per firm-year). Run this after classification to update summary statistics or dataset-wide metrics.
-- Patent Data Integration: (If applicable) Scripts in src/patents/ (e.g., merge_ai_with_patents.py) handle merging the AI classification results with external patent data to enrich the analysis.
+- Sentence Extraction: `src/semantic_ai_washing/data/extract_ai_sentences.py` – Extracts AI-related sentences from raw text filings. Run this script to generate files (e.g., *_ai_sentences.txt) containing sentences about AI for each source document.
+- Sentence Classification: `src/semantic_ai_washing/classification/classify_all_ai_sentences.py` – Classifies all extracted sentences using the AI-washing classifier. Running this script produces CSV files (e.g., *_classified.csv) with each sentence and its predicted label/probability.
+- Embed Labeled Sentences: `src/semantic_ai_washing/classification/embed_labeled_sentences_mpnet.py` – (For model updates) Generates vector embeddings for labeled sentences using a MPNet model. This is typically run when updating the classifier, to compute embeddings for the training data.
+- Compute Centroids: `src/semantic_ai_washing/classification/compute_centroids_mpnet.py` – Computes class centroids from the embedded sentences. The classifier uses these centroids as references for labeling new sentences.
+- Evaluate Classifier: `src/semantic_ai_washing/tests/evaluate_classifier_on_held_out.py` – Evaluates the classifier’s performance on a held-out test set. (As noted above, run this to get accuracy metrics and ensure the model meets quality targets.)
+- Spot-Check Classifications: `src/semantic_ai_washing/tests/spot_check_classifications.py` – Prints random classified sentences and their labels for manual verification of classification quality.
+- Aggregate Results: `src/semantic_ai_washing/aggregation/aggregate_classification_counts.py` – Aggregates per-sentence classification results into higher-level counts (for example, counting how many sentences of each class per document or per firm-year). Run this after classification to update summary statistics or dataset-wide metrics.
+- Patent Data Integration: (If applicable) Scripts in `src/semantic_ai_washing/patents/` (e.g., merge_ai_with_patents.py) handle merging the AI classification results with external patent data to enrich the analysis.
 
-Usage: Most of these scripts are standalone and assume default file paths or configurations (often specified in the code or README). To run a script, use the Python path as shown above (for example: python src/classification/classify_all_ai_sentences.py). Make sure any prerequisites (such as input data files or prior steps like embedding generation) are satisfied before running each script.
+Usage: Most of these scripts are standalone and assume default file paths or configurations (often specified in the code or README). To run a script, use module execution (for example: `python -m semantic_ai_washing.classification.classify_all_ai_sentences`). Make sure any prerequisites (such as input data files or prior steps like embedding generation) are satisfied before running each script.
 
 ## Definition of Done (Completion Criteria)
 
 For any code contribution or task in this repository, the following criteria define when the task is “done” and ready for review/merge:
 
 - Lint & Format Clean: All Python code must pass Ruff linting with no errors, and be properly formatted according to Ruff’s rules. (Use make lint and make format to verify.)
-- Accuracy ≥ 80%: The classifier must achieve at least 80% accuracy on the held-out evaluation set (this is the minimum quality gate per project guidelines). Run python src/tests/evaluate_classifier_on_held_out.py and confirm the accuracy meets or exceeds 0.80. Additionally, check that the confusion matrix from this evaluation looks reasonable (no unexpected pattern of misclassifications).
+- Accuracy ≥ 80%: The classifier must achieve at least 80% accuracy on the held-out evaluation set (this is the minimum quality gate per project guidelines). Run `python -m semantic_ai_washing.tests.evaluate_classifier_on_held_out` and confirm the accuracy meets or exceeds 0.80. Additionally, check that the confusion matrix from this evaluation looks reasonable (no unexpected pattern of misclassifications).
 - Data Processed: If the task involved adding or updating data (e.g., new documents or a new year of filings):
   - Ensure filter_ai_sentences.py has been run to extract AI-related sentences from the new/updated data.
   - Run classify_all_ai_sentences.py on the latest dataset so all new sentences are classified with the current model.

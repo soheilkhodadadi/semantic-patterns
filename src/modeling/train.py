@@ -1,30 +1,16 @@
+"""Legacy compatibility shim.
+
+TODO: remove after Iteration 1 deprecation window.
+"""
+
 from pathlib import Path
+import sys
 
-from loguru import logger
-from tqdm import tqdm
-import typer
+SRC_ROOT = Path(__file__).resolve().parents[1]
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
 
-from src.config.config import MODELS_DIR, PROCESSED_DATA_DIR
+from semantic_ai_washing.modeling.train import *  # noqa: F401,F403
 
-app = typer.Typer()
-
-
-@app.command()
-def main(
-    # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----
-    features_path: Path = PROCESSED_DATA_DIR / "features.csv",
-    labels_path: Path = PROCESSED_DATA_DIR / "labels.csv",
-    model_path: Path = MODELS_DIR / "model.pkl",
-    # -----------------------------------------
-):
-    # ---- REPLACE THIS WITH YOUR OWN CODE ----
-    logger.info("Training some model...")
-    for i in tqdm(range(10), total=10):
-        if i == 5:
-            logger.info("Something happened for iteration 5.")
-    logger.success("Modeling training complete.")
-    # -----------------------------------------
-
-
-if __name__ == "__main__":
-    app()
+if __name__ == "__main__" and "main" in globals():
+    main()

@@ -1,41 +1,16 @@
-import pandas as pd
-import torch
-import os
-import json
-import ast
+"""Legacy compatibility shim.
 
-# Paths — updated to use revised file
-input_path = "data/validation/hand_labeled_ai_sentences_with_embeddings_revised.csv"
-output_path = "data/validation/centroids_revised.json"
-os.makedirs(os.path.dirname(output_path), exist_ok=True)
+TODO: remove after Iteration 1 deprecation window.
+"""
 
-# Load data
-df = pd.read_csv(input_path)
+from pathlib import Path
+import sys
 
-# Safe conversion from string to tensor
-def safe_tensor(x):
-    if isinstance(x, str) and x.startswith("[") and x.endswith("]"):
-        try:
-            vec = ast.literal_eval(x)
-            if isinstance(vec, list) and all(isinstance(n, float) for n in vec) and len(vec) == 384:
-                return torch.tensor(vec)
-        except Exception:
-            pass
-    return None
+SRC_ROOT = Path(__file__).resolve().parents[1]
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
 
-# Apply safe conversion
-df["embedding"] = df["embedding"].apply(safe_tensor) # type: ignore
-df = df[df["embedding"].notnull()]
+from semantic_ai_washing.classification.compute_centroids import *  # noqa: F401,F403
 
-# Compute centroids per label
-centroids = {}
-for label in df["label"].unique():
-    vectors = torch.stack(df[df["label"] == label]["embedding"].tolist())
-    centroid = vectors.mean(dim=0)
-    centroids[label] = centroid.tolist()
-
-# Save to JSON
-with open(output_path, "w") as f:
-    json.dump(centroids, f)
-
-print(f"[✓] Computed centroids for {len(centroids)} classes and saved to: {output_path}")
+if __name__ == "__main__" and "main" in globals():
+    main()
