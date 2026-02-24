@@ -1,40 +1,16 @@
-# src/classification/compute_centroids_mpnet.py
-"""Compute label centroids from MPNet embeddings.
+"""Legacy compatibility shim.
 
-Reads the CSV produced by `embed_labeled_sentences_mpnet.py`, reconstructs
-embeddings, filters invalid rows, and writes per-label mean vectors.
+TODO: remove after Iteration 1 deprecation window.
 """
-import os
-import json
-import ast
-import torch
-import pandas as pd
 
-IN = "data/validation/hand_labeled_ai_sentences_with_embeddings_mpnet.csv"
-OUT = "data/validation/centroids_mpnet.json"
-os.makedirs(os.path.dirname(OUT), exist_ok=True)
+from pathlib import Path
+import sys
 
-# Load embeddings CSV
-df = pd.read_csv(IN)
+SRC_ROOT = Path(__file__).resolve().parents[1]
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
 
-# Convert stringified list -> tensor
-def to_tensor(x):
-    try:
-        return torch.tensor(ast.literal_eval(x), dtype=torch.float32)
-    except Exception:
-        return None
+from semantic_ai_washing.classification.compute_centroids_mpnet import *  # noqa: F401,F403
 
-# Apply conversion (pandas typing can complain; map keeps scalar -> scalar)
-df["embedding"] = df["embedding"].map(to_tensor)  # type: ignore[arg-type]
-
-# Keep rows with both embedding + label
-df = df[df["embedding"].notnull() & df["label"].notnull()]
-
-centroids = {}
-for label, grp in df.groupby("label"):
-    emb = torch.stack(grp["embedding"].tolist())
-    centroids[label] = emb.mean(0).tolist()
-
-with open(OUT, "w") as f:
-    json.dump(centroids, f)
-print(f"[✓] Wrote centroids (MPNet) → {OUT}")
+if __name__ == "__main__" and "main" in globals():
+    main()

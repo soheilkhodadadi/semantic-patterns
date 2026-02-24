@@ -1,34 +1,16 @@
+"""Legacy compatibility shim.
+
+TODO: remove after Iteration 1 deprecation window.
 """
-Defines a basic set of AI-related patent keywords and saves them to a text file.
 
-Run: python src/patents/define_keywords.py
-"""
+from pathlib import Path
+import sys
 
-import os
+SRC_ROOT = Path(__file__).resolve().parents[1]
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
 
-# Core AI-related keywords (used in patent titles, abstracts, or claims)
-ai_keywords = [
-    "artificial intelligence",
-    "machine learning",
-    "deep learning",
-    "neural network",
-    "natural language processing",
-    "AI",
-    "ML",
-    "computer vision",
-    "reinforcement learning",
-    "language model",
-    "large language model",
-    "generative AI"
-]
+from semantic_ai_washing.patents.define_keywords import *  # noqa: F401,F403
 
-# Output path
-output_path = "data/metadata/patent_keywords.txt"
-os.makedirs(os.path.dirname(output_path), exist_ok=True)
-
-# Save keywords to file
-with open(output_path, "w") as f:
-    for kw in ai_keywords:
-        f.write(kw + "\n")
-
-print(f"[✓] Saved {len(ai_keywords)} keywords to: {output_path}")
+if __name__ == "__main__" and "main" in globals():
+    main()

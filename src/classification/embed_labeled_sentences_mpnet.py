@@ -1,28 +1,16 @@
-# src/classification/embed_labeled_sentences_mpnet.py
-"""Embed labeled sentences using the stronger MPNet model.
+"""Legacy compatibility shim.
 
-This script mirrors `embed_labeled_sentences.py` (MiniLM baseline) but switches
-to the `sentence-transformers/all-mpnet-base-v2` model and uses the original
-cleaned labels CSV (non-revised) as requested.
+TODO: remove after Iteration 1 deprecation window.
 """
 
-import os
-import pandas as pd
-from sentence_transformers import SentenceTransformer
+from pathlib import Path
+import sys
 
-IN = "data/validation/hand_labeled_ai_sentences_labeled_cleaned.csv"
-OUT = "data/validation/hand_labeled_ai_sentences_with_embeddings_mpnet.csv"
-os.makedirs(os.path.dirname(OUT), exist_ok=True)
+SRC_ROOT = Path(__file__).resolve().parents[1]
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
 
-# Load labeled sentences
-df = pd.read_csv(IN)
+from semantic_ai_washing.classification.embed_labeled_sentences_mpnet import *  # noqa: F401,F403
 
-# Load MPNet model (stronger model check)
-model = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")
-
-# Encode each sentence (note: could batch for speed; kept simple for parity)
-df["embedding"] = df["sentence"].apply(lambda s: model.encode(s, convert_to_tensor=True).tolist())
-
-# Persist
-df.to_csv(OUT, index=False)
-print(f"[✓] Saved MPNet embeddings → {OUT}")
+if __name__ == "__main__" and "main" in globals():
+    main()
