@@ -26,9 +26,11 @@ import os
 import sys
 import argparse
 import csv
+import logging
 from typing import List, Optional
 
 CENTROIDS_PATH = "data/validation/centroids_mpnet.json"
+logger = logging.getLogger(__name__)
 
 _CLASSIFY_TWO_STAGE = None
 
@@ -95,8 +97,21 @@ def classify_file(
         return output_path
 
     # Read sentences
-    with open(input_path, "r", encoding="utf-8") as f:
-        sentences = [line.strip() for line in f if line.strip()]
+    try:
+        with open(input_path, "r", encoding="utf-8") as f:
+            sentences = [line.strip() for line in f if line.strip()]
+    except FileNotFoundError:
+        logger.error("Input AI sentence file not found: %s", input_path)
+        raise
+    except PermissionError:
+        logger.error("Permission denied reading AI sentence file: %s", input_path)
+        raise
+    except OSError:
+        logger.error("OS error reading AI sentence file: %s", input_path, exc_info=True)
+        raise
+
+    if not sentences:
+        logger.warning("Input AI sentence file has no non-empty sentences: %s", input_path)
 
     # Prepare rows for CSV
     rows = []
@@ -142,7 +157,7 @@ def classify_file(
 
         return pA, pS, pI, cA, cS, cI
 
-    for sent in sentences:
+    for sent_idx, sent in enumerate(sentences, start=1):
         try:
             classify_two_stage = _get_classify_two_stage()
             label, scores = classify_two_stage(
@@ -169,7 +184,35 @@ def classify_file(
                     "min_tokens": min_tokens,
                 }
             )
+        except (ValueError, RuntimeError, TypeError) as exc:
+            logger.warning(
+                "Sentence classification failed for %s [idx=%d]: %s",
+                input_path,
+                sent_idx,
+                exc,
+                exc_info=True,
+            )
+            rows.append(
+                {
+                    "sentence": sent,
+                    "label_pred": "ERROR",
+                    "p_actionable": None,
+                    "p_speculative": None,
+                    "p_irrelevant": None,
+                    "cos_to_A": None,
+                    "cos_to_S": None,
+                    "cos_to_I": None,
+                    "tau": tau,
+                    "eps_irr": eps_irr,
+                    "min_tokens": min_tokens,
+                }
+            )
         except Exception:
+            logger.exception(
+                "Unexpected sentence classification failure for %s [idx=%d]",
+                input_path,
+                sent_idx,
+            )
             rows.append(
                 {
                     "sentence": sent,
@@ -201,15 +244,25 @@ def classify_file(
         "eps_irr",
         "min_tokens",
     ]
-    with open(output_path, "w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(rows)
+    try:
+        with open(output_path, "w", encoding="utf-8", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(rows)
+    except PermissionError:
+        logger.error("Permission denied writing classification output: %s", output_path)
+        raise
+    except OSError:
+        logger.error("OS error writing classification output: %s", output_path, exc_info=True)
+        raise
 
     return output_path
 
 
 def main():
+    if not logging.getLogger().handlers:
+        logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+
     parser = argparse.ArgumentParser(description="Batch classify AI sentences across filings.")
     parser.add_argument(
         "--base-dir", default="data/processed/sec", help="Root dir containing filings."
@@ -284,12 +337,26 @@ def main():
 
     try:
         centroids_mtime = os.path.getmtime(CENTROIDS_PATH)
-    except Exception:
-        centroids_mtime = None
+    except OSError:
         centroids_mtime = None
 
     if not os.path.isdir(base_dir):
-        print(f"❌ Base directory not found: {base_dir}")
+        logger.error("Base directory not found: %s", base_dir)
+        sys.exit(1)
+    if not os.path.isfile(CENTROIDS_PATH):
+        logger.error("Centroids file not found: %s", CENTROIDS_PATH)
+        sys.exit(1)
+    if centroids_mtime is None:
+        logger.error("Centroids file is not readable: %s", CENTROIDS_PATH)
+        sys.exit(1)
+    try:
+        _get_classify_two_stage()
+    except Exception:
+        logger.exception(
+            "Classifier initialization failed (model/centroids). "
+            "Verify local model dependencies and centroids file: %s",
+            CENTROIDS_PATH,
+        )
         sys.exit(1)
 
     files = find_ai_sentence_files(base_dir, years, limit)
@@ -300,6 +367,7 @@ def main():
 
     processed = 0
     skipped = 0
+    errors = 0
     for i, inp in enumerate(files, 1):
         outp = inp.replace("_ai_sentences.txt", "_classified.csv")
         # Decide whether to skip or rebuild
@@ -308,7 +376,7 @@ def main():
             if refresh_if_centroids_newer and centroids_mtime is not None:
                 try:
                     out_mtime = os.path.getmtime(outp)
-                except Exception:
+                except OSError:
                     out_mtime = -1
                 if out_mtime < centroids_mtime:
                     print(
@@ -324,18 +392,36 @@ def main():
                 continue
 
         print(f"🔍 {i:>4}/{len(files)} Classifying → {os.path.relpath(outp)}")
-        classify_file(
-            inp,
-            force=bool(force),
-            quick_two_stage=quick_two_stage,
-            rule_boosts=rule_boosts,
-            tau=tau,
-            eps_irr=eps_irr,
-            min_tokens=min_tokens,
-        )
-        processed += 1
+        try:
+            classify_file(
+                inp,
+                force=bool(force),
+                quick_two_stage=quick_two_stage,
+                rule_boosts=rule_boosts,
+                tau=tau,
+                eps_irr=eps_irr,
+                min_tokens=min_tokens,
+            )
+            processed += 1
+        except (FileNotFoundError, PermissionError, OSError, ValueError, RuntimeError) as exc:
+            errors += 1
+            logger.error(
+                "Failed classifying file %s (%d/%d): %s",
+                inp,
+                i,
+                len(files),
+                exc,
+                exc_info=True,
+            )
+            continue
+        except Exception:
+            errors += 1
+            logger.exception("Unexpected failure classifying file %s (%d/%d)", inp, i, len(files))
+            continue
 
-    print(f"[Summary] processed={processed}, skipped={skipped}, total={len(files)}")
+    print(
+        f"[Summary] processed={processed}, skipped={skipped}, errors={errors}, total={len(files)}"
+    )
     print(f"Base dir: {base_dir}")
     if years:
         print(f"Years: {', '.join(years)}")

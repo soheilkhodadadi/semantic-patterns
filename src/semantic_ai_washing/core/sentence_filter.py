@@ -15,7 +15,11 @@ from __future__ import annotations
 from functools import lru_cache
 from pathlib import Path
 from typing import Iterable, List, Optional
+import logging
 import re
+
+
+logger = logging.getLogger(__name__)
 
 # --- Keyword loading ---------------------------------------------------------
 
@@ -62,13 +66,33 @@ def _get_spacy():
     """Lazy import/load of spaCy. Falls back to a regex splitter if unavailable."""
     try:
         import spacy  # type: ignore
-
-        try:
-            return spacy.load("en_core_web_sm", disable=["ner", "tagger", "lemmatizer"])
-        except Exception:
-            # small fallback model if package name differs or not installed
-            return spacy.blank("en")
+    except ImportError:
+        logger.debug("spaCy is not installed; using regex sentence splitter.", exc_info=True)
+        return None
     except Exception:
+        logger.debug(
+            "Unexpected spaCy import failure; using regex sentence splitter.", exc_info=True
+        )
+        return None
+
+    try:
+        return spacy.load("en_core_web_sm", disable=["ner", "tagger", "lemmatizer"])
+    except (OSError, ValueError):
+        logger.debug("spaCy model load failed; attempting blank pipeline fallback.", exc_info=True)
+        try:
+            return spacy.blank("en")
+        except (OSError, ValueError, RuntimeError):
+            logger.debug("spaCy blank pipeline setup failed; using regex splitter.", exc_info=True)
+            return None
+        except Exception:
+            logger.debug(
+                "Unexpected spaCy blank setup failure; using regex splitter.", exc_info=True
+            )
+            return None
+    except Exception:
+        logger.debug(
+            "Unexpected spaCy load failure; using regex sentence splitter.", exc_info=True
+        )
         return None
 
 
@@ -90,14 +114,24 @@ def segment_sentences(text: str) -> List[str]:
         if "sentencizer" not in nlp.pipe_names:
             try:
                 nlp.add_pipe("sentencizer")
-            except Exception:
-                pass
+            except (ValueError, RuntimeError, AttributeError):
+                logger.debug(
+                    "Failed to add spaCy sentencizer; proceeding with existing pipeline.",
+                    exc_info=True,
+                )
         try:
             doc = nlp(text)
             sents = [s.text.strip() for s in doc.sents]
             return [s for s in sents if s]
+        except (ValueError, RuntimeError, TypeError):
+            logger.debug(
+                "spaCy sentence segmentation failed; falling back to regex.", exc_info=True
+            )
         except Exception:
-            pass
+            logger.debug(
+                "Unexpected spaCy sentence segmentation failure; falling back to regex.",
+                exc_info=True,
+            )
 
     # fallback
     parts = _SENT_END.split(text)
@@ -241,43 +275,73 @@ def merge_page_fragments(
     idx = 0
 
     while idx < len(sentences):
-        current = sentences[idx].strip()
+        raw_current = sentences[idx]
+        if not isinstance(raw_current, str):
+            logger.warning(
+                "Skipping non-string page fragment at idx=%d (type=%s).",
+                idx,
+                type(raw_current).__name__,
+            )
+            idx += 1
+            continue
+
+        current = raw_current.strip()
         if not current:
             idx += 1
             continue
 
-        if not (_is_page_fragment(current) and _is_incomplete_page_fragment(current)):
-            out.append(current)
+        try:
+            if not (_is_page_fragment(current) and _is_incomplete_page_fragment(current)):
+                out.append(current)
+                idx += 1
+                continue
+
+            rebuilt = (
+                _reconstruct_with_raw_context(raw_text, current, context_chars)
+                if raw_text
+                else None
+            )
+
+            used_next = False
+            if rebuilt is not None:
+                rebuilt_key = _match_key(rebuilt)
+                if out and _match_key(out[-1]) and _match_key(out[-1]) in rebuilt_key:
+                    out.pop()
+                if idx + 1 < len(sentences):
+                    next_raw = sentences[idx + 1]
+                    if isinstance(next_raw, str):
+                        next_fragment = next_raw.strip()
+                        next_key = _match_key(next_fragment)
+                        used_next = bool(next_key and next_key in rebuilt_key)
+            else:
+                prev = out.pop() if out else ""
+                nxt = ""
+                if idx + 1 < len(sentences):
+                    next_raw = sentences[idx + 1]
+                    if isinstance(next_raw, str):
+                        nxt = next_raw.strip()
+                        used_next = bool(nxt)
+                center = _PAGE_MARKER.sub(" ", current).strip()
+                rebuilt = " ".join(part for part in (prev, center, nxt) if part)
+
+            normalized = _normalize_sentence(rebuilt)
+            if normalized:
+                out.append(normalized)
+            else:
+                out.append(current)
+
+            idx += 2 if used_next else 1
+        except (IndexError, TypeError, ValueError, AttributeError) as exc:
+            logger.warning(
+                "Page-fragment merge failed at idx=%d: %s. Keeping unmerged fragment.",
+                idx,
+                exc,
+                exc_info=True,
+            )
+            fallback = _normalize_sentence(current)
+            if fallback:
+                out.append(fallback)
             idx += 1
-            continue
-
-        rebuilt = (
-            _reconstruct_with_raw_context(raw_text, current, context_chars) if raw_text else None
-        )
-
-        used_next = False
-        if rebuilt is not None:
-            rebuilt_key = _match_key(rebuilt)
-            if out and _match_key(out[-1]) and _match_key(out[-1]) in rebuilt_key:
-                out.pop()
-            if idx + 1 < len(sentences):
-                next_fragment = sentences[idx + 1].strip()
-                next_key = _match_key(next_fragment)
-                used_next = bool(next_key and next_key in rebuilt_key)
-        else:
-            prev = out.pop() if out else ""
-            nxt = ""
-            if idx + 1 < len(sentences):
-                nxt = sentences[idx + 1].strip()
-                used_next = bool(nxt)
-            center = _PAGE_MARKER.sub(" ", current).strip()
-            rebuilt = " ".join(part for part in (prev, center, nxt) if part)
-
-        normalized = _normalize_sentence(rebuilt)
-        if normalized:
-            out.append(normalized)
-
-        idx += 2 if used_next else 1
 
     return out
 
@@ -297,30 +361,62 @@ def merge_sentence_fragments(sentences: List[str]) -> List[str]:
     idx = 0
 
     while idx < len(sentences):
-        current = sentences[idx].strip()
+        raw_current = sentences[idx]
         idx += 1
+        if not isinstance(raw_current, str):
+            logger.warning(
+                "Skipping non-string sentence fragment at idx=%d (type=%s).",
+                idx - 1,
+                type(raw_current).__name__,
+            )
+            continue
+        current = raw_current.strip()
 
         if _should_skip_fragment(current):
             continue
 
         combined = current
 
-        while _is_incomplete(combined):
-            # Advance to the next non-skipped fragment
-            while idx < len(sentences) and _should_skip_fragment(sentences[idx]):
+        try:
+            while _is_incomplete(combined):
+                # Advance to the next non-skipped fragment
+                while idx < len(sentences):
+                    candidate = sentences[idx]
+                    if not isinstance(candidate, str):
+                        logger.warning(
+                            "Skipping non-string continuation fragment at idx=%d (type=%s).",
+                            idx,
+                            type(candidate).__name__,
+                        )
+                        idx += 1
+                        continue
+                    if _should_skip_fragment(candidate):
+                        idx += 1
+                        continue
+                    break
+
+                if idx >= len(sentences):
+                    break
+
+                nxt_raw = sentences[idx]
+                if not isinstance(nxt_raw, str):
+                    idx += 1
+                    continue
+                nxt = nxt_raw.strip()
+
+                if not _starts_with_lower(nxt):
+                    break
+
+                # Consume and merge the continuation
+                combined = combined.rstrip(" ;") + " " + nxt.lstrip()
                 idx += 1
-
-            if idx >= len(sentences):
-                break
-
-            nxt = sentences[idx].strip()
-
-            if not _starts_with_lower(nxt):
-                break
-
-            # Consume and merge the continuation
-            combined = combined.rstrip(" ;") + " " + nxt.lstrip()
-            idx += 1
+        except (IndexError, TypeError, ValueError, AttributeError) as exc:
+            logger.warning(
+                "Sentence-fragment merge failed near idx=%d: %s. Keeping unmerged fragment.",
+                idx,
+                exc,
+                exc_info=True,
+            )
 
         combined = _normalize_sentence(combined)
 
