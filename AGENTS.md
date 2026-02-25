@@ -6,14 +6,14 @@ This document provides project-specific guidance for AI coding agents (like Open
 
 - Linting Tool: This project uses Ruff exclusively for Python linting and formatting. No other linters or formatters (like Flake8 or Black) are used.
 - Configuration: The pyproject.toml contains Ruff configurations (e.g. line length, file include/exclude patterns under [tool.ruff]).
-- How to Lint: Run make lint to check code style (this invokes ruff check .). All code should pass Ruff with no warnings or errors.
-- How to Format: Run make format to automatically format the code (this uses ruff format .). Ensure the code is formatted according to Ruff’s rules before committing.
+- How to Lint: Run `make lint` to check code style (this runs `ruff format --check` and `ruff check`). All code should pass Ruff with no warnings or errors.
+- How to Format: Run `make format` to apply auto-fixes (`ruff check --fix` and `ruff format`). Ensure code is clean afterward with `make lint`.
 
 ## Testing and Validation
 
 - Canonical Namespace: Use `semantic_ai_washing.*` imports for all new code. Legacy `src/*` module paths are transitional compatibility shims only.
 - Canonical Script Invocation: Prefer `python -m semantic_ai_washing.<domain>.<module>` after installing the package (`pip install -e .`) over direct `python src/...` execution.
-- No Unit Test Suite: The repository does not use a standard test framework like PyTest or unittest. Instead, testing and validation are performed via dedicated scripts.
+- Pytest Baseline: The repository now includes a root `tests/` pytest suite for regression coverage (currently focused on extraction/aggregation-critical paths). Use `pytest -q` as part of the default validation flow.
 - Classifier Evaluation: Use `python -m semantic_ai_washing.tests.evaluate_classifier_on_held_out` to evaluate the AI classifier on a held-out dataset. This script will output the model’s accuracy and other metrics, and it typically saves results (like a confusion matrix). It should complete without errors.
 - Manual Spot-Check: Use `python -m semantic_ai_washing.tests.spot_check_classifications` to perform a manual spot check of classifications. This script prints a random sample of sentences with their predicted labels for review, helping to qualitatively assess the model’s outputs.
 - Interpretation: Consider the evaluation successful if the accuracy meets the project’s quality threshold (see Definition of Done below) and the confusion matrix or sample outputs look reasonable (e.g. the model isn’t consistently mislabeling one category).
@@ -28,7 +28,7 @@ The project is organized under the src/ directory with sub-packages for differen
 - Compute Centroids: `src/semantic_ai_washing/classification/compute_centroids_mpnet.py` – Computes class centroids from the embedded sentences. The classifier uses these centroids as references for labeling new sentences.
 - Evaluate Classifier: `src/semantic_ai_washing/tests/evaluate_classifier_on_held_out.py` – Evaluates the classifier’s performance on a held-out test set. (As noted above, run this to get accuracy metrics and ensure the model meets quality targets.)
 - Spot-Check Classifications: `src/semantic_ai_washing/tests/spot_check_classifications.py` – Prints random classified sentences and their labels for manual verification of classification quality.
-- Aggregate Results: `src/semantic_ai_washing/aggregation/aggregate_classification_counts.py` – Aggregates per-sentence classification results into higher-level counts (for example, counting how many sentences of each class per document or per firm-year). Run this after classification to update summary statistics or dataset-wide metrics.
+- Aggregate Results: `src/semantic_ai_washing/aggregation/aggregate_classification_counts.py` – Aggregates per-sentence classification results into higher-level counts (for example, counting how many sentences of each class per document or per firm-year). It supports both legacy `*_classified.txt` and current `*_classified.csv` files.
 - Patent Data Integration: (If applicable) Scripts in `src/semantic_ai_washing/patents/` (e.g., merge_ai_with_patents.py) handle merging the AI classification results with external patent data to enrich the analysis.
 
 Usage: Most of these scripts are standalone and assume default file paths or configurations (often specified in the code or README). To run a script, use module execution (for example: `python -m semantic_ai_washing.classification.classify_all_ai_sentences`). Make sure any prerequisites (such as input data files or prior steps like embedding generation) are satisfied before running each script.
@@ -37,12 +37,12 @@ Usage: Most of these scripts are standalone and assume default file paths or con
 
 For any code contribution or task in this repository, the following criteria define when the task is “done” and ready for review/merge:
 
-- Lint & Format Clean: All Python code must pass Ruff linting with no errors, and be properly formatted according to Ruff’s rules. (Use make lint and make format to verify.)
+- Lint & Format Clean: All Python code must pass Ruff linting with no errors, and be properly formatted according to Ruff’s rules. (Use `make format` then `make lint` to verify.)
 - Accuracy ≥ 80%: The classifier must achieve at least 80% accuracy on the held-out evaluation set (this is the minimum quality gate per project guidelines). Run `python -m semantic_ai_washing.tests.evaluate_classifier_on_held_out` and confirm the accuracy meets or exceeds 0.80. Additionally, check that the confusion matrix from this evaluation looks reasonable (no unexpected pattern of misclassifications).
 - Data Processed: If the task involved adding or updating data (e.g., new documents or a new year of filings):
-  - Ensure filter_ai_sentences.py has been run to extract AI-related sentences from the new/updated data.
-  - Run classify_all_ai_sentences.py on the latest dataset so all new sentences are classified with the current model.
-  - If applicable, run aggregate_classification_counts.py to update any aggregated metrics or summary files (such as firm-year classification counts).
+  - Ensure `python -m semantic_ai_washing.data.extract_ai_sentences` has been run to extract AI-related sentences from new/updated data.
+  - Run `python -m semantic_ai_washing.classification.classify_all_ai_sentences` so all new sentences are classified with the current model.
+  - If applicable, run `python -m semantic_ai_washing.aggregation.aggregate_classification_counts` to update aggregated metrics (for example firm-year classification counts).
   - Verify that any new data (for example, all 2024 filings) are fully processed and included in the outputs.
 - Documentation & Logging: Document the outcome of the changes:
   - Update or create relevant documentation (README, etc.) if any processes or results have changed.

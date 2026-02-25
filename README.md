@@ -1,74 +1,86 @@
-# Semantic Patterns: Detecting AI-Washing in Corporate Disclosures
+# Semantic Patterns: AI-Washing Detection Pipeline
 
-## Introduction
+## Overview
 
-This project addresses the growing concern of **AI-washing**—the practice where companies use ambiguous or exaggerated language about artificial intelligence (AI) in their corporate disclosures, particularly in SEC 10-K filings. By leveraging natural language processing (NLP) techniques, this project aims to identify and classify AI-related sentences into meaningful categories that reflect the nature and intent of AI mentions. Understanding these patterns can help investors, regulators, and researchers assess the authenticity and impact of AI claims in financial documents.
+This repository contains a research pipeline for identifying and classifying AI-related language in SEC 10-K filings.  
+The workflow extracts AI-related sentences, classifies each sentence as **Actionable**, **Speculative**, or **Irrelevant**, and aggregates sentence-level predictions to firm-year features for downstream analysis.
 
-### Research Context and Goals
+## Python and Environment
 
-- **Problem:** Companies often mention AI in vague or speculative ways to appear innovative or attract investment, without concrete evidence or initiatives.
-- **Objective:** Develop a semantic classification pipeline that distinguishes between **Actionable**, **Speculative**, and **Irrelevant** AI claims in 10-K filings.
-- **Outcomes:** Enable large-scale analysis of AI narratives, linking them to financial performance, patenting activity, and litigation risk.
-
-### End-to-End Usage Instructions (Quickstart)
-
-> **Stack**: Python 3.9+, sentence-transformers (MPNet), PyTorch, pandas.
->
-> **Data roots** (relative to repo):
->
-> - Raw filings: `data/raw/edgar/10k/<year>/...`
-> - Extracted AI sentences: `data/processed/sec/<year>/*_ai_sentences.txt`
-> - Validation labels: `data/validation/hand_labeled_ai_sentences_labeled_cleaned.csv`
-> - MPNet outputs: `data/validation/hand_labeled_ai_sentences_with_embeddings_mpnet.csv`, `data/validation/centroids_mpnet.json`
-
-### 1) Setup
+- Python baseline: **3.9+**
+- Recommended setup:
 
 ```bash
 python3.9 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip setuptools wheel
 pip install -e .
+# optional developer tools (pytest + ruff)
+pip install -e .[dev]
 ```
 
-Migration note:
-- Canonical invocation is now `python -m semantic_ai_washing.<domain>.<module>`.
-- Legacy `python src/...` entry paths are temporarily preserved via compatibility shims.
-
-Install verification:
+Verify installation:
 
 ```bash
 python -c "import semantic_ai_washing; print(semantic_ai_washing.__file__)"
 ```
 
-### 2) Generate MPNet embeddings & centroids (labels → vectors → class means)
+## Data Layout
+
+Expected locations (relative to repository root):
+
+- Raw/processed filing text root: `data/processed/sec/<year>/...`
+- AI keywords: `data/metadata/ai_keywords.txt`
+- Validation and centroids: `data/validation/...`
+
+The extraction and classification scripts discover files from these default paths unless overridden by CLI flags.
+
+## Quickstart Pipeline
+
+### 1) Extract AI-related sentences
 
 ```bash
-python -m semantic_ai_washing.classification.embed_labeled_sentences_mpnet
-python -m semantic_ai_washing.classification.compute_centroids_mpnet
+python -m semantic_ai_washing.data.extract_ai_sentences \
+  --input-dir data/processed/sec \
+  --keywords data/metadata/ai_keywords.txt \
+  --include-forms 10-K \
+  --years 2024
 ```
 
-This writes `centroids_mpnet.json` that the classifier will load.
+Useful options:
 
-### 3) Classify AI sentences across filings
+- `--limit 1` for a quick smoke run
+- `--force` to overwrite existing `*_ai_sentences.txt`
+- `--file <path>` to process one filing directly
+- `--log-level DEBUG` for verbose extraction diagnostics
 
-### Basic (single year)
+### 2) Classify extracted sentences
 
-python -m semantic_ai_washing.classification.classify_all_ai_sentences --years 2024
-
-### Recommended (two-stage + lexical boosts; will re-run files when centroids are newer)
-
+```bash
 python -m semantic_ai_washing.classification.classify_all_ai_sentences \
-  --years 2021 2022 2023 2024 \
+  --years 2024 \
   --two-stage \
   --rule-boosts \
-  --tau 0.07 --eps-irr 0.03 --min-tokens 6
+  --tau 0.07 \
+  --eps-irr 0.03 \
+  --min-tokens 6
+```
 
-Notes:
+### 3) Aggregate to firm-year counts/features
 
-- The script scans `data/processed/sec/<year>/*_ai_sentences.txt` and writes sibling `*_classified.txt` files.
-- Outputs are refreshed when `data/validation/centroids_mpnet.json` is newer than existing `*_classified.txt`.
+```bash
+python -m semantic_ai_washing.aggregation.aggregate_classification_counts
+```
 
-## 4) Evaluate on held‑out validation set
+## Outputs
+
+- `*_ai_sentences.txt`: extracted AI-related sentences (one sentence per line)
+- `*_classified.csv`: per-sentence predicted label and score columns
+- `data/final/ai_frequencies_by_firm_year.csv`: firm-year aggregated counts and `log1p` features
+
+## Evaluation and Testing
+
+Held-out classifier evaluation:
 
 ```bash
 python -m semantic_ai_washing.tests.evaluate_classifier_on_held_out \
@@ -79,199 +91,28 @@ python -m semantic_ai_washing.tests.evaluate_classifier_on_held_out \
   --min-tokens 6
 ```
 
-*Reads* `data/validation/held_out_sentences.csv`, *prints* accuracy and confusion details, and *writes* `data/validation/evaluation_results.csv`.
-
-### 5) (Optional) Aggregate to firm‑year afterward
-
-Use the aggregation utilities in `src/semantic_ai_washing/aggregation/` once 2024 (and additional years) are classified to produce firm‑year counts and shares (Actionable/Speculative/Irrelevant). See the *Workflow & Stages* section below.
-
-### Key Scripts & What They Do
-
-- `src/semantic_ai_washing/classification/embed_labeled_sentences_mpnet.py` — Encode labeled sentences with `all-mpnet-base-v2`; saves a CSV with embeddings.
-- `src/semantic_ai_washing/classification/compute_centroids_mpnet.py` — Compute per‑label mean vectors (centroids) from MPNet embeddings; saves `centroids_mpnet.json`.
-- `src/semantic_ai_washing/core/classify.py` — Loads MPNet + centroids and exposes `classify_sentence()` used everywhere.
-- `src/semantic_ai_washing/classification/classify_all_ai_sentences.py` — Batch classifies every `*_ai_sentences.txt` under `data/processed/sec/<year>/` and writes `*_classified.txt`.
-- `src/semantic_ai_washing/tests/evaluate_classifier_on_held_out.py` — Evaluates the MPNet classifier on `held_out_sentences.csv` and writes a CSV of predictions.
-- `src/semantic_ai_washing/aggregation/aggregate_classification_counts.py` — Rolls sentence‑level classifications into firm‑year counts/shares for A/S/I.
-- `src/semantic_ai_washing/analysis/summarize_classification_counts.py` — Quick summaries/plots (e.g., distribution by year/industry).
-- `src/semantic_ai_washing/classification/utils.py` — Helpers for loading centroids and shared logic.
-
-### Two‑Stage Classifier (how it works & tunables)
-
-**Stage 1 — Irrelevance gate (fast heuristics):** Filters "laundry‑list/regulatory" lines, fragments, and headers using:
-
-- Minimum token length (`--min-tokens`, e.g., 6)
-- "Listy" triggers (e.g., *including, such as, as well as*) and category‑word density
-- Punctuation/structure cues (long semicolon lists, colon headers)
-- A small epsilon threshold for borderline cases (`--eps-irr`, e.g., 0.03)
-
-**Stage 2 — Actionable vs. Speculative (centroids + boosts):**
-
-- Cosine similarity to MPNet centroids (Actionable, Speculative)
-- Optional lexical boosts: modals (*may, plan, expect*) push toward Speculative; action verbs/numerics (*launched, implemented, %, customers*) push toward Actionable (`--rule-boosts`)
-- Margin rule to avoid over‑claiming when scores are close (`--tau`, e.g., 0.07)
-
-**Enable with flags** in both evaluation and batch classification:
-
-- `--two-stage` — turn on the two‑stage flow
-- `--rule-boosts` — apply small lexical nudges
-- `--tau` — decision margin for A vs. S (default 0.07 recommended)
-- `--eps-irr` — irrelevance epsilon (default 0.03 recommended)
-- `--min-tokens` — minimum token count for a valid sentence (default 6)
-
-### Workflow & Stages (Conceptual)
-
-### Stage 1 — NLP & Classification
-
-1) Raw filings → AI sentence extraction (regex + spaCy) → `data/processed/sec/<year>/*_ai_sentences.txt`  
-2) Labeled validation set → MPNet embeddings → centroids (A/S/I)  
-3) Apply MPNet+centroids to classify all extracted sentences → `*_classified.txt`  
-4) Held‑out evaluation (target ≥ 80% accuracy)
-
-**Stage 2 — Integration (IDs, patents, controls)**
-5) Build CIK↔ticker↔GVKEY crosswalk, derive industries  
-6) Aggregate sentences to firm‑year A/S/I counts & shares  
-7) Retrieve/aggregate patent counts (AI vs total)  
-8) Pull Compustat controls via WRDS and merge into panel
-
-**Stage 3 — Analysis & Delivery**
-9) Feature engineering (AI_intensity, shares, SpecMinusAct, Δyear)  
-10) Baseline & FE regressions; clustered SEs  
-11) Export tables/figures + delivery memo
-
-### One‑line diagram
-
-```text
-Raw Filings → AI Sentence Extraction → MPNet Centroids → Sentence Classification →
-Firm‑Year Aggregation → Crosswalk/Patents/Controls Merge → Analysis → Tables/Delivery
-```
-
-### Configuration Files and Parameters
-
-- **`requirements.txt`**: Lists Python package dependencies required to run the project.
-- **Keyword Filters**: Located within `src/semantic_ai_washing/data/` scripts; these define AI-related keywords used to extract candidate sentences.
-- **Label Definitions**: Found in the labeled CSV file under `data/validation/`; labels can be updated or expanded as needed.
-- **Embedding Model**: Uses `sentence-transformers/all-mpnet-base-v2` by default; configured in `src/semantic_ai_washing/core/classify.py`.
-- **Pipeline Parameters**: Thresholds and parameters for classification and evaluation can be adjusted in the respective scripts.
-- **Classifier flags (both eval & batch):** `--two-stage`, `--rule-boosts`, `--tau` (A↔S margin, rec. 0.07), `--eps-irr` (irrelevance epsilon, rec. 0.03), `--min-tokens` (rec. 6).
-
-### Reproducibility (Aug 26, 2025)
-
-#### Evaluate on held‑out
+Project QA commands:
 
 ```bash
-python -m semantic_ai_washing.tests.evaluate_classifier_on_held_out \
-  --two-stage --rule-boosts --tau 0.07 --eps-irr 0.03 --min-tokens 6
+make format
+make lint
+pytest -q
 ```
 
-#### Batch‑classify filings (refresh when centroids are newer)
+CI runs Ruff + pytest on each push and pull request.
 
-```bash
-python -m semantic_ai_washing.classification.classify_all_ai_sentences \
-  --years 2021 2022 2023 2024 \
-  --two-stage --rule-boosts --tau 0.07 --eps-irr 0.03 --min-tokens 6
-```
+## Project Structure
 
-#### Outputs & artifacts
+- `src/semantic_ai_washing/data/`: extraction and data-prep scripts
+- `src/semantic_ai_washing/core/`: reusable sentence filtering and classification logic
+- `src/semantic_ai_washing/classification/`: batch classification and centroid tooling
+- `src/semantic_ai_washing/aggregation/`: firm-year aggregation and merges
+- `src/semantic_ai_washing/analysis/`: analysis and reporting scripts
+- `tests/`: pytest-based regression tests
 
-- `data/validation/evaluation_results.csv` — latest evaluation log with per‑sentence predictions
-- `data/validation/held_out_sentences.csv` — current held‑out set
-- `data/validation/centroids_mpnet.json` — MPNet centroids
-- `data/processed/sec/<year>/*_classified.txt` — per‑filing sentence classifications
+## Development Workflow
 
----
+Use canonical module execution (`python -m semantic_ai_washing...`) for all new work.  
+Legacy `src/...` entrypoint scripts are compatibility shims and should not be the default for new documentation or automation.
 
-### Stage 1 — NLP Upgrade Checklist (branch: `stage1-nlp-upgrade`)
-
-Use this checklist to track progress on upgrading to MPNet embeddings and running the end-to-end classification.
-
-### Branch setup
-
-- [ ] Create and switch to branch:
-
-  ```bash
-  git checkout main && git pull origin main
-  git checkout -b stage1-nlp-upgrade
-  ```
-
-- [ ] Commit and push milestones:
-
-  ```bash
-  git add -A && git commit -m "Describe milestone"
-  git push -u origin stage1-nlp-upgrade
-  ```
-
-### 1) Embeddings & Centroids
-
-- [ ] Run MPNet embedding script:
-
-  ```bash
-  python -m semantic_ai_washing.classification.embed_labeled_sentences_mpnet
-  ```
-
-  *Outputs:* `data/validation/hand_labeled_ai_sentences_with_embeddings_mpnet.csv`
-- [ ] Compute centroids:
-
-  ```bash
-  python -m semantic_ai_washing.classification.compute_centroids_mpnet
-  ```
-
-  *Outputs:* `data/validation/centroids_mpnet.json`
-
-- [ ] Verify `src/semantic_ai_washing/core/classify.py` uses:
-  - `MODEL_NAME="sentence-transformers/all-mpnet-base-v2"`
-  - `CENTROIDS_PATH="data/validation/centroids_mpnet.json"`
-
-### 2) Held‑out Evaluation (target ≥ 80% accuracy)
-
-- [ ] Ensure `src/semantic_ai_washing/tests/evaluate_classifier_on_held_out.py` imports:
-
-  ```python
-  from semantic_ai_washing.core.classify import classify_sentence
-  ```
-
-- [ ] Evaluate:
-
-  ```bash
-  python -m semantic_ai_washing.tests.evaluate_classifier_on_held_out
-  ```
-
-  *Inputs:* `data/validation/held_out_sentences.csv`  
-  *Outputs:* `data/validation/evaluation_results.csv`
-
-### 3) 2024 Classification Run
-
-- [ ] Confirm AI sentence files exist under `data/processed/sec/2024/`  
-- [ ] Run batch classification:
-
-  ```bash
-  python -m semantic_ai_washing.classification.classify_all_ai_sentences --years 2024
-  ```
-
-  *Outputs:* `*_classified.txt` files alongside input
-
-### 4) QA Gate
-
-- [ ] Held‑out accuracy ≥ 80%, confusion matrix looks reasonable  
-- [ ] 2024 fully classified with minimal errors  
-- [ ] Record metrics (accuracy, F1, thresholds) in commit message
-
-### 5) Merge & Tag
-
-- [ ] Create PR `stage1-nlp-upgrade → main`  
-- [ ] Merge after review and tag release:
-
-  ```bash
-  git checkout main && git pull origin main
-  git merge --no-ff stage1-nlp-upgrade
-  git push origin main
-  git tag -a v1-nlp -m "Stage 1 NLP upgrade (MPNet centroids, 2024 run)"
-  git push origin v1-nlp
-  ```
-
-### Changelog — 2025‑08‑26
-
-- Switched embeddings to `sentence-transformers/all-mpnet-base-v2` and recomputed centroids
-- Centralized classification in `src/semantic_ai_washing/core/classify.py` and updated tests to import from there
-- Added two‑stage logic (irrelevance gate → centroid A vs. S) with lexical boosts and tunables
-- Updated run commands and reproducibility instructions; latest held‑out accuracy ~84% (26/31)
+Branching, PR, and merge conventions are documented in [CONTRIBUTING.md](CONTRIBUTING.md).

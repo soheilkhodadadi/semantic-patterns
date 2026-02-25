@@ -3,7 +3,7 @@
 #################################################################################
 
 PROJECT_NAME = semantic-patterns
-PYTHON_VERSION = 3.10
+PYTHON_VERSION = 3.9
 PYTHON_INTERPRETER = python
 
 #################################################################################
@@ -80,23 +80,3 @@ export PRINT_HELP_PYSCRIPT
 
 help:
 	@$(PYTHON_INTERPRETER) -c "${PRINT_HELP_PYSCRIPT}" < $(MAKEFILE_LIST)
-
-# Directory structure
-└── src                    <- Source code for use in this project.
-    │
-    ├── __init__.py             <- Makes src a Python module
-    │
-    ├── config.py               <- Store useful variables and configuration
-    │
-    ├── dataset.py              <- Scripts to download or generate data
-    │
-    ├── features.py             <- Code to create features for modeling
-    │
-    ├── modeling                
-    │   ├── __init__.py 
-    │   ├── predict.py          <- Code to run model inference with trained models          
-    │   └── train.py            <- Code to train models
-    │
-    └── plots.py                <- Code to create visualizations
-from src.config import PROCESSED_DATA_DIR, RAW_DATA_DIRfrom src.config import PROCESSED_DATA_DIR
-

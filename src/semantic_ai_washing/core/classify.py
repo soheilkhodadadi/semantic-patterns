@@ -1,3 +1,14 @@
+"""
+Core sentence classification utilities for AI-washing labeling.
+
+This module loads the embedding backbone and class centroids once, then exposes:
+- ``classify_sentence`` for direct centroid-based labeling.
+- ``classify_two_stage`` for rule-assisted two-stage labeling used in batch runs.
+
+The implementation targets the MPNet + centroid setup used across evaluation and
+production classification scripts.
+"""
+
 import torch
 import torch.nn.functional as F
 from sentence_transformers import SentenceTransformer
@@ -108,11 +119,13 @@ MODALS = re.compile(
 
 
 def _centroid_scores(text: str) -> Dict[str, float]:
+    """Return cosine-similarity scores between input text and each class centroid."""
     emb = model.encode(text, convert_to_tensor=True).to(device)
     return {label: F.cosine_similarity(emb, c, dim=0).item() for label, c in centroids.items()}
 
 
 def adjust_scores_v2(text: str, s: Dict[str, float]) -> Dict[str, float]:
+    """Apply lightweight lexical/rule-based score adjustments to centroid scores."""
     # Law/regulation long list → Irrelevant; global-law intro handled elsewhere
     if LAWS_LIST_INTRO.search(text):
         s["Irrelevant"] = s.get("Irrelevant", 0.0) + 0.15
@@ -153,6 +166,7 @@ def adjust_scores_v2(text: str, s: Dict[str, float]) -> Dict[str, float]:
 
 
 def is_irrelevant_by_rules(text: str) -> bool:
+    """Heuristic gate for sentences that should be treated as Irrelevant."""
     # Do not gate when clear speculative focus or global-law intro
     if (
         FOCUS_ON_AI.search(text)
@@ -191,6 +205,7 @@ def is_irrelevant_by_rules(text: str) -> bool:
 
 
 def should_force_speculative(text: str) -> bool:
+    """Return True when explicit future/intent language should force Speculative."""
     # Explicit intent/future without strong action cues → Speculative
     return (
         (bool(MODALS.search(text)) and not bool(ACTION_VERBS.search(text)))
