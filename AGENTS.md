@@ -6,6 +6,7 @@ This document provides project-specific guidance for AI coding agents (like Open
 
 - Linting Tool: This project uses Ruff exclusively for Python linting and formatting. No other linters or formatters (like Flake8 or Black) are used.
 - Configuration: The pyproject.toml contains Ruff configurations (e.g. line length, file include/exclude patterns under [tool.ruff]).
+- Local Environment Baseline: Use the repo-local `.venv` interpreter for development and automation. Run `make bootstrap` once, then `make doctor` to verify interpreter, pip/module availability, and tooling.
 - How to Lint: Run `make lint` to check code style (this runs `ruff format --check` and `ruff check`). All code should pass Ruff with no warnings or errors.
 - How to Format: Run `make format` to apply auto-fixes (`ruff check --fix` and `ruff format`). Ensure code is clean afterward with `make lint`.
 
@@ -14,6 +15,7 @@ This document provides project-specific guidance for AI coding agents (like Open
 - Canonical Namespace: Use `semantic_ai_washing.*` imports for all new code. Legacy `src/*` module paths are transitional compatibility shims only.
 - Canonical Script Invocation: Prefer `python -m semantic_ai_washing.<domain>.<module>` after installing the package (`pip install -e .`) over direct `python src/...` execution.
 - Pytest Baseline: The repository now includes a root `tests/` pytest suite for regression coverage (currently focused on extraction/aggregation-critical paths). Use `pytest -q` as part of the default validation flow.
+- Recommended Preflight: Run `make doctor` before lint/tests to catch interpreter drift (for example conda base active while `.venv` is intended).
 - Classifier Evaluation: Use `python -m semantic_ai_washing.tests.evaluate_classifier_on_held_out` to evaluate the AI classifier on a held-out dataset. This script will output the model’s accuracy and other metrics, and it typically saves results (like a confusion matrix). It should complete without errors.
 - Manual Spot-Check: Use `python -m semantic_ai_washing.tests.spot_check_classifications` to perform a manual spot check of classifications. This script prints a random sample of sentences with their predicted labels for review, helping to qualitatively assess the model’s outputs.
 - Interpretation: Consider the evaluation successful if the accuracy meets the project’s quality threshold (see Definition of Done below) and the confusion matrix or sample outputs look reasonable (e.g. the model isn’t consistently mislabeling one category).
@@ -38,6 +40,7 @@ Usage: Most of these scripts are standalone and assume default file paths or con
 For any code contribution or task in this repository, the following criteria define when the task is “done” and ready for review/merge:
 
 - Lint & Format Clean: All Python code must pass Ruff linting with no errors, and be properly formatted according to Ruff’s rules. (Use `make format` then `make lint` to verify.)
+- Environment Health: Run `make bootstrap` then `make doctor` to ensure `.venv`, `python -m pip`, and `semantic_ai_washing` imports are healthy before QA checks.
 - Accuracy ≥ 80%: The classifier must achieve at least 80% accuracy on the held-out evaluation set (this is the minimum quality gate per project guidelines). Run `python -m semantic_ai_washing.tests.evaluate_classifier_on_held_out` and confirm the accuracy meets or exceeds 0.80. Additionally, check that the confusion matrix from this evaluation looks reasonable (no unexpected pattern of misclassifications).
 - Data Processed: If the task involved adding or updating data (e.g., new documents or a new year of filings):
   - Ensure `python -m semantic_ai_washing.data.extract_ai_sentences` has been run to extract AI-related sentences from new/updated data.

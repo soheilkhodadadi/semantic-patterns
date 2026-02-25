@@ -24,6 +24,8 @@ Legacy `src/...` script paths are compatibility shims and should only be used wh
 Run all checks before opening a PR:
 
 ```bash
+make bootstrap
+make doctor
 make format
 make lint
 pytest -q

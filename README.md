@@ -25,6 +25,24 @@ Verify installation:
 python -c "import semantic_ai_washing; print(semantic_ai_washing.__file__)"
 ```
 
+## Reliable Local Setup
+
+For reproducible local runs, prefer the repo-local `.venv` interpreter over conda base:
+
+```bash
+make bootstrap
+make doctor
+make format
+make lint
+pytest -q
+```
+
+If your shell defaults to conda base, activate the project environment explicitly:
+
+```bash
+source .venv/bin/activate
+```
+
 ## Data Layout
 
 Expected locations (relative to repository root):
