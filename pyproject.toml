@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [tool.ruff]
 line-length = 99
 src = ["src"]
-include = ["pyproject.toml", "src/**/*.py"]
+include = ["pyproject.toml", "src/**/*.py", "tests/**/*.py"]
 extend-exclude = [
     "src/aggregation",
     "src/analysis",
@@ -23,3 +23,7 @@ extend-exclude = [
 [tool.ruff.lint.isort]
 known-first-party = ["semantic_ai_washing", "src"]
 force-sort-within-sections = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
