@@ -139,9 +139,8 @@ def main():
     # 2) Otherwise de-dup on cleaned name.
     # If multiple rows share same non-empty cik, keep the first.
     if (out["cik"] != "").any():
-        out = (
-            out.sort_values(["cik", "name"])  # stable
-            .drop_duplicates(subset=["cik"], keep="first")
+        out = out.sort_values(["cik", "name"]).drop_duplicates(  # stable
+            subset=["cik"], keep="first"
         )
 
     # Now de-dup by cleaned name (for blanks or accidental repeats)

@@ -12,19 +12,25 @@ os.makedirs(os.path.dirname(output_path), exist_ok=True)
 # Load data
 df = pd.read_csv(input_path)
 
+
 # Safe conversion from string to tensor
 def safe_tensor(x):
     if isinstance(x, str) and x.startswith("[") and x.endswith("]"):
         try:
             vec = ast.literal_eval(x)
-            if isinstance(vec, list) and all(isinstance(n, float) for n in vec) and len(vec) == 384:
+            if (
+                isinstance(vec, list)
+                and all(isinstance(n, float) for n in vec)
+                and len(vec) == 384
+            ):
                 return torch.tensor(vec)
         except Exception:
             pass
     return None
 
+
 # Apply safe conversion
-df["embedding"] = df["embedding"].apply(safe_tensor) # type: ignore
+df["embedding"] = df["embedding"].apply(safe_tensor)  # type: ignore
 df = df[df["embedding"].notnull()]
 
 # Compute centroids per label

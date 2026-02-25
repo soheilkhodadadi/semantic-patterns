@@ -25,6 +25,7 @@ Notes
 - Skips CIKs that are missing any of the 4 required years
 - **New:** Only samples from CIKs that have both ticker and company_name present.
 """
+
 from __future__ import annotations
 import os
 import random
@@ -33,10 +34,10 @@ from typing import List
 
 # ---- Config -----------------------------------------------------------------
 INDEX_PATH = "data/metadata/available_filings_index.csv"
-CIK_MAP    = "data/external/cik_ticker_list.csv"
-OUT_FIRMS  = "data/metadata/company_list_50.csv"
-OUT_FILES  = "data/metadata/sample_filings_200.csv"
-OUT_GAPS  = "data/metadata/company_mapping_gaps.csv"
+CIK_MAP = "data/external/cik_ticker_list.csv"
+OUT_FIRMS = "data/metadata/company_list_50.csv"
+OUT_FILES = "data/metadata/sample_filings_200.csv"
+OUT_GAPS = "data/metadata/company_mapping_gaps.csv"
 
 REQUIRED_YEARS: List[int] = [2021, 2022, 2023, 2024]
 FORM = "10-K"
@@ -56,7 +57,9 @@ def _clean_cik(series: pd.Series) -> pd.Series:
 def main() -> None:
     # 1) Load the index of available filings
     if not os.path.exists(INDEX_PATH):
-        raise FileNotFoundError(f"Missing index file: {INDEX_PATH}. Run index_sec_filings.py first.")
+        raise FileNotFoundError(
+            f"Missing index file: {INDEX_PATH}. Run index_sec_filings.py first."
+        )
     idx = pd.read_csv(INDEX_PATH)
     idx.columns = idx.columns.str.strip().str.lower()
 
@@ -64,14 +67,16 @@ def main() -> None:
     needed = {"cik", "year", "form", "filename", "path"}
     missing = needed - set(idx.columns)
     if missing:
-        raise ValueError(f"Index is missing columns: {sorted(missing)}. Found: {sorted(idx.columns)}")
+        raise ValueError(
+            f"Index is missing columns: {sorted(missing)}. Found: {sorted(idx.columns)}"
+        )
 
     # 2) Keep only required 10-Ks in required years
     idx["cik"] = _clean_cik(idx["cik"])
     idx = idx[(idx["form"].str.upper() == FORM) & (idx["year"].isin(REQUIRED_YEARS))].copy()
 
     # 3) Find CIKs that have all required years
-    have_years = (idx.groupby("cik")["year"].nunique() == len(REQUIRED_YEARS))
+    have_years = idx.groupby("cik")["year"].nunique() == len(REQUIRED_YEARS)
     eligible_ciks = have_years[have_years].index.tolist()
     if not eligible_ciks:
         raise RuntimeError("No CIKs found with complete 2021–2024 10‑K coverage.")
@@ -95,12 +100,15 @@ def main() -> None:
     cm["cik"] = _clean_cik(cm["cik"])
 
     # 5) Join eligible CIKs to the map and keep only those with BOTH fields present
-    elig_map = (
-        pd.DataFrame({"cik": eligible_ciks})
-        .merge(cm[["cik", "ticker", "company_name"]], on="cik", how="left")
+    elig_map = pd.DataFrame({"cik": eligible_ciks}).merge(
+        cm[["cik", "ticker", "company_name"]], on="cik", how="left"
     )
-    complete_mask = elig_map["ticker"].notna() & elig_map["ticker"].astype(str).str.strip().ne("") \
-                    & elig_map["company_name"].notna() & elig_map["company_name"].astype(str).str.strip().ne("")
+    complete_mask = (
+        elig_map["ticker"].notna()
+        & elig_map["ticker"].astype(str).str.strip().ne("")
+        & elig_map["company_name"].notna()
+        & elig_map["company_name"].astype(str).str.strip().ne("")
+    )
     complete = elig_map[complete_mask].copy()
     gaps = elig_map[~complete_mask].copy()
     # write gaps for visibility
@@ -129,10 +137,9 @@ def main() -> None:
         )
 
     # 8) Final firm table (no null ticker/company_name)
-    firms = (
-        complete[complete["cik"].isin(sample_ciks)]
-        .sort_values("cik")[["cik", "ticker", "company_name"]]
-    )
+    firms = complete[complete["cik"].isin(sample_ciks)].sort_values("cik")[
+        ["cik", "ticker", "company_name"]
+    ]
 
     # 9) Write outputs
     firms.to_csv(OUT_FIRMS, index=False)

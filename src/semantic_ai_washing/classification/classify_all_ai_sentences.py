@@ -22,7 +22,6 @@ Usage examples:
     python src/classification/classify_all_ai_sentences.py --years 2024 --force
 """
 
-
 import os
 import sys
 import argparse
@@ -32,7 +31,9 @@ from typing import List, Optional
 from semantic_ai_washing.core.classify import CENTROIDS_PATH, classify_two_stage
 
 
-def find_ai_sentence_files(base_dir: str, years: Optional[List[str]] = None, limit: int = 0) -> List[str]:
+def find_ai_sentence_files(
+    base_dir: str, years: Optional[List[str]] = None, limit: int = 0
+) -> List[str]:
     """
     Find all *_ai_sentences.txt files under base_dir.
     If years are provided (e.g., ["2021","2022"]), only search those subfolders.
@@ -61,7 +62,6 @@ def find_ai_sentence_files(base_dir: str, years: Optional[List[str]] = None, lim
     return candidates
 
 
-
 def classify_file(
     input_path: str,
     force: bool = False,
@@ -69,7 +69,7 @@ def classify_file(
     rule_boosts: bool = False,
     tau: float = 0.05,
     eps_irr: float = 0.02,
-    min_tokens: int = 6
+    min_tokens: int = 6,
 ) -> str:
     """
     Classify the sentences in a single *_ai_sentences.txt file.
@@ -141,41 +141,52 @@ def classify_file(
                 min_tokens=min_tokens,
             )
             pA, pS, pI, cA, cS, cI = _unpack_scores(scores)
-            rows.append({
-                "sentence": sent,
-                "label_pred": label,
-                "p_actionable": pA,
-                "p_speculative": pS,
-                "p_irrelevant": pI,
-                "cos_to_A": cA,
-                "cos_to_S": cS,
-                "cos_to_I": cI,
-                "tau": tau,
-                "eps_irr": eps_irr,
-                "min_tokens": min_tokens,
-            })
+            rows.append(
+                {
+                    "sentence": sent,
+                    "label_pred": label,
+                    "p_actionable": pA,
+                    "p_speculative": pS,
+                    "p_irrelevant": pI,
+                    "cos_to_A": cA,
+                    "cos_to_S": cS,
+                    "cos_to_I": cI,
+                    "tau": tau,
+                    "eps_irr": eps_irr,
+                    "min_tokens": min_tokens,
+                }
+            )
         except Exception:
-            rows.append({
-                "sentence": sent,
-                "label_pred": "ERROR",
-                "p_actionable": None,
-                "p_speculative": None,
-                "p_irrelevant": None,
-                "cos_to_A": None,
-                "cos_to_S": None,
-                "cos_to_I": None,
-                "tau": tau,
-                "eps_irr": eps_irr,
-                "min_tokens": min_tokens,
-            })
+            rows.append(
+                {
+                    "sentence": sent,
+                    "label_pred": "ERROR",
+                    "p_actionable": None,
+                    "p_speculative": None,
+                    "p_irrelevant": None,
+                    "cos_to_A": None,
+                    "cos_to_S": None,
+                    "cos_to_I": None,
+                    "tau": tau,
+                    "eps_irr": eps_irr,
+                    "min_tokens": min_tokens,
+                }
+            )
 
     # Ensure directory exists and write CSV (held-out-friendly columns)
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     fieldnames = [
-        "sentence", "label_pred",
-        "p_actionable", "p_speculative", "p_irrelevant",
-        "cos_to_A", "cos_to_S", "cos_to_I",
-        "tau", "eps_irr", "min_tokens"
+        "sentence",
+        "label_pred",
+        "p_actionable",
+        "p_speculative",
+        "p_irrelevant",
+        "cos_to_A",
+        "cos_to_S",
+        "cos_to_I",
+        "tau",
+        "eps_irr",
+        "min_tokens",
     ]
     with open(output_path, "w", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
@@ -187,17 +198,26 @@ def classify_file(
 
 def main():
     parser = argparse.ArgumentParser(description="Batch classify AI sentences across filings.")
-    parser.add_argument("--base-dir", default="data/processed/sec", help="Root dir containing filings.")
     parser.add_argument(
-        "--years", nargs="*", default=None, help="Optional list of year folders to scan (e.g., 2021 2022 2023 2024)."
+        "--base-dir", default="data/processed/sec", help="Root dir containing filings."
     )
-    parser.add_argument("--limit", type=int, default=0, help="Max files to process (0 = no limit).")
-    parser.add_argument("--force", action="store_true", help="Recompute even if *_classified.csv exists.")
+    parser.add_argument(
+        "--years",
+        nargs="*",
+        default=None,
+        help="Optional list of year folders to scan (e.g., 2021 2022 2023 2024).",
+    )
+    parser.add_argument(
+        "--limit", type=int, default=0, help="Max files to process (0 = no limit)."
+    )
+    parser.add_argument(
+        "--force", action="store_true", help="Recompute even if *_classified.csv exists."
+    )
     parser.add_argument(
         "--refresh-if-centroids-newer",
         action="store_true",
         default=True,
-    help="Rebuild outputs if centroids file is newer than existing *_classified.csv (default: on)",
+        help="Rebuild outputs if centroids file is newer than existing *_classified.csv (default: on)",
     )
     parser.add_argument(
         "--no-refresh-if-centroids-newer",
@@ -205,13 +225,34 @@ def main():
         action="store_false",
         help="Disable timestamp-based refresh logic",
     )
-    parser.add_argument("--two-stage", dest="two_stage", action="store_true", help="Enable Irrelevant gate + A/S margin logic (two-stage)")
-    parser.add_argument("--rule-boosts", dest="rule_boosts", action="store_true", help="Apply regex/lexical boosts used in evaluation")
+    parser.add_argument(
+        "--two-stage",
+        dest="two_stage",
+        action="store_true",
+        help="Enable Irrelevant gate + A/S margin logic (two-stage)",
+    )
+    parser.add_argument(
+        "--rule-boosts",
+        dest="rule_boosts",
+        action="store_true",
+        help="Apply regex/lexical boosts used in evaluation",
+    )
     # Back-compat aliases
-    parser.add_argument("--quick-two-stage", dest="two_stage", action="store_true", help=argparse.SUPPRESS)
-    parser.add_argument("--tau", type=float, default=0.05, help="Fine-stage A/S margin threshold (default 0.05)")
-    parser.add_argument("--eps-irr", type=float, default=0.02, help="Irrelevant closeness epsilon (default 0.02)")
-    parser.add_argument("--min-tokens", type=int, default=6, help="Minimum tokens to consider non-fragment (default 6)")
+    parser.add_argument(
+        "--quick-two-stage", dest="two_stage", action="store_true", help=argparse.SUPPRESS
+    )
+    parser.add_argument(
+        "--tau", type=float, default=0.05, help="Fine-stage A/S margin threshold (default 0.05)"
+    )
+    parser.add_argument(
+        "--eps-irr", type=float, default=0.02, help="Irrelevant closeness epsilon (default 0.02)"
+    )
+    parser.add_argument(
+        "--min-tokens",
+        type=int,
+        default=6,
+        help="Minimum tokens to consider non-fragment (default 6)",
+    )
     args = parser.parse_args()
 
     quick_two_stage = getattr(args, "two_stage", False)
@@ -239,7 +280,10 @@ def main():
         sys.exit(1)
 
     files = find_ai_sentence_files(base_dir, years, limit)
-    print(f"[✓] Found {len(files)} AI sentence files under {base_dir}" + (f" for years {years}" if years else ""))
+    print(
+        f"[✓] Found {len(files)} AI sentence files under {base_dir}"
+        + (f" for years {years}" if years else "")
+    )
 
     processed = 0
     skipped = 0
@@ -254,7 +298,9 @@ def main():
                 except Exception:
                     out_mtime = -1
                 if out_mtime < centroids_mtime:
-                    print(f"♻️  {i:>4}/{len(files)} Rebuild (centroids newer): {os.path.relpath(outp)}")
+                    print(
+                        f"♻️  {i:>4}/{len(files)} Rebuild (centroids newer): {os.path.relpath(outp)}"
+                    )
                 else:
                     skipped += 1
                     print(f"⏭️  {i:>4}/{len(files)} Skip (up-to-date): {os.path.relpath(outp)}")

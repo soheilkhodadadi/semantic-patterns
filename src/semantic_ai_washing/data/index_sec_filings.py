@@ -32,14 +32,16 @@ FNAME_RE = re.compile(
     re.IGNORECASE,
 )
 
+
 def iter_filing_paths(root: Path) -> Iterator[Path]:
-    for year_dir in sorted(root.glob("20[12][1-4]")):   # 2021..2024
+    for year_dir in sorted(root.glob("20[12][1-4]")):  # 2021..2024
         if not year_dir.is_dir():
             continue
         for qdir in sorted(year_dir.glob("QTR[1-4]")):
             if not qdir.is_dir():
                 continue
             yield from (p for p in qdir.glob("*.txt") if p.is_file())
+
 
 def parse_filename(path: Path) -> Optional[Tuple[str, int, str]]:
     m = FNAME_RE.match(path.name)
@@ -49,6 +51,7 @@ def parse_filename(path: Path) -> Optional[Tuple[str, int, str]]:
     year = int(m.group("date")[:4])
     form = m.group("form").upper()
     return cik, year, form
+
 
 def main() -> None:
     root = Path(DEFAULT_SEC_SOURCE)
@@ -86,6 +89,7 @@ def main() -> None:
     for y in sorted(by_year):
         print(f"   {y}: {by_year[y]:,}")
     print(f"[✓] Wrote index: {out_path}  ({len(rows):,} rows)")
+
 
 if __name__ == "__main__":
     main()

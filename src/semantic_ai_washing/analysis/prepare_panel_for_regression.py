@@ -5,25 +5,44 @@ import numpy as np
 
 INP = "data/processed/panel/panel_ai_patents_controls.csv"
 OUT = "data/processed/panel/panel_reg_ready.csv"
-QC  = "reports/panel_clean_qc.md"
+QC = "reports/panel_clean_qc.md"
 
 NUM_COLS_LIKELY = [
-    "n_total","n_A","n_S","n_I","ai_total","share_A","share_S","share_I","doc_count",
-    "patents_ai","patents_total",
-    "ln_assets","leverage","cash","rd_intensity","capx_at","roa","sales_growth","emp",
-    "sic"
+    "n_total",
+    "n_A",
+    "n_S",
+    "n_I",
+    "ai_total",
+    "share_A",
+    "share_S",
+    "share_I",
+    "doc_count",
+    "patents_ai",
+    "patents_total",
+    "ln_assets",
+    "leverage",
+    "cash",
+    "rd_intensity",
+    "capx_at",
+    "roa",
+    "sales_growth",
+    "emp",
+    "sic",
 ]
+
 
 def norm_cik(x):
     s = "".join(c for c in str(x) if c.isdigit())
     return s.zfill(10) if s else ""
 
+
 def df_to_md(df: pd.DataFrame) -> str:
     cols = list(df.columns)
-    out = ["| " + " | ".join(cols) + " |", "| " + " | ".join(["---"]*len(cols)) + " |"]
-    for _,r in df.iterrows():
+    out = ["| " + " | ".join(cols) + " |", "| " + " | ".join(["---"] * len(cols)) + " |"]
+    for _, r in df.iterrows():
         out.append("| " + " | ".join("" if pd.isna(r[c]) else str(r[c]) for c in cols) + " |")
     return "\n".join(out)
+
 
 def main():
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
@@ -34,7 +53,7 @@ def main():
     # keys
     if "cik" not in df or "year" not in df:
         raise ValueError("panel must include cik and year")
-    df["cik"]  = df["cik"].apply(norm_cik)
+    df["cik"] = df["cik"].apply(norm_cik)
     df["year"] = pd.to_numeric(df["year"], errors="coerce").astype("Int64")
 
     # numeric coercions
@@ -42,15 +61,24 @@ def main():
         df[c] = pd.to_numeric(df[c], errors="coerce")
 
     # nonnegative checks
-    for c in ["n_total","n_A","n_S","n_I","ai_total","patents_ai","patents_total","doc_count"]:
+    for c in [
+        "n_total",
+        "n_A",
+        "n_S",
+        "n_I",
+        "ai_total",
+        "patents_ai",
+        "patents_total",
+        "doc_count",
+    ]:
         if c in df.columns:
             df.loc[df[c] < 0, c] = np.nan
 
     # recompute shares if counts present and shares missing/invalid
-    has_counts = all(c in df.columns for c in ["n_A","n_S","n_I"])
+    has_counts = all(c in df.columns for c in ["n_A", "n_S", "n_I"])
     if has_counts:
-        total_counts = df[["n_A","n_S","n_I"]].sum(axis=1)
-        need_shares = any(col not in df.columns for col in ["share_A","share_S","share_I"])
+        total_counts = df[["n_A", "n_S", "n_I"]].sum(axis=1)
+        need_shares = any(col not in df.columns for col in ["share_A", "share_S", "share_I"])
         if need_shares:
             df["share_A"] = df["n_A"] / total_counts.replace(0, np.nan)
             df["share_S"] = df["n_S"] / total_counts.replace(0, np.nan)
@@ -67,9 +95,9 @@ def main():
         df["patents_total_log"] = np.log1p(df["patents_total"])
 
     # Minimal set for baseline model
-    needed = ["cik","year","n_A","n_S","n_I","ln_assets"]
-    dep    = ["patents_ai","patents_ai_log"]
-    fe     = ["sic2"]  # change to ff12 later
+    needed = ["cik", "year", "n_A", "n_S", "n_I", "ln_assets"]
+    dep = ["patents_ai", "patents_ai_log"]
+    fe = ["sic2"]  # change to ff12 later
     required = [c for c in needed + dep + fe if c in df.columns]
 
     before = len(df)
@@ -77,14 +105,23 @@ def main():
     after = len(reg_df)
 
     # basic sanity
-    dup = reg_df.duplicated(subset=["cik","year"]).sum()
+    dup = reg_df.duplicated(subset=["cik", "year"]).sum()
 
     # save
     reg_df.to_csv(OUT, index=False)
 
     # QC
-    miss = df[required].isna().mean().sort_values(ascending=False).round(3).to_frame("missing_share").reset_index().rename(columns={"index":"column"})
-    kept_rate = round(after/max(1,before), 3)
+    miss = (
+        df[required]
+        .isna()
+        .mean()
+        .sort_values(ascending=False)
+        .round(3)
+        .to_frame("missing_share")
+        .reset_index()
+        .rename(columns={"index": "column"})
+    )
+    kept_rate = round(after / max(1, before), 3)
     with open(QC, "w") as f:
         f.write("# Panel Cleaning QC\n\n")
         f.write(f"- Input rows: **{before}**\n")
@@ -94,6 +131,7 @@ def main():
         f.write(df_to_md(miss))
 
     print(f"[✓] Wrote {OUT} ({after} rows) and {QC}")
+
 
 if __name__ == "__main__":
     main()

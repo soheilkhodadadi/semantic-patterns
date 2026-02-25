@@ -1,5 +1,4 @@
-
-""" 
+"""
 Extracts AI-related patent counts by firm and year using real PatentsView data.
 
 Inputs:
@@ -42,7 +41,9 @@ df.dropna(subset=["assignee_organization", "patent_date"], inplace=True)
 
 # Normalize fields
 df["text"] = (df["patent_title"].fillna("") + " " + df["abstract"].fillna("")).str.lower()
-df["assignee_clean"] = df["assignee_organization"].str.lower().str.replace(r"[^\w\s]", "", regex=True)
+df["assignee_clean"] = (
+    df["assignee_organization"].str.lower().str.replace(r"[^\w\s]", "", regex=True)
+)
 df["year"] = pd.to_datetime(df["patent_date"], errors="coerce").dt.year
 df = df[df["year"].notnull()]
 df["year"] = df["year"].astype(int)
@@ -75,12 +76,14 @@ for _, firm in tqdm(firm_df.iterrows(), total=len(firm_df)):
     )
 
     for _, row in grouped.iterrows():
-        results.append({
-            "cik": cik,
-            "company_name": firm["company_name"],
-            "year": int(row["year"]),
-            "ai_patent_count": int(row["ai_patent_count"])
-        })
+        results.append(
+            {
+                "cik": cik,
+                "company_name": firm["company_name"],
+                "year": int(row["year"]),
+                "ai_patent_count": int(row["ai_patent_count"]),
+            }
+        )
 
 # Save result
 pd.DataFrame(results).to_csv(output_path, index=False)

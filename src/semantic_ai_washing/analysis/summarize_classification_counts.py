@@ -17,6 +17,8 @@ for filename in os.listdir(ai_sentence_dir):
     if filename.endswith("_classified.txt"):
         path = os.path.join(ai_sentence_dir, filename)
         with open(path, "r", encoding="utf-8") as f:
-            labels = [line.split(" | Label: ")[1].split(" |")[0] for line in f if " | Label: " in line]
+            labels = [
+                line.split(" | Label: ")[1].split(" |")[0] for line in f if " | Label: " in line
+            ]
             counts = Counter(labels)
             print(f"{filename}: {dict(counts)}")

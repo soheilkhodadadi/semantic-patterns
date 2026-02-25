@@ -1,5 +1,4 @@
-
-""" 
+"""
 Filters patent_assignee.tsv to extract patent_ids linked to your companies of interest.
 Matches are based on fuzzy lowercase name matching from your company_lookup.csv.
 
@@ -12,7 +11,6 @@ Run:
 
 import pandas as pd
 import os
-import re
 
 # Load company lookup table
 firms = pd.read_csv("data/metadata/company_lookup.csv")
@@ -22,7 +20,9 @@ firms["name_clean"] = firms["name_clean"].str.lower().str.replace(r"[^\w\s]", ""
 assignee_path = "data/raw/patents/patentsview/patent_assignee.tsv"
 df = pd.read_csv(assignee_path, sep="\t", usecols=["patent_id", "assignee_organization"])
 df.dropna(subset=["assignee_organization"], inplace=True)
-df["assignee_clean"] = df["assignee_organization"].str.lower().str.replace(r"[^\w\s]", "", regex=True)
+df["assignee_clean"] = (
+    df["assignee_organization"].str.lower().str.replace(r"[^\w\s]", "", regex=True)
+)
 
 # Match each firm to assignees
 matched_ids = []

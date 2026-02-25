@@ -24,6 +24,19 @@ name = "semantic_ai_washing"
 line-length = 99
 src = ["src"]
 include = ["pyproject.toml", "src/**/*.py"]
+extend-exclude = [
+    "src/aggregation",
+    "src/analysis",
+    "src/classification",
+    "src/config",
+    "src/core",
+    "src/data",
+    "src/modeling",
+    "src/patents",
+    "src/scripts",
+    "src/tests",
+    "src/tmp",
+]
 
 [tool.ruff.lint.isort]
 known-first-party = ["semantic_ai_washing", "src"]

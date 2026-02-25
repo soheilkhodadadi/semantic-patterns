@@ -45,6 +45,7 @@ F_PAT = re.compile(r"(?P<date>\d{8})_10-K.*?_edgar_data_(?P<cik>\d+)_", re.IGNOR
 
 # ---- helpers ----------------------------------------------------------------
 
+
 def pick_firm_list() -> str:
     for p in FIRMS_CSV_CANDIDATES:
         if os.path.exists(p):
@@ -53,6 +54,7 @@ def pick_firm_list() -> str:
         "No firm list found. Expected one of:\n  - " + "\n  - ".join(FIRMS_CSV_CANDIDATES)
     )
 
+
 def load_ciks(csv_path: str) -> set:
     df = pd.read_csv(csv_path)
     if "cik" not in df.columns:
@@ -60,11 +62,13 @@ def load_ciks(csv_path: str) -> set:
     ciks = set(df["cik"].astype(str).str.extract(r"(\d+)")[0].dropna().tolist())
     return ciks
 
+
 # Build file patterns that include the CIK so we don't miss matches and so it runs faster
 # Examples that should match:
 #   20240125_10-K_edgar_data_10329_0001437749-24-002203.txt
 #   20240125_10-K-A_edgar_data_10329_0001437749-24-002203.txt
 #   20240125_10k_edgar_data_10329_... (case-insensitive safety)
+
 
 def find_files_for_cik(src_root: str, cik: str, years: set[int]) -> list[str]:
     paths: list[str] = []
@@ -82,7 +86,9 @@ def find_files_for_cik(src_root: str, cik: str, years: set[int]) -> list[str]:
     # De-duplicate in case multiple patterns matched the same file
     return sorted(set(paths))
 
+
 # ---- main -------------------------------------------------------------------
+
 
 def main():
     firms_csv = pick_firm_list()
@@ -138,8 +144,11 @@ def main():
     # Write a CSV report of missing cik-year combos for quick debugging
     if missing:
         rep_path = os.path.join(DEST_DIR, "_missing_10K_report.csv")
-        rep_df = pd.DataFrame(missing, columns=["cik", "year"]).sort_values(["cik", "year"]) \
-                 .reset_index(drop=True)
+        rep_df = (
+            pd.DataFrame(missing, columns=["cik", "year"])
+            .sort_values(["cik", "year"])
+            .reset_index(drop=True)
+        )
         rep_df.to_csv(rep_path, index=False)
         print(f"[!] Wrote missing report with {len(missing)} rows → {rep_path}")
 
@@ -163,6 +172,7 @@ def main():
             shown += 1
     if shown == 0:
         print("  (No 10-K files copied yet.)")
+
 
 if __name__ == "__main__":
     main()

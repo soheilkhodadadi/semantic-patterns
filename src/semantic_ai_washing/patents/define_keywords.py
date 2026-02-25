@@ -19,7 +19,7 @@ ai_keywords = [
     "reinforcement learning",
     "language model",
     "large language model",
-    "generative AI"
+    "generative AI",
 ]
 
 # Output path

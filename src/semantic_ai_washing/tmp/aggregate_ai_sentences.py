@@ -3,6 +3,7 @@
 import os
 import csv
 from glob import glob
+
 input_dir = "data/processed/sec"  # where *_ai_sentences.txt are located
 output_file = "data/validation/collected_ai_sentences.txt"
 os.makedirs(os.path.dirname(output_file), exist_ok=True)
@@ -34,9 +35,11 @@ AGG_OUTPUT_CSV = "data/validation/CollectedAiSentencesClassified.csv"
 os.makedirs(os.path.dirname(AGG_OUTPUT_CSV), exist_ok=True)
 
 # Find every classified CSV recursively (no year restriction)
-classified_paths = sorted(glob(os.path.join(CLASSIFIED_ROOT, "**", "*_classified.csv"), recursive=True))
+classified_paths = sorted(
+    glob(os.path.join(CLASSIFIED_ROOT, "**", "*_classified.csv"), recursive=True)
+)
 
-rows = []          # aggregated rows with keys: sentence, label
+rows = []  # aggregated rows with keys: sentence, label
 files_read = 0
 skipped_files = 0
 
@@ -85,6 +88,8 @@ with open(AGG_OUTPUT_CSV, "w", encoding="utf-8", newline="") as f:
     writer.writeheader()
     writer.writerows(unique_rows)
 
-print(f"[✓] Classified CSV files scanned: {len(classified_paths)} (read={files_read}, skipped={skipped_files})")
+print(
+    f"[✓] Classified CSV files scanned: {len(classified_paths)} (read={files_read}, skipped={skipped_files})"
+)
 print(f"[✓] Aggregated rows (unique): {len(unique_rows)}")
 print(f"[✓] Output written to: {AGG_OUTPUT_CSV}")

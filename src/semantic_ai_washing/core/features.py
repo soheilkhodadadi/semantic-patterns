@@ -5,7 +5,6 @@ from tqdm import tqdm
 import typer
 
 from semantic_ai_washing.config.config import PROCESSED_DATA_DIR
-from semantic_ai_washing.data.download_sec import some_function  # Update the import statement for dataset.py
 
 app = typer.Typer()
 

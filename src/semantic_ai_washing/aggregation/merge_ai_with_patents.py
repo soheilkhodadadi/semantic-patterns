@@ -22,16 +22,20 @@ import os
 import re
 import pandas as pd
 
+
 def normalize_cik(x) -> str:
     if pd.isna(x) or str(x).strip() == "":
         return ""
     digits = re.sub(r"\D", "", str(x))
     return digits.zfill(10) if digits else ""
 
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--ai-freq", default="data/processed/ai_frequencies_by_firm_year.csv")
-    p.add_argument("--patents", default="data/processed/patents/ai_patent_counts_filtered_2019plus.csv")
+    p.add_argument(
+        "--patents", default="data/processed/patents/ai_patent_counts_filtered_2019plus.csv"
+    )
     p.add_argument("--lookup", default="data/metadata/company_lookup.csv")
     p.add_argument("--out", default="data/final/ai_freq_patents_firm_year.csv")
     args = p.parse_args()
@@ -86,7 +90,7 @@ def main():
     if "patents_total" not in pt.columns:
         pt["patents_total"] = 0
     # Guard against division by zero
-    pt["ai_share"] = pt.get("ai_share", pd.Series([pd.NA]*len(pt)))
+    pt["ai_share"] = pt.get("ai_share", pd.Series([pd.NA] * len(pt)))
     pt["patents_ai"] = pd.to_numeric(pt["patents_ai"], errors="coerce").fillna(0).astype(int)
     pt["patents_total"] = pd.to_numeric(pt["patents_total"], errors="coerce").fillna(0).astype(int)
 
@@ -107,13 +111,15 @@ def main():
     # --- Merge ---
     base_rows = len(ai)
     # Avoid accidental dupes: ensure uniqueness on base keys
-    if ai.duplicated(["cik","year"]).any():
+    if ai.duplicated(["cik", "year"]).any():
         # If this happens, the Stage-5 aggregator must be fixed first
-        raise ValueError("Duplicate (cik, year) in AI frequency file; please de-duplicate upstream.")
+        raise ValueError(
+            "Duplicate (cik, year) in AI frequency file; please de-duplicate upstream."
+        )
 
-    merged = (ai
-              .merge(pt, on=["cik","year"], how="left", validate="one_to_one")
-              .merge(lk, on="cik", how="left"))
+    merged = ai.merge(pt, on=["cik", "year"], how="left", validate="one_to_one").merge(
+        lk, on="cik", how="left"
+    )
 
     # Fill patents fields that were missing
     for col, val in [("patents_ai", 0), ("patents_total", 0)]:
@@ -125,11 +131,24 @@ def main():
 
     # Reorder for readability
     preferred = [
-        "cik", "ticker", "name", "year",
+        "cik",
+        "ticker",
+        "name",
+        "year",
         # AI sentence counts (if present)
-        "n_total","n_A","n_S","n_I","ai_total","share_A","share_S","share_I","doc_count",
+        "n_total",
+        "n_A",
+        "n_S",
+        "n_I",
+        "ai_total",
+        "share_A",
+        "share_S",
+        "share_I",
+        "doc_count",
         # Patents
-        "patents_total","patents_ai","ai_share_patents"
+        "patents_total",
+        "patents_ai",
+        "ai_share_patents",
     ]
     cols_present = [c for c in preferred if c in merged.columns]
     other_cols = [c for c in merged.columns if c not in cols_present]
@@ -148,11 +167,15 @@ def main():
     print(f"Rows with AI patents:       {with_ai_patents}")
 
     if "patents_ai" in merged.columns and merged["patents_ai"].max() > 0:
-        tops = (merged.sort_values("patents_ai", ascending=False)
-                      .head(10)[["cik","ticker","name","year","patents_ai","patents_total"]])
+        tops = merged.sort_values("patents_ai", ascending=False).head(10)[
+            ["cik", "ticker", "name", "year", "patents_ai", "patents_total"]
+        ]
         print("\nTop firm-years by AI patents:")
         for _, r in tops.iterrows():
-            print(f" - {r['name']} ({r['ticker']}) {r['year']}: AI {int(r['patents_ai'])} / Total {int(r['patents_total'])}")
+            print(
+                f" - {r['name']} ({r['ticker']}) {r['year']}: AI {int(r['patents_ai'])} / Total {int(r['patents_total'])}"
+            )
+
 
 if __name__ == "__main__":
     main()

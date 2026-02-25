@@ -1,6 +1,7 @@
 import os
 from semantic_ai_washing.core.sentence_scorer import load_terms, init_matcher, score_sentence
 
+
 def main() -> None:
     input_dir = "data/processed/sec"
     output_dir = "data/processed/scored"

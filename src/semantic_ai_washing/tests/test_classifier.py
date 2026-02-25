@@ -4,8 +4,8 @@ from semantic_ai_washing.classification.classify_with_centroids import classify_
 # Define a few sample sentences to test
 test_sentences = [
     "We launched a new generative AI engine for product personalization.",  # Should be Actionable
-    "We are exploring AI capabilities for internal operations.",             # Should be Speculative
-    "AI is one of many technologies transforming the industry."              # Should be Irrelevant
+    "We are exploring AI capabilities for internal operations.",  # Should be Speculative
+    "AI is one of many technologies transforming the industry.",  # Should be Irrelevant
 ]
 
 # Run the classifier and print results

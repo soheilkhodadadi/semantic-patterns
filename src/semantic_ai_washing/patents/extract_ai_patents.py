@@ -22,10 +22,14 @@ with open("data/metadata/patent_keywords.txt") as f:
 patent_df = pd.read_csv("data/raw/patents/sample_patents.csv")
 
 # Normalize text columns
-patent_df["combined_text"] = (patent_df["title"].fillna("") + " " + patent_df["abstract"].fillna("")).str.lower()
+patent_df["combined_text"] = (
+    patent_df["title"].fillna("") + " " + patent_df["abstract"].fillna("")
+).str.lower()
 
 # Normalize assignee
-patent_df["assignee_clean"] = patent_df["assignee"].str.lower().str.replace(r"[^\w\s]", "", regex=True)
+patent_df["assignee_clean"] = (
+    patent_df["assignee"].str.lower().str.replace(r"[^\w\s]", "", regex=True)
+)
 
 # Search and count per firm-year
 results = []
@@ -35,12 +39,14 @@ for name in company_names:
         yearly = firm_patents[firm_patents["year"] == year]
         matches = yearly[yearly["combined_text"].apply(lambda x: any(kw in x for kw in keywords))]
         count = len(matches)
-        results.append({
-            "cik": cik_lookup.get(name),
-            "company_name": name,
-            "year": year,
-            "ai_patent_count": count
-        })
+        results.append(
+            {
+                "cik": cik_lookup.get(name),
+                "company_name": name,
+                "year": year,
+                "ai_patent_count": count,
+            }
+        )
 
 # Save output
 out_path = "data/processed/patents/ai_patent_counts.csv"

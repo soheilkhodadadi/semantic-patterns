@@ -3,6 +3,7 @@
 import json
 import torch
 
+
 def load_centroids(path="data/validation/centroids.json"):
     with open(path, "r") as f:
         data = json.load(f)

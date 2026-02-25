@@ -114,7 +114,7 @@ def main() -> None:
     all_keys = set(agg.keys()) | firm_years_seen
 
     rows = []
-    for (cik, year) in sorted(all_keys, key=lambda k: (k[0], k[1])):
+    for cik, year in sorted(all_keys, key=lambda k: (k[0], k[1])):
         counts = agg.get((cik, year), {"Actionable": 0, "Speculative": 0, "Irrelevant": 0})
         a = int(counts.get("Actionable", 0))
         s = int(counts.get("Speculative", 0))

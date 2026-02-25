@@ -6,19 +6,30 @@ nlp = spacy.load("en_core_web_lg")
 nlp.max_length = 2_000_000
 
 fuzzy_vague_followups = {
-    "solutions", "tools", "applications", "platform", "capabilities",
-    "integration", "functionality", "features", "systems", "products"
+    "solutions",
+    "tools",
+    "applications",
+    "platform",
+    "capabilities",
+    "integration",
+    "functionality",
+    "features",
+    "systems",
+    "products",
 }
+
 
 def load_terms(file_path: str) -> List[str]:
     with open(file_path, "r", encoding="utf-8") as f:
         return [line.strip() for line in f if line.strip()]
+
 
 def init_matcher(concrete_terms: List[str], vague_terms: List[str]) -> PhraseMatcher:
     matcher = PhraseMatcher(nlp.vocab, attr="LOWER")
     matcher.add("CONCRETE", [nlp.make_doc(term) for term in concrete_terms])
     matcher.add("VAGUE", [nlp.make_doc(term) for term in vague_terms])
     return matcher
+
 
 def score_sentence(sentence: str, matcher: PhraseMatcher) -> str:
     doc = nlp(sentence)
@@ -37,7 +48,7 @@ def score_sentence(sentence: str, matcher: PhraseMatcher) -> str:
 
     for i, token in enumerate(doc):
         if token.text.lower() == "ai":
-            window = [doc[j].text.lower() for j in range(i+1, min(i+5, len(doc)))]
+            window = [doc[j].text.lower() for j in range(i + 1, min(i + 5, len(doc)))]
             if any(word in fuzzy_vague_followups for word in window):
                 fuzzy_vague_hits += 1
 

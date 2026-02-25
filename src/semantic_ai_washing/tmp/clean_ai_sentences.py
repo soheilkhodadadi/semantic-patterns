@@ -23,6 +23,7 @@ Example:
     --output data/validation/CollectedAiSentencesClassified_clean.csv \
     --min-tokens 3 --min-chars 12 --require-capital --require-terminal --dedupe-casefold
 """
+
 import argparse
 import csv
 import os
@@ -40,6 +41,7 @@ ALLOWED_TERMINALS_RE = re.compile(r"[.!?][\)\]\"'”’]*\s*$")
 STRIP_OUTER_QUOTES_RE = re.compile(r'^\s*["“”‘’\']*(.*?)["“”‘’\']*\s*$')
 FIRST_ALPHA_RE = re.compile(r"[A-Za-z]")
 
+
 def normalize_sentence(s: str, drop_outer_quotes: bool = True) -> str:
     if not isinstance(s, str):
         return ""
@@ -51,12 +53,15 @@ def normalize_sentence(s: str, drop_outer_quotes: bool = True) -> str:
     s = re.sub(r"\s+", " ", s)  # collapse whitespace
     return s
 
+
 def first_alpha_is_capital(s: str) -> bool:
     m = FIRST_ALPHA_RE.search(s)
     return bool(m and m.group(0).isupper())
 
+
 def ends_with_terminal(s: str) -> bool:
     return bool(ALLOWED_TERMINALS_RE.search(s))
+
 
 def mostly_non_letters(s: str, threshold: float = 0.6) -> bool:
     if not s:
@@ -64,11 +69,10 @@ def mostly_non_letters(s: str, threshold: float = 0.6) -> bool:
     letters = sum(ch.isalpha() for ch in s)
     return (len(s) - letters) / max(len(s), 1) >= threshold
 
-def is_incomplete(s: str,
-                  min_tokens: int,
-                  min_chars: int,
-                  require_capital: bool,
-                  require_terminal: bool):
+
+def is_incomplete(
+    s: str, min_tokens: int, min_chars: int, require_capital: bool, require_terminal: bool
+):
     tokens = s.split()
     if len(tokens) < min_tokens:
         return True, f"tokens<{min_tokens}"
@@ -82,6 +86,7 @@ def is_incomplete(s: str,
         return True, "mostly_non_letters"
     return False, ""
 
+
 def choose_columns(df: "pd.DataFrame"):
     cols_lower = {c.lower(): c for c in df.columns}
     sent_col = cols_lower.get("sentence") or cols_lower.get("sent_text")
@@ -93,20 +98,35 @@ def choose_columns(df: "pd.DataFrame"):
         )
     return sent_col, lab_col
 
+
 def main():
     ap = argparse.ArgumentParser(description="Clean and deduplicate AI sentences CSV")
     ap.add_argument("--input", required=True, help="Path to input CSV")
     ap.add_argument("--output", required=True, help="Path to output CSV")
-    ap.add_argument("--report", default=None, help="Optional path to write a cleaning report (.txt)")
+    ap.add_argument(
+        "--report", default=None, help="Optional path to write a cleaning report (.txt)"
+    )
     ap.add_argument("--min-tokens", type=int, default=3)
     ap.add_argument("--min-chars", type=int, default=12)
-    ap.add_argument("--require-capital", action="store_true", help="Require first alphabetic char to be uppercase")
+    ap.add_argument(
+        "--require-capital",
+        action="store_true",
+        help="Require first alphabetic char to be uppercase",
+    )
     ap.add_argument("--no-require-capital", dest="require_capital", action="store_false")
-    ap.add_argument("--require-terminal", action="store_true", help="Require sentence to end with . ! or ?")
+    ap.add_argument(
+        "--require-terminal", action="store_true", help="Require sentence to end with . ! or ?"
+    )
     ap.add_argument("--no-require-terminal", dest="require_terminal", action="store_false")
-    ap.add_argument("--drop-outer-quotes", action="store_true", help="Strip surrounding quotes before checks (default on)")
+    ap.add_argument(
+        "--drop-outer-quotes",
+        action="store_true",
+        help="Strip surrounding quotes before checks (default on)",
+    )
     ap.add_argument("--keep-outer-quotes", dest="drop_outer_quotes", action="store_false")
-    ap.add_argument("--dedupe-casefold", action="store_true", help="Deduplicate using casefolded sentence")
+    ap.add_argument(
+        "--dedupe-casefold", action="store_true", help="Deduplicate using casefolded sentence"
+    )
     ap.set_defaults(require_capital=True, require_terminal=True, drop_outer_quotes=True)
 
     args = ap.parse_args()
@@ -115,7 +135,9 @@ def main():
     sent_col, lab_col = choose_columns(df)
 
     # Normalize text
-    df["sentence_norm"] = df[sent_col].astype(str).map(lambda s: normalize_sentence(s, args.drop_outer_quotes))
+    df["sentence_norm"] = (
+        df[sent_col].astype(str).map(lambda s: normalize_sentence(s, args.drop_outer_quotes))
+    )
 
     # Filter
     dropped_reasons: Dict[str, int] = {}
@@ -185,12 +207,17 @@ def main():
                 rf.write(f"  {k}: {v}\n")
             rf.write("\nFlags:\n")
             rf.write(f"  min_tokens={args.min_tokens}, min_chars={args.min_chars}\n")
-            rf.write(f"  require_capital={args.require_capital}, require_terminal={args.require_terminal}\n")
-            rf.write(f"  drop_outer_quotes={args.drop_outer_quotes}, dedupe_casefold={args.dedupe_casefold}\n")
+            rf.write(
+                f"  require_capital={args.require_capital}, require_terminal={args.require_terminal}\n"
+            )
+            rf.write(
+                f"  drop_outer_quotes={args.drop_outer_quotes}, dedupe_casefold={args.dedupe_casefold}\n"
+            )
         print(f"[✓] Wrote cleaned CSV: {args.output}")
         print(f"[✓] Wrote report: {report_path}")
     except Exception as e:
         print(f"[i] Could not write report: {e}")
+
 
 if __name__ == "__main__":
     main()

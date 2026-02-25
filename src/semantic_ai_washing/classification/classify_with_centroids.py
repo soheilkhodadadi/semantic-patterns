@@ -21,13 +21,16 @@ device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 centroids = load_centroids("data/validation/centroids_revised.json")
 centroids = {label: tensor.to(device) for label, tensor in centroids.items()}
 
+
 def classify_sentence(sentence: str) -> tuple:
     """
     Classify a sentence as Actionable, Speculative, or Irrelevant
     using cosine similarity to centroids.
     """
     if not centroids:
-        raise ValueError("Centroids are empty. Check if centroids_revised.json is loaded properly.")
+        raise ValueError(
+            "Centroids are empty. Check if centroids_revised.json is loaded properly."
+        )
 
     embedding = model.encode(sentence, convert_to_tensor=True).to(device)
 
