@@ -12,7 +12,7 @@ This project addresses the growing concern of **AI-washing**—the practice wher
 
 ### End-to-End Usage Instructions (Quickstart)
 
-> **Stack**: Python 3.10+, sentence-transformers (MPNet), PyTorch, pandas.
+> **Stack**: Python 3.9+, sentence-transformers (MPNet), PyTorch, pandas.
 >
 > **Data roots** (relative to repo):
 >
@@ -24,15 +24,21 @@ This project addresses the growing concern of **AI-washing**—the practice wher
 ### 1) Setup
 
 ```bash
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-export PYTHONPATH=src
+python3.9 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip setuptools wheel
+pip install -e .
 ```
 
 Migration note:
 - Canonical invocation is now `python -m semantic_ai_washing.<domain>.<module>`.
 - Legacy `python src/...` entry paths are temporarily preserved via compatibility shims.
+
+Install verification:
+
+```bash
+python -c "import semantic_ai_washing; print(semantic_ai_washing.__file__)"
+```
 
 ### 2) Generate MPNet embeddings & centroids (labels → vectors → class means)
 

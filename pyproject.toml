@@ -1,24 +1,6 @@
 [build-system]
-requires = ["flit_core >=3.2,<4"]
-build-backend = "flit_core.buildapi"
-
-[project]
-name = "semantic_patterns"
-version = "0.0.1"
-description = "A project to analyze semantic patterns in SEC filings and CRSP/Compustat data using natural language processing (NLP) and financial event studies."
-authors = [
-  { name = "Soheil Khodadadi" },
-]
-license = { file = "LICENSE" }
-readme = "README.md"
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License"
-]
-requires-python = "~=3.10"
-
-[tool.flit.module]
-name = "semantic_ai_washing"
+requires = ["setuptools>=65", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [tool.ruff]
 line-length = 99

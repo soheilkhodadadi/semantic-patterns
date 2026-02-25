@@ -28,7 +28,19 @@ import argparse
 import csv
 from typing import List, Optional
 
-from semantic_ai_washing.core.classify import CENTROIDS_PATH, classify_two_stage
+CENTROIDS_PATH = "data/validation/centroids_mpnet.json"
+
+_CLASSIFY_TWO_STAGE = None
+
+
+def _get_classify_two_stage():
+    """Lazy import to keep --help fast and avoid eager model initialization."""
+    global _CLASSIFY_TWO_STAGE
+    if _CLASSIFY_TWO_STAGE is None:
+        from semantic_ai_washing.core.classify import classify_two_stage
+
+        _CLASSIFY_TWO_STAGE = classify_two_stage
+    return _CLASSIFY_TWO_STAGE
 
 
 def find_ai_sentence_files(
@@ -132,6 +144,7 @@ def classify_file(
 
     for sent in sentences:
         try:
+            classify_two_stage = _get_classify_two_stage()
             label, scores = classify_two_stage(
                 sent,
                 two_stage=quick_two_stage,

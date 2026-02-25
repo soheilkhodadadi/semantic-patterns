@@ -12,7 +12,7 @@ This document provides project-specific guidance for AI coding agents (like Open
 ## Testing and Validation
 
 - Canonical Namespace: Use `semantic_ai_washing.*` imports for all new code. Legacy `src/*` module paths are transitional compatibility shims only.
-- Canonical Script Invocation: Prefer `PYTHONPATH=src python -m semantic_ai_washing.<domain>.<module>` (or equivalent environment setup) over direct `python src/...` execution.
+- Canonical Script Invocation: Prefer `python -m semantic_ai_washing.<domain>.<module>` after installing the package (`pip install -e .`) over direct `python src/...` execution.
 - No Unit Test Suite: The repository does not use a standard test framework like PyTest or unittest. Instead, testing and validation are performed via dedicated scripts.
 - Classifier Evaluation: Use `python -m semantic_ai_washing.tests.evaluate_classifier_on_held_out` to evaluate the AI classifier on a held-out dataset. This script will output the model’s accuracy and other metrics, and it typically saves results (like a confusion matrix). It should complete without errors.
 - Manual Spot-Check: Use `python -m semantic_ai_washing.tests.spot_check_classifications` to perform a manual spot check of classifications. This script prints a random sample of sentences with their predicted labels for review, helping to qualitatively assess the model’s outputs.
