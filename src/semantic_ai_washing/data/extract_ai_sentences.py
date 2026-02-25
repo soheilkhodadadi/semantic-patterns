@@ -46,6 +46,7 @@ import argparse
 import logging
 import os
 import re
+import sys
 from typing import Dict, Iterator, Tuple, Optional, Set
 
 from semantic_ai_washing.core.sentence_filter import (
@@ -178,31 +179,63 @@ def process_file(path: str, keywords, force: bool) -> Tuple[str, int, str]:
         return "skipped_exists", 0, out_path
 
     try:
-        # Defensive read: some EDGAR text can contain odd encodings / control chars
-        with open(path, "r", encoding="utf-8", errors="ignore") as f:
-            text = f.read()
+        try:
+            # Read as strict UTF-8; decoding issues are reported and the file is skipped.
+            with open(path, "r", encoding="utf-8") as f:
+                text = f.read()
+        except FileNotFoundError:
+            logger.error("Input filing not found: %s", path)
+            return "error", 0, out_path
+        except PermissionError:
+            logger.error("Permission denied reading filing: %s", path)
+            return "error", 0, out_path
+        except UnicodeDecodeError:
+            logger.error("Failed to decode filing as UTF-8: %s", path)
+            return "error", 0, out_path
+        except OSError:
+            logger.error("OS error reading filing: %s", path, exc_info=True)
+            return "error", 0, out_path
 
         if not text.strip():
             # Touch an empty output to mark it processed
-            open(out_path, "w", encoding="utf-8").close()
+            try:
+                with open(out_path, "w", encoding="utf-8"):
+                    pass
+            except PermissionError:
+                logger.error("Permission denied writing empty output: %s", out_path)
+                return "error", 0, out_path
+            except OSError:
+                logger.error("OS error writing empty output: %s", out_path, exc_info=True)
+                return "error", 0, out_path
             return "empty", 0, out_path
 
-        sentences = segment_sentences(text)
-        page_marker_candidate_count = sum(1 for s in sentences if PAGE_MARKER_REGEX.search(s))
-        segmented_count = len(sentences)
-        page_merged = merge_page_fragments(sentences, raw_text=text)
-        after_page_merge_count = len(page_merged)
-        merged = merge_sentence_fragments(page_merged)
-        after_sentence_merge_count = len(merged)
-        page_fragments_merged = max(0, segmented_count - after_page_merge_count)
-        sentence_fragments_merged = max(0, after_page_merge_count - after_sentence_merge_count)
-        total_fragments_merged = max(0, segmented_count - after_sentence_merge_count)
-        validate_sentence_completion(merged, path)
-        ai_sents = filter_ai_sentences(merged, keywords)
-        ai_sentence_count = len(ai_sents)
+        try:
+            sentences = segment_sentences(text)
+            page_marker_candidate_count = sum(1 for s in sentences if PAGE_MARKER_REGEX.search(s))
+            segmented_count = len(sentences)
+            page_merged = merge_page_fragments(sentences, raw_text=text)
+            after_page_merge_count = len(page_merged)
+            merged = merge_sentence_fragments(page_merged)
+            after_sentence_merge_count = len(merged)
+            page_fragments_merged = max(0, segmented_count - after_page_merge_count)
+            sentence_fragments_merged = max(0, after_page_merge_count - after_sentence_merge_count)
+            total_fragments_merged = max(0, segmented_count - after_sentence_merge_count)
+            validate_sentence_completion(merged, path)
+            ai_sents = filter_ai_sentences(merged, keywords)
+            ai_sentence_count = len(ai_sents)
+        except (IndexError, TypeError, ValueError, RuntimeError) as exc:
+            logger.error("Sentence extraction/merge failed for %s: %s", path, exc, exc_info=True)
+            return "error", 0, out_path
 
-        with open(out_path, "w", encoding="utf-8") as f:
-            f.write("\n".join(ai_sents))
+        try:
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write("\n".join(ai_sents))
+        except PermissionError:
+            logger.error("Permission denied writing output: %s", out_path)
+            return "error", 0, out_path
+        except OSError:
+            logger.error("OS error writing output: %s", out_path, exc_info=True)
+            return "error", 0, out_path
 
         logger.info(
             "Extraction complete for %s: ai_sentences=%d page_marker_candidates=%d "
@@ -319,10 +352,18 @@ def main() -> None:
     if args.file:
         if not os.path.isfile(args.file):
             logger.error("Specified file not found: %s", args.file)
-            return
+            sys.exit(1)
+    if not os.path.isfile(args.keywords):
+        logger.error("Keyword file not found: %s", args.keywords)
+        sys.exit(1)
+    keywords = load_keywords(args.keywords)
+    if not keywords:
+        logger.error("Keyword list is empty; cannot run extraction: %s", args.keywords)
+        sys.exit(1)
+
+    if args.file:
         year, form, cik = filing_context(args.file)
         logger.info("Processing filing year=%s form=%s cik=%s path=%s", year, form, cik, args.file)
-        keywords = load_keywords(args.keywords)
         status, count, out_path = process_file(args.file, keywords, args.force)
         if status == "ok":
             logger.info(
@@ -361,9 +402,7 @@ def main() -> None:
 
     if not os.path.isdir(args.input_dir):
         logger.error("Input directory not found: %s", args.input_dir)
-        return
-
-    keywords = load_keywords(args.keywords)
+        sys.exit(1)
 
     include_forms: Optional[Set[str]]
     if args.include_forms.strip().upper() == "ALL":
