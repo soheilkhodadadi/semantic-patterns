@@ -25,19 +25,19 @@ Features
 Usage
 -----
 # Default locations
-python src/scripts/filter_ai_sentences.py
+python -m semantic_ai_washing.data.extract_ai_sentences
 
 # Quick smoke test on 2 filings, only 10-K
-python src/scripts/filter_ai_sentences.py --include-forms 10-K --limit 2
+python -m semantic_ai_washing.data.extract_ai_sentences --include-forms 10-K --limit 2
 
 # Explicit paths and overwrite
-python src/scripts/filter_ai_sentences.py \
+python -m semantic_ai_washing.data.extract_ai_sentences \
   --input-dir data/processed/sec \
   --keywords data/metadata/ai_keywords.txt \
   --force
 
 # Only process 2023–2024 10‑K
-python src/scripts/filter_ai_sentences.py --include-forms 10-K --years 2023,2024
+python -m semantic_ai_washing.data.extract_ai_sentences --include-forms 10-K --years 2023,2024
 """
 
 from __future__ import annotations
@@ -161,7 +161,13 @@ def iter_filings(
 
 def process_file(path: str, keywords, force: bool) -> Tuple[str, int, str]:
     """
-    Process a single filing file: segment sentences, filter by AI keywords, write output.
+    Process a single filing: read, segment/merge, filter AI sentences, and write output.
+
+    The implementation uses staged error handling:
+    - Read stage: file-not-found, permission, decode, and OS-level errors.
+    - Merge/filter stage: sentence-processing/runtime errors.
+    - Write stage: permission and OS-level errors.
+    Per-file failures are returned as ``status='error'`` so batch runs can continue.
 
     Returns
     -------

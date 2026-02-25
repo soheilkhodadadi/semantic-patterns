@@ -7,19 +7,19 @@ and writes results to sibling *_classified.csv files.
 
 Usage examples:
     # Scan everything recursively under the default base dir
-    python src/classification/classify_all_ai_sentences.py
+    python -m semantic_ai_washing.classification.classify_all_ai_sentences
 
     # Only scan specific years and cap work for a quick check
-    python src/classification/classify_all_ai_sentences.py --years 2021 2022 --limit 10
+    python -m semantic_ai_washing.classification.classify_all_ai_sentences --years 2021 2022 --limit 10
 
     # Recompute even if *_classified.csv exists
-    python src/classification/classify_all_ai_sentences.py --force
+    python -m semantic_ai_washing.classification.classify_all_ai_sentences --force
 
     # Rebuild only files older than centroids (default)
-    python src/classification/classify_all_ai_sentences.py --years 2024
+    python -m semantic_ai_washing.classification.classify_all_ai_sentences --years 2024
 
     # Force rebuild of everything regardless of timestamps
-    python src/classification/classify_all_ai_sentences.py --years 2024 --force
+    python -m semantic_ai_washing.classification.classify_all_ai_sentences --years 2024 --force
 """
 
 import os

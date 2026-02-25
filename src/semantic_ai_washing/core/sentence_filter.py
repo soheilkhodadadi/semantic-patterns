@@ -270,6 +270,9 @@ def merge_page_fragments(
 
     If `raw_text` is provided, nearby characters are used to reconstruct a more
     faithful full sentence. Otherwise, neighboring sentence fragments are used.
+    On malformed fragments (for example non-string entries or index/type issues),
+    the function logs a warning and falls back to keeping a normalized fragment
+    instead of failing the full extraction pass.
     """
     out: list[str] = []
     idx = 0
@@ -348,13 +351,17 @@ def merge_page_fragments(
 
 def merge_sentence_fragments(sentences: List[str]) -> List[str]:
     """
-    Merge sentence fragments produced by segmentation to handle page numbers and
-    bullet/list continuations.
+    Merge sentence fragments produced by segmentation to handle list continuations
+    and page-break artifacts that remain after page-marker cleanup.
 
     - Skips standalone page numbers and "Table of Contents" boilerplate.
     - Merges fragments ending with semicolons or lacking sentence-ending
       punctuation when followed by a lowercase-starting continuation.
     - Normalizes capitalization and ensures a closing period if missing.
+
+    Assumes input is an ordered sequence of sentence-like fragments. If a fragment
+    cannot be merged safely, the function logs context and preserves a normalized
+    fallback so downstream filtering can continue.
     """
 
     merged: list[str] = []
