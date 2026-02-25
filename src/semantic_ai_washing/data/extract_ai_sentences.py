@@ -73,6 +73,8 @@ SKIP_SUBSTRINGS = (
 
 SENTENCE_ENDINGS = (".", "!", "?")
 PAGE_MARKER_REGEX = re.compile(r"[\-\u2013\u2014]\s*\d+\s*[\-\u2013\u2014]")
+CIK_REGEX = re.compile(r"edgar_data_(\d+)_")
+LOG_LEVELS = ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
 logger = logging.getLogger(__name__)
 
 
@@ -93,6 +95,26 @@ def parse_form_from_filename(filename: str) -> Optional[str]:
         if any(c.isalpha() for c in candidate) or "-" in candidate:
             return candidate
     return None
+
+
+def parse_cik_from_filename(filename: str) -> Optional[str]:
+    """Best-effort extract of CIK from EDGAR filename."""
+    match = CIK_REGEX.search(filename)
+    if match:
+        return match.group(1)
+    return None
+
+
+def filing_context(path: str) -> Tuple[str, str, str]:
+    """Return best-effort (year, form, cik) context for a filing path."""
+    base = os.path.basename(path)
+    year = os.path.basename(os.path.dirname(path))
+    if not looks_like_year(year):
+        year_match = re.match(r"(\d{4})", base)
+        year = year_match.group(1) if year_match else "unknown"
+    form = parse_form_from_filename(base) or "unknown"
+    cik = parse_cik_from_filename(base) or "unknown"
+    return year, form, cik
 
 
 def iter_filings(
@@ -172,22 +194,37 @@ def process_file(path: str, keywords, force: bool) -> Tuple[str, int, str]:
         after_page_merge_count = len(page_merged)
         merged = merge_sentence_fragments(page_merged)
         after_sentence_merge_count = len(merged)
+        page_fragments_merged = max(0, segmented_count - after_page_merge_count)
+        sentence_fragments_merged = max(0, after_page_merge_count - after_sentence_merge_count)
+        total_fragments_merged = max(0, segmented_count - after_sentence_merge_count)
         validate_sentence_completion(merged, path)
         ai_sents = filter_ai_sentences(merged, keywords)
         ai_sentence_count = len(ai_sents)
-        logger.info(
-            "Merge summary for %s: segmented_count=%d page_marker_candidate_count=%d "
-            "after_page_merge_count=%d after_sentence_merge_count=%d ai_sentence_count=%d",
-            path,
-            segmented_count,
-            page_marker_candidate_count,
-            after_page_merge_count,
-            after_sentence_merge_count,
-            ai_sentence_count,
-        )
 
         with open(out_path, "w", encoding="utf-8") as f:
             f.write("\n".join(ai_sents))
+
+        logger.info(
+            "Extraction complete for %s: ai_sentences=%d page_marker_candidates=%d "
+            "page_fragments_merged=%d sentence_fragments_merged=%d total_fragments_merged=%d",
+            path,
+            ai_sentence_count,
+            page_marker_candidate_count,
+            page_fragments_merged,
+            sentence_fragments_merged,
+            total_fragments_merged,
+        )
+        if total_fragments_merged > 0:
+            logger.debug(
+                "Merge detail for %s: segmented_count=%d after_page_merge_count=%d "
+                "after_sentence_merge_count=%d",
+                path,
+                segmented_count,
+                after_page_merge_count,
+                after_sentence_merge_count,
+            )
+        if ai_sentence_count == 0:
+            logger.debug("No AI sentences found for %s after filtering.", path)
 
         return "ok", ai_sentence_count, out_path
     except Exception:
@@ -221,14 +258,25 @@ def validate_sentence_completion(sentences: list[str], source_path: str) -> None
             )
 
 
-def main() -> None:
-    if not logging.getLogger().handlers:
-        logging.basicConfig(
-            level=logging.INFO,
-            format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-        )
+def configure_logging(level_name: str) -> None:
+    """Initialize logging with a simple console format for CLI runs."""
+    level = getattr(logging, level_name.upper(), logging.INFO)
+    root_logger = logging.getLogger()
+    if not root_logger.handlers:
+        logging.basicConfig(level=level, format="%(levelname)s: %(message)s")
+    else:
+        root_logger.setLevel(level)
+    logger.setLevel(level)
 
+
+def main() -> None:
     ap = argparse.ArgumentParser(description="Extract AI-related sentences from filings.")
+    ap.add_argument(
+        "--log-level",
+        default="INFO",
+        choices=LOG_LEVELS,
+        help="Logging verbosity (default: INFO).",
+    )
     ap.add_argument(
         "--input-dir",
         default="data/processed/sec",
@@ -266,21 +314,49 @@ def main() -> None:
         help="Path to a single filing file to process (overrides directory scanning).",
     )
     args = ap.parse_args()
+    configure_logging(args.log_level)
 
     if args.file:
         if not os.path.isfile(args.file):
             logger.error("Specified file not found: %s", args.file)
             return
+        year, form, cik = filing_context(args.file)
+        logger.info("Processing filing year=%s form=%s cik=%s path=%s", year, form, cik, args.file)
         keywords = load_keywords(args.keywords)
         status, count, out_path = process_file(args.file, keywords, args.force)
         if status == "ok":
-            print(f"✓ {out_path}  ({count} AI sentences)")
+            logger.info(
+                "Completed filing year=%s form=%s cik=%s status=ok ai_sentences=%d output=%s",
+                year,
+                form,
+                cik,
+                count,
+                out_path,
+            )
         elif status == "skipped_exists":
-            print(f"Skipped existing output: {out_path}")
+            logger.info(
+                "Completed filing year=%s form=%s cik=%s status=skipped_exists output=%s",
+                year,
+                form,
+                cik,
+                out_path,
+            )
         elif status == "error":
-            print(f"Error processing filing: {args.file}")
+            logger.error(
+                "Completed filing year=%s form=%s cik=%s status=error output=%s",
+                year,
+                form,
+                cik,
+                out_path,
+            )
         else:
-            print(f"Empty filing: {args.file}")
+            logger.warning(
+                "Completed filing year=%s form=%s cik=%s status=empty output=%s",
+                year,
+                form,
+                cik,
+                out_path,
+            )
         return
 
     if not os.path.isdir(args.input_dir):
@@ -304,18 +380,20 @@ def main() -> None:
     totals = {"seen": 0, "wrote": 0, "skipped": 0, "empty": 0, "errors": 0}
     per_year: Dict[str, int] = {}
 
-    print(f"[i] Walking filings under: {args.input_dir}")
-    print(f"[i] Using keywords from :  {args.keywords}")
+    logger.info("Starting AI sentence extraction run.")
+    logger.info("Walking filings under: %s", args.input_dir)
+    logger.info("Using keywords from: %s", args.keywords)
+    logger.info("Loaded %d keywords.", len(keywords))
     if include_forms is None:
-        print("[i] Form filter       :  ALL")
+        logger.info("Form filter: ALL")
     else:
-        print(f"[i] Form filter       :  {sorted(include_forms)}")
+        logger.info("Form filter: %s", sorted(include_forms))
     if include_years is None:
-        print("[i] Years filter      :  ALL")
+        logger.info("Years filter: ALL")
     else:
-        print(f"[i] Years filter      :  {sorted(include_years)}")
+        logger.info("Years filter: %s", sorted(include_years))
     if args.limit:
-        print(f"[i] Limit             :  {args.limit} filings")
+        logger.info("Limit: %d filings", args.limit)
 
     processed = 0
     for path in iter_filings(args.input_dir, include_forms, include_years):
@@ -325,6 +403,8 @@ def main() -> None:
 
         # Expect layout .../sec/<YEAR>/<file>.txt
         year = os.path.basename(os.path.dirname(path))
+        _year, form, cik = filing_context(path)
+        logger.info("Processing filing year=%s form=%s cik=%s path=%s", _year, form, cik, path)
         per_year[year] = per_year.get(year, 0) + 1
         totals["seen"] += 1
 
@@ -332,26 +412,57 @@ def main() -> None:
         if status == "ok":
             totals["wrote"] += 1
             processed += 1
-            print(f"✓ {out_path}  ({count} AI sentences)")
+            logger.info(
+                "Completed filing year=%s form=%s cik=%s status=ok ai_sentences=%d output=%s",
+                _year,
+                form,
+                cik,
+                count,
+                out_path,
+            )
         elif status == "skipped_exists":
             totals["skipped"] += 1
+            logger.info(
+                "Completed filing year=%s form=%s cik=%s status=skipped_exists output=%s",
+                _year,
+                form,
+                cik,
+                out_path,
+            )
         elif status == "error":
             totals["errors"] += 1
+            logger.error(
+                "Completed filing year=%s form=%s cik=%s status=error output=%s",
+                _year,
+                form,
+                cik,
+                out_path,
+            )
         else:
             totals["empty"] += 1
+            logger.warning(
+                "Completed filing year=%s form=%s cik=%s status=empty output=%s",
+                _year,
+                form,
+                cik,
+                out_path,
+            )
 
     # Summary
-    print("\n—— Summary ————————————————")
-    print(f"Filings scanned   : {totals['seen']}")
-    print(f"Wrote new outputs : {totals['wrote']}")
-    print(f"Skipped (exists)  : {totals['skipped']}")
-    print(f"Empty filings     : {totals['empty']}")
-    print(f"Errors            : {totals['errors']}")
+    logger.info(
+        "Run summary: filings_scanned=%d wrote_new_outputs=%d skipped_exists=%d "
+        "empty_filings=%d errors=%d",
+        totals["seen"],
+        totals["wrote"],
+        totals["skipped"],
+        totals["empty"],
+        totals["errors"],
+    )
     if per_year:
-        print("Per-year scanned:")
+        logger.info("Per-year scanned:")
         for y in sorted(per_year):
-            print(f"  {y}: {per_year[y]}")
-    print("\nTip: Press Ctrl+C to stop mid-run. Use --limit for quick checks.")
+            logger.info("  %s: %d", y, per_year[y])
+    logger.debug("Tip: Press Ctrl+C to stop mid-run. Use --limit for quick checks.")
 
 
 if __name__ == "__main__":
