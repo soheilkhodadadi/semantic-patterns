@@ -1,0 +1,100 @@
+{
+  "generated_at_utc": "2026-02-27T20:27:42.040219+00:00",
+  "git_commit": "8be0872314db1372b1dc9bf6176b4d255e0cc7f7",
+  "rubric_path": "docs/labeling_protocol.md",
+  "source_files": {
+    "preqa_dataset": "data/labels/iteration1/expanded_labeled_sentences_preqa.csv",
+    "held_out_dataset": "data/validation/held_out_sentences.csv",
+    "sampling_summary": "reports/iteration1/phase1/sampling_summary.json",
+    "dedupe_report": "reports/iteration1/phase1/dedupe_report.json"
+  },
+  "source_fingerprints": {
+    "preqa_dataset_sha256": "c2a9392c11432780511cc569168a5e00214a1bc09d145e2e7dc416477dc66c49",
+    "held_out_dataset_sha256": "0655a14cf69b1a9160471533689b286b6a4da9a2cbf468afab2623aa8c08b99e"
+  },
+  "normalization": {
+    "sentence_norm": "lowercase + strip punctuation + collapse whitespace",
+    "sentence_id": "sha1(sentence_norm)[:16] (generated earlier in pipeline)",
+    "sample_id": "sha1(source_file|sentence_index|sentence_norm)[:16] (generated earlier in pipeline)"
+  },
+  "dedupe": {
+    "method": "exact sentence_norm + near-duplicate SequenceMatcher",
+    "near_duplicate_threshold": 0.95,
+    "dedupe_report_stats": {
+      "rows_base": 24,
+      "rows_new": 130,
+      "rows_combined": 154,
+      "rows_invalid_label_removed": 0,
+      "rows_autofilled_from_suggestion": 0,
+      "rows_leakage_removed": 0,
+      "rows_exact_deduped": 0,
+      "rows_near_deduped": 1,
+      "rows_conflicted": 0,
+      "rows_uncertain_split": 0,
+      "rows_final_preqa": 153
+    }
+  },
+  "leakage_policy": {
+    "held_out_file_frozen": "data/validation/held_out_sentences.csv",
+    "overlap_exclusions_by_sentence_norm": 0
+  },
+  "sampling": {
+    "seed": 20260227,
+    "summary": {
+      "new_target": 130,
+      "selected_count": 130,
+      "year_quotas": {
+        "2021": 29,
+        "2022": 2,
+        "2023": 31,
+        "2024": 68
+      },
+      "year_selected": {
+        "2024": 68,
+        "2023": 31,
+        "2021": 29,
+        "2022": 2
+      },
+      "ff12_floor": 12,
+      "ff12_floor_feasible": true,
+      "selected_label_suggested_counts": {
+        "Speculative": 58,
+        "Actionable": 39,
+        "Irrelevant": 33
+      },
+      "selected_ff12_counts": {
+        "12": 97,
+        "11": 26,
+        "9": 5,
+        "6": 2
+      },
+      "selected_length_counts": {
+        "medium": 55,
+        "short": 41,
+        "long": 34
+      },
+      "selected_edge_case_count": 17
+    }
+  },
+  "qa_parameters": {
+    "min_tokens": 6,
+    "min_class_count": 60,
+    "target_size": 400,
+    "enforce_target_size": true,
+    "near_threshold": 0.95
+  },
+  "final_dataset": {
+    "path": "data/labels/iteration1/expanded_labeled_sentences.csv",
+    "rows": 153,
+    "class_counts": {
+      "Irrelevant": 51,
+      "Actionable": 43,
+      "Speculative": 59
+    }
+  },
+  "artifacts": {
+    "qa_report": "reports/iteration1/phase1/qa_report.json",
+    "leakage_overlap_report": "reports/iteration1/phase1/leakage_overlap_report.csv",
+    "dataset_metadata": "data/labels/iteration1/dataset_metadata.json"
+  }
+}

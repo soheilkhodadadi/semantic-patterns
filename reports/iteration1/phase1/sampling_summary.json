@@ -1,0 +1,76 @@
+{
+  "generated_at_utc": "2026-02-27T20:26:49.371726+00:00",
+  "git_commit": "8be0872314db1372b1dc9bf6176b4d255e0cc7f7",
+  "inputs": {
+    "base_labeled": "data/validation/hand_labeled_ai_sentences_labeled_cleaned_revised.csv",
+    "held_out": "data/validation/held_out_sentences.csv",
+    "input_dir": "data/processed/sec",
+    "controls": "data/interim/controls/controls_by_firm_year.csv",
+    "crosswalk": "data/externals/crosswalks/cik_gvkey.csv"
+  },
+  "parameters": {
+    "target_total": 400,
+    "new_target": 376,
+    "seed": 20260227,
+    "min_tokens": 6,
+    "min_class_target": 60
+  },
+  "base_stats": {
+    "rows_before_cleaning": 162,
+    "exact_or_canonical_duplicates_removed": 39,
+    "heldout_overlap_removed": 99,
+    "rows_after_cleaning": 24,
+    "class_counts": {
+      "Irrelevant": 18,
+      "Actionable": 5,
+      "Speculative": 1
+    }
+  },
+  "candidate_stats": {
+    "rows_total": 514,
+    "removed_below_min_tokens": 77,
+    "removed_leakage_overlap": 285,
+    "removed_exact_or_canonical_duplicates": 22,
+    "rows_after_filters": 130
+  },
+  "sampling": {
+    "new_target": 130,
+    "selected_count": 130,
+    "year_quotas": {
+      "2021": 29,
+      "2022": 2,
+      "2023": 31,
+      "2024": 68
+    },
+    "year_selected": {
+      "2024": 68,
+      "2023": 31,
+      "2021": 29,
+      "2022": 2
+    },
+    "ff12_floor": 12,
+    "ff12_floor_feasible": true,
+    "selected_label_suggested_counts": {
+      "Speculative": 58,
+      "Actionable": 39,
+      "Irrelevant": 33
+    },
+    "selected_ff12_counts": {
+      "12": 97,
+      "11": 26,
+      "9": 5,
+      "6": 2
+    },
+    "selected_length_counts": {
+      "medium": 55,
+      "short": 41,
+      "long": 34
+    },
+    "selected_edge_case_count": 17
+  },
+  "artifacts": {
+    "base_nonleaky": "data/labels/iteration1/base_labeled_nonleaky.csv",
+    "labeling_sheet_for_manual": "data/labels/iteration1/labeling_sheet_for_manual.csv",
+    "labeling_sheet_completed_template": "data/labels/iteration1/labeling_sheet_completed.csv"
+  }
+}

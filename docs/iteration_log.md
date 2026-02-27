@@ -212,3 +212,104 @@ Rules:
 - CI status:
   - local validation: pass (`.venv/bin/ruff ...`, `.venv/bin/pytest -q`)
   - remote CI: not run yet for `iteration1/integration` in this session
+
+### Phase: label-expansion (start)
+- Date: 2026-02-27
+- Branch: `iteration1/label-expansion`
+- Goal: Expand labeled dataset to 400 rows with leakage-safe dedupe, QA gates, stable IDs, and labeling rubric.
+- Deliverables (planned):
+  - `src/semantic_ai_washing/labeling/__init__.py`
+  - `src/semantic_ai_washing/labeling/ff12_mapping.py`
+  - `src/semantic_ai_washing/labeling/build_labeling_sample.py`
+  - `src/semantic_ai_washing/labeling/dedupe_labeled_sentences.py`
+  - `src/semantic_ai_washing/labeling/qa_labeled_dataset.py`
+  - `docs/labeling_protocol.md`
+  - phase artifacts under `data/labels/iteration1/` and `reports/iteration1/phase1/`
+- Validation run (planned):
+  - `make bootstrap`
+  - `make doctor`
+  - `make format`
+  - `make lint`
+  - `.venv/bin/pytest -q`
+  - `.venv/bin/python -m semantic_ai_washing.labeling.build_labeling_sample ...`
+  - `.venv/bin/python -m semantic_ai_washing.labeling.dedupe_labeled_sentences ...`
+  - `.venv/bin/python -m semantic_ai_washing.labeling.qa_labeled_dataset ...`
+- Risks/issues encountered (so far):
+  - R3 leakage risk confirmed by overlap diagnostics between labeled base and held-out.
+- Mitigation/resolution:
+  - Freeze `data/validation/held_out_sentences.csv` and enforce hard overlap exclusion in sampling and QA.
+- Commits: pending
+- CI status: pending
+
+### Phase: label-expansion (execution update)
+- Date: 2026-02-27
+- Branch: `iteration1/label-expansion`
+- Goal: Deliver leakage-safe label expansion tooling, rubric, and QA gates for a 400-row target dataset.
+- Deliverables implemented:
+  - New package + CLIs:
+    - `src/semantic_ai_washing/labeling/__init__.py`
+    - `src/semantic_ai_washing/labeling/common.py`
+    - `src/semantic_ai_washing/labeling/ff12_mapping.py`
+    - `src/semantic_ai_washing/labeling/build_labeling_sample.py`
+    - `src/semantic_ai_washing/labeling/dedupe_labeled_sentences.py`
+    - `src/semantic_ai_washing/labeling/qa_labeled_dataset.py`
+  - New rubric doc:
+    - `docs/labeling_protocol.md`
+  - New tests:
+    - `tests/test_labeling_phase1.py`
+  - Phase artifacts generated:
+    - `data/labels/iteration1/base_labeled_nonleaky.csv`
+    - `data/labels/iteration1/labeling_sheet_for_manual.csv`
+    - `data/labels/iteration1/labeling_sheet_completed.csv`
+    - `data/labels/iteration1/expanded_labeled_sentences_preqa.csv`
+    - `data/labels/iteration1/uncertain_rows.csv`
+    - `data/labels/iteration1/label_conflicts.csv`
+    - `data/labels/iteration1/dataset_metadata.json`
+    - `reports/iteration1/phase1/sampling_summary.json`
+    - `reports/iteration1/phase1/dedupe_report.json`
+    - `reports/iteration1/phase1/qa_report.json`
+    - `reports/iteration1/phase1/leakage_overlap_report.csv`
+- Validation run:
+  - Required make targets attempted and blocked by local machine prerequisite:
+    - `make bootstrap` -> blocked (`xcodebuild` license not accepted)
+    - `make doctor` -> blocked (`xcodebuild` license not accepted)
+    - `make format` -> blocked (`xcodebuild` license not accepted)
+    - `make lint` -> blocked (`xcodebuild` license not accepted)
+  - `.venv/bin/pytest -q` attempted and hung due local `.venv` runtime issue (Rosetta/code-signature attachment failure while importing numeric stack).
+  - Fallback validation executed with `python3.9` + `PYTHONPATH=src`:
+    - `python3.9 -m ruff check --fix ...`
+    - `python3.9 -m ruff format ...`
+    - `python3.9 -m ruff format --check ...`
+    - `python3.9 -m ruff check ...`
+    - `PYTHONPATH=src python3.9 -m pytest -q` -> `22 passed`
+  - Phase commands executed:
+    - `PYTHONPATH=src python3.9 -m semantic_ai_washing.labeling.build_labeling_sample ... --target-total 400 ...`
+    - `PYTHONPATH=src python3.9 -m semantic_ai_washing.labeling.dedupe_labeled_sentences ...`
+    - `PYTHONPATH=src python3.9 -m semantic_ai_washing.labeling.qa_labeled_dataset ...`
+- Gate status:
+  - `qa_report.json` status: `fail`
+  - Violations:
+    - `class_count_below_min:Actionable=43<60`
+    - `class_count_below_min:Speculative=59<60`
+    - `class_count_below_min:Irrelevant=51<60`
+    - `target_size_mismatch:153!=400`
+  - Leakage checks:
+    - base labeled overlap removed: `99`
+    - final leakage overlap count: `0`
+- Repo-state correction logged:
+  - With current repository corpus and frozen held-out policy, `target_total=400` is infeasible in this phase run:
+    - candidate pool after leakage + dedupe filters: `130`
+    - base non-leaky labeled rows: `24`
+    - merged pre-QA rows: `153`
+  - This supersedes any prior assumption that 400 rows were immediately attainable from current in-repo candidates.
+- Risks/issues encountered:
+  - R2 class imbalance remained after leakage-safe sampling.
+  - R3 leakage prevented via hard exclusion, reducing available sample volume.
+  - R7 scope control maintained (no retraining/calibration introduced).
+  - Environment blockers impacted canonical `make`/`.venv` validation path.
+- Mitigation/resolution:
+  - Added hard-fail QA gates + explicit reports for size/balance/leakage.
+  - Persisted metadata/fingerprints for reproducibility.
+  - Captured infeasibility evidence in artifacts for next planning decision.
+- Commits: pending
+- CI status: pending

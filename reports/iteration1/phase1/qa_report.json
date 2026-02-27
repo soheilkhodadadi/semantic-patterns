@@ -1,0 +1,39 @@
+{
+  "inputs": {
+    "input": "data/labels/iteration1/expanded_labeled_sentences_preqa.csv",
+    "held_out": "data/validation/held_out_sentences.csv"
+  },
+  "parameters": {
+    "min_tokens": 6,
+    "min_class_count": 60,
+    "target_size": 400,
+    "allow_target_size_mismatch": false,
+    "near_threshold": 0.95
+  },
+  "summary": {
+    "status": "fail",
+    "violations": [
+      "class_count_below_min:Actionable=43<60",
+      "class_count_below_min:Speculative=59<60",
+      "class_count_below_min:Irrelevant=51<60",
+      "target_size_mismatch:153!=400"
+    ],
+    "row_count": 153,
+    "class_counts": {
+      "Irrelevant": 51,
+      "Actionable": 43,
+      "Speculative": 59
+    },
+    "leakage_overlap_count": 0,
+    "near_duplicate_pair_count": 0,
+    "sample_id_duplicate_count": 0,
+    "sentence_id_duplicate_count": 0,
+    "sentence_norm_duplicate_count": 0
+  },
+  "artifacts": {
+    "output_dataset": "",
+    "qa_report": "reports/iteration1/phase1/qa_report.json",
+    "leakage_overlap_report": "reports/iteration1/phase1/leakage_overlap_report.csv",
+    "dataset_metadata": "data/labels/iteration1/dataset_metadata.json"
+  }
+}

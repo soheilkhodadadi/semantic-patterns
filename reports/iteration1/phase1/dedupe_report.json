@@ -1,0 +1,33 @@
+{
+  "inputs": {
+    "base": "data/labels/iteration1/base_labeled_nonleaky.csv",
+    "new": "data/labels/iteration1/labeling_sheet_completed.csv",
+    "held_out": "data/validation/held_out_sentences.csv"
+  },
+  "parameters": {
+    "near_threshold": 0.95
+  },
+  "stats": {
+    "rows_base": 24,
+    "rows_new": 130,
+    "rows_combined": 154,
+    "rows_invalid_label_removed": 0,
+    "rows_autofilled_from_suggestion": 0,
+    "rows_leakage_removed": 0,
+    "rows_exact_deduped": 0,
+    "rows_near_deduped": 1,
+    "rows_conflicted": 0,
+    "rows_uncertain_split": 0,
+    "rows_final_preqa": 153
+  },
+  "final_class_counts": {
+    "Irrelevant": 51,
+    "Actionable": 43,
+    "Speculative": 59
+  },
+  "artifacts": {
+    "expanded_labeled_sentences_preqa": "data/labels/iteration1/expanded_labeled_sentences_preqa.csv",
+    "uncertain_rows": "data/labels/iteration1/uncertain_rows.csv",
+    "label_conflicts": "data/labels/iteration1/label_conflicts.csv"
+  }
+}
