@@ -1,6 +1,6 @@
 {
-  "generated_at_utc": "2026-02-27T17:58:12.359820+00:00",
-  "git_commit": "7cb5df07d90a79dbb294ee4c3a68c11859d5ec65",
+  "generated_at_utc": "2026-02-27T18:01:28.250481+00:00",
+  "git_commit": "445d154cd2fb2ec48ca6d6e378448efa4b38f86a",
   "inputs": {
     "eval_file": "data/validation/held_out_sentences.csv",
     "fallback_eval_details": "data/validation/evaluation_results.csv",

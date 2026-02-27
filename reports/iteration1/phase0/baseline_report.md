@@ -1,7 +1,7 @@
 # Iteration 1 Phase 0 Baseline Report
 
-- Generated: 2026-02-27T17:58:12.358135+00:00
-- Git commit: `7cb5df07d90a79dbb294ee4c3a68c11859d5ec65`
+- Generated: 2026-02-27T18:01:28.249395+00:00
+- Git commit: `445d154cd2fb2ec48ca6d6e378448efa4b38f86a`
 - Centroids: `data/validation/centroids_mpnet.json`
 - Centroid sha256: `449e819f7174895a92711840ce25f2298a35e2a6b621561e9712a584b3f8ff77`
 - Evaluation mode: `fallback_existing_eval_details`
