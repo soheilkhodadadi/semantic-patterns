@@ -238,8 +238,11 @@ Rules:
   - R3 leakage risk confirmed by overlap diagnostics between labeled base and held-out.
 - Mitigation/resolution:
   - Freeze `data/validation/held_out_sentences.csv` and enforce hard overlap exclusion in sampling and QA.
-- Commits: pending
-- CI status: pending
+- Commits:
+  - `c00769bca2115b6f9b4f52d4f2a80c80cc2de338` (phase implementation + artifacts)
+- CI status:
+  - local fallback validation pass (`python3.9` + `PYTHONPATH=src`): Ruff + pytest
+  - canonical `.venv`/`make` path blocked by host prerequisites
 
 ### Phase: label-expansion (execution update)
 - Date: 2026-02-27
@@ -311,5 +314,8 @@ Rules:
   - Added hard-fail QA gates + explicit reports for size/balance/leakage.
   - Persisted metadata/fingerprints for reproducibility.
   - Captured infeasibility evidence in artifacts for next planning decision.
-- Commits: pending
-- CI status: pending
+- Commits:
+  - `c00769bca2115b6f9b4f52d4f2a80c80cc2de338` (phase implementation + artifacts)
+- CI status:
+  - local fallback validation pass (`python3.9` + `PYTHONPATH=src`): Ruff + pytest
+  - canonical `.venv`/`make` path blocked by host prerequisites
