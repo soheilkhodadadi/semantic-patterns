@@ -1,8 +1,21 @@
 import re
 import argparse
+import json
+from pathlib import Path
 import pandas as pd
 
-from semantic_ai_washing.core.classify import classify_sentence  # base centroid classifier (A/S/I)
+_CLASSIFY_SENTENCE = None
+CLASS_LABELS = ("Actionable", "Speculative", "Irrelevant")
+
+
+def _get_classify_sentence():
+    """Lazy import to avoid model initialization during module import."""
+    global _CLASSIFY_SENTENCE
+    if _CLASSIFY_SENTENCE is None:
+        from semantic_ai_washing.core.classify import classify_sentence
+
+        _CLASSIFY_SENTENCE = classify_sentence
+    return _CLASSIFY_SENTENCE
 
 
 LISTY_TRIGGERS = re.compile(r"\b(including|such as|as well as|among other|and other)\b", re.I)
@@ -249,6 +262,7 @@ def classify_two_stage(
         }
 
     # Step 2: Actionable vs Speculative with optional boosts
+    classify_sentence = _get_classify_sentence()
     label, scores = classify_sentence(text)
     if use_rule_boosts:
         scores = adjust_scores(text, scores)
@@ -305,6 +319,165 @@ def classify_two_stage(
     return label, scores
 
 
+def evaluate_rows(
+    df: pd.DataFrame,
+    two_stage: bool = False,
+    rule_boosts: bool = False,
+    tau: float = 0.05,
+    eps_irr: float = 0.02,
+    min_tokens: int = 6,
+    verbose: bool = True,
+) -> pd.DataFrame:
+    """Return detailed held-out predictions with labels and score payloads."""
+    rows = []
+    classify_sentence = _get_classify_sentence()
+    for _, row in df.iterrows():
+        sent = str(row["sentence"]).strip()
+        true = str(row["label"]).strip()
+        if two_stage:
+            pred, scores = classify_two_stage(
+                sent,
+                tau=tau,
+                eps_irr=eps_irr,
+                min_tokens=min_tokens,
+                use_rule_boosts=rule_boosts,
+            )
+        else:
+            pred, scores = classify_sentence(sent)
+
+        match = pred == true
+        rows.append(
+            {
+                "sentence": sent,
+                "true_label": true,
+                "predicted_label": pred,
+                "match": bool(match),
+                "scores": scores,
+            }
+        )
+        if verbose:
+            print(
+                f"\n📝 {sent}\n✅ True: {true} | 🔮 Predicted: {pred} | {'✔️' if match else '❌'}"
+            )
+            print(f"📊 Scores: {scores}")
+    return pd.DataFrame(rows)
+
+
+def build_confusion_matrix_df(
+    true_labels: list[str], predicted_labels: list[str], labels: tuple[str, ...] = CLASS_LABELS
+) -> pd.DataFrame:
+    """Build confusion matrix with fixed class order and labeled axes."""
+    matrix = pd.DataFrame(0, index=list(labels), columns=list(labels), dtype=int)
+    for true_label, pred_label in zip(true_labels, predicted_labels):
+        if true_label in labels and pred_label in labels:
+            matrix.loc[true_label, pred_label] += 1
+    return matrix
+
+
+def compute_metrics_dict(
+    true_labels: list[str], predicted_labels: list[str], labels: tuple[str, ...] = CLASS_LABELS
+) -> dict:
+    """Compute accuracy and per-class precision/recall/F1/support summary."""
+    total = len(true_labels)
+    correct = sum(1 for t, p in zip(true_labels, predicted_labels) if t == p)
+    accuracy = (correct / total) if total else 0.0
+    per_class = {}
+    macro_precision_total = 0.0
+    macro_recall_total = 0.0
+    macro_f1_total = 0.0
+
+    for label in labels:
+        tp = sum(1 for t, p in zip(true_labels, predicted_labels) if t == label and p == label)
+        fp = sum(1 for t, p in zip(true_labels, predicted_labels) if t != label and p == label)
+        fn = sum(1 for t, p in zip(true_labels, predicted_labels) if t == label and p != label)
+        support = sum(1 for t in true_labels if t == label)
+
+        precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+        recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+        f1 = (2 * precision * recall / (precision + recall)) if (precision + recall) > 0 else 0.0
+
+        macro_precision_total += precision
+        macro_recall_total += recall
+        macro_f1_total += f1
+
+        per_class[label] = {
+            "precision": float(precision),
+            "recall": float(recall),
+            "f1": float(f1),
+            "support": int(support),
+        }
+
+    class_count = len(labels) if labels else 1
+    macro_precision = macro_precision_total / class_count
+    macro_recall = macro_recall_total / class_count
+    macro_f1 = macro_f1_total / class_count
+
+    return {
+        "accuracy": float(accuracy),
+        "correct": int(correct),
+        "total": int(total),
+        "macro_precision": float(macro_precision),
+        "macro_recall": float(macro_recall),
+        "macro_f1": float(macro_f1),
+        "labels": list(labels),
+        "per_class": per_class,
+    }
+
+
+def evaluate_held_out(
+    file_path: str,
+    two_stage: bool = False,
+    rule_boosts: bool = False,
+    tau: float = 0.05,
+    eps_irr: float = 0.02,
+    min_tokens: int = 6,
+    verbose: bool = True,
+) -> tuple[pd.DataFrame, dict, pd.DataFrame]:
+    """Run held-out evaluation and return details, metrics, confusion matrix."""
+    df = pd.read_csv(file_path)
+    details = evaluate_rows(
+        df,
+        two_stage=two_stage,
+        rule_boosts=rule_boosts,
+        tau=tau,
+        eps_irr=eps_irr,
+        min_tokens=min_tokens,
+        verbose=verbose,
+    )
+    true_labels = details["true_label"].tolist()
+    predicted_labels = details["predicted_label"].tolist()
+    metrics = compute_metrics_dict(true_labels, predicted_labels)
+    confusion_df = build_confusion_matrix_df(true_labels, predicted_labels)
+    return details, metrics, confusion_df
+
+
+def write_structured_outputs(
+    details: pd.DataFrame,
+    metrics: dict,
+    confusion_df: pd.DataFrame,
+    output_dir: str,
+    file_prefix: str = "evaluation",
+) -> dict[str, str]:
+    """Write details/metrics/confusion files and return output paths."""
+    out_dir = Path(output_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    details_path = out_dir / f"{file_prefix}_details.csv"
+    metrics_path = out_dir / f"{file_prefix}_metrics.json"
+    confusion_path = out_dir / f"{file_prefix}_confusion_matrix.csv"
+
+    details.to_csv(details_path, index=False)
+    confusion_df.to_csv(confusion_path, index=True)
+    with metrics_path.open("w", encoding="utf-8") as f:
+        json.dump(metrics, f, indent=2)
+
+    return {
+        "details_csv": str(details_path),
+        "metrics_json": str(metrics_path),
+        "confusion_matrix_csv": str(confusion_path),
+    }
+
+
 def main():
     ap = argparse.ArgumentParser(description="Evaluate classifier on held‑out sentences.")
     ap.add_argument(
@@ -325,42 +498,34 @@ def main():
     ap.add_argument(
         "--min-tokens", type=int, default=6, help="Min tokens for non‑fragment (default 6)"
     )
+    ap.add_argument(
+        "--output-dir",
+        default=None,
+        help="Optional directory to save details+metrics+confusion outputs.",
+    )
     args = ap.parse_args()
 
-    df = pd.read_csv(args.file)
+    details, metrics, confusion_df = evaluate_held_out(
+        file_path=args.file,
+        two_stage=args.two_stage,
+        rule_boosts=args.rule_boosts,
+        tau=args.tau,
+        eps_irr=args.eps_irr,
+        min_tokens=args.min_tokens,
+        verbose=True,
+    )
 
-    correct = 0
-    rows = []
+    print(f"\n🎯 Accuracy: {metrics['correct']} / {metrics['total']} = {metrics['accuracy']:.2%}")
 
-    for _, row in df.iterrows():
-        sent = str(row["sentence"]).strip()
-        true = str(row["label"]).strip()
-        if args.two_stage:
-            pred, scores = classify_two_stage(
-                sent,
-                tau=args.tau,
-                eps_irr=args.eps_irr,
-                min_tokens=args.min_tokens,
-                use_rule_boosts=args.rule_boosts,
-            )
-        else:
-            pred, scores = classify_sentence(sent)
-        match = pred == true
-        rows.append((sent, true, pred, match, scores))
-        print(f"\n📝 {sent}\n✅ True: {true} | 🔮 Predicted: {pred} | {'✔️' if match else '❌'}")
-        print(f"📊 Scores: {scores}")
-        if match:
-            correct += 1
-
-    total = len(df)
-    acc = correct / total if total else 0.0
-    print(f"\n🎯 Accuracy: {correct} / {total} = {acc:.2%}")
-
-    outp = "data/validation/evaluation_results.csv"
-    pd.DataFrame(
-        rows, columns=["sentence", "true_label", "predicted_label", "match", "scores"]
-    ).to_csv(outp, index=False)
-    print(f"Saved details to {outp}")
+    if args.output_dir:
+        paths = write_structured_outputs(details, metrics, confusion_df, args.output_dir)
+        print(f"Saved details to {paths['details_csv']}")
+        print(f"Saved metrics to {paths['metrics_json']}")
+        print(f"Saved confusion matrix to {paths['confusion_matrix_csv']}")
+    else:
+        outp = "data/validation/evaluation_results.csv"
+        details.to_csv(outp, index=False)
+        print(f"Saved details to {outp}")
 
 
 if __name__ == "__main__":

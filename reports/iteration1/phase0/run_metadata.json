@@ -1,0 +1,54 @@
+{
+  "generated_at_utc": "2026-02-27T18:01:28.250481+00:00",
+  "git_commit": "445d154cd2fb2ec48ca6d6e378448efa4b38f86a",
+  "inputs": {
+    "eval_file": "data/validation/held_out_sentences.csv",
+    "fallback_eval_details": "data/validation/evaluation_results.csv",
+    "base_dir": "data/processed/sec",
+    "years": [
+      "2024"
+    ],
+    "limit": 20
+  },
+  "classifier_params": {
+    "force": true,
+    "two_stage": true,
+    "rule_boosts": true,
+    "tau": 0.07,
+    "eps_irr": 0.03,
+    "min_tokens": 6
+  },
+  "evaluation_mode": "fallback_existing_eval_details",
+  "coverage": {
+    "expected_count": 20,
+    "existing_count": 20,
+    "mismatch_count": 0,
+    "missing_outputs": [],
+    "unexpected_outputs": []
+  },
+  "batch_summary": {
+    "processed": 0,
+    "skipped": 20,
+    "errors": 0,
+    "error_details": [],
+    "reclassification_attempted": true,
+    "reclassification_succeeded": false,
+    "reclassification_note": "reclassification fallback used (TimeoutExpired)"
+  },
+  "centroid_artifact": {
+    "path": "data/validation/centroids_mpnet.json",
+    "exists": true,
+    "sha256": "449e819f7174895a92711840ce25f2298a35e2a6b621561e9712a584b3f8ff77",
+    "mtime_utc": "2025-08-13T18:12:25.168733+00:00",
+    "size_bytes": 51405
+  },
+  "artifacts": {
+    "baseline_eval_details_csv": "reports/iteration1/phase0/baseline_eval_details.csv",
+    "baseline_eval_metrics_json": "reports/iteration1/phase0/baseline_eval_metrics.json",
+    "baseline_eval_confusion_matrix_csv": "reports/iteration1/phase0/baseline_eval_confusion_matrix.csv",
+    "baseline_batch_distribution_csv": "reports/iteration1/phase0/baseline_batch_distribution.csv",
+    "baseline_failure_taxonomy_csv": "reports/iteration1/phase0/baseline_failure_taxonomy.csv",
+    "baseline_report_md": "reports/iteration1/phase0/baseline_report.md",
+    "pipeline_map_snapshot_md": "reports/iteration1/phase0/pipeline_map_snapshot.md"
+  }
+}
