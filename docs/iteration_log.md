@@ -152,8 +152,12 @@ Rules:
 - Risks/issues encountered: none yet
 - Mitigation/resolution:
   - R6 correction logged: canonical centroid artifact in repo is `data/validation/centroids_mpnet.json` (not `centroids.mpnet.json`).
-- Commits: pending
-- CI status: pending
+- Commits:
+  - phase branch commit: `f5c67abdec4a832b7cd06653804c7ebecee2e77d`
+  - merge to integration: `6e527369103b622fa3b661e8abb7ef7574adebce`
+- CI status:
+  - local validation: pass (`ruff` + `pytest`)
+  - remote CI: not run yet for `iteration1/integration` in this session
 
 ### Phase: diagnostics-baseline (completed)
 - Date: 2026-02-27
@@ -200,5 +204,9 @@ Rules:
   - Added deterministic coverage guard (`expected` vs `existing` + mismatch count).
   - Added bounded subprocess timeouts and explicit fallback metadata for evaluation/reclassification modes.
   - Logged fallback modes in `run_metadata.json` and `baseline_report.md`.
-- Commits: pending
-- CI status: pending
+- Commits:
+  - phase branch commit: `f5c67abdec4a832b7cd06653804c7ebecee2e77d`
+  - merge to integration: `6e527369103b622fa3b661e8abb7ef7574adebce`
+- CI status:
+  - local validation: pass (`.venv/bin/ruff ...`, `.venv/bin/pytest -q`)
+  - remote CI: not run yet for `iteration1/integration` in this session
