@@ -1,0 +1,7 @@
+transition,true_label,predicted_label,count
+A->S,Actionable,Speculative,0
+A->I,Actionable,Irrelevant,10
+S->A,Speculative,Actionable,4
+S->I,Speculative,Irrelevant,2
+I->A,Irrelevant,Actionable,18
+I->S,Irrelevant,Speculative,65
