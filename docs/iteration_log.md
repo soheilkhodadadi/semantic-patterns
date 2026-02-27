@@ -155,6 +155,7 @@ Rules:
 - Commits:
   - phase branch commit: `f5c67abdec4a832b7cd06653804c7ebecee2e77d`
   - merge to integration: `6e527369103b622fa3b661e8abb7ef7574adebce`
+  - integration log finalization: `db40a3c9fc7e078294b134121853e3359473443e`
 - CI status:
   - local validation: pass (`ruff` + `pytest`)
   - remote CI: not run yet for `iteration1/integration` in this session
@@ -207,6 +208,7 @@ Rules:
 - Commits:
   - phase branch commit: `f5c67abdec4a832b7cd06653804c7ebecee2e77d`
   - merge to integration: `6e527369103b622fa3b661e8abb7ef7574adebce`
+  - integration log finalization: `db40a3c9fc7e078294b134121853e3359473443e`
 - CI status:
   - local validation: pass (`.venv/bin/ruff ...`, `.venv/bin/pytest -q`)
   - remote CI: not run yet for `iteration1/integration` in this session
