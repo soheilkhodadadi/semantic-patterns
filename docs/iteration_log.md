@@ -212,3 +212,78 @@ Rules:
 - CI status:
   - local validation: pass (`.venv/bin/ruff ...`, `.venv/bin/pytest -q`)
   - remote CI: not run yet for `iteration1/integration` in this session
+
+## Director Foundation (In Progress)
+
+### Phase: director-foundation (start)
+- Date: 2026-03-02
+- Branch: `director/foundation`
+- Goal: Build reusable autonomous director package that turns roadmap/protocol/iteration history into executable runbooks with gate checks and blocker escalation.
+- Deliverables (planned):
+  - `semantic_ai_washing.director` package (`core`, `adapters`, `policies`, CLI)
+  - repo config/snapshot workspace under `director/`
+  - director docs + tests + CI integration + Makefile targets
+- Validation run (planned):
+  - `make bootstrap`
+  - `make doctor`
+  - `make format`
+  - `make lint`
+  - `.venv/bin/pytest -q`
+  - `make director-doctor`
+  - `make director-plan`
+  - `make director-status`
+- Risks/issues encountered (initial):
+  - `.venv` drift from Atlas CLI bootstrap caused missing `pip` in `.venv`.
+- Mitigation/resolution:
+  - Rebuilt `.venv` with `python3.9 -m venv --clear .venv` and completed bootstrap.
+- Commits: pending
+- CI status: pending
+
+### Phase: director-foundation (execution update)
+- Date: 2026-03-02
+- Branch: `director/foundation`
+- Goal: Implement autonomous planning/execution director in parallel with Iteration 1 science branches.
+- Deliverables implemented:
+  - Package:
+    - `src/semantic_ai_washing/director/__init__.py`
+    - `src/semantic_ai_washing/director/__main__.py`
+    - `src/semantic_ai_washing/director/cli.py`
+    - `src/semantic_ai_washing/director/schemas.py`
+    - `src/semantic_ai_washing/director/core/*`
+    - `src/semantic_ai_washing/director/adapters/*`
+    - `src/semantic_ai_washing/director/policies/*`
+  - Director workspace defaults:
+    - `director/config/project_profile.yaml`
+    - `director/config/autonomy_policy.yaml`
+    - `director/config/cost_policy.yaml`
+    - `director/snapshots/protocol_summary.json`
+    - `director/snapshots/roadmap_summary.json`
+    - `director/snapshots/iteration_state.json`
+    - `director/README.md`
+  - Docs:
+    - `docs/director/quickstart.md`
+    - `docs/director/policy.md`
+  - Tests:
+    - `tests/test_director_core.py`
+    - `tests/test_director_cli.py`
+  - Repo integration:
+    - `Makefile` (`director-doctor`, `director-plan`, `director-status`)
+    - `.github/workflows/ci.yml` director job
+    - `setup.cfg` dependencies and `director` console entrypoint
+- Validation run:
+  - `make bootstrap` -> pass (after `.venv` rebuild)
+  - `make doctor` -> pass
+  - `make format` -> pass
+  - `make lint` -> pass
+  - `.venv/bin/pytest -q` -> `23 passed`
+  - `make director-doctor` -> pass
+  - `make director-plan ITER=1 PHASE=label-expansion` -> pass
+  - `make director-status` -> pass
+- Risks/issues encountered:
+  - Initial editable install hung when pip build isolation overlapped with concurrent bootstrap runs.
+  - Python 3.9 + Pydantic field evaluation required `Optional[...]` annotations in schemas.
+- Mitigation/resolution:
+  - Killed overlapping pip processes, re-ran install with stabilized environment.
+  - Converted schema optional unions to `Optional[...]` for Python 3.9 compatibility.
+- Commits: pending
+- CI status: local validation pass; remote CI pending

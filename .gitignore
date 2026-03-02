@@ -193,3 +193,21 @@ cython_debug/
 
 # Ignore heavy or intermediate data
 data/validation
+
+# uv lock from ad-hoc tooling runs
+uv.lock
+
+# Director runtime artifacts (keep placeholders only)
+director/plans/*
+!director/plans/.gitkeep
+director/decisions/*
+!director/decisions/.gitkeep
+director/runs/*
+!director/runs/.gitkeep
+director/cache/*
+!director/cache/.gitkeep
+
+# Director generated snapshot derivatives
+director/snapshots/atlas_metadata.json
+director/snapshots/ingest_manifest.json
+director/snapshots/iteration_state_compiled.json
