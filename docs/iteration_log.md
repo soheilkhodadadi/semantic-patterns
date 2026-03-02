@@ -238,6 +238,8 @@ Rules:
   - Rebuilt `.venv` with `python3.9 -m venv --clear .venv` and completed bootstrap.
 - Commits:
   - `3bdbf33ef0f4f287f57acc33d0b5f8f9af808f50` (director package foundation + docs/tests/CI integration)
+  - `b76975af857b3584e87c57fd95a90d017e4206c7` (iteration log evidence finalization)
+  - `4155a6ebdf90727fef26712c811e1ed02d4ef27f` (director test hardening for secret scan compatibility)
 - CI status:
   - local validation pass (`make bootstrap`, `make doctor`, `make format`, `make lint`, `.venv/bin/pytest -q`)
   - director local validation pass (`make director-doctor`, `make director-plan`, `make director-status`)
@@ -291,6 +293,8 @@ Rules:
   - Converted schema optional unions to `Optional[...]` for Python 3.9 compatibility.
 - Commits:
   - `3bdbf33ef0f4f287f57acc33d0b5f8f9af808f50` (director package foundation + docs/tests/CI integration)
+  - `b76975af857b3584e87c57fd95a90d017e4206c7` (iteration log evidence finalization)
+  - `4155a6ebdf90727fef26712c811e1ed02d4ef27f` (director test hardening for secret scan compatibility)
 - CI status:
   - local validation pass (`make bootstrap`, `make doctor`, `make format`, `make lint`, `.venv/bin/pytest -q`)
   - director local validation pass (`make director-doctor`, `make director-plan`, `make director-status`)
