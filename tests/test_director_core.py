@@ -215,7 +215,8 @@ def test_cost_limiter_blocks_additional_usage(tmp_path):
 
 
 def test_redaction_removes_secret_patterns():
-    text = "OPENAI key sk-proj-ABCDEFGHIJKLMNOPQRSTUV123456 is here"
+    key = "sk-proj-" + "ABC123_DEF456_GHI789_JKL012MNOP345QRST"
+    text = f"OPENAI key {key} is here"
     redacted = redact_secrets(text)
     assert "sk-proj" not in redacted
     assert "[REDACTED_SECRET]" in redacted
