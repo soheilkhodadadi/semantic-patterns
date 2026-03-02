@@ -236,8 +236,12 @@ Rules:
   - `.venv` drift from Atlas CLI bootstrap caused missing `pip` in `.venv`.
 - Mitigation/resolution:
   - Rebuilt `.venv` with `python3.9 -m venv --clear .venv` and completed bootstrap.
-- Commits: pending
-- CI status: pending
+- Commits:
+  - `3bdbf33ef0f4f287f57acc33d0b5f8f9af808f50` (director package foundation + docs/tests/CI integration)
+- CI status:
+  - local validation pass (`make bootstrap`, `make doctor`, `make format`, `make lint`, `.venv/bin/pytest -q`)
+  - director local validation pass (`make director-doctor`, `make director-plan`, `make director-status`)
+  - remote CI pending
 
 ### Phase: director-foundation (execution update)
 - Date: 2026-03-02
@@ -285,5 +289,9 @@ Rules:
 - Mitigation/resolution:
   - Killed overlapping pip processes, re-ran install with stabilized environment.
   - Converted schema optional unions to `Optional[...]` for Python 3.9 compatibility.
-- Commits: pending
-- CI status: local validation pass; remote CI pending
+- Commits:
+  - `3bdbf33ef0f4f287f57acc33d0b5f8f9af808f50` (director package foundation + docs/tests/CI integration)
+- CI status:
+  - local validation pass (`make bootstrap`, `make doctor`, `make format`, `make lint`, `.venv/bin/pytest -q`)
+  - director local validation pass (`make director-doctor`, `make director-plan`, `make director-status`)
+  - remote CI pending
