@@ -8,6 +8,8 @@ PYTHON_INTERPRETER = python
 VENV_DIR = .venv
 VENV_PYTHON = $(VENV_DIR)/bin/python
 VENV_PIP = $(VENV_PYTHON) -m pip
+ITER ?= 1
+PHASE ?= label-expansion
 
 #################################################################################
 # COMMANDS                                                                      #
@@ -70,6 +72,24 @@ doctor:
 	@$(VENV_PYTHON) -m ruff --version
 	@$(VENV_PYTHON) -m pytest --version
 	@echo "[OK] doctor complete"
+
+
+## Run director health checks
+.PHONY: director-doctor
+director-doctor:
+	@$(VENV_PYTHON) -m semantic_ai_washing.director.cli doctor --strict-secrets --json
+
+
+## Generate director plan artifacts for an iteration/phase
+.PHONY: director-plan
+director-plan:
+	@$(VENV_PYTHON) -m semantic_ai_washing.director.cli plan --iteration $(ITER) --phase $(PHASE)
+
+
+## Show director status snapshot
+.PHONY: director-status
+director-status:
+	@$(VENV_PYTHON) -m semantic_ai_washing.director.cli status
 	
 
 

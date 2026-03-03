@@ -1,0 +1,5 @@
+mode: autonomous
+require_explicit_recovery_selection: true
+halt_on_escalation_required: true
+allow_policy_sensitive_autorun: false
+resume_requires_checkpoint: true
