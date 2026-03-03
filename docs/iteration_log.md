@@ -702,6 +702,7 @@ Rules:
   - no director runtime blocker in this run.
   - scientific gate remains deferred: clear when strict IRR run reports `kappa >= 0.6`.
 - Commits:
-  - pending
+  - `50ef8f3a801f27828f80da9f1544f79037d8bf0e` (Phase 2 IRR tooling + director profile/tests/docs + phase2 report evidence)
 - CI status:
-  - pending
+  - local validation pass (`make bootstrap`, `make doctor`, `make format`, `make lint`, `.venv/bin/pytest -q`)
+  - branch pushed: `origin/iteration1/irr-validation`
