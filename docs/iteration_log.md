@@ -521,6 +521,7 @@ Rules:
   - unresolved Phase 1 dataset size/class-balance gate remains deferred; not marked pass.
   - active deferred record: `director/decisions/deferred_eedb6fbadba43363.json` (`until_iteration=2`, `until_phase=full-classification`).
 - Commits:
-  - pending
+  - `1a88f3fd2111f0f98c88db1eb27a1c43034f618d` (stabilization implementation: director hardening + Iteration 1 code/docs integration)
 - CI status:
-  - pending
+  - local validation pass (`make bootstrap`, `make doctor`, `make format`, `make lint`, `.venv/bin/pytest -q`, `make director-doctor`, `make director-plan`, `make director-status`)
+  - remote CI pending
