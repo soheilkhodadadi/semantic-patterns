@@ -1,0 +1,59 @@
+project_name: semantic-patterns
+project_description: AI-washing research-to-production transformation repository.
+iteration_log: docs/iteration_log.md
+canonical_validation_commands:
+  - make bootstrap
+  - make doctor
+  - make format
+  - make lint
+  - .venv/bin/pytest -q
+phase_command_map:
+  iteration1/diagnostics-nlp:
+    - .venv/bin/python -m semantic_ai_washing.diagnostics.phase0_baseline --years 2024 --limit 20 --force --two-stage --rule-boosts --tau 0.07 --eps-irr 0.03 --min-tokens 6 --output-dir reports/iteration1/phase0
+  iteration1/label-expansion:
+    - .venv/bin/python -m semantic_ai_washing.labeling.build_labeling_sample --target-total 400 --held-out data/validation/held_out_sentences.csv --base-labeled data/validation/hand_labeled_ai_sentences_labeled_cleaned_revised.csv --input-dir data/processed/sec --controls data/interim/controls/controls_by_firm_year.csv --crosswalk data/externals/crosswalks/cik_gvkey.csv --output-dir data/labels/iteration1 --report-dir reports/iteration1/phase1 --seed 20260227
+    - .venv/bin/python -m semantic_ai_washing.labeling.dedupe_labeled_sentences --base data/labels/iteration1/base_labeled_nonleaky.csv --new data/labels/iteration1/labeling_sheet_completed.csv --held-out data/validation/held_out_sentences.csv --near-threshold 0.95 --output data/labels/iteration1/expanded_labeled_sentences_preqa.csv --uncertain-output data/labels/iteration1/uncertain_rows.csv --conflicts-output data/labels/iteration1/label_conflicts.csv --report reports/iteration1/phase1/dedupe_report.json
+    - .venv/bin/python -m semantic_ai_washing.labeling.qa_labeled_dataset --input data/labels/iteration1/expanded_labeled_sentences_preqa.csv --held-out data/validation/held_out_sentences.csv --min-tokens 6 --min-class-count 60 --target-size 400 --output data/labels/iteration1/expanded_labeled_sentences.csv --report reports/iteration1/phase1/qa_report.json --leakage-report reports/iteration1/phase1/leakage_overlap_report.csv
+risk_register:
+  - code: R1
+    title: Label ambiguity
+    signal: Inter-rater reliability below kappa target.
+    mitigation: Require rubric + IRR gate before retraining.
+    backout: Pause retraining and adjudicate labels.
+    severity: 5
+  - code: R2
+    title: Class imbalance collapse
+    signal: Predictions collapse to dominant class.
+    mitigation: Enforce class floor and stratified sampling.
+    backout: Rebalance labels and freeze centroids.
+    severity: 4
+  - code: R3
+    title: Leakage across splits
+    signal: Held-out overlap or overfit threshold tuning.
+    mitigation: Hard overlap exclusion and frozen held-out set.
+    backout: Rollback to leakage-safe artifacts.
+    severity: 5
+  - code: R4
+    title: Non-determinism
+    signal: Metrics drift across unchanged reruns.
+    mitigation: Persist seeds, hashes, and metadata.
+    backout: Rebuild under pinned environment.
+    severity: 4
+  - code: R5
+    title: Silent skips
+    signal: Missing outputs despite successful status.
+    mitigation: Coverage counters and output manifests.
+    backout: Strict rerun with fail-fast checks.
+    severity: 4
+  - code: R6
+    title: Metadata mismatch
+    signal: Wrong centroid or label mapping consumed.
+    mitigation: Fingerprint artifacts and metadata checks.
+    backout: Restore known-good metadata.
+    severity: 4
+  - code: R7
+    title: Scope creep
+    signal: Hardening displaces science gates.
+    mitigation: Enforce phase gate boundaries.
+    backout: Defer non-critical hardening.
+    severity: 3

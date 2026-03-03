@@ -28,3 +28,24 @@ jobs:
 
       - name: Run tests
         run: pytest -q
+
+  director:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -e .[dev]
+
+      - name: Director doctor (secrets + required files)
+        run: python -m semantic_ai_washing.director.cli doctor --strict-secrets --skip-make-doctor --json
+
+      - name: Director tests
+        run: pytest -q tests/test_director_*.py
