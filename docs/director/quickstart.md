@@ -67,6 +67,29 @@ python -m semantic_ai_washing.director.cli defer \
   --criteria "Carry deferred science gate until recovery criteria are met"
 ```
 
+## IRR Runbook Flow (Phase 2)
+```bash
+# Generate and execute IRR validation phase runbook
+python -m semantic_ai_washing.director.cli plan \
+  --iteration 1 \
+  --phase irr-validation
+python -m semantic_ai_washing.director.cli run \
+  --runbook director/plans/runbook_<id>.yaml \
+  --mode autonomous
+python -m semantic_ai_washing.director.cli status
+
+# Optional strict κ recheck (non-runbook) once rater2 labels are complete
+python -m semantic_ai_washing.labeling.compute_irr_metrics \
+  --master data/labels/iteration1/irr/irr_subset_master.csv \
+  --rater2 data/labels/iteration1/irr/irr_subset_rater2_completed.csv \
+  --output-report reports/iteration1/phase2_irr/irr_kappa_report_strict.json \
+  --output-confusion reports/iteration1/phase2_irr/irr_confusion_matrix_strict.csv \
+  --output-transitions reports/iteration1/phase2_irr/irr_transition_counts_strict.csv \
+  --output-status reports/iteration1/phase2_irr/irr_status_strict.json \
+  --min-kappa 0.60 \
+  --gate-mode strict
+```
+
 ## Make Targets
 ```bash
 make director-doctor

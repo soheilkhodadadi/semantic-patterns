@@ -1,0 +1,11 @@
+{
+  "generated_at_utc": "2026-03-03T18:27:12.455517+00:00",
+  "gate_mode": "infrastructure",
+  "gate_result": "deferred",
+  "status": "pending_rater2",
+  "reason": "rater2_file_missing",
+  "min_kappa": 0.6,
+  "kappa": null,
+  "rows_master": 36,
+  "rows_scored": 0
+}

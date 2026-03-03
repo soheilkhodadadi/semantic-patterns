@@ -1,0 +1,39 @@
+{
+  "generated_at_utc": "2026-03-03T18:27:11.887558+00:00",
+  "git_commit": "c3b20341ce51d8344fd11487ec6b4add8eac41eb",
+  "inputs": {
+    "input": "data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv",
+    "input_sha256": "2865da69dbb50fde2e3d465fe6ba555114b8f57dd9a94cebfd596825d4805192"
+  },
+  "parameters": {
+    "subset_fraction": 0.3,
+    "min_per_class": 10,
+    "seed": 20260303,
+    "blind_mode": "text_only"
+  },
+  "summary": {
+    "rows_input": 121,
+    "rows_target": 36,
+    "rows_selected": 36,
+    "selected_class_counts": {
+      "Irrelevant": 14,
+      "Speculative": 12,
+      "Actionable": 10
+    },
+    "selected_year_counts": {
+      "2024.0": 17,
+      "2023.0": 10,
+      "unknown": 9
+    },
+    "selected_ff12_counts": {
+      "12": 25,
+      "11": 8,
+      "6": 2,
+      "9": 1
+    }
+  },
+  "artifacts": {
+    "master": "data/labels/iteration1/irr/irr_subset_master.csv",
+    "rater2_blinded": "data/labels/iteration1/irr/irr_subset_rater2_blinded.csv"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "generated_at_utc": "2026-03-03T18:27:12.996133+00:00",
+  "git_commit": "c3b20341ce51d8344fd11487ec6b4add8eac41eb",
+  "inputs": {
+    "master": "data/labels/iteration1/irr/irr_subset_master.csv",
+    "rater2": "data/labels/iteration1/irr/irr_subset_rater2_completed.csv",
+    "source_dataset": "data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv",
+    "master_sha256": "a3a6072c2e409006a7779989ead72fc16efc07001cadf589897b4b23a659cabc",
+    "rater2_sha256": "",
+    "source_sha256": "2865da69dbb50fde2e3d465fe6ba555114b8f57dd9a94cebfd596825d4805192"
+  },
+  "summary": {
+    "status": "pending_rater2",
+    "rows_master": 36,
+    "rows_with_rater2": 0,
+    "rows_disagreement": 0,
+    "rows_requiring_adjudication": 36,
+    "rows_adjudicated": 0,
+    "final_output_written": false
+  },
+  "artifacts": {
+    "disagreements": "data/labels/iteration1/irr/irr_disagreements.csv",
+    "adjudication_sheet": "data/labels/iteration1/irr/irr_adjudication_sheet.csv",
+    "final_output": "data/labels/iteration1/irr/final_labeled_sentences_recovery_adjudicated.csv"
+  }
+}

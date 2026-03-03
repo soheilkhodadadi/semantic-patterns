@@ -57,3 +57,21 @@ Rows with labels outside this set fail QA.
 - Dataset metadata:
   - `data/labels/iteration1/dataset_metadata.json`
   - includes commit hash, source fingerprints, sampling/dedupe settings, leakage policy, and rubric reference.
+
+## IRR Workflow (Phase 2)
+
+- Rater 2 sheet is text-only by default (`irr_item_id`, `sentence`, `rater2_label`, `rater2_note`) to reduce contextual anchoring.
+- Rater instructions:
+  - label each sentence as one of `Actionable|Speculative|Irrelevant`
+  - avoid using downstream outcomes (patents/returns/performance) during labeling
+  - use `rater2_note` only for uncertainty rationale, not external evidence
+- Disagreement taxonomy:
+  - transitions tracked as `A->S`, `A->I`, `S->A`, `S->I`, `I->A`, `I->S`
+  - pairwise classes tracked as `A_vs_S`, `A_vs_I`, `S_vs_I`
+- Adjudication rules:
+  - when both raters agree, keep agreed label
+  - when raters disagree, set `final_label` in adjudication sheet with brief `adjudication_note`
+  - unresolved/blank `final_label` rows are considered pending adjudication
+- IRR gate policy:
+  - infrastructure-mode Phase 2 can complete with `pending_rater2` or `pending_adjudication`
+  - strict κ gate (`kappa >= 0.6`) must pass before centroid retraining

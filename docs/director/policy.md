@@ -8,6 +8,7 @@
 - Science blockers can be deferred only with expiry metadata (`until_iteration`, `until_phase`, `criteria`).
 - Deferral state is `deferred_blocked`; failed gates are never treated as passed.
 - Recovery phases (for example `label-expansion-recovery`) are non-canonical substitutes and must not be interpreted as satisfying the canonical science gate unless explicitly promoted in the iteration log.
+- IRR infrastructure-mode completion (tooling/templates/reports) is not equivalent to strict IRR gate pass; strict `kappa >= 0.6` is still required before centroid retraining.
 
 ## Security
 - API keys must be provided only via environment variables.

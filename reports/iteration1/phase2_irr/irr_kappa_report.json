@@ -1,0 +1,21 @@
+{
+  "generated_at_utc": "2026-03-03T18:27:12.439925+00:00",
+  "git_commit": "c3b20341ce51d8344fd11487ec6b4add8eac41eb",
+  "inputs": {
+    "master": "data/labels/iteration1/irr/irr_subset_master.csv",
+    "rater2": "data/labels/iteration1/irr/irr_subset_rater2_completed.csv",
+    "master_sha256": "a3a6072c2e409006a7779989ead72fc16efc07001cadf589897b4b23a659cabc",
+    "rater2_sha256": ""
+  },
+  "parameters": {
+    "min_kappa": 0.6,
+    "gate_mode": "infrastructure"
+  },
+  "summary": {
+    "status": "pending_rater2",
+    "kappa": null,
+    "rows_master": 36,
+    "rows_scored": 0,
+    "reason": "rater2_file_missing"
+  }
+}

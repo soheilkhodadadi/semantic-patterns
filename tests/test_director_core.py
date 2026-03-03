@@ -132,6 +132,9 @@ def test_planner_timeout_overrides_and_recovery_phase_selection(tmp_path):
     profile["phase_command_map"]["iteration1/label-expansion"] = [
         "echo strict-step",
     ]
+    profile["phase_command_map"]["iteration1/irr-validation"] = [
+        "echo irr-step",
+    ]
 
     planner = PlannerEngine(
         repo_root=str(tmp_path),
@@ -144,9 +147,11 @@ def test_planner_timeout_overrides_and_recovery_phase_selection(tmp_path):
     )
     recovery = planner.generate(iteration_id="1", phase_name="label-expansion-recovery")
     strict = planner.generate(iteration_id="1", phase_name="label-expansion")
+    irr = planner.generate(iteration_id="1", phase_name="irr-validation")
 
     recovery_payload = yaml.safe_load(Path(recovery["runbook_file"]).read_text(encoding="utf-8"))
     strict_payload = yaml.safe_load(Path(strict["runbook_file"]).read_text(encoding="utf-8"))
+    irr_payload = yaml.safe_load(Path(irr["runbook_file"]).read_text(encoding="utf-8"))
 
     assert recovery_payload["steps"][0]["timeout_seconds"] == 300
     validation_steps = [
@@ -163,6 +168,8 @@ def test_planner_timeout_overrides_and_recovery_phase_selection(tmp_path):
         s for s in strict_payload["steps"] if s["title"].startswith("Phase command")
     ]
     assert strict_phase_steps[0]["command"] == "echo strict-step"
+    irr_phase_steps = [s for s in irr_payload["steps"] if s["title"].startswith("Phase command")]
+    assert irr_phase_steps[0]["command"] == "echo irr-step"
 
 
 def test_blocker_engine_ranks_options_deterministically(tmp_path):

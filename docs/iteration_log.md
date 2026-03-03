@@ -632,3 +632,76 @@ Rules:
   - local validation pass
   - published to `origin/main`
   - remote CI pending
+
+### Phase: irr-validation (start)
+- Date: 2026-03-03
+- Branch: `iteration1/irr-validation`
+- Goal: Implement Phase 2 IRR gate workflow (subset prep, second-rater template, κ computation, adjudication scaffolding) with director-gated infrastructure-mode execution.
+- Deliverables (planned):
+  - `src/semantic_ai_washing/labeling/prepare_irr_subset.py`
+  - `src/semantic_ai_washing/labeling/compute_irr_metrics.py`
+  - `src/semantic_ai_washing/labeling/adjudicate_irr_labels.py`
+  - director profile wiring for `iteration1/irr-validation`
+  - docs + tests + runbook evidence
+- Validation run (planned):
+  - `make bootstrap`
+  - `make doctor`
+  - `make format`
+  - `make lint`
+  - `.venv/bin/pytest -q`
+  - `make director-plan ITER=1 PHASE=irr-validation`
+  - `.venv/bin/python -m semantic_ai_washing.director.cli run --runbook director/plans/runbook_<id>.yaml --mode autonomous`
+  - `make director-status`
+- Risks/issues encountered:
+  - Manual second-rater file may be unavailable during this run; strict κ gate may remain deferred.
+- Mitigation/resolution:
+  - Use infrastructure-mode IRR execution that emits explicit `irr_status.json` deferral state.
+- Deferred blockers (if any):
+  - pending
+- Commits:
+  - pending
+- CI status:
+  - pending
+
+### Phase: irr-validation (execution update)
+- Date: 2026-03-03
+- Branch: `iteration1/irr-validation`
+- Outcome:
+  - director runbook execution passed in infrastructure mode.
+  - strict IRR science gate (`kappa >= 0.6`) remains deferred pending manual second-rater completion.
+- Validation run:
+  - `make bootstrap` -> pass
+  - `make doctor` -> pass (with expected conda base warning)
+  - `make format` -> pass
+  - `make lint` -> pass
+  - `.venv/bin/pytest -q` -> `46 passed`
+  - `make director-plan ITER=1 PHASE=irr-validation` -> pass
+    - runbook: `director/plans/runbook_e332495a856a965e.yaml`
+    - plan: `director/plans/plan_e332495a856a965e.md`
+    - decision scaffold: `director/decisions/decision_e332495a856a965e.json`
+  - runbook execution:
+    - `.venv/bin/python -m semantic_ai_washing.director.cli run --runbook director/plans/runbook_e332495a856a965e.yaml --mode autonomous` -> pass
+    - execution state: `director/runs/execution_state_e332495a856a965e.json`
+    - execution result: `director/runs/execution_result_e332495a856a965e.json`
+    - status: `passed` (`steps_passed=10`, `step_count=10`)
+  - `make director-status` -> pass
+- Artifacts generated:
+  - `data/labels/iteration1/irr/irr_subset_master.csv`
+  - `data/labels/iteration1/irr/irr_subset_rater2_blinded.csv`
+  - `data/labels/iteration1/irr/irr_adjudication_sheet.csv`
+  - `reports/iteration1/phase2_irr/irr_subset_sampling_report.json`
+  - `reports/iteration1/phase2_irr/irr_kappa_report.json`
+  - `reports/iteration1/phase2_irr/irr_status.json` (`status=pending_rater2`, `gate_result=deferred`)
+  - `reports/iteration1/phase2_irr/adjudication_status.json` (`status=pending_rater2`)
+- Risks/issues encountered:
+  - second-rater file `data/labels/iteration1/irr/irr_subset_rater2_completed.csv` is not yet available.
+- Mitigation/resolution:
+  - infrastructure mode emitted explicit deferred IRR status artifacts and did not falsely mark strict κ pass.
+  - strict recheck command is documented in `docs/director/quickstart.md` and must be run after rater2 completion.
+- Deferred blockers (if any):
+  - no director runtime blocker in this run.
+  - scientific gate remains deferred: clear when strict IRR run reports `kappa >= 0.6`.
+- Commits:
+  - pending
+- CI status:
+  - pending
