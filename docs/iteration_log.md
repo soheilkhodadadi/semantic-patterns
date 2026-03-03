@@ -525,3 +525,27 @@ Rules:
 - CI status:
   - local validation pass (`make bootstrap`, `make doctor`, `make format`, `make lint`, `.venv/bin/pytest -q`, `make director-doctor`, `make director-plan`, `make director-status`)
   - remote CI pending
+
+### Phase: stabilization-main-director-i1 (closeout)
+- Date: 2026-03-03
+- Branch: `main`
+- Goal: Complete stabilization merge and publish a clean main baseline with truthful deferred blocker handling.
+- Deliverables:
+  - merged `stabilize/main-director-i1` into `main`
+  - published director package, labeling package, roadmap/protocol/data-architecture docs, and Iteration 1 logging/rubric updates
+  - kept generated Phase 1 science artifacts out of tracked `main`
+- Validation run:
+  - source branch validation evidence preserved in prior entry (bootstrap/doctor/format/lint/pytest/director checks)
+  - post-merge branch status: clean (`git status`)
+- Risks/issues encountered:
+  - unresolved Phase 1 science gate remains deferred and must not be interpreted as pass.
+- Mitigation/resolution:
+  - deferred blocker records + `deferred_blocked` execution semantics preserved in director state/decision flow.
+- Deferred blockers (if any):
+  - `31bb0b5874d88bca-step-004-runtime` deferred to `iteration=2`, `phase=full-classification` under explicit criteria.
+- Commits:
+  - `063860eb48251d2a3d4afe0e7ec6f6742ad075dc` (merge `stabilize/main-director-i1` into `main`)
+  - source commits included: `1a88f3fd2111f0f98c88db1eb27a1c43034f618d`, `e80fbd3b6ad2d9de109770ac0a56d5f62f8e64c4`
+- CI status:
+  - published to `origin/main`
+  - remote CI pending
