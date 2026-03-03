@@ -549,3 +549,84 @@ Rules:
 - CI status:
   - published to `origin/main`
   - remote CI pending
+
+### Phase: label-expansion-recovery (start)
+- Date: 2026-03-03
+- Branch: `main`
+- Goal: Generate and execute a bounded non-stalling recovery runbook for Iteration 1 Phase 1 while preserving canonical strict-gate semantics.
+- Deliverables (planned):
+  - add bounded sampler controls (`--years`, `--max-ai-files`)
+  - add recovery phase profile in director config (`iteration1/label-expansion-recovery`)
+  - add planner timeout overrides (`snapshot=300`, `validation=1800`, `phase=1200`)
+  - execute fresh recovery runbook and capture explicit block/decision/deferral evidence
+- Validation run (planned):
+  - `make bootstrap`
+  - `make doctor`
+  - `make format`
+  - `make lint`
+  - `.venv/bin/pytest -q`
+  - `make director-plan ITER=1 PHASE=label-expansion-recovery`
+  - `.venv/bin/python -m semantic_ai_washing.director.cli run --runbook director/plans/runbook_<id>.yaml --mode autonomous`
+  - `make director-status`
+- Risks/issues encountered:
+  - recovery sample may remain below target-size even with bounded file scope.
+- Mitigation/resolution:
+  - preserve strict failure semantics (`blocked`/`deferred_blocked`) and defer explicitly if unresolved.
+- Deferred blockers (if any):
+  - pending run outcome
+- Commits:
+  - pending
+- CI status:
+  - pending
+
+### Phase: label-expansion-recovery (execution update)
+- Date: 2026-03-03
+- Branch: `main`
+- Goal: Execute bounded recovery runbook and verify non-stalling behavior with explicit blocker/defer path.
+- Deliverables implemented:
+  - sampler enhancements:
+    - `src/semantic_ai_washing/labeling/build_labeling_sample.py`
+    - new args: `--years`, `--max-ai-files`
+    - summary fields: `years_filter`, `max_ai_files`, `ai_files_considered`, `ai_files_processed`, `ai_files_skipped_by_year_filter`
+  - director timeout/profile enhancements:
+    - `director/config/project_profile.yaml`:
+      - `step_timeout_overrides: {snapshot_seconds: 300, validation_seconds: 1800, phase_seconds: 1200}`
+      - new recovery phase command map + artifact map for `iteration1/label-expansion-recovery`
+    - `src/semantic_ai_washing/director/core/planner.py` uses timeout overrides for snapshot/validation/phase step groups
+  - docs updates:
+    - `docs/director/quickstart.md` (recovery plan/run/decide/defer flow)
+    - `docs/director/policy.md` (non-canonical recovery phase rule)
+  - test coverage additions:
+    - `tests/test_labeling_phase1.py` (year filter + file cap behaviors)
+    - `tests/test_director_core.py` (timeout override wiring, recovery-vs-canonical phase command selection, timeout-block behavior)
+- Validation run:
+  - `make bootstrap` -> pass
+  - `make doctor` -> pass (with expected conda base warning)
+  - `make format` -> pass
+  - `make lint` -> pass
+  - `.venv/bin/pytest -q` -> `41 passed`
+  - `make director-plan ITER=1 PHASE=label-expansion-recovery` -> pass
+    - runbook: `director/plans/runbook_115d7b0ec26e20bc.yaml`
+  - runbook execution:
+    - `.venv/bin/python -m semantic_ai_washing.director.cli run --runbook director/plans/runbook_115d7b0ec26e20bc.yaml --mode autonomous`
+    - step results: validation steps passed; `step-007` completed in bounded runtime; `step-009` blocked with QA fail
+    - state: `director/runs/execution_state_115d7b0ec26e20bc.json`
+    - blocker: `115d7b0ec26e20bc-step-009-runtime` (target size mismatch)
+    - decision scaffold: `director/decisions/decision_cde09cd3d28fb567.json`
+  - blocker handling:
+    - `.venv/bin/python -m semantic_ai_washing.director.cli decide --execution-state director/runs/execution_state_115d7b0ec26e20bc.json` -> pass (decision file: `director/decisions/decision_e3fdeaf10fbd4fcd.json`)
+    - `.venv/bin/python -m semantic_ai_washing.director.cli defer --decision-file director/decisions/decision_cde09cd3d28fb567.json --until-iteration 2 --until-phase full-classification --criteria "Increase sampled supply and align recovery target-size policy before retry"` -> pass
+    - deferred record: `director/decisions/deferred_51a4c7ed8c613dc7.json`
+    - final execution state transitioned to `deferred_blocked`
+- Risks/issues encountered:
+  - recovery QA failed on `target_size_mismatch:121!=220` (class floor not the blocker in this run).
+- Mitigation/resolution:
+  - preserved explicit block semantics and recorded defer-with-expiry metadata for continuation.
+- Deferred blockers (if any):
+  - active: `115d7b0ec26e20bc-step-009-runtime` deferred to `iteration=2`, `phase=full-classification`.
+  - canonical strict `iteration1/label-expansion` (`target-size=400`, `class>=60`) remains deferred and not passed.
+- Commits:
+  - pending
+- CI status:
+  - local validation pass
+  - remote CI pending

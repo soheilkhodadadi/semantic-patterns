@@ -56,6 +56,10 @@ OUTPUT_COLUMNS = [
 ]
 
 
+def _parse_years_filter(years: str) -> set[str]:
+    return {token.strip() for token in str(years or "").split(",") if token.strip()}
+
+
 def _git_commit() -> str:
     try:
         out = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True)
@@ -431,7 +435,26 @@ def run_build(args: argparse.Namespace) -> dict:
     by_cik_year, by_cik = _load_sic_maps(args.controls, args.crosswalk)
 
     candidate_records: list[dict] = []
-    ai_files = sorted(Path(args.input_dir).rglob("*_ai_sentences.txt"))
+    years_filter = _parse_years_filter(getattr(args, "years", ""))
+    max_ai_files = int(getattr(args, "max_ai_files", 0) or 0)
+    ai_files_all = sorted(Path(args.input_dir).rglob("*_ai_sentences.txt"))
+    ai_files_considered = len(ai_files_all)
+    ai_files_skipped_by_year_filter = 0
+    if years_filter:
+        ai_files_filtered: list[Path] = []
+        for ai_file in ai_files_all:
+            source_year, _, _ = _parse_metadata_from_file(str(ai_file))
+            if source_year in years_filter:
+                ai_files_filtered.append(ai_file)
+            else:
+                ai_files_skipped_by_year_filter += 1
+        ai_files = ai_files_filtered
+    else:
+        ai_files = ai_files_all
+    if max_ai_files > 0:
+        ai_files = ai_files[:max_ai_files]
+    ai_files_processed = len(ai_files)
+
     for ai_file in ai_files:
         source_year, source_form, source_cik = _parse_metadata_from_file(str(ai_file))
         sic = by_cik_year.get((source_cik, source_year), by_cik.get(source_cik, ""))
@@ -539,6 +562,8 @@ def run_build(args: argparse.Namespace) -> dict:
             "seed": args.seed,
             "min_tokens": args.min_tokens,
             "min_class_target": args.min_class_target,
+            "years_filter": sorted(years_filter),
+            "max_ai_files": max_ai_files,
         },
         "base_stats": {
             "rows_before_cleaning": before_base,
@@ -548,6 +573,9 @@ def run_build(args: argparse.Namespace) -> dict:
             "class_counts": base_df["label"].value_counts().to_dict(),
         },
         "candidate_stats": {
+            "ai_files_considered": int(ai_files_considered),
+            "ai_files_processed": int(ai_files_processed),
+            "ai_files_skipped_by_year_filter": int(ai_files_skipped_by_year_filter),
             "rows_total": int(total_candidates),
             "removed_below_min_tokens": int(token_filtered_out),
             "removed_leakage_overlap": int(overlap_removed),
@@ -581,6 +609,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--input-dir", default="data/processed/sec")
     parser.add_argument("--controls", default="data/interim/controls/controls_by_firm_year.csv")
     parser.add_argument("--crosswalk", default="data/externals/crosswalks/cik_gvkey.csv")
+    parser.add_argument(
+        "--years",
+        default="",
+        help="Optional comma-separated years filter for *_ai_sentences inputs (e.g., 2023,2024).",
+    )
+    parser.add_argument(
+        "--max-ai-files",
+        type=int,
+        default=0,
+        help="Optional cap on number of *_ai_sentences files processed after filtering.",
+    )
     parser.add_argument("--output-dir", default="data/labels/iteration1")
     parser.add_argument("--report-dir", default="reports/iteration1/phase1")
     parser.add_argument("--seed", type=int, default=20260227)

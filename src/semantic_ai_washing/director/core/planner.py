@@ -138,6 +138,10 @@ class PlannerEngine:
         self, iteration_id: str, phase_name: str, snapshots: dict[str, Any]
     ) -> list[ExecutionStep]:
         profile = self.config.get("project_profile", {})
+        timeout_overrides = profile.get("step_timeout_overrides", {})
+        snapshot_timeout = int(timeout_overrides.get("snapshot_seconds", 1800))
+        validation_timeout = int(timeout_overrides.get("validation_seconds", 1800))
+        phase_timeout = int(timeout_overrides.get("phase_seconds", 1800))
         validation_commands = [
             str(item) for item in profile.get("canonical_validation_commands", [])
         ]
@@ -151,6 +155,7 @@ class PlannerEngine:
                 title="Validate snapshots",
                 description="Ensure protocol/roadmap/iteration snapshots are available",
                 command=f"{sys.executable} -m semantic_ai_washing.director.cli status",
+                timeout_seconds=snapshot_timeout,
                 required_outputs=[
                     "director/snapshots/protocol_summary.json",
                     "director/snapshots/roadmap_summary.json",
@@ -170,6 +175,7 @@ class PlannerEngine:
                     title=f"Validation command {idx}",
                     description=f"Execute canonical validation: {command}",
                     command=command,
+                    timeout_seconds=validation_timeout,
                     escalation_required=True,
                 )
             )
@@ -183,6 +189,7 @@ class PlannerEngine:
                     title=f"Phase command {idx}",
                     description=f"Execute: {command}",
                     command=command,
+                    timeout_seconds=phase_timeout,
                     escalation_required=False,
                 )
             )

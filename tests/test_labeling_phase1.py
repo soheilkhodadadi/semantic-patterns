@@ -132,6 +132,105 @@ def test_build_sample_excludes_heldout_overlap(tmp_path):
     assert normalize_sentence("New unique sentence") in norms
 
 
+def test_build_sample_year_filter_restricts_candidates(tmp_path):
+    base_labeled = tmp_path / "base.csv"
+    held_out = tmp_path / "held_out.csv"
+    controls = tmp_path / "controls.csv"
+    crosswalk = tmp_path / "crosswalk.csv"
+    input_dir = tmp_path / "sec"
+    output_dir = tmp_path / "out"
+    report_dir = tmp_path / "report"
+
+    _write_csv(
+        base_labeled,
+        [{"sentence": "Existing base sentence", "label": "Actionable"}],
+        ["sentence", "label"],
+    )
+    _write_csv(held_out, [], ["sentence", "label"])
+    _write_csv(controls, [{"cik": "1001", "year": "2024", "sic": "3571"}], ["cik", "year", "sic"])
+    _write_csv(crosswalk, [{"cik": "1001", "sic": "3571"}], ["cik", "sic"])
+
+    file_2023 = input_dir / "2023" / "20230101_10-K_edgar_data_1001_0001_ai_sentences.txt"
+    file_2024 = input_dir / "2024" / "20240101_10-K_edgar_data_1001_0002_ai_sentences.txt"
+    file_2023.parent.mkdir(parents=True, exist_ok=True)
+    file_2024.parent.mkdir(parents=True, exist_ok=True)
+    file_2023.write_text("AI sentence from 2023\n", encoding="utf-8")
+    file_2024.write_text("AI sentence from 2024\n", encoding="utf-8")
+
+    args = argparse.Namespace(
+        target_total=10,
+        held_out=str(held_out),
+        base_labeled=str(base_labeled),
+        input_dir=str(input_dir),
+        controls=str(controls),
+        crosswalk=str(crosswalk),
+        output_dir=str(output_dir),
+        report_dir=str(report_dir),
+        seed=123,
+        min_tokens=1,
+        min_class_target=1,
+        years="2024",
+        max_ai_files=0,
+    )
+    run_build(args)
+
+    manual = pd.read_csv(output_dir / "labeling_sheet_for_manual.csv")
+    assert set(manual["source_year"].astype(str).unique().tolist()) == {"2024"}
+
+    summary = json.loads((report_dir / "sampling_summary.json").read_text(encoding="utf-8"))
+    assert summary["parameters"]["years_filter"] == ["2024"]
+    assert summary["candidate_stats"]["ai_files_considered"] == 2
+    assert summary["candidate_stats"]["ai_files_processed"] == 1
+    assert summary["candidate_stats"]["ai_files_skipped_by_year_filter"] == 1
+
+
+def test_build_sample_max_ai_files_caps_processed_files(tmp_path):
+    base_labeled = tmp_path / "base.csv"
+    held_out = tmp_path / "held_out.csv"
+    controls = tmp_path / "controls.csv"
+    crosswalk = tmp_path / "crosswalk.csv"
+    input_dir = tmp_path / "sec"
+    output_dir = tmp_path / "out"
+    report_dir = tmp_path / "report"
+
+    _write_csv(
+        base_labeled,
+        [{"sentence": "Existing base sentence", "label": "Actionable"}],
+        ["sentence", "label"],
+    )
+    _write_csv(held_out, [], ["sentence", "label"])
+    _write_csv(controls, [{"cik": "1001", "year": "2024", "sic": "3571"}], ["cik", "year", "sic"])
+    _write_csv(crosswalk, [{"cik": "1001", "sic": "3571"}], ["cik", "sic"])
+
+    file_a = input_dir / "2024" / "20240101_10-K_edgar_data_1001_0001_ai_sentences.txt"
+    file_b = input_dir / "2024" / "20240102_10-K_edgar_data_1001_0002_ai_sentences.txt"
+    file_a.parent.mkdir(parents=True, exist_ok=True)
+    file_a.write_text("AI sentence A\n", encoding="utf-8")
+    file_b.write_text("AI sentence B\n", encoding="utf-8")
+
+    args = argparse.Namespace(
+        target_total=10,
+        held_out=str(held_out),
+        base_labeled=str(base_labeled),
+        input_dir=str(input_dir),
+        controls=str(controls),
+        crosswalk=str(crosswalk),
+        output_dir=str(output_dir),
+        report_dir=str(report_dir),
+        seed=123,
+        min_tokens=1,
+        min_class_target=1,
+        years="",
+        max_ai_files=1,
+    )
+    run_build(args)
+
+    summary = json.loads((report_dir / "sampling_summary.json").read_text(encoding="utf-8"))
+    assert summary["parameters"]["max_ai_files"] == 1
+    assert summary["candidate_stats"]["ai_files_considered"] == 2
+    assert summary["candidate_stats"]["ai_files_processed"] == 1
+
+
 def test_exact_dedupe_keeps_single_row(tmp_path):
     held_out = tmp_path / "held_out.csv"
     _write_csv(held_out, [], ["sentence", "label"])

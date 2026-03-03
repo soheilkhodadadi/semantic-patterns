@@ -44,6 +44,29 @@ python -m semantic_ai_washing.director.cli defer \
   --criteria "Increase labeled pool and satisfy class-floor gate"
 ```
 
+## Recovery Runbook Flow (Bounded)
+```bash
+# Generate a bounded recovery runbook (non-canonical Phase 1 recovery profile)
+python -m semantic_ai_washing.director.cli plan \
+  --iteration 1 \
+  --phase label-expansion-recovery
+
+# Execute and inspect status
+python -m semantic_ai_washing.director.cli run \
+  --runbook director/plans/runbook_<id>.yaml \
+  --mode autonomous
+python -m semantic_ai_washing.director.cli status
+
+# If blocked, decide/defer explicitly
+python -m semantic_ai_washing.director.cli decide \
+  --execution-state director/runs/execution_state_<id>.json
+python -m semantic_ai_washing.director.cli defer \
+  --decision-file director/decisions/decision_<id>.json \
+  --until-iteration 2 \
+  --until-phase full-classification \
+  --criteria "Carry deferred science gate until recovery criteria are met"
+```
+
 ## Make Targets
 ```bash
 make director-doctor

@@ -108,6 +108,63 @@ def test_runbook_generator_outputs_valid_yaml(tmp_path):
     assert isinstance(runbook_payload["steps"], list)
 
 
+def test_planner_timeout_overrides_and_recovery_phase_selection(tmp_path):
+    paths = get_director_paths(str(tmp_path))
+    ensure_default_configs(paths)
+
+    _write(paths.snapshots_dir / "protocol_summary.json", json.dumps({"source_sha256": "a"}))
+    _write(paths.snapshots_dir / "roadmap_summary.json", json.dumps({"source_sha256": "b"}))
+    _write(
+        paths.snapshots_dir / "iteration_state.json",
+        json.dumps({"source_sha256": "c", "last_successful_gate": "unknown"}),
+    )
+
+    config = load_configs(paths)
+    profile = config["project_profile"]
+    profile["step_timeout_overrides"] = {
+        "snapshot_seconds": 300,
+        "validation_seconds": 1800,
+        "phase_seconds": 1200,
+    }
+    profile["phase_command_map"]["iteration1/label-expansion-recovery"] = [
+        "echo recovery-step",
+    ]
+    profile["phase_command_map"]["iteration1/label-expansion"] = [
+        "echo strict-step",
+    ]
+
+    planner = PlannerEngine(
+        repo_root=str(tmp_path),
+        config=config,
+        snapshots_dir=str(paths.snapshots_dir),
+        plans_dir=str(paths.plans_dir),
+        decisions_dir=str(paths.decisions_dir),
+        runs_dir=str(paths.runs_dir),
+        cache_dir=str(paths.cache_dir),
+    )
+    recovery = planner.generate(iteration_id="1", phase_name="label-expansion-recovery")
+    strict = planner.generate(iteration_id="1", phase_name="label-expansion")
+
+    recovery_payload = yaml.safe_load(Path(recovery["runbook_file"]).read_text(encoding="utf-8"))
+    strict_payload = yaml.safe_load(Path(strict["runbook_file"]).read_text(encoding="utf-8"))
+
+    assert recovery_payload["steps"][0]["timeout_seconds"] == 300
+    validation_steps = [
+        s for s in recovery_payload["steps"] if s["title"].startswith("Validation")
+    ]
+    assert validation_steps
+    assert all(step["timeout_seconds"] == 1800 for step in validation_steps)
+    phase_steps = [s for s in recovery_payload["steps"] if s["title"].startswith("Phase command")]
+    assert phase_steps
+    assert all(step["timeout_seconds"] == 1200 for step in phase_steps)
+    assert phase_steps[0]["command"] == "echo recovery-step"
+
+    strict_phase_steps = [
+        s for s in strict_payload["steps"] if s["title"].startswith("Phase command")
+    ]
+    assert strict_phase_steps[0]["command"] == "echo strict-step"
+
+
 def test_blocker_engine_ranks_options_deterministically(tmp_path):
     engine = DecisionEngine(decisions_dir=tmp_path)
     blocker = BlockerEvent(
@@ -263,6 +320,56 @@ def test_gate_001_fails_without_validation_steps(tmp_path):
     )
     result = executor.run(str(runbook_path))
     assert result["status"] == "blocked"
+
+
+def test_executor_times_out_long_step_and_blocks_instead_of_stalling(tmp_path):
+    runbook_path = tmp_path / "runbook_timeout.yaml"
+    runbook_payload = {
+        "schema_version": "1.0.0",
+        "runbook_id": "rb-timeout",
+        "title": "timeout test",
+        "summary": "test",
+        "iteration_id": "1",
+        "phase_name": "timeout",
+        "autonomy_mode": "autonomous",
+        "dependencies": [],
+        "gates": [],
+        "risks": [],
+        "steps": [
+            {
+                "schema_version": "1.0.0",
+                "step_id": "step-001",
+                "title": "Phase command 1",
+                "description": "sleep should timeout",
+                "command": "python -c 'import time; time.sleep(2)'",
+                "cwd": ".",
+                "timeout_seconds": 1,
+                "retry_limit": 0,
+                "required_outputs": [],
+                "gate_ids": [],
+                "escalation_required": False,
+                "status": "pending",
+            }
+        ],
+        "context": {},
+        "provenance": {},
+        "llm_refined": False,
+    }
+    runbook_path.write_text(yaml.safe_dump(runbook_payload, sort_keys=False), encoding="utf-8")
+
+    executor = RunbookExecutor(
+        repo_root=str(tmp_path),
+        runs_dir=str(tmp_path / "runs"),
+        decisions_dir=str(tmp_path / "decisions"),
+        autonomy_policy={"require_explicit_recovery_selection": True},
+    )
+    result = executor.run(str(runbook_path))
+    assert result["status"] == "blocked"
+
+    payload = json.loads(Path(result["state_file"]).read_text(encoding="utf-8"))
+    command_result = payload["step_results"]["step-001"]["command_result"]
+    assert command_result["exit_code"] == 124
+    assert command_result["timed_out"] is True
 
 
 def test_cost_limiter_blocks_additional_usage(tmp_path):
