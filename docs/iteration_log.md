@@ -575,9 +575,10 @@ Rules:
 - Deferred blockers (if any):
   - pending run outcome
 - Commits:
-  - pending
+  - `3524a0fda9326c355729f4f0684f83f6fe6697ce` (bounded recovery profile + timeout controls + tests/docs/log updates)
 - CI status:
-  - pending
+  - published to `origin/main`
+  - remote CI pending
 
 ### Phase: label-expansion-recovery (execution update)
 - Date: 2026-03-03
@@ -626,7 +627,8 @@ Rules:
   - active: `115d7b0ec26e20bc-step-009-runtime` deferred to `iteration=2`, `phase=full-classification`.
   - canonical strict `iteration1/label-expansion` (`target-size=400`, `class>=60`) remains deferred and not passed.
 - Commits:
-  - pending
+  - `3524a0fda9326c355729f4f0684f83f6fe6697ce` (bounded recovery profile + timeout controls + tests/docs/log updates)
 - CI status:
   - local validation pass
+  - published to `origin/main`
   - remote CI pending
