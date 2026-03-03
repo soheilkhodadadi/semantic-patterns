@@ -11,18 +11,14 @@ Outputs: data/metadata/available_filings_index.csv with columns:
   cik,year,form,filename,path
 
 Assumptions:
-- Files are stored under a root with subfolders by year and quarter, e.g.:
-    /Users/soheilkhodadadi/DataWork/10-X_C_2021-2124/{2021..2024}/QTR{1..4}/*.txt
+- Files are stored under a root with subfolders by year and quarter.
 - File names include the fragment "edgar_data_{CIK}_" and start with YYYYMMDD,
   e.g., 20220401_10-K_edgar_data_862861_0000950170-22-005290.txt
 - Forms of interest include 10-K / 10-K/A / 10-Q / 10-Q/A; we index all.
-- The root directory can be set via the SEC_SOURCE_DIR env var.
+- Source root must be supplied by `SEC_SOURCE_DIR` env var or `data/metadata/sec_source_dir.txt`.
 """
 
-DEFAULT_SEC_SOURCE = os.environ.get(
-    "SEC_SOURCE_DIR",
-    "/Users/soheilkhodadadi/DataWork/10-X_C_2021-2124",
-)
+SEC_SOURCE_HINT_FILE = "data/metadata/sec_source_dir.txt"
 
 OUTPUT_CSV = "data/metadata/available_filings_index.csv"
 
@@ -53,8 +49,25 @@ def parse_filename(path: Path) -> Optional[Tuple[str, int, str]]:
     return cik, year, form
 
 
+def resolve_sec_source() -> Path:
+    env_value = os.environ.get("SEC_SOURCE_DIR", "").strip()
+    if env_value:
+        return Path(env_value)
+
+    hint_path = Path(SEC_SOURCE_HINT_FILE)
+    if hint_path.exists():
+        hinted = hint_path.read_text(encoding="utf-8", errors="ignore").strip()
+        if hinted:
+            return Path(hinted)
+
+    raise ValueError(
+        "SEC source path is not configured. Set SEC_SOURCE_DIR or write the source path to "
+        f"{SEC_SOURCE_HINT_FILE}."
+    )
+
+
 def main() -> None:
-    root = Path(DEFAULT_SEC_SOURCE)
+    root = resolve_sec_source()
     if not root.exists():
         raise FileNotFoundError(f"Source directory not found: {root}")
 

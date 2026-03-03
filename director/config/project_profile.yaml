@@ -1,0 +1,129 @@
+project_name: semantic-patterns
+project_description: AI-washing research-to-production transformation repository.
+iteration_log: docs/iteration_log.md
+canonical_validation_commands:
+  - make bootstrap
+  - make doctor
+  - make format
+  - make lint
+  - .venv/bin/pytest -q
+phase_command_map:
+  iteration1/diagnostics-nlp:
+    - .venv/bin/python -m semantic_ai_washing.diagnostics.phase0_baseline --years 2024 --limit 20 --force --two-stage --rule-boosts --tau 0.07 --eps-irr 0.03 --min-tokens 6 --output-dir reports/iteration1/phase0
+  iteration1/label-expansion:
+    - .venv/bin/python -m semantic_ai_washing.labeling.build_labeling_sample --target-total 400 --held-out data/validation/held_out_sentences.csv --base-labeled data/validation/hand_labeled_ai_sentences_labeled_cleaned_revised.csv --input-dir data/processed/sec --controls data/interim/controls/controls_by_firm_year.csv --crosswalk data/externals/crosswalks/cik_gvkey.csv --output-dir data/labels/iteration1 --report-dir reports/iteration1/phase1 --seed 20260227
+    - .venv/bin/python -m semantic_ai_washing.labeling.dedupe_labeled_sentences --base data/labels/iteration1/base_labeled_nonleaky.csv --new data/labels/iteration1/labeling_sheet_completed.csv --held-out data/validation/held_out_sentences.csv --near-threshold 0.95 --output data/labels/iteration1/expanded_labeled_sentences_preqa.csv --uncertain-output data/labels/iteration1/uncertain_rows.csv --conflicts-output data/labels/iteration1/label_conflicts.csv --report reports/iteration1/phase1/dedupe_report.json
+    - .venv/bin/python -m semantic_ai_washing.labeling.qa_labeled_dataset --input data/labels/iteration1/expanded_labeled_sentences_preqa.csv --held-out data/validation/held_out_sentences.csv --min-tokens 6 --min-class-count 60 --target-size 400 --output data/labels/iteration1/expanded_labeled_sentences.csv --report reports/iteration1/phase1/qa_report.json --leakage-report reports/iteration1/phase1/leakage_overlap_report.csv
+phase_artifact_map:
+  iteration1/diagnostics-nlp:
+    - reports/iteration1/phase0/baseline_eval_metrics.json
+    - reports/iteration1/phase0/baseline_eval_confusion_matrix.csv
+    - reports/iteration1/phase0/run_metadata.json
+    - reports/iteration1/phase0/baseline_report.md
+  iteration1/label-expansion:
+    - reports/iteration1/phase1/sampling_summary.json
+    - reports/iteration1/phase1/dedupe_report.json
+    - reports/iteration1/phase1/qa_report.json
+    - reports/iteration1/phase1/leakage_overlap_report.csv
+roadmap_model:
+  iterations:
+    - iteration_id: "0"
+      title: Stabilise extraction and packaging
+      phases:
+        - name: observability
+        - name: error-handling
+        - name: testing-qa
+        - name: documentation
+    - iteration_id: "1"
+      title: Expand training data and retrain centroids
+      phases:
+        - name: diagnostics-nlp
+        - name: label-expansion
+        - name: irr-validation
+        - name: centroid-retraining
+        - name: classifier-calibration
+        - name: batch-classification-2021-2024
+    - iteration_id: "2"
+      title: Scale classification and integrate cross-walks
+      phases:
+        - name: full-sample-extraction
+        - name: full-sample-classification
+        - name: aggregation-and-crosswalks
+    - iteration_id: "3"
+      title: Evaluate OpenAI API strategy
+      phases:
+        - name: llm-pilot
+        - name: hybrid-routing-decision
+    - iteration_id: "4"
+      title: Final integration and production hardening
+      phases:
+        - name: panel-assembly
+        - name: robustness-analysis
+        - name: release-packaging
+data_architecture_target:
+  mode: hybrid-canonical
+  source_index_layer:
+    description: References external SEC corpus by path without duplicating full filing bodies into repo.
+    source_location: env:SEC_SOURCE_DIR
+  curated_sampling_layer:
+    description: Stores reproducible sampling manifests for company/year/filing selection.
+  sentence_table_layer:
+    description: Canonical structured AI sentence tables partitioned by year with stable sentence IDs.
+    partition_pattern: sentences/year=YYYY/
+  classification_layer:
+    description: Structured predicted-label tables partitioned by year and model version.
+  split_registry_layer:
+    description: Frozen train/validation/test sentence-id registries with hashes and metadata.
+  transitional_outputs:
+    description: Legacy *_ai_sentences.txt and *_classified.csv outputs remain operational during migration.
+    removal_target_iteration: "3"
+runtime_data_policies:
+  sec_source:
+    require_env_var: SEC_SOURCE_DIR
+    allow_machine_specific_defaults: false
+  mixed_layout:
+    warn_on_root_level_processed_files: true
+    root_level_glob: data/processed/sec/*.txt
+risk_register:
+  - code: R1
+    title: Label ambiguity
+    signal: Inter-rater reliability below kappa target.
+    mitigation: Require rubric + IRR gate before retraining.
+    backout: Pause retraining and adjudicate labels.
+    severity: 5
+  - code: R2
+    title: Class imbalance collapse
+    signal: Predictions collapse to dominant class.
+    mitigation: Enforce class floor and stratified sampling.
+    backout: Rebalance labels and freeze centroids.
+    severity: 4
+  - code: R3
+    title: Leakage across splits
+    signal: Held-out overlap or overfit threshold tuning.
+    mitigation: Hard overlap exclusion and frozen held-out set.
+    backout: Rollback to leakage-safe artifacts.
+    severity: 5
+  - code: R4
+    title: Non-determinism
+    signal: Metrics drift across unchanged reruns.
+    mitigation: Persist seeds, hashes, and metadata.
+    backout: Rebuild under pinned environment.
+    severity: 4
+  - code: R5
+    title: Silent skips
+    signal: Missing outputs despite successful status.
+    mitigation: Coverage counters and output manifests.
+    backout: Strict rerun with fail-fast checks.
+    severity: 4
+  - code: R6
+    title: Metadata mismatch
+    signal: Wrong centroid or label mapping consumed.
+    mitigation: Fingerprint artifacts and metadata checks.
+    backout: Restore known-good metadata.
+    severity: 4
+  - code: R7
+    title: Scope creep
+    signal: Hardening displaces science gates.
+    mitigation: Enforce phase gate boundaries.
+    backout: Defer non-critical hardening.
+    severity: 3

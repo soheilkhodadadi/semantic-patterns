@@ -1,0 +1,59 @@
+# Implementation Protocol Master
+
+This document is the canonical in-repo implementation protocol source for director ingestion.
+
+## Lifecycle
+
+### Diagnostics
+- Establish factual baseline metrics and artifact fingerprints.
+- Verify canonical paths, scripts, and environment state.
+- Identify failure taxonomy and top risk signals before edits.
+
+### Planning
+- Produce decision-complete phase plans with explicit gates.
+- Define in-scope/out-of-scope boundaries and backout criteria.
+- Bind each phase to validation commands and artifact requirements.
+
+### Execution
+- Execute in phase branches with reproducible command chains.
+- Record command outputs, generated artifacts, and commit SHAs.
+- Block immediately on failed gates unless explicitly deferred.
+
+### Validation
+- Run formatting, lint, tests, and phase-specific checks.
+- Verify no leakage, no silent skips, and schema compatibility.
+- Require machine-readable reports for gate evidence.
+
+### Continuous Improvement
+- Capture blockers, risk signals, and mitigation outcomes.
+- Convert unresolved blockers into deferred records with expiry.
+- Revisit deferred blockers at target iteration/phase checkpoints.
+
+## Eight Dimensions
+- Data validation
+- Observability
+- Prompt/rubric quality
+- Error handling
+- Testing
+- Deployment/reproducibility
+- Documentation
+- Cost control
+
+## Risk Register Model
+- R1 label ambiguity
+- R2 class imbalance / collapse
+- R3 leakage across splits
+- R4 non-determinism
+- R5 silent partial outputs
+- R6 mapping/metadata mismatch
+- R7 scope creep
+
+Each risk entry must define: signal, mitigation, backout, severity.
+
+## Deferral Policy
+A blocker can be deferred only with all fields present:
+- target iteration
+- target phase
+- re-check criteria
+
+Deferral changes execution state to `deferred_blocked`; it never marks failed gates as passed.

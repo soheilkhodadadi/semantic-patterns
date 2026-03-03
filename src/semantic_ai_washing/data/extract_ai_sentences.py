@@ -409,6 +409,17 @@ def main() -> None:
     if not os.path.isdir(args.input_dir):
         logger.error("Input directory not found: %s", args.input_dir)
         sys.exit(1)
+    root_level_txt = [
+        name
+        for name in os.listdir(args.input_dir)
+        if name.endswith(".txt") and os.path.isfile(os.path.join(args.input_dir, name))
+    ]
+    if root_level_txt:
+        logger.warning(
+            "Mixed layout detected: root-level filing txt files exist under %s. "
+            "Year-partitioned folders are canonical; root-level files are ignored by this script.",
+            args.input_dir,
+        )
 
     include_forms: Optional[Set[str]]
     if args.include_forms.strip().upper() == "ALL":
