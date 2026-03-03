@@ -402,6 +402,7 @@ def main() -> None:
     if status != "pass":
         for item in violations:
             print(f"[phase1] violation: {item}")
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":
