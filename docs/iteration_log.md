@@ -320,6 +320,43 @@ Rules:
   - local fallback validation pass (`python3.9` + `PYTHONPATH=src`): Ruff + pytest
   - canonical `.venv`/`make` path blocked by host prerequisites
 
+### Phase: label-expansion (director recovery update)
+- Date: 2026-03-03
+- Branch: `iteration1/label-expansion-recovery`
+- Goal: Resume Phase 1 execution with director runbooks on top of existing label-expansion outputs.
+- Deliverables:
+  - merged director package into phase recovery branch (`aac143c5a52bc75a01fc135fb67727ab030a7889`)
+  - executed director runbook for `Iteration 1 / label-expansion`:
+    - `director/plans/runbook_31bb0b5874d88bca.yaml`
+    - state: `director/runs/execution_state_31bb0b5874d88bca.json`
+    - decision record: `director/decisions/decision_964477c9c2f994a2.json`
+  - fixed QA gate exit semantics so failed QA blocks autonomous execution:
+    - `src/semantic_ai_washing/labeling/qa_labeled_dataset.py` now exits non-zero on `status=fail`
+- Validation run:
+  - `make director-plan ITER=1 PHASE=label-expansion`
+  - `PATH="$(pwd)/.venv/bin:$PATH" .venv/bin/python -m semantic_ai_washing.director.cli run --runbook director/plans/runbook_31bb0b5874d88bca.yaml --mode autonomous`
+  - `PATH="$(pwd)/.venv/bin:$PATH" .venv/bin/python -m semantic_ai_washing.director.cli decide --blocker-file /tmp/director_blocker_31bb0b5874d88bca.json --auto-select`
+  - `make lint`
+  - `.venv/bin/pytest -q` -> `33 passed`
+- Gate status:
+  - runbook now blocks correctly at QA step with:
+    - `class_count_below_min:Actionable=43<60`
+    - `class_count_below_min:Speculative=59<60`
+    - `class_count_below_min:Irrelevant=51<60`
+    - `target_size_mismatch:153!=400`
+- Risks/issues encountered:
+  - R2 class-balance and sample-size gate remains failed.
+  - Runtime ambiguity discovered: prior QA CLI returned exit `0` on failed QA, causing false-positive runbook pass.
+- Mitigation/resolution:
+  - patched QA CLI to exit `1` when `status != pass`.
+  - reran director execution to confirm blocker behavior and decision escalation path.
+- Commits:
+  - `aac143c5a52bc75a01fc135fb67727ab030a7889` (merge director foundation into recovery branch)
+  - `c2027c485ea7253356b7af9f66e18d15ec3cd3e1` (fix QA non-zero exit on failure)
+- CI status:
+  - local lint/tests pass (`make lint`, `.venv/bin/pytest -q`)
+  - remote CI pending for `iteration1/label-expansion-recovery`
+
 
 ## Director Foundation (In Progress)
 
