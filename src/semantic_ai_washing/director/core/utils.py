@@ -33,18 +33,28 @@ def sha256_file(path: str | Path) -> str:
     return hasher.hexdigest()
 
 
-def run_command(command: str, cwd: str = ".", timeout_seconds: int = 1800) -> dict[str, Any]:
+def run_command(
+    command: str,
+    cwd: str = ".",
+    timeout_seconds: int = 1800,
+    env: dict[str, str] | None = None,
+) -> dict[str, Any]:
     """Run a shell command and return normalized execution details."""
     started_at = now_utc_iso()
+    resolved_cwd = str(Path(cwd).resolve())
+    merged_env = os.environ.copy()
+    if env:
+        merged_env.update(env)
     try:
         completed = subprocess.run(
             command,
             shell=True,
-            cwd=cwd,
+            cwd=resolved_cwd,
             capture_output=True,
             text=True,
             timeout=timeout_seconds,
             check=False,
+            env=merged_env,
         )
         timed_out = False
         exit_code = completed.returncode
@@ -58,7 +68,7 @@ def run_command(command: str, cwd: str = ".", timeout_seconds: int = 1800) -> di
 
     return {
         "command": command,
-        "cwd": cwd,
+        "cwd": resolved_cwd,
         "started_at": started_at,
         "finished_at": now_utc_iso(),
         "exit_code": exit_code,

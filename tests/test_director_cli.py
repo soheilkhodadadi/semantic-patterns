@@ -73,6 +73,105 @@ def test_cli_decide_from_blocker(tmp_path, monkeypatch):
     assert decisions
 
 
+def test_cli_decide_from_execution_state(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    main_with_args(["init"])
+
+    state = {
+        "runbook_id": "rb1",
+        "status": "blocked",
+        "blocker": {
+            "schema_version": "1.0.0",
+            "blocker_id": "b-state",
+            "blocker_type": "runtime",
+            "severity": "high",
+            "message": "failed command",
+            "context": {},
+        },
+    }
+    state_file = tmp_path / "execution_state.json"
+    state_file.write_text(json.dumps(state), encoding="utf-8")
+
+    code = main_with_args(["decide", "--execution-state", str(state_file)])
+    assert code == 0
+
+
+def test_cli_decide_rejects_decision_payload(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    main_with_args(["init"])
+
+    decision_payload = {
+        "schema_version": "1.0.0",
+        "decision_id": "d1",
+        "blocker_event_id": "b1",
+        "status": "needs_selection",
+        "rationale": "placeholder",
+        "options": [],
+        "context": {},
+    }
+    payload_file = tmp_path / "decision_like.json"
+    payload_file.write_text(json.dumps(decision_payload), encoding="utf-8")
+
+    code = main_with_args(["decide", "--blocker-file", str(payload_file)])
+    assert code == 2
+
+
+def test_cli_defer_writes_deferred_record_and_updates_state(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    main_with_args(["init"])
+
+    runs_dir = tmp_path / "director" / "runs"
+    decisions_dir = tmp_path / "director" / "decisions"
+    decision_file = decisions_dir / "decision_fake.json"
+    decision_file.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0.0",
+                "decision_id": "dec123",
+                "blocker_event_id": "block123",
+                "status": "needs_selection",
+                "rationale": "test",
+                "options": [],
+                "context": {},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    state_file = runs_dir / "execution_state_rb1.json"
+    state_file.write_text(
+        json.dumps(
+            {
+                "runbook_id": "rb1",
+                "status": "blocked",
+                "decision_file": str(decision_file.resolve()),
+                "step_results": {},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    code = main_with_args(
+        [
+            "defer",
+            "--decision-file",
+            str(decision_file),
+            "--until-iteration",
+            "2",
+            "--until-phase",
+            "full-sample-classification",
+            "--criteria",
+            "increase training pool",
+        ]
+    )
+    assert code == 0
+
+    deferred = list(decisions_dir.glob("deferred_*.json"))
+    assert deferred
+    updated_state = json.loads(state_file.read_text(encoding="utf-8"))
+    assert updated_state["status"] == "deferred_blocked"
+
+
 def main_with_args(args: list[str]) -> int:
     import sys
 

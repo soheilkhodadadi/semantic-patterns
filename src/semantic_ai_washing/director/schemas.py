@@ -136,6 +136,18 @@ class DecisionRecord(DeterministicModel):
     context: dict[str, Any] = Field(default_factory=dict)
 
 
+class DeferredBlockerRecord(DeterministicModel):
+    deferred_id: str
+    decision_id: str
+    blocker_id: str
+    until_iteration: str
+    until_phase: str
+    criteria: str
+    created_at: str
+    status: Literal["active", "expired", "cleared"] = "active"
+    context: dict[str, Any] = Field(default_factory=dict)
+
+
 class CostUsageRecord(DeterministicModel):
     usage_id: str
     component: str

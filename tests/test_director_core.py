@@ -32,6 +32,10 @@ def test_snapshot_parser_handles_missing_and_conflicting_phase_entries(tmp_path)
         log_path,
         """
 ## Iteration 1 (In Progress)
+```md
+### Phase: <name>
+- Date:
+```
 ### Phase: alpha (start)
 - Date: 2026-03-01
 - Status: pending
@@ -190,6 +194,75 @@ def test_executor_resumes_from_checkpoint(tmp_path):
 
     result = executor.run(str(runbook_path), resume=True)
     assert result["status"] == "passed"
+
+
+def test_gate_001_fails_without_validation_steps(tmp_path):
+    runbook_path = tmp_path / "runbook_gate.yaml"
+    runbook_payload = {
+        "schema_version": "1.0.0",
+        "runbook_id": "rb-gate",
+        "title": "gate test",
+        "summary": "test",
+        "iteration_id": "1",
+        "phase_name": "p1",
+        "autonomy_mode": "autonomous",
+        "dependencies": [],
+        "gates": [
+            {
+                "schema_version": "1.0.0",
+                "gate_id": "p1-gate-001",
+                "name": "Validation Commands",
+                "description": "must pass",
+                "pass_condition": "All validation commands exit with code 0",
+                "on_fail": "block",
+                "required_outputs": [],
+            }
+        ],
+        "risks": [],
+        "steps": [
+            {
+                "schema_version": "1.0.0",
+                "step_id": "step-001",
+                "title": "Validate snapshots",
+                "description": "ok",
+                "command": "python -c 'print(\"ok\")'",
+                "cwd": ".",
+                "timeout_seconds": 60,
+                "retry_limit": 0,
+                "required_outputs": [],
+                "gate_ids": [],
+                "escalation_required": False,
+                "status": "pending",
+            },
+            {
+                "schema_version": "1.0.0",
+                "step_id": "step-002",
+                "title": "Produce planning artifacts",
+                "description": "check gate",
+                "command": None,
+                "cwd": ".",
+                "timeout_seconds": 60,
+                "retry_limit": 0,
+                "required_outputs": [],
+                "gate_ids": ["p1-gate-001"],
+                "escalation_required": False,
+                "status": "pending",
+            },
+        ],
+        "context": {},
+        "provenance": {},
+        "llm_refined": False,
+    }
+    runbook_path.write_text(yaml.safe_dump(runbook_payload, sort_keys=False), encoding="utf-8")
+
+    executor = RunbookExecutor(
+        repo_root=str(tmp_path),
+        runs_dir=str(tmp_path / "runs"),
+        decisions_dir=str(tmp_path / "decisions"),
+        autonomy_policy={"require_explicit_recovery_selection": True},
+    )
+    result = executor.run(str(runbook_path))
+    assert result["status"] == "blocked"
 
 
 def test_cost_limiter_blocks_additional_usage(tmp_path):

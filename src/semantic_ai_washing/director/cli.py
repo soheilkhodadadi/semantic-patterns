@@ -134,14 +134,45 @@ def _decide_command(args: argparse.Namespace) -> int:
     paths = get_director_paths(repo_root)
     engine = DecisionEngine(decisions_dir=paths.decisions_dir)
 
-    decision, out_path = engine.from_blocker_file(
-        blocker_file=args.blocker_file,
-        selected_option_id=args.select_option,
-        require_manual_selection=not args.auto_select,
-    )
+    if args.blocker_file and args.execution_state:
+        raise ValueError("Provide only one of --blocker-file or --execution-state.")
+    if not args.blocker_file and not args.execution_state:
+        raise ValueError("Provide either --blocker-file or --execution-state.")
+
+    blocker_payload = args.blocker_file or args.execution_state
+    try:
+        decision, out_path = engine.from_blocker_file(
+            blocker_file=blocker_payload,
+            selected_option_id=args.select_option,
+            require_manual_selection=not args.auto_select,
+        )
+    except ValueError as exc:
+        print(f"[director] invalid blocker payload: {exc}")
+        print(
+            "[director] expected blocker event JSON or execution_state JSON with `blocker`. "
+            "For execution state use: --execution-state <path>"
+        )
+        return 2
 
     print(f"[director] decision file: {out_path}")
     print(json.dumps(decision.as_deterministic_dict(), indent=2))
+    return 0
+
+
+def _defer_command(args: argparse.Namespace) -> int:
+    repo_root = repository_root(args.repo_root)
+    paths = get_director_paths(repo_root)
+    engine = DecisionEngine(decisions_dir=paths.decisions_dir)
+
+    deferred, out_path = engine.defer(
+        decision_file=args.decision_file,
+        until_iteration=args.until_iteration,
+        until_phase=args.until_phase,
+        criteria=args.criteria,
+        runs_dir=paths.runs_dir,
+    )
+    print(f"[director] deferred blocker record: {out_path}")
+    print(json.dumps(deferred.as_deterministic_dict(), indent=2))
     return 0
 
 
@@ -168,6 +199,22 @@ def _status_command(args: argparse.Namespace) -> int:
 
     runbooks = sorted(paths.plans_dir.glob("runbook_*.yaml"), key=lambda p: p.stat().st_mtime)
     states = sorted(paths.runs_dir.glob("execution_state_*.json"), key=lambda p: p.stat().st_mtime)
+    deferred_records = sorted(
+        paths.decisions_dir.glob("deferred_*.json"), key=lambda p: p.stat().st_mtime
+    )
+    active_deferred: list[dict[str, Any]] = []
+    for record in deferred_records:
+        payload = json.loads(record.read_text(encoding="utf-8"))
+        if payload.get("status") == "active":
+            active_deferred.append(
+                {
+                    "record": str(record),
+                    "decision_id": payload.get("decision_id", ""),
+                    "blocker_id": payload.get("blocker_id", ""),
+                    "until_iteration": payload.get("until_iteration", ""),
+                    "until_phase": payload.get("until_phase", ""),
+                }
+            )
 
     payload = {
         "repo_root": str(paths.repo_root),
@@ -179,6 +226,7 @@ def _status_command(args: argparse.Namespace) -> int:
         },
         "latest_runbook": str(runbooks[-1]) if runbooks else "",
         "latest_execution_state": str(states[-1]) if states else "",
+        "active_deferred_blockers": active_deferred,
     }
     print(json.dumps(payload, indent=2))
     return 0
@@ -336,10 +384,18 @@ def build_parser() -> argparse.ArgumentParser:
     plan_cmd.set_defaults(func=_plan_command)
 
     decide_cmd = subparsers.add_parser("decide", help="Rank recovery options for a blocker")
-    decide_cmd.add_argument("--blocker-file", required=True)
+    decide_cmd.add_argument("--blocker-file")
+    decide_cmd.add_argument("--execution-state")
     decide_cmd.add_argument("--select-option", default=None)
     decide_cmd.add_argument("--auto-select", action="store_true")
     decide_cmd.set_defaults(func=_decide_command)
+
+    defer_cmd = subparsers.add_parser("defer", help="Defer a blocker with expiry metadata")
+    defer_cmd.add_argument("--decision-file", required=True)
+    defer_cmd.add_argument("--until-iteration", required=True)
+    defer_cmd.add_argument("--until-phase", required=True)
+    defer_cmd.add_argument("--criteria", required=True)
+    defer_cmd.set_defaults(func=_defer_command)
 
     run_cmd = subparsers.add_parser("run", help="Execute runbook")
     run_cmd.add_argument("--runbook", required=True)

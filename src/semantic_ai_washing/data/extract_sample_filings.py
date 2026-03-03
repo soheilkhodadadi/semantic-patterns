@@ -6,7 +6,7 @@ Inputs:
     (must contain a 'cik' column; optional 'ticker' / 'company_name')
 
 Source:
-  - SEC_SOURCE_DIR env var OR the default DataWork path below
+  - SEC_SOURCE_DIR env var or data/metadata/sec_source_dir.txt
     (expects files named like: 20210128_10-K_edgar_data_1326801_0001326801-21-000014.txt
      or ..._text.txt – we copy the file as-is)
 
@@ -33,8 +33,7 @@ FIRMS_CSV_CANDIDATES = [
     "data/metadata/company_list.csv",
 ]
 
-# Default source folder (can be overridden by env var SEC_SOURCE_DIR)
-DEFAULT_SEC_SOURCE = "/Users/soheilkhodadadi/DataWork/10-X_C_2021-2124"
+SEC_SOURCE_HINT_FILE = "data/metadata/sec_source_dir.txt"
 
 DEST_DIR = "data/processed/sec"
 YEARS = {2021, 2022, 2023, 2024}
@@ -61,6 +60,23 @@ def load_ciks(csv_path: str) -> set:
         raise ValueError(f"'cik' column not found in {csv_path}")
     ciks = set(df["cik"].astype(str).str.extract(r"(\d+)")[0].dropna().tolist())
     return ciks
+
+
+def resolve_sec_source() -> str:
+    env_value = os.environ.get("SEC_SOURCE_DIR", "").strip()
+    if env_value:
+        return env_value
+
+    if os.path.exists(SEC_SOURCE_HINT_FILE):
+        with open(SEC_SOURCE_HINT_FILE, encoding="utf-8", errors="ignore") as handle:
+            hinted = handle.read().strip()
+        if hinted:
+            return hinted
+
+    raise ValueError(
+        "SEC source path is not configured. Set SEC_SOURCE_DIR or create "
+        f"{SEC_SOURCE_HINT_FILE} with the source path."
+    )
 
 
 # Build file patterns that include the CIK so we don't miss matches and so it runs faster
@@ -95,17 +111,23 @@ def main():
     ciks = load_ciks(firms_csv)
     print(f"[i] Using firm list: {firms_csv} ({len(ciks)} CIKs)")
 
-    src_root = os.environ.get("SEC_SOURCE_DIR", DEFAULT_SEC_SOURCE)
+    src_root = resolve_sec_source()
     if not os.path.isdir(src_root):
         raise FileNotFoundError(
             f"Source directory not found: {src_root}\n"
-            "Set SEC_SOURCE_DIR env var or update DEFAULT_SEC_SOURCE.\n"
+            "Set SEC_SOURCE_DIR env var or provide data/metadata/sec_source_dir.txt.\n"
             "Expected structure: <SRC_ROOT>/<YEAR>/QTR#/....txt  (e.g., 2024/QTR1/20240102_10-K_...txt)"
         )
 
     print(f"[i] Scanning {len(YEARS)} years x 4 quarters for {len(ciks)} CIKs under: {src_root}")
 
     os.makedirs(DEST_DIR, exist_ok=True)
+    root_level_txt = glob.glob(os.path.join(DEST_DIR, "*.txt"))
+    if root_level_txt:
+        print(
+            "[warn] Mixed layout detected: root-level data/processed/sec/*.txt files exist. "
+            "Year-partitioned outputs are canonical; root-level files can cause duplicate scans."
+        )
 
     copied, skipped_exists, skipped_filters = 0, 0, 0
     per_year = {y: 0 for y in YEARS}

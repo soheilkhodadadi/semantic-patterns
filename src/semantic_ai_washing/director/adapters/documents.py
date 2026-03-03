@@ -11,6 +11,11 @@ import xml.etree.ElementTree as ET
 from semantic_ai_washing.director.core.utils import now_utc_iso, sha256_file
 
 _WORD_NAMESPACE = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
+_ITERATION_HEADER_RE = re.compile(
+    r"^\s*(?:#+\s*)?Iteration\s+(?P<id>\d+)\s*[–-]\s*(?P<title>.+?)\s*$",
+    re.I,
+)
+_GOAL_RE = re.compile(r"^\s*(?:\*\*)?Goal(?:\*\*)?:\s*(?P<goal>.+)$", re.I)
 
 
 def read_text_document(path: str) -> str:
@@ -35,7 +40,49 @@ def _read_docx_text(path: str) -> str:
     return "\n".join(paragraphs)
 
 
-def summarize_document(path: str, max_points: int = 40) -> dict:
+def _extract_iterations(lines: list[str]) -> list[dict]:
+    iterations: list[dict] = []
+    current: dict | None = None
+
+    for raw in lines:
+        line = raw.strip()
+        if not line:
+            continue
+        header = _ITERATION_HEADER_RE.match(line)
+        if header:
+            current = {
+                "iteration_id": header.group("id"),
+                "title": header.group("title").strip(),
+                "goal": "",
+                "areas": [],
+                "outcomes": [],
+            }
+            iterations.append(current)
+            continue
+        if current is None:
+            continue
+        goal_match = _GOAL_RE.match(line)
+        if goal_match and not current["goal"]:
+            current["goal"] = goal_match.group("goal").strip()
+            continue
+        if "|" in line and "Area" not in line and "Actions in Iteration" not in line:
+            # Skip markdown table rows from the prose summary parser.
+            continue
+        lowered = line.lower()
+        if lowered.startswith("outcome:"):
+            current["outcomes"].append(line.split(":", 1)[1].strip())
+            continue
+        if line.startswith("* ") or line.startswith("- "):
+            bullet = line.lstrip("*- ").strip()
+            if re.search(r"\b(outcome|deliverable|result)\b", lowered):
+                current["outcomes"].append(bullet)
+            else:
+                current["areas"].append(bullet)
+
+    return iterations
+
+
+def summarize_document(path: str, max_points: int = 200) -> dict:
     text = read_text_document(path)
     lines = [line.strip() for line in text.splitlines() if line.strip()]
 
@@ -59,6 +106,7 @@ def summarize_document(path: str, max_points: int = 40) -> dict:
     ]
 
     key_points = unique_lines[:max_points]
+    iterations = _extract_iterations(unique_lines)
     return {
         "source_path": path,
         "source_sha256": sha256_file(path),
@@ -67,4 +115,5 @@ def summarize_document(path: str, max_points: int = 40) -> dict:
         "key_points": key_points,
         "gates": gates[:max_points],
         "risks": risks[:max_points],
+        "iterations": iterations,
     }

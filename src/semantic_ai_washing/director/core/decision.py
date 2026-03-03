@@ -2,10 +2,17 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
+from typing import Any
 
 from semantic_ai_washing.director.core.utils import dump_json, now_utc_iso, sha256_text
-from semantic_ai_washing.director.schemas import BlockerEvent, DecisionRecord, RecoveryOption
+from semantic_ai_washing.director.schemas import (
+    BlockerEvent,
+    DecisionRecord,
+    DeferredBlockerRecord,
+    RecoveryOption,
+)
 
 _DEFAULT_OPTIONS = {
     "env": [
@@ -207,10 +214,7 @@ class DecisionEngine:
         selected_option_id: str | None = None,
         require_manual_selection: bool = True,
     ) -> tuple[DecisionRecord, Path]:
-        payload = Path(blocker_file).read_text(encoding="utf-8")
-        import json
-
-        blocker = BlockerEvent.model_validate(json.loads(payload))
+        blocker = self.blocker_from_payload_file(blocker_file)
         decision = self.decide(
             blocker=blocker,
             selected_option_id=selected_option_id,
@@ -218,3 +222,87 @@ class DecisionEngine:
         )
         out = self.write_decision(decision)
         return decision, out
+
+    def blocker_from_payload_file(self, payload_file: str) -> BlockerEvent:
+        payload = json.loads(Path(payload_file).read_text(encoding="utf-8"))
+        if not isinstance(payload, dict):
+            raise ValueError("Expected JSON object payload for blocker parsing.")
+        return self.blocker_from_payload_dict(payload)
+
+    @staticmethod
+    def blocker_from_payload_dict(payload: dict[str, Any]) -> BlockerEvent:
+        if {"blocker_id", "blocker_type", "message"}.issubset(payload.keys()):
+            return BlockerEvent.model_validate(payload)
+
+        if "blocker" in payload and isinstance(payload["blocker"], dict):
+            return BlockerEvent.model_validate(payload["blocker"])
+
+        if {"decision_id", "blocker_event_id", "options"}.issubset(payload.keys()):
+            raise ValueError(
+                "Expected blocker event JSON or execution_state JSON containing `blocker`; "
+                "received decision record JSON."
+            )
+
+        raise ValueError(
+            "Expected blocker event JSON (`blocker_id`, `blocker_type`, `message`) "
+            "or execution_state JSON containing `blocker`."
+        )
+
+    def defer(
+        self,
+        decision_file: str,
+        until_iteration: str,
+        until_phase: str,
+        criteria: str,
+        runs_dir: str | Path | None = None,
+    ) -> tuple[DeferredBlockerRecord, Path]:
+        payload = json.loads(Path(decision_file).read_text(encoding="utf-8"))
+        decision = DecisionRecord.model_validate(payload)
+        if not decision.blocker_event_id:
+            raise ValueError("Decision file does not reference a blocker_event_id.")
+
+        deferred = DeferredBlockerRecord(
+            deferred_id=sha256_text(
+                f"{decision.decision_id}:{decision.blocker_event_id}:{now_utc_iso()}"
+            )[:16],
+            decision_id=decision.decision_id,
+            blocker_id=decision.blocker_event_id,
+            until_iteration=str(until_iteration),
+            until_phase=str(until_phase),
+            criteria=criteria,
+            created_at=now_utc_iso(),
+            status="active",
+            context={"decision_file": str(Path(decision_file).resolve())},
+        )
+        out = self.decisions_dir / f"deferred_{deferred.deferred_id}.json"
+        dump_json(out, deferred.as_deterministic_dict())
+
+        updated = decision.model_copy(
+            update={
+                "status": "resolved",
+                "rationale": (
+                    f"{decision.rationale} Deferred to iteration {until_iteration} / "
+                    f"{until_phase} with criteria: {criteria}"
+                ),
+                "context": {
+                    **decision.context,
+                    "deferred_record": str(out),
+                    "deferred_until_iteration": str(until_iteration),
+                    "deferred_until_phase": str(until_phase),
+                },
+            }
+        )
+        dump_json(decision_file, updated.as_deterministic_dict())
+
+        if runs_dir is not None:
+            runs_path = Path(runs_dir)
+            for state_file in runs_path.glob("execution_state_*.json"):
+                state_payload = json.loads(state_file.read_text(encoding="utf-8"))
+                if state_payload.get("decision_file") != str(Path(decision_file).resolve()):
+                    continue
+                state_payload["status"] = "deferred_blocked"
+                state_payload["deferred"] = deferred.as_deterministic_dict()
+                dump_json(state_file, state_payload)
+                break
+
+        return deferred, out

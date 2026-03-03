@@ -5,6 +5,7 @@ TODO: remove after Iteration 1 deprecation window.
 
 from pathlib import Path
 import sys
+import warnings
 
 SRC_ROOT = Path(__file__).resolve().parents[1]
 if str(SRC_ROOT) not in sys.path:
@@ -13,4 +14,10 @@ if str(SRC_ROOT) not in sys.path:
 from semantic_ai_washing.core.score_sentences import *  # noqa: F401,F403
 
 if __name__ == "__main__" and "main" in globals():
+    warnings.warn(
+        "Deprecated shim: use `python -m semantic_ai_washing.core.score_sentences`. "
+        "Removal target: Iteration 3.",
+        FutureWarning,
+        stacklevel=1,
+    )
     main()

@@ -11,10 +11,9 @@ python -m semantic_ai_washing.director.cli init
 ## Ingest Canonical Context
 ```bash
 python -m semantic_ai_washing.director.cli ingest \
-  --protocol "<path-to-protocol.docx-or-md>" \
-  --roadmap "<path-to-roadmap.docx-or-md>" \
-  --iteration-log docs/iteration_log.md \
-  --atlas-search "Framework for Code Transformation"
+  --protocol docs/director/implementation_protocol_master.md \
+  --roadmap docs/director/roadmap_master.md \
+  --iteration-log docs/iteration_log.md
 ```
 
 ## Generate Plan + Runbook
@@ -30,6 +29,20 @@ python -m semantic_ai_washing.director.cli run --runbook director/plans/runbook_
 ```
 
 If execution blocks, a blocker event and ranked recovery options are written to `director/decisions/`.
+
+## Work With Blockers
+```bash
+# Decide from execution state directly
+python -m semantic_ai_washing.director.cli decide \
+  --execution-state director/runs/execution_state_<id>.json --auto-select
+
+# Defer a blocker to a later phase with explicit criteria
+python -m semantic_ai_washing.director.cli defer \
+  --decision-file director/decisions/decision_<id>.json \
+  --until-iteration 2 \
+  --until-phase full-sample-classification \
+  --criteria "Increase labeled pool and satisfy class-floor gate"
+```
 
 ## Make Targets
 ```bash

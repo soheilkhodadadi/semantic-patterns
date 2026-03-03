@@ -126,7 +126,38 @@ def iter_classified_files(classified_root: str) -> Iterator[str]:
         for name in files:
             if name.endswith(CLASSIFIED_SUFFIXES):
                 discovered.append(os.path.join(root, name))
+
+    deduped: dict[str, str] = {}
+    duplicates = 0
     for path in sorted(discovered):
+        name = os.path.basename(path)
+        chosen = deduped.get(name)
+        if not chosen:
+            deduped[name] = path
+            continue
+        duplicates += 1
+        current_has_year = bool(
+            os.path.basename(os.path.dirname(path)).isdigit()
+            and len(os.path.basename(os.path.dirname(path))) == 4
+        )
+        chosen_has_year = bool(
+            os.path.basename(os.path.dirname(chosen)).isdigit()
+            and len(os.path.basename(os.path.dirname(chosen))) == 4
+        )
+        if current_has_year and not chosen_has_year:
+            deduped[name] = path
+        elif current_has_year == chosen_has_year and len(path) < len(chosen):
+            deduped[name] = path
+
+    if duplicates:
+        logger.warning(
+            "Mixed layout detected under %s: collapsed %d duplicate classified basenames. "
+            "Year-partitioned files are preferred.",
+            classified_root,
+            duplicates,
+        )
+
+    for path in sorted(deduped.values()):
         yield path
 
 

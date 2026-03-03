@@ -1,7 +1,7 @@
 {
   "source_path": "docs/iteration_log.md",
-  "source_sha256": "5583fd08bc004f10e8e5b016c20ad2a61165990fad97136944d929a58d77bc5b",
-  "ingested_at": "2026-03-02T23:10:52.796320+00:00",
+  "source_sha256": "7a52ab8c802220a402ba45581f7dc185bcb96d1402c76dc31f8fd92a91c4344f",
+  "ingested_at": "2026-03-03T02:45:50.207446+00:00",
   "iteration_count": 2,
   "iterations": [
     {
@@ -15,27 +15,17 @@
       "phases": [
         "diagnostics-baseline",
         "diagnostics-baseline",
+        "label-expansion",
+        "label-expansion",
+        "label-expansion",
         "director-foundation",
-        "director-foundation"
+        "director-foundation",
+        "stabilization-main-director-i1",
+        "stabilization-main-director-i1"
       ]
     }
   ],
   "phases": [
-    {
-      "name": "<name>",
-      "status_label": "",
-      "details": [
-        "Date:",
-        "Branch:",
-        "Goal:",
-        "Deliverables:",
-        "Validation run:",
-        "Risks/issues encountered:",
-        "Mitigation/resolution:",
-        "Commits:",
-        "CI status:"
-      ]
-    },
     {
       "name": "diagnostics-baseline",
       "status_label": "start",
@@ -67,6 +57,54 @@
       ]
     },
     {
+      "name": "label-expansion",
+      "status_label": "start",
+      "details": [
+        "Date: 2026-02-27",
+        "Branch: `iteration1/label-expansion`",
+        "Goal: Expand labeled dataset to 400 rows with leakage-safe dedupe, QA gates, stable IDs, and labeling rubric.",
+        "Deliverables (planned):",
+        "Validation run (planned):",
+        "Risks/issues encountered (so far):",
+        "Mitigation/resolution:",
+        "Commits:",
+        "CI status:"
+      ]
+    },
+    {
+      "name": "label-expansion",
+      "status_label": "execution update",
+      "details": [
+        "Date: 2026-02-27",
+        "Branch: `iteration1/label-expansion`",
+        "Goal: Deliver leakage-safe label expansion tooling, rubric, and QA gates for a 400-row target dataset.",
+        "Deliverables implemented:",
+        "Validation run:",
+        "Gate status:",
+        "Repo-state correction logged:",
+        "Risks/issues encountered:",
+        "Mitigation/resolution:",
+        "Commits:",
+        "CI status:"
+      ]
+    },
+    {
+      "name": "label-expansion",
+      "status_label": "director recovery update",
+      "details": [
+        "Date: 2026-03-03",
+        "Branch: `iteration1/label-expansion-recovery`",
+        "Goal: Resume Phase 1 execution with director runbooks on top of existing label-expansion outputs.",
+        "Deliverables:",
+        "Validation run:",
+        "Gate status:",
+        "Risks/issues encountered:",
+        "Mitigation/resolution:",
+        "Commits:",
+        "CI status:"
+      ]
+    },
+    {
       "name": "director-foundation",
       "status_label": "start",
       "details": [
@@ -77,8 +115,8 @@
         "Validation run (planned):",
         "Risks/issues encountered (initial):",
         "Mitigation/resolution:",
-        "Commits: pending",
-        "CI status: pending"
+        "Commits:",
+        "CI status:"
       ]
     },
     {
@@ -92,25 +130,48 @@
         "Validation run:",
         "Risks/issues encountered:",
         "Mitigation/resolution:",
-        "Commits: pending",
-        "CI status: local validation pass; remote CI pending"
+        "Commits:",
+        "CI status:"
+      ]
+    },
+    {
+      "name": "stabilization-main-director-i1",
+      "status_label": "start",
+      "details": [
+        "Date: 2026-03-03",
+        "Branch: `stabilize/main-director-i1`",
+        "Goal: Merge director foundation and useful Iteration 1 code/docs into a stable main-ready branch while deferring unresolved science blockers correctly.",
+        "Deliverables (planned):",
+        "Validation run (planned):",
+        "Risks/issues encountered:",
+        "Mitigation/resolution:",
+        "Deferred blockers (if any):",
+        "Commits:",
+        "CI status:"
+      ]
+    },
+    {
+      "name": "stabilization-main-director-i1",
+      "status_label": "execution update",
+      "details": [
+        "Date: 2026-03-03",
+        "Branch: `stabilize/main-director-i1`",
+        "Goal: Stabilize main-bound branch with director and Iteration 1 code/docs while preserving truthful blocker semantics.",
+        "Deliverables implemented:",
+        "Validation run:",
+        "Risks/issues encountered:",
+        "Mitigation/resolution:",
+        "Deferred blockers (if any):",
+        "Commits:",
+        "CI status:"
       ]
     }
   ],
   "global_gates": [
-    "At iteration start: add an iteration header with scope, branches, and acceptance gates.",
-    "Keep phase branches + integration/merge gates with artifact discipline.",
-    "Expand label quality controls and retrain/evaluate centroid classifier with reproducibility gates.",
     "IRR gate: Cohen's kappa >= 0.6 before retraining.",
     "Held-out gate: accuracy >= 0.80 on canonical evaluation.",
     "Leakage gate: held-out split excluded from centroid computation and threshold tuning.",
-    "Reproducibility gate: artifact metadata includes commit hash, parameters, and input fingerprints.",
-    "R7 scope creep from hardening before science gates.",
-    "Goal: Produce reproducible baseline diagnostics report + artifacts for Phase 0 gate.",
-    "Goal: Produce reproducible baseline diagnostics report + artifacts for Phase 0 gate.",
-    "Gate evidence:",
-    "report generated with gate checklist",
-    "Goal: Build reusable autonomous director package that turns roadmap/protocol/iteration history into executable runbooks with gate checks and blocker escalation."
+    "Reproducibility gate: artifact metadata includes commit hash, parameters, and input fingerprints."
   ],
   "risk_lines": [
     "### Iteration 1 Risk Register (R1-R7)",
@@ -122,7 +183,12 @@
     "R6 label mapping or centroid metadata mismatch.",
     "R7 scope creep from hardening before science gates.",
     "R6 correction logged: canonical centroid artifact in repo is `data/validation/centroids_mpnet.json` (not `centroids.mpnet.json`).",
-    "R5 risk observed (potential silent partials) during timeout scenarios."
+    "R5 risk observed (potential silent partials) during timeout scenarios.",
+    "R3 leakage risk confirmed by overlap diagnostics between labeled base and held-out.",
+    "R2 class imbalance remained after leakage-safe sampling.",
+    "R3 leakage prevented via hard exclusion, reducing available sample volume.",
+    "R7 scope control maintained (no retraining/calibration introduced).",
+    "R2 class-balance and sample-size gate remains failed."
   ],
-  "last_successful_gate": "- CI status: local validation pass; remote CI pending"
+  "last_successful_gate": "unresolved Phase 1 dataset size/class-balance gate remains deferred; not marked pass."
 }

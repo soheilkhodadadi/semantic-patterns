@@ -91,9 +91,36 @@ class RunbookExecutor:
         runbook = self._load_runbook(runbook_path)
         state = self._load_or_init_state(runbook, resume=resume)
         state["mode"] = mode
+        if resume and state.get("status") == "deferred_blocked":
+            deferred = state.get("deferred", {})
+            due = (
+                str(deferred.get("until_iteration", "")) == str(runbook.iteration_id)
+                and str(deferred.get("until_phase", "")).strip().lower()
+                == str(runbook.phase_name).strip().lower()
+            )
+            if not due:
+                self._save_state(state)
+                return {
+                    "runbook_id": runbook.runbook_id,
+                    "status": "deferred_blocked",
+                    "state_file": str(self._state_path(runbook.runbook_id)),
+                    "result_file": "",
+                    "step_count": len(runbook.steps),
+                    "steps_passed": sum(
+                        1
+                        for item in state.get("step_results", {}).values()
+                        if item.get("status") == "passed"
+                    ),
+                    "deferred_until_iteration": deferred.get("until_iteration", ""),
+                    "deferred_until_phase": deferred.get("until_phase", ""),
+                }
+            state["status"] = "running"
+            state["deferred_recheck_started_at"] = now_utc_iso()
+            self._save_state(state)
 
         gate_lookup = {gate.gate_id: gate for gate in runbook.gates}
         gate_evaluator = GateEvaluator(repo_root=self.repo_root)
+        repo_root_path = Path(self.repo_root).resolve()
 
         for step in runbook.steps:
             existing = state["step_results"].get(step.step_id)
@@ -109,8 +136,16 @@ class RunbookExecutor:
             self._save_state(state)
 
             if step.command:
+                step_cwd = Path(step.cwd)
+                normalized_cwd = (
+                    step_cwd.resolve()
+                    if step_cwd.is_absolute()
+                    else (repo_root_path / step_cwd).resolve()
+                )
                 result = run_command(
-                    step.command, cwd=step.cwd, timeout_seconds=step.timeout_seconds
+                    step.command,
+                    cwd=str(normalized_cwd),
+                    timeout_seconds=step.timeout_seconds,
                 )
                 state["step_results"][step.step_id]["command_result"] = result
                 if result["exit_code"] != 0:
@@ -149,7 +184,26 @@ class RunbookExecutor:
                 gate = gate_lookup.get(gate_id)
                 if gate is None:
                     continue
-                gate_result = gate_evaluator.evaluate(gate)
+                if gate_id.endswith("-gate-001"):
+                    validation_steps = [
+                        result
+                        for result in state["step_results"].values()
+                        if isinstance(result, dict)
+                        and str(result.get("title", "")).startswith("Validation command")
+                    ]
+                    validation_passed = bool(validation_steps) and all(
+                        item.get("status") == "passed" for item in validation_steps
+                    )
+                    gate_result = {
+                        "gate_id": gate.gate_id,
+                        "name": gate.name,
+                        "passed": validation_passed,
+                        "missing_outputs": [],
+                        "command_result": None,
+                        "validation_step_count": len(validation_steps),
+                    }
+                else:
+                    gate_result = gate_evaluator.evaluate(gate)
                 state["step_results"][step.step_id].setdefault("gate_results", []).append(
                     gate_result
                 )

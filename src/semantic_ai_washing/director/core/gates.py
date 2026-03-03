@@ -14,7 +14,13 @@ class GateEvaluator:
         self.repo_root = repo_root
 
     def evaluate(self, gate: PhaseGate) -> dict[str, Any]:
-        missing_outputs = [path for path in gate.required_outputs if not Path(path).exists()]
+        repo_root = Path(self.repo_root).resolve()
+        missing_outputs = []
+        for path in gate.required_outputs:
+            candidate = Path(path)
+            resolved = candidate if candidate.is_absolute() else (repo_root / candidate)
+            if not resolved.exists():
+                missing_outputs.append(path)
         command_result = None
         command_passed = True
 

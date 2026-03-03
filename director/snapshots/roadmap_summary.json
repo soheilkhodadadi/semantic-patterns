@@ -1,54 +1,136 @@
 {
-  "source_path": "/Users/soheilkhodadadi/Library/CloudStorage/OneDrive-ConcordiaUniversity-Canada/PhD-soheil/Thesis/Semantics/Report & Guides/2026-1/4 Execution/Roadmap/Multi-iteration Roadmap.docx",
-  "source_sha256": "9b71587ba02ebec618aa8ea7f074c21fea6724a06ce17b23192f2bddb47a005e",
-  "ingested_at": "2026-03-02T23:10:52.795430+00:00",
-  "paragraph_count": 129,
+  "source_path": "docs/director/roadmap_master.md",
+  "source_sha256": "06df4040ebe98b62e625ca0692d932a7e23aa660b3813f26b4e799a10b269ec0",
+  "ingested_at": "2026-03-03T02:45:50.205989+00:00",
+  "paragraph_count": 43,
   "key_points": [
-    "To bring the AIwashing project from its current researchgrade state to a publicationready system, it makes sense to execute the transformation in several small iterations rather than attempting a oneoff overhaul.\u00a0 Each iteration applies the framework you designed (data validation, observability, prompt engineering, error handling, testing, deployment, documentation, cost control) to a manageable set of features and issues.\u00a0 Below is a suggested multiiteration roadmap.\u00a0 It draws on the current codebase (as documented in the repository README) and the tasks laid out in your delivery plan , integrates the methodological requirements from your paper, and considers the option of using the OpenAI API for classification.",
-    "\u2b07\ufe0f Starting Point: Current State",
-    "The project already has a clearly defined pipeline: extract AIrelated sentences from 10K filings, encode labelled sentences with MPNet, compute centroids, classify sentences, aggregate to firmyear counts, merge with patents/compustat, and run regressions .",
-    "Scripts exist to embed sentences (embed_labeled_sentences_mpnet.py), compute centroids (compute_centroids_mpnet.py), classify sentences (classify_all_ai_sentences.py), aggregate counts (aggregate_classification_counts.py) and run evaluations .",
-    "The classifier uses a twostage approach: a heuristicsbased irrelevance gate followed by MPNet centroid scoring, optionally with lexical boosts .",
-    "The delivery plan notes that the current extraction splits sentences across page boundaries; labelled data must be expanded; interrater reliability (IRR) must be measured; crosswalks must be updated; multiple regressions must be run; and a final package delivered .",
-    "Given this context, the roadmap focuses on iterative improvements along both functionality and productionreadiness dimensions.",
-    "\ud83e\udded Iteration 0 \u2013 Stabilise the Extraction & Packaging",
-    "Goal: get a working baseline pipeline (even if rough) that produces complete AI sentences and can be run endtoend on a small sample.",
-    "Area",
-    "Actions in Iteration 0",
-    "Why",
-    "Data extraction & validation",
-    "Fix the sentencefragment issue described in Stage\u00a00 by merging pagesplit fragments . Write a postprocessing function to detect broken sentences (e.g., page numbers and missing capitals) and reconstruct them by concatenating the preceding and following fragments. Validate that each sentence starts with a capital letter and ends with a period. Run this fix on a small sample of filings (e.g., 2024) and verify improved completeness.",
-    "Incomplete sentences reduce AI count accuracy. Fixing this ensures that classification operates on real sentences, not fragments.",
-    "Code organization",
-    "Convert the repo into a proper Python package (e.g., src/semantic_ai_washing), adopt a pyproject.toml, and restructure modules logically (data, classification, aggregation, analysis). Add __init__.py files and update imports accordingly.",
-    "Packaging is the foundation for subsequent tooling (tests, docs, CI).",
-    "Observability & logging",
-    "Replace print statements with structured logging (e.g., Python logging with JSON formatter). Include at least request ID, sentence ID, and stage.",
-    "Early instrumentation allows easier debugging when running the pipeline on multiple years later.",
-    "Testing & CI",
-    "Set up a minimal test suite with pytest. Start with smoke tests: verify that the extraction returns nonempty sentences; ensure classify_sentence returns one of the three labels. Configure a GitHub Actions CI workflow to run tests and linting on pushes.",
-    "An early CI baseline catches regressions as you iterate.",
-    "Documentation",
-    "Create or update a README section outlining installation, running the extraction script, and the purpose of the package. Note current limitations (e.g. classification is MPNetonly).",
-    "Documentation prevents confusion for collaborators and future you.",
-    "\u2705 Outcome: by the end of Iteration\u00a00, you should be able to run the extraction and classification scripts on a sample year (e.g. 2024) and produce labeled *_classified.txt files with complete sentences.\u00a0 The project is now packaged and minimally observable/testable.",
-    "\ud83e\udded Iteration 1 \u2013 Expand Training Data & Retrain MPNet Centroids",
-    "Goal: improve classification accuracy and reliability, and begin implementing productiongrade practices.",
-    "Actions in Iteration 1",
-    "Training data & IRR",
-    "Follow the Stage\u00a01 and Stage\u00a02 tasks: expand the labelled set by handlabelling additional AI sentences for a pilot sample (\u2265200 sentences, removing duplicates) . Use a second rater to label a stratified subset, compute Cohen\u2019s kappa and ensure \u03ba\u22650.6 (substantial agreement) . Resolve disagreements and finalize the labeled set.",
-    "A larger and reliable labelled dataset improves centroids and ensures your rubric is welldefined.",
-    "Reembed & recompute centroids",
-    "Run embed_labeled_sentences_mpnet.py and compute_centroids_mpnet.py to generate new embeddings and centroids based on the expanded dataset . Point src/core/classify.py to the new centroids and verify classification still works.",
-    "Better centroids yield better classification.",
-    "Batch classification on limited years",
-    "Run classify_all_ai_sentences.py for a few years (e.g., 2021\u20132024) using the twostage classifier with recommended parameters (--two-stage --rule-boosts --tau 0.07 --eps-irr 0.03 --min-tokens 6) . Evaluate accuracy on a heldout set using evaluate_classifier_on_held_out.py and aim for \u226580% accuracy .",
-    "Validates that the improved classifier scales to multiple years."
+    "# Roadmap Master",
+    "This document is the canonical in-repo roadmap source for director ingestion.",
+    "## Iteration 0 - Stabilise the Extraction and Packaging",
+    "Goal: Establish a reliable packaged baseline that can run end-to-end on a sample year.",
+    "- Fix sentence/page fragment reconstruction in extraction.",
+    "- Package under `src/semantic_ai_washing` with canonical module execution.",
+    "- Add logging and minimal CI + pytest baseline.",
+    "- Document run flow and known limitations.",
+    "Outcome: Baseline pipeline runs on sample data with reproducible outputs.",
+    "## Iteration 1 - Expand Labels and Retrain Centroids",
+    "Goal: Improve classifier reliability and readiness while preserving science gates.",
+    "- Expand labeled dataset, dedupe, and enforce leakage-safe splits.",
+    "- Run IRR gate (`kappa >= 0.6`) before retraining.",
+    "- Re-embed labels and recompute centroids.",
+    "- Validate held-out accuracy (`>= 0.80`) on canonical evaluator.",
+    "- Add observability for A/S/I distributions and batch integrity checks.",
+    "Outcome: Retrained classifier with reproducibility metadata and explicit gate evidence.",
+    "## Iteration 2 - Scale Classification and Integrate Cross-walks",
+    "Goal: Produce full-sample sentence and firm-year outputs for downstream analysis.",
+    "- Run extraction/classification for broader year scope.",
+    "- Aggregate sentence outputs to firm-year metrics.",
+    "- Refresh cross-walk merges and patent/control integrations.",
+    "- Add schema validation and integration checks for merged tables.",
+    "Outcome: Stable firm-year panel inputs with validated data lineage.",
+    "## Iteration 3 - Evaluate OpenAI API Strategy",
+    "Goal: Decide whether and where LLM classification should augment existing pipeline.",
+    "- Run stratified pilot comparing MPNet vs LLM labels.",
+    "- Evaluate cost/time/quality trade-offs.",
+    "- Consider hybrid routing for borderline or ambiguous cases.",
+    "- Preserve deterministic MPNet path as baseline fallback.",
+    "Outcome: Explicit decision record for MPNet-only vs hybrid LLM strategy.",
+    "## Iteration 4 - Final Integration and Hardening",
+    "Goal: Deliver reproducible, auditable, publication-ready system.",
+    "- Assemble final panel and run regression/robustness workflows.",
+    "- Finalize docs, packaging, release artifacts, and changelog.",
+    "- Harden operations (failure handling, metrics, reproducibility checks).",
+    "Outcome: Production-ready research package with full audit trail.",
+    "## Global Gates",
+    "- IRR gate must pass before retraining.",
+    "- Held-out accuracy gate must pass before scaling claims.",
+    "- Leakage gate must hold across train/validation/test.",
+    "- Artifacts must include hashes, configs, and commit provenance.",
+    "- Deferred blockers must include expiry (`until_iteration`, `until_phase`) and re-check criteria."
   ],
   "gates": [
-    "The classifier uses a twostage approach: a heuristicsbased irrelevance gate followed by MPNet centroid scoring, optionally with lexical boosts ."
+    "- Run IRR gate (`kappa >= 0.6`) before retraining.",
+    "Outcome: Retrained classifier with reproducibility metadata and explicit gate evidence.",
+    "- IRR gate must pass before retraining.",
+    "- Held-out accuracy gate must pass before scaling claims.",
+    "- Leakage gate must hold across train/validation/test."
   ],
-  "risks": [
-    "Structure the transformation into iterative cycles.\u00a0 Each cycle implements improvements across the framework\u2019s eight dimensions, reduces risk by validating early, and brings the code closer to productionreadiness."
+  "risks": [],
+  "iterations": [
+    {
+      "iteration_id": "0",
+      "title": "Stabilise the Extraction and Packaging",
+      "goal": "Establish a reliable packaged baseline that can run end-to-end on a sample year.",
+      "areas": [
+        "Fix sentence/page fragment reconstruction in extraction.",
+        "Package under `src/semantic_ai_washing` with canonical module execution.",
+        "Add logging and minimal CI + pytest baseline.",
+        "Document run flow and known limitations."
+      ],
+      "outcomes": [
+        "Baseline pipeline runs on sample data with reproducible outputs."
+      ]
+    },
+    {
+      "iteration_id": "1",
+      "title": "Expand Labels and Retrain Centroids",
+      "goal": "Improve classifier reliability and readiness while preserving science gates.",
+      "areas": [
+        "Expand labeled dataset, dedupe, and enforce leakage-safe splits.",
+        "Run IRR gate (`kappa >= 0.6`) before retraining.",
+        "Re-embed labels and recompute centroids.",
+        "Validate held-out accuracy (`>= 0.80`) on canonical evaluator.",
+        "Add observability for A/S/I distributions and batch integrity checks."
+      ],
+      "outcomes": [
+        "Retrained classifier with reproducibility metadata and explicit gate evidence."
+      ]
+    },
+    {
+      "iteration_id": "2",
+      "title": "Scale Classification and Integrate Cross-walks",
+      "goal": "Produce full-sample sentence and firm-year outputs for downstream analysis.",
+      "areas": [
+        "Run extraction/classification for broader year scope.",
+        "Aggregate sentence outputs to firm-year metrics.",
+        "Refresh cross-walk merges and patent/control integrations.",
+        "Add schema validation and integration checks for merged tables."
+      ],
+      "outcomes": [
+        "Stable firm-year panel inputs with validated data lineage."
+      ]
+    },
+    {
+      "iteration_id": "3",
+      "title": "Evaluate OpenAI API Strategy",
+      "goal": "Decide whether and where LLM classification should augment existing pipeline.",
+      "areas": [
+        "Run stratified pilot comparing MPNet vs LLM labels.",
+        "Evaluate cost/time/quality trade-offs.",
+        "Consider hybrid routing for borderline or ambiguous cases.",
+        "Preserve deterministic MPNet path as baseline fallback."
+      ],
+      "outcomes": [
+        "Explicit decision record for MPNet-only vs hybrid LLM strategy."
+      ]
+    },
+    {
+      "iteration_id": "4",
+      "title": "Final Integration and Hardening",
+      "goal": "Deliver reproducible, auditable, publication-ready system.",
+      "areas": [
+        "Assemble final panel and run regression/robustness workflows.",
+        "Finalize docs, packaging, release artifacts, and changelog.",
+        "Harden operations (failure handling, metrics, reproducibility checks).",
+        "IRR gate must pass before retraining.",
+        "Held-out accuracy gate must pass before scaling claims.",
+        "Leakage gate must hold across train/validation/test.",
+        "Artifacts must include hashes, configs, and commit provenance.",
+        "Deferred blockers must include expiry (`until_iteration`, `until_phase`) and re-check criteria."
+      ],
+      "outcomes": [
+        "Production-ready research package with full audit trail."
+      ]
+    }
   ]
 }

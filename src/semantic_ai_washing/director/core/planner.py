@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -72,7 +73,11 @@ class PlannerEngine:
             )
         return entries
 
-    def _build_gates(self, phase_name: str) -> list[PhaseGate]:
+    def _build_gates(self, iteration_id: str, phase_name: str) -> list[PhaseGate]:
+        profile = self.config.get("project_profile", {})
+        artifact_map = profile.get("phase_artifact_map", {})
+        phase_key = f"iteration{iteration_id}/{phase_name}"
+        required_outputs = [str(path) for path in artifact_map.get(phase_key, [])]
         return [
             PhaseGate(
                 gate_id=f"{phase_name}-gate-001",
@@ -85,6 +90,7 @@ class PlannerEngine:
                 name="Artifacts Present",
                 description="Required outputs are generated for the phase",
                 pass_condition="All required output files exist",
+                required_outputs=required_outputs,
             ),
             PhaseGate(
                 gate_id=f"{phase_name}-gate-003",
@@ -95,18 +101,47 @@ class PlannerEngine:
             ),
         ]
 
-    def _phase_commands(self, iteration_id: str, phase_name: str) -> list[str]:
+    def _phase_commands(
+        self, iteration_id: str, phase_name: str, snapshots: dict[str, Any]
+    ) -> list[str]:
         profile = self.config.get("project_profile", {})
         mapping = profile.get("phase_command_map", {})
         key = f"iteration{iteration_id}/{phase_name}"
         if key in mapping:
             return [str(item) for item in mapping[key]]
 
-        defaults = profile.get("canonical_validation_commands", [])
-        return [str(item) for item in defaults]
+        roadmap_iterations = snapshots.get("roadmap", {}).get("iterations", [])
+        for item in roadmap_iterations:
+            if str(item.get("iteration_id", "")) != str(iteration_id):
+                continue
+            for phase in item.get("phases", []):
+                if str(phase.get("name", "")).strip().lower() != phase_name.lower():
+                    continue
+                commands = phase.get("commands", [])
+                if commands:
+                    return [str(command) for command in commands]
 
-    def _build_steps(self, iteration_id: str, phase_name: str) -> list[ExecutionStep]:
-        commands = self._phase_commands(iteration_id, phase_name)
+        roadmap_model = profile.get("roadmap_model", {})
+        for item in roadmap_model.get("iterations", []):
+            if str(item.get("iteration_id", "")) != str(iteration_id):
+                continue
+            for phase in item.get("phases", []):
+                if str(phase.get("name", "")).strip().lower() != phase_name.lower():
+                    continue
+                commands = phase.get("commands", [])
+                if commands:
+                    return [str(command) for command in commands]
+
+        return []
+
+    def _build_steps(
+        self, iteration_id: str, phase_name: str, snapshots: dict[str, Any]
+    ) -> list[ExecutionStep]:
+        profile = self.config.get("project_profile", {})
+        validation_commands = [
+            str(item) for item in profile.get("canonical_validation_commands", [])
+        ]
+        commands = self._phase_commands(iteration_id, phase_name, snapshots)
         steps: list[ExecutionStep] = []
 
         # Add a deterministic snapshot sanity step first.
@@ -115,7 +150,7 @@ class PlannerEngine:
                 step_id="step-001",
                 title="Validate snapshots",
                 description="Ensure protocol/roadmap/iteration snapshots are available",
-                command="python -m semantic_ai_washing.director.cli status",
+                command=f"{sys.executable} -m semantic_ai_washing.director.cli status",
                 required_outputs=[
                     "director/snapshots/protocol_summary.json",
                     "director/snapshots/roadmap_summary.json",
@@ -125,26 +160,45 @@ class PlannerEngine:
             )
         )
 
-        for idx, command in enumerate(commands, start=2):
-            step_id = f"step-{idx:03d}"
+        step_counter = 2
+        for idx, command in enumerate(validation_commands, start=1):
+            step_id = f"step-{step_counter:03d}"
+            step_counter += 1
             steps.append(
                 ExecutionStep(
                     step_id=step_id,
-                    title=f"Run command {idx - 1}",
+                    title=f"Validation command {idx}",
+                    description=f"Execute canonical validation: {command}",
+                    command=command,
+                    escalation_required=True,
+                )
+            )
+
+        for idx, command in enumerate(commands, start=1):
+            step_id = f"step-{step_counter:03d}"
+            step_counter += 1
+            steps.append(
+                ExecutionStep(
+                    step_id=step_id,
+                    title=f"Phase command {idx}",
                     description=f"Execute: {command}",
                     command=command,
-                    escalation_required=True if "make doctor" in command else False,
+                    escalation_required=False,
                 )
             )
 
         steps.append(
             ExecutionStep(
-                step_id=f"step-{len(steps) + 1:03d}",
+                step_id=f"step-{step_counter:03d}",
                 title="Produce planning artifacts",
                 description="Persist runbook + plan markdown + decision scaffold",
                 command=None,
                 required_outputs=[],
-                gate_ids=[f"{phase_name}-gate-002", f"{phase_name}-gate-003"],
+                gate_ids=[
+                    f"{phase_name}-gate-001",
+                    f"{phase_name}-gate-002",
+                    f"{phase_name}-gate-003",
+                ],
             )
         )
         return steps
@@ -201,9 +255,9 @@ class PlannerEngine:
             phase_name=phase_name,
             autonomy_mode=self.config.get("autonomy_policy", {}).get("mode", "autonomous"),
             dependencies=["repo snapshots", "iteration log", "validation command chain"],
-            gates=self._build_gates(phase_name),
+            gates=self._build_gates(iteration_id, phase_name),
             risks=self._build_risk_entries(phase_name),
-            steps=self._build_steps(iteration_id, phase_name),
+            steps=self._build_steps(iteration_id, phase_name, snapshots),
             context={
                 "active_branch": snapshots.get("iteration", {})
                 .get("git", {})

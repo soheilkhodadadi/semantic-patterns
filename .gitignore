@@ -197,6 +197,9 @@ data/validation
 # uv lock from ad-hoc tooling runs
 uv.lock
 
+# Local SEC source hint (machine-specific path)
+data/metadata/sec_source_dir.txt
+
 # Director runtime artifacts (keep placeholders only)
 director/plans/*
 !director/plans/.gitkeep
