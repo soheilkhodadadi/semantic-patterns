@@ -52,7 +52,12 @@ class SnapshotIngestor:
             "notes": ["atlas metadata fetch disabled"],
         }
         if enable_atlas or atlas_search:
-            atlas_metadata = fetch_atlas_metadata(search_term=atlas_search, limit=atlas_limit)
+            repo_root = str(self.snapshots_dir.parent.parent.resolve())
+            atlas_metadata = fetch_atlas_metadata(
+                search_term=atlas_search,
+                limit=atlas_limit,
+                repo_root=repo_root,
+            )
             atlas_metadata["enabled"] = True
         atlas_out = self.snapshots_dir / "atlas_metadata.json"
         dump_json(atlas_out, atlas_metadata)

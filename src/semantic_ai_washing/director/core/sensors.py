@@ -128,6 +128,38 @@ def evaluate_condition(
         actual, extra = _sentence_fragment_rate(resolved)
         passed = _compare(condition.operator, actual, float(condition.expected))
         details.update({"actual": actual, "resolved_target": str(resolved), **extra})
+    elif condition.kind == "indexed_years_include":
+        resolved = _resolve_target(repo_root, target)
+        years: list[str] = []
+        if resolved.suffix == ".json" and resolved.exists():
+            payload = json.loads(resolved.read_text(encoding="utf-8"))
+            if isinstance(payload, dict):
+                source_windows = payload.get("source_windows", [])
+                if isinstance(source_windows, list):
+                    for item in source_windows:
+                        if isinstance(item, dict):
+                            years.extend([str(year) for year in item.get("years", [])])
+                years.extend([str(year) for year in payload.get("years", [])])
+        elif resolved.suffix == ".csv" and resolved.exists():
+            df = pd.read_csv(resolved)
+            if "year" in df.columns:
+                years.extend(sorted({str(value) for value in df["year"].dropna().astype(str)}))
+
+        expected = str(condition.expected)
+        if expected.startswith("<="):
+            limit = int(expected[2:])
+            passed = any(year.isdigit() and int(year) <= limit for year in years)
+        elif expected.startswith(">="):
+            limit = int(expected[2:])
+            passed = any(year.isdigit() and int(year) >= limit for year in years)
+        else:
+            passed = _compare(condition.operator, expected, years)
+        details.update(
+            {
+                "actual": sorted(set(years)),
+                "resolved_target": str(resolved),
+            }
+        )
     else:
         raise ValueError(f"Unsupported condition kind: {condition.kind}")
 

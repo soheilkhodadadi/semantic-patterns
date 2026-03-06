@@ -130,17 +130,6 @@ class PlannerEngine:
                 if commands:
                     return [str(command) for command in commands]
 
-        roadmap_model = profile.get("roadmap_model", {})
-        for item in roadmap_model.get("iterations", []):
-            if str(item.get("iteration_id", "")) != str(iteration_id):
-                continue
-            for phase in item.get("phases", []):
-                if str(phase.get("name", "")).strip().lower() != phase_name.lower():
-                    continue
-                commands = phase.get("commands", [])
-                if commands:
-                    return [str(command) for command in commands]
-
         return []
 
     def _roadmap_model(self):
@@ -171,6 +160,12 @@ class PlannerEngine:
         model = self._roadmap_model()
         phase_spec = self._phase_spec(iteration_id, phase_name)
         if model is None or phase_spec is None:
+            return []
+        if phase_spec.lifecycle_state in {"historical", "superseded", "completed"}:
+            raise ValueError(
+                f"Phase {phase_spec.phase_id} is `{phase_spec.lifecycle_state}` and is not executable."
+            )
+        if not phase_spec.tasks:
             return []
 
         graph = build_task_graph(model)
@@ -379,6 +374,15 @@ class PlannerEngine:
 
     def generate(self, iteration_id: str, phase_name: str) -> dict[str, Any]:
         snapshots = self._load_snapshots()
+        phase_spec = self._phase_spec(iteration_id, phase_name)
+        if phase_spec is not None and phase_spec.lifecycle_state in {
+            "historical",
+            "superseded",
+            "completed",
+        }:
+            raise ValueError(
+                f"Phase {phase_spec.phase_id} is `{phase_spec.lifecycle_state}` and cannot be planned."
+            )
         runbook_id = self._runbook_id(iteration_id, phase_name)
         title = f"Iteration {iteration_id} / {phase_name}"
         summary = (

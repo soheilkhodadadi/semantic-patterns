@@ -793,3 +793,85 @@ Rules:
 - CI status:
   - local validation pass (`render-roadmap`, `ingest --roadmap-model`, `optimize`, `plan`, `make doctor`, `make format`, `make lint`, `.venv/bin/pytest -q`)
   - remote CI pending commit/push
+
+### Phase: roadmap-model-v2 (start)
+- Date: 2026-03-05
+- Branch: `director/roadmap-model-v2`
+- Baseline checkpoint commit: `8b35bbfeb98002ceae437d36cfddde7dd4cb1201`
+- Goal: Expand the director roadmap model from Iteration 1-only task optimization to all-iteration continuous planning with policy-safe data architecture and Atlas tooling isolation.
+- Scope:
+  - upgrade roadmap schema to `1.2.0`
+  - add all-iteration phase coverage with near-term task decomposition
+  - add policy, data-layer, source-window, and tooling-policy planning surfaces
+  - teach optimizer to reason across iterations and phase-only roadmap entries
+  - isolate Atlas execution from repo `.venv`
+
+### Phase: roadmap-model-v2 (execution update)
+- Date: 2026-03-05
+- Branch: `director/roadmap-model-v2`
+- Deliverables implemented:
+  - schema/runtime:
+    - `src/semantic_ai_washing/director/schemas.py`
+    - `src/semantic_ai_washing/director/core/config.py`
+    - `src/semantic_ai_washing/director/core/roadmap_model.py`
+    - `src/semantic_ai_washing/director/core/task_graph.py`
+    - `src/semantic_ai_washing/director/core/readiness.py`
+    - `src/semantic_ai_washing/director/core/optimizer.py`
+    - `src/semantic_ai_washing/director/core/render.py`
+    - `src/semantic_ai_washing/director/core/sensors.py`
+    - `src/semantic_ai_washing/director/core/planner.py`
+    - `src/semantic_ai_washing/director/adapters/atlas.py`
+    - `src/semantic_ai_washing/director/core/snapshot.py`
+    - `src/semantic_ai_washing/director/cli.py`
+  - canonical roadmap/policy artifacts:
+    - `director/model/roadmap_model.yaml` (`schema_version=1.2.0`)
+    - `director/model/remediation_library.yaml`
+    - `director/config/tooling_policy.yaml`
+    - `scripts/atlas_isolated.sh`
+  - documentation:
+    - `docs/director/roadmap_master.md` (regenerated)
+    - `docs/director/roadmap_model_spec.md`
+    - `docs/director/continuous_planning.md`
+    - `docs/director/tooling_isolation.md`
+    - `docs/director/data_architecture_target.md`
+    - `docs/director/policy.md`
+    - `docs/director/quickstart.md`
+  - tests:
+    - `tests/test_director_roadmap_model.py`
+    - `tests/test_director_tooling_policy.py`
+- Roadmap-model changes:
+  - added top-level `policies`, `data_layers`, `source_windows`, and `tooling_policies`
+  - added phase lifecycle state handling for `planned`, `completed`, `historical`, `superseded`, and `deferred`
+  - revised roadmap to policy-safe Iterations `1..5`
+  - preserved old Iteration 1 recovery work as `historical`/`superseded` phases instead of deleting it
+  - expanded optimizer to rank both task-level and phase-level work across iterations
+- Atlas/tooling isolation:
+  - Atlas adapter now runs in a temporary isolated cwd and prefers `scripts/atlas_isolated.sh`
+  - repo `.venv` policy checks were added to director doctor
+  - correction recorded: prior Atlas `uv run` behavior had recreated repo `.venv`; v2 now guards against that pattern
+- Validation run:
+  - targeted tests:
+    - `.venv/bin/pytest -q tests/test_director_roadmap_model.py tests/test_director_tooling_policy.py tests/test_director_cli.py tests/test_director_core.py` -> `28 passed`
+  - director commands:
+    - `.venv/bin/python -m semantic_ai_washing.director.cli render-roadmap` -> pass
+    - `.venv/bin/python -m semantic_ai_washing.director.cli ingest --protocol docs/director/implementation_protocol_master.md --roadmap-model director/model/roadmap_model.yaml --iteration-log docs/iteration_log.md` -> pass
+    - `.venv/bin/python -m semantic_ai_washing.director.cli optimize` -> pass
+      - report: `director/optimization/recommendation_8732eb4e-3a3a3230.json`
+      - patch: `director/optimization/proposed_roadmap_patch_8732eb4e-3a3a3230.yaml`
+    - `.venv/bin/python -m semantic_ai_washing.director.cli plan --iteration 1 --phase label-ops-bootstrap` -> pass
+      - runbook: `director/plans/runbook_d9f31370e56bc248.yaml`
+- Current optimizer signal:
+  - top ready tasks now start at foundation work (`baseline-asset-freeze`, `repo-hygiene-and-script-canon`, `tooling-isolation`) instead of jumping directly into blocked IRR execution
+  - source-window-dependent historical work remains deferred and visible for traceability
+- Risks/issues encountered:
+  - the roadmap shift intentionally makes several future phases phase-level-only for now; they are optimizable but not yet executable without later task decomposition or fallback commands
+  - `director/optimization/` remains an evolving local evidence area and may contain multiple recommendation generations
+- Mitigation/resolution:
+  - planner continues to fail loudly if a user requests a modeled phase that has no task decomposition and no fallback commands
+  - optimizer now distinguishes ready work, blocked work, deferred source-window work, and historical/superseded traceability entries
+- Commits:
+  - baseline checkpoint before v2 mutation: `8b35bbfeb98002ceae437d36cfddde7dd4cb1201`
+  - roadmap-model v2 commit: pending local commit
+- CI status:
+  - local targeted validation pass (`director tests`, `render-roadmap`, `ingest`, `optimize`, `plan`)
+  - full repo validation pending before merge/push

@@ -350,6 +350,7 @@ def _doctor_command(args: argparse.Namespace) -> int:
 
     # 2) venv pip health.
     venv_python = Path(repo_root) / ".venv" / "bin" / "python"
+    pyvenv_cfg = Path(repo_root) / ".venv" / "pyvenv.cfg"
     if venv_python.exists():
         proc = subprocess.run(
             [str(venv_python), "-m", "pip", "--version"],
@@ -366,6 +367,50 @@ def _doctor_command(args: argparse.Namespace) -> int:
         )
     else:
         checks.append({"name": "venv_pip", "ok": False, "detail": ".venv/bin/python not found"})
+
+    tooling_policies = config.get("tooling_policy", {}).get("policies", [])
+    atlas_policy = next(
+        (
+            item
+            for item in tooling_policies
+            if isinstance(item, dict) and item.get("tool") == "atlas"
+        ),
+        {},
+    )
+    wrapper_path = atlas_policy.get("wrapper_path", "")
+    if wrapper_path:
+        wrapper_file = Path(wrapper_path)
+        if not wrapper_file.is_absolute():
+            wrapper_file = Path(repo_root) / wrapper_file
+        checks.append(
+            {
+                "name": "atlas_wrapper",
+                "ok": wrapper_file.exists(),
+                "detail": str(wrapper_file),
+            }
+        )
+
+    expected_version = str(atlas_policy.get("expected_repo_venv_python", "")).strip()
+    expected_home = str(atlas_policy.get("expected_repo_venv_home", "")).strip()
+    if pyvenv_cfg.exists():
+        cfg_text = pyvenv_cfg.read_text(encoding="utf-8")
+        version_ok = expected_version in cfg_text if expected_version else True
+        home_ok = expected_home in cfg_text if expected_home else True
+        checks.append(
+            {
+                "name": "repo_venv_policy",
+                "ok": version_ok and home_ok,
+                "detail": cfg_text.strip().replace("\n", "; "),
+            }
+        )
+    else:
+        checks.append(
+            {
+                "name": "repo_venv_policy",
+                "ok": False,
+                "detail": f"{pyvenv_cfg} not found",
+            }
+        )
 
     # 3) make doctor (optional).
     if not args.skip_make_doctor:

@@ -1,60 +1,23 @@
-schema_version: "1.1.0"
+schema_version: "1.2.0"
 tasks:
-  - schema_version: "1.0.0"
-    task_id: common.audit_sentence_integrity
+  - task_id: common.audit_sentence_integrity
     title: Audit sentence integrity
     description: Assess whether candidate sentence datasets contain fragmented or low-quality rows before manual labeling.
     iteration_id: common
     phase_id: common/remediation
     kind: diagnostic
     depends_on: []
-    inputs:
-      - schema_version: "1.0.0"
-        artifact_id: sentence_dataset
-        path: data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv
-        kind: dataset
-        required: true
-        fingerprint_required: false
-        produced_by: []
-        consumed_by:
-          - common.audit_sentence_integrity
+    inputs: []
     outputs:
-      - schema_version: "1.0.0"
-        artifact_id: sentence_integrity_report
-        path: reports/iteration1/remediation/sentence_integrity_report.json
+      - artifact_id: sentence_integrity_report
+        path: reports/data/sentence_integrity_report.json
         kind: report
         required: true
-        fingerprint_required: false
-        produced_by:
-          - common.audit_sentence_integrity
-        consumed_by: []
-    preconditions:
-      - schema_version: "1.0.0"
-        condition_id: common.audit_sentence_integrity.input_exists
-        kind: artifact_exists
-        target: data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv
-        operator: "=="
-        expected: true
-        on_fail: block
-        message: Recovery dataset must exist before auditing sentence integrity.
-        reroute_to: []
-    quality_checks:
-      - schema_version: "1.0.0"
-        condition_id: common.audit_sentence_integrity.fragment_rate
-        kind: sentence_fragment_rate_lte
-        target: data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv
-        operator: "<="
-        expected: 0.15
-        on_fail: reroute
-        message: Sentence fragmentation exceeds allowable threshold.
-        reroute_to:
-          - common.remediate_fragmented_sentences
-          - common.resample_from_clean_sentence_pool
+    preconditions: []
+    quality_checks: []
     commands: []
     manual_handoff: false
-    risks:
-      - R1
-      - R5
+    risks: [R1, R5]
     estimated_effort: 2
     risk_reduction: 8
     automation_level: partial
@@ -63,8 +26,9 @@ tasks:
       - common.remediate_fragmented_sentences
       - common.resample_from_clean_sentence_pool
     evidence_required: true
-  - schema_version: "1.0.0"
-    task_id: common.remediate_fragmented_sentences
+    tags: [sentence_quality_gate]
+    gate_class: data
+  - task_id: common.remediate_fragmented_sentences
     title: Remediate fragmented sentence extraction
     description: Fix extraction or post-processing to reduce fragmented sentence rows before labeling or IRR.
     iteration_id: common
@@ -73,30 +37,24 @@ tasks:
     depends_on: []
     inputs: []
     outputs:
-      - schema_version: "1.0.0"
-        artifact_id: remediation_report
-        path: reports/iteration1/remediation/fragmentation_fix_report.md
+      - artifact_id: remediation_report
+        path: reports/data/fragmentation_fix_report.md
         kind: markdown
         required: true
-        fingerprint_required: false
-        produced_by:
-          - common.remediate_fragmented_sentences
-        consumed_by: []
     preconditions: []
     quality_checks: []
     commands: []
     manual_handoff: true
-    risks:
-      - R5
-      - R7
+    risks: [R5, R7]
     estimated_effort: 6
     risk_reduction: 9
     automation_level: manual
     on_fail: block
     reroute_to: []
     evidence_required: true
-  - schema_version: "1.0.0"
-    task_id: common.resample_from_clean_sentence_pool
+    tags: [sentence_quality_remediation]
+    gate_class: manual
+  - task_id: common.resample_from_clean_sentence_pool
     title: Resample from clean sentence pool
     description: Rebuild labeling or IRR samples from a vetted clean subset when current sentence quality is inadequate.
     iteration_id: common
@@ -105,90 +63,74 @@ tasks:
     depends_on: []
     inputs: []
     outputs:
-      - schema_version: "1.0.0"
-        artifact_id: resample_report
-        path: reports/iteration1/remediation/resample_report.json
+      - artifact_id: resample_report
+        path: reports/data/resample_report.json
         kind: report
         required: true
-        fingerprint_required: false
-        produced_by:
-          - common.resample_from_clean_sentence_pool
-        consumed_by: []
     preconditions: []
     quality_checks: []
     commands: []
     manual_handoff: true
-    risks:
-      - R1
-      - R2
-      - R5
+    risks: [R1, R2, R5]
     estimated_effort: 5
     risk_reduction: 7
     automation_level: manual
     on_fail: block
     reroute_to: []
     evidence_required: true
-  - schema_version: "1.0.0"
-    task_id: common.rebuild_split_registry
+    tags: [resampling]
+    gate_class: manual
+  - task_id: common.rebuild_split_registry
     title: Rebuild split registry
-    description: Recreate frozen train/validation/test registries with hashes and leakage checks.
+    description: Recreate frozen train and validation registries with hashes and leakage checks.
     iteration_id: common
     phase_id: common/remediation
     kind: remediation
     depends_on: []
     inputs: []
     outputs:
-      - schema_version: "1.0.0"
-        artifact_id: split_registry
-        path: data/validation/split_registry.json
+      - artifact_id: split_registry
+        path: data/metadata/splits/split_registry_v1.json
         kind: json
         required: true
         fingerprint_required: true
-        produced_by:
-          - common.rebuild_split_registry
-        consumed_by: []
     preconditions: []
     quality_checks: []
     commands: []
     manual_handoff: true
-    risks:
-      - R3
-      - R6
+    risks: [R3, R6]
     estimated_effort: 4
     risk_reduction: 8
     automation_level: manual
     on_fail: block
     reroute_to: []
     evidence_required: true
-  - schema_version: "1.0.0"
-    task_id: common.recompute_artifact_manifest
+    tags: [split_registry]
+    gate_class: manual
+  - task_id: common.recompute_artifact_manifest
     title: Recompute artifact manifest
-    description: Rebuild hashes and metadata for produced datasets and model artifacts to restore provenance integrity.
+    description: Rebuild hashes and metadata for produced datasets and model artifacts.
     iteration_id: common
     phase_id: common/remediation
     kind: remediation
     depends_on: []
     inputs: []
     outputs:
-      - schema_version: "1.0.0"
-        artifact_id: artifact_manifest
-        path: reports/iteration1/remediation/artifact_manifest.json
+      - artifact_id: artifact_manifest
+        path: reports/data/artifact_manifest.json
         kind: json
         required: true
         fingerprint_required: true
-        produced_by:
-          - common.recompute_artifact_manifest
-        consumed_by: []
     preconditions: []
     quality_checks: []
     commands: []
     manual_handoff: true
-    risks:
-      - R4
-      - R6
+    risks: [R4, R6]
     estimated_effort: 3
     risk_reduction: 6
     automation_level: manual
     on_fail: block
     reroute_to: []
     evidence_required: true
+    tags: [provenance]
+    gate_class: manual

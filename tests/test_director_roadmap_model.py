@@ -35,10 +35,10 @@ def _write_yaml(path: Path, payload: dict) -> None:
 
 def _minimal_model() -> dict:
     return {
-        "schema_version": "1.1.0",
+        "schema_version": "1.2.0",
         "project": {"name": "semantic-patterns", "description": "test"},
         "settings": {
-            "active_horizon_iterations": ["1"],
+            "active_horizon_iterations": ["1", "2"],
             "optimizer_weights": {
                 "unblock_value": 5,
                 "critical_path_depth": 4,
@@ -53,28 +53,83 @@ def _minimal_model() -> dict:
                 "proposal_only": True,
                 "allow_cross_iteration_rewrite": True,
                 "fragment_rate_threshold": 0.15,
+                "active_source_window_id": "active_2021_2024",
+                "canonical_table_format": "parquet",
             },
         },
+        "policies": [
+            {
+                "policy_id": "heldout_frozen",
+                "kind": "dataset_freeze",
+                "description": "held-out locked",
+                "enforcement": "hard",
+                "targets": ["data/validation/held_out_sentences.csv"],
+                "value": True,
+            },
+            {
+                "policy_id": "openai_assistive_only",
+                "kind": "model_governance",
+                "description": "assistive only",
+                "enforcement": "hard",
+                "targets": ["iteration2/api-bootstrap"],
+                "value": "assistive_only",
+            },
+        ],
+        "data_layers": [
+            {
+                "layer_id": "source_index",
+                "canonical_path": "data/metadata/available_filings_index.csv",
+                "format": "csv",
+                "required_fields": ["cik", "year", "path"],
+            }
+        ],
+        "source_windows": [
+            {
+                "source_window_id": "active_2021_2024",
+                "years": ["2021", "2022", "2023", "2024"],
+                "source_root_ref": "env:SEC_SOURCE_DIR",
+                "status": "active",
+            },
+            {
+                "source_window_id": "historical_2000_2020",
+                "years": ["2000-2020"],
+                "source_root_ref": "env:SEC_SOURCE_DIR",
+                "status": "deferred",
+            },
+        ],
+        "tooling_policies": [
+            {
+                "policy_id": "atlas_isolated_env",
+                "tool": "atlas",
+                "mode": "isolated_skill_env",
+                "repo_root_uv_run_forbidden": True,
+                "required_runner": "~/.codex/skills/atlas/scripts/atlas_cli.py",
+                "wrapper_path": "scripts/atlas_isolated.sh",
+                "expected_repo_venv_python": "3.9",
+                "expected_repo_venv_home": "anaconda3/bin",
+            }
+        ],
         "iterations": [
             {
                 "iteration_id": "1",
-                "title": "Test iteration",
+                "title": "Foundation",
                 "goal": "goal",
                 "phases": [
                     {
-                        "phase_id": "iteration1/irr-validation",
-                        "title": "IRR",
+                        "phase_id": "iteration1/label-ops-bootstrap",
+                        "title": "Label ops",
                         "goal": "goal",
                         "depends_on": [],
                         "canonical": True,
-                        "required_artifacts": ["reports/irr_status.json"],
+                        "required_artifacts": ["reports/quality.json"],
+                        "source_window_id": "active_2021_2024",
                         "tasks": [
                             {
                                 "task_id": "iteration1.shared.audit_sentence_integrity",
                                 "title": "Audit source",
                                 "description": "check quality",
                                 "iteration_id": "1",
-                                "phase_id": "iteration1/irr-validation",
+                                "phase_id": "iteration1/label-ops-bootstrap",
                                 "kind": "diagnostic",
                                 "depends_on": [],
                                 "inputs": [],
@@ -84,9 +139,6 @@ def _minimal_model() -> dict:
                                         "path": "data/recovery.csv",
                                         "kind": "dataset",
                                         "required": True,
-                                        "fingerprint_required": False,
-                                        "produced_by": [],
-                                        "consumed_by": ["iteration1.irr.prepare_subset"],
                                     }
                                 ],
                                 "preconditions": [
@@ -122,25 +174,24 @@ def _minimal_model() -> dict:
                                 "on_fail": "reroute",
                                 "reroute_to": ["common.remediate_fragmented_sentences"],
                                 "evidence_required": True,
+                                "tags": ["sentence_quality_gate"],
+                                "gate_class": "data",
                             },
                             {
-                                "task_id": "iteration1.irr.manual_rater2_handoff",
-                                "title": "Rater 2",
+                                "task_id": "iteration1.labels.manual_labeling",
+                                "title": "Labeling",
                                 "description": "manual",
                                 "iteration_id": "1",
-                                "phase_id": "iteration1/irr-validation",
+                                "phase_id": "iteration1/label-ops-bootstrap",
                                 "kind": "manual",
                                 "depends_on": ["iteration1.shared.audit_sentence_integrity"],
                                 "inputs": [],
                                 "outputs": [
                                     {
-                                        "artifact_id": "rater2",
-                                        "path": "data/rater2.csv",
+                                        "artifact_id": "labels",
+                                        "path": "data/labels.csv",
                                         "kind": "csv",
                                         "required": True,
-                                        "fingerprint_required": False,
-                                        "produced_by": ["iteration1.irr.manual_rater2_handoff"],
-                                        "consumed_by": [],
                                     }
                                 ],
                                 "preconditions": [],
@@ -154,18 +205,106 @@ def _minimal_model() -> dict:
                                 "on_fail": "block",
                                 "reroute_to": [],
                                 "evidence_required": True,
+                                "tags": ["human_labeling"],
+                                "gate_class": "manual",
                             },
                         ],
-                    }
+                    },
+                    {
+                        "phase_id": "iteration1/legacy-diagnostics",
+                        "title": "Legacy",
+                        "goal": "goal",
+                        "depends_on": [],
+                        "canonical": False,
+                        "required_artifacts": ["reports/legacy.json"],
+                        "lifecycle_state": "historical",
+                        "tasks": [],
+                    },
                 ],
-            }
+            },
+            {
+                "iteration_id": "2",
+                "title": "Future",
+                "goal": "goal",
+                "phases": [
+                    {
+                        "phase_id": "iteration2/source-index-contract",
+                        "title": "Source index",
+                        "goal": "goal",
+                        "depends_on": [],
+                        "canonical": True,
+                        "required_artifacts": ["data/metadata/available_filings_index.csv"],
+                        "source_window_id": "active_2021_2024",
+                        "tasks": [],
+                    },
+                    {
+                        "phase_id": "iteration2/historical-backfill",
+                        "title": "Historical backfill",
+                        "goal": "goal",
+                        "depends_on": [],
+                        "canonical": True,
+                        "required_artifacts": ["reports/history.json"],
+                        "lifecycle_state": "deferred",
+                        "source_window_id": "historical_2000_2020",
+                        "tasks": [],
+                    },
+                ],
+            },
         ],
     }
 
 
+def _policy_block_model() -> dict:
+    model = _minimal_model()
+    model["iterations"][0]["phases"].append(
+        {
+            "phase_id": "iteration1/illegal-training",
+            "title": "Illegal training",
+            "goal": "goal",
+            "depends_on": [],
+            "canonical": True,
+            "required_artifacts": [],
+            "tasks": [
+                {
+                    "task_id": "iteration1.training.illegal_heldout",
+                    "title": "Illegal heldout use",
+                    "description": "should be blocked",
+                    "iteration_id": "1",
+                    "phase_id": "iteration1/illegal-training",
+                    "kind": "build",
+                    "depends_on": [],
+                    "inputs": [
+                        {
+                            "artifact_id": "heldout",
+                            "path": "data/validation/held_out_sentences.csv",
+                            "kind": "csv",
+                            "required": True,
+                        }
+                    ],
+                    "outputs": [],
+                    "preconditions": [],
+                    "quality_checks": [],
+                    "commands": [],
+                    "manual_handoff": False,
+                    "risks": ["R3"],
+                    "estimated_effort": 2,
+                    "risk_reduction": 6,
+                    "automation_level": "full",
+                    "on_fail": "block",
+                    "reroute_to": [],
+                    "evidence_required": True,
+                    "tags": ["training"],
+                    "gate_class": "science",
+                }
+            ],
+        }
+    )
+    return model
+
+
 def _minimal_library() -> dict:
     return {
-        "schema_version": "1.1.0",
+        "schema_version": "1.2.0",
         "tasks": [
             {
                 "task_id": "common.remediate_fragmented_sentences",
@@ -188,6 +327,8 @@ def _minimal_library() -> dict:
                 "on_fail": "block",
                 "reroute_to": [],
                 "evidence_required": True,
+                "tags": ["sentence_quality_remediation"],
+                "gate_class": "manual",
             }
         ],
     }
@@ -206,7 +347,10 @@ def test_load_and_render_roadmap_model(tmp_path):
     )
     _write(md_path, rendered)
     assert is_rendered_roadmap_fresh(model_path, md_path)
-    assert "generated from the canonical roadmap YAML model" in md_path.read_text(encoding="utf-8")
+    body = md_path.read_text(encoding="utf-8")
+    assert "generated from the canonical roadmap YAML model" in body
+    assert "## Policies" in body
+    assert "## Data Layers" in body
 
 
 def test_optimizer_emits_artifacts_and_patch(tmp_path):
@@ -231,7 +375,7 @@ def test_optimizer_emits_artifacts_and_patch(tmp_path):
         weights=load_configs(paths)["project_profile"]["optimization_weights"],
         emit_patch=True,
     )
-    report = optimizer.optimize(focus_iteration="1", focus_phase="irr-validation")
+    report = optimizer.optimize(focus_iteration="1", focus_phase="label-ops-bootstrap")
 
     assert Path(report.graph_file).exists()
     assert Path(report.readiness_file).exists()
@@ -239,6 +383,31 @@ def test_optimizer_emits_artifacts_and_patch(tmp_path):
     assert Path(report.recommendation_markdown).exists()
     assert report.patch_file
     assert "iteration1.shared.audit_sentence_integrity" in report.recommendation.blocked_task_ids
+
+
+def test_optimizer_ranks_phase_level_work_and_ignores_historical(tmp_path):
+    paths = get_director_paths(str(tmp_path))
+    ensure_default_configs(paths)
+    _write_yaml(paths.model_dir / "roadmap_model.yaml", _minimal_model())
+    _write_yaml(paths.model_dir / "remediation_library.yaml", _minimal_library())
+    _write(paths.snapshots_dir / "protocol_summary.json", json.dumps({"source_sha256": "a"}))
+    _write(paths.snapshots_dir / "roadmap_summary.json", json.dumps({"source_sha256": "b"}))
+    _write(paths.snapshots_dir / "iteration_state.json", json.dumps({"iterations": []}))
+
+    optimizer = DirectorOptimizer(
+        repo_root=str(tmp_path),
+        roadmap_model_path=str(paths.model_dir / "roadmap_model.yaml"),
+        remediation_library_path=str(paths.model_dir / "remediation_library.yaml"),
+        optimization_dir=str(paths.optimization_dir),
+        decisions_dir=str(paths.decisions_dir),
+        weights=load_configs(paths)["project_profile"]["optimization_weights"],
+        emit_patch=False,
+    )
+    report = optimizer.optimize()
+
+    assert "iteration2/source-index-contract" in report.recommendation.recommended_phase_ids
+    assert "iteration1/legacy-diagnostics" not in report.recommendation.recommended_phase_ids
+    assert "iteration2/historical-backfill" in report.recommendation.blocked_phase_ids
 
 
 def test_planner_uses_task_graph_for_modeled_phase(tmp_path):
@@ -260,12 +429,36 @@ def test_planner_uses_task_graph_for_modeled_phase(tmp_path):
         runs_dir=str(paths.runs_dir),
         cache_dir=str(paths.cache_dir),
     )
-    result = planner.generate(iteration_id="1", phase_name="irr-validation")
+    result = planner.generate(iteration_id="1", phase_name="label-ops-bootstrap")
     payload = yaml.safe_load(Path(result["runbook_file"]).read_text(encoding="utf-8"))
     titles = [step["title"] for step in payload["steps"]]
 
     assert any(title.startswith("Task precondition: Audit source") for title in titles)
-    assert any(title.startswith("Manual handoff: Rater 2") for title in titles)
+    assert any(title.startswith("Manual handoff: Labeling") for title in titles)
+
+
+def test_policy_block_is_reported(tmp_path):
+    paths = get_director_paths(str(tmp_path))
+    ensure_default_configs(paths)
+    _write_yaml(paths.model_dir / "roadmap_model.yaml", _policy_block_model())
+    _write_yaml(paths.model_dir / "remediation_library.yaml", _minimal_library())
+    _write(paths.snapshots_dir / "protocol_summary.json", json.dumps({"source_sha256": "a"}))
+    _write(paths.snapshots_dir / "roadmap_summary.json", json.dumps({"source_sha256": "b"}))
+    _write(paths.snapshots_dir / "iteration_state.json", json.dumps({"iterations": []}))
+
+    optimizer = DirectorOptimizer(
+        repo_root=str(tmp_path),
+        roadmap_model_path=str(paths.model_dir / "roadmap_model.yaml"),
+        remediation_library_path=str(paths.model_dir / "remediation_library.yaml"),
+        optimization_dir=str(paths.optimization_dir),
+        decisions_dir=str(paths.decisions_dir),
+        weights=load_configs(paths)["project_profile"]["optimization_weights"],
+        emit_patch=False,
+    )
+    report = optimizer.optimize(focus_iteration="1", focus_phase="illegal-training")
+
+    assert "heldout_frozen" in report.recommendation.policy_block_ids
+    assert "iteration1.training.illegal_heldout" in report.recommendation.blocked_task_ids
 
 
 def test_load_remediation_library_validates(tmp_path):

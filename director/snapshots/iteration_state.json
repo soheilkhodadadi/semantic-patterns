@@ -1,7 +1,7 @@
 {
   "source_path": "docs/iteration_log.md",
-  "source_sha256": "eadf506f451326124f3d71dc2ce6ba671ac005ca0d890c9b320f954324fa2889",
-  "ingested_at": "2026-03-05T22:53:21.770950+00:00",
+  "source_sha256": "5576d61e7f13e09cbb5a1f23461fc2aec336c8f110bae71ae2502ed6ff78b5f9",
+  "ingested_at": "2026-03-06T05:05:27.053283+00:00",
   "iteration_count": 2,
   "iterations": [
     {
@@ -26,7 +26,8 @@
         "label-expansion-recovery",
         "label-expansion-recovery",
         "irr-validation",
-        "irr-validation"
+        "irr-validation",
+        "algorithmic-roadmap-control-loop"
       ]
     }
   ],
@@ -244,6 +245,22 @@
         "Outcome:",
         "Validation run:",
         "Artifacts generated:",
+        "Risks/issues encountered:",
+        "Mitigation/resolution:",
+        "Deferred blockers (if any):",
+        "Commits:",
+        "CI status:"
+      ]
+    },
+    {
+      "name": "algorithmic-roadmap-control-loop",
+      "status_label": "execution update",
+      "details": [
+        "Date: 2026-03-05",
+        "Branch: `iteration1/irr-validation`",
+        "Goal: Convert director planning from prose-driven phase maps to a canonical YAML task model with deterministic readiness analysis, optimization, and proposal-only resequencing.",
+        "Deliverables implemented:",
+        "Validation run:",
         "Risks/issues encountered:",
         "Mitigation/resolution:",
         "Deferred blockers (if any):",

@@ -8,7 +8,7 @@ from typing import Any, Literal, Optional
 from pydantic import BaseModel, Field, field_validator
 
 SCHEMA_VERSION = "1.0.0"
-ROADMAP_SCHEMA_VERSION = "1.1.0"
+ROADMAP_SCHEMA_VERSION = "1.2.0"
 
 
 class DeterministicModel(BaseModel):
@@ -26,7 +26,17 @@ class DeterministicModel(BaseModel):
 class ArtifactSpec(DeterministicModel):
     artifact_id: str
     path: str
-    kind: Literal["file", "directory", "json", "csv", "markdown", "report", "dataset", "model"]
+    kind: Literal[
+        "file",
+        "directory",
+        "json",
+        "csv",
+        "markdown",
+        "report",
+        "dataset",
+        "model",
+        "parquet",
+    ]
     required: bool = True
     fingerprint_required: bool = False
     produced_by: list[str] = Field(default_factory=list)
@@ -42,6 +52,7 @@ class ConditionSpec(DeterministicModel):
         "file_hash_present",
         "manual_artifact_present",
         "sentence_fragment_rate_lte",
+        "indexed_years_include",
     ]
     target: str
     operator: Literal["==", "!=", ">=", "<=", ">", "<", "in", "not_in"] = "=="
@@ -49,6 +60,54 @@ class ConditionSpec(DeterministicModel):
     on_fail: Literal["block", "warn", "reroute"] = "block"
     message: str = ""
     reroute_to: list[str] = Field(default_factory=list)
+
+
+class PolicySpec(DeterministicModel):
+    schema_version: str = Field(default=ROADMAP_SCHEMA_VERSION)
+    policy_id: str
+    kind: Literal[
+        "dataset_freeze",
+        "methodology",
+        "model_governance",
+        "analysis_governance",
+        "tooling",
+        "data_governance",
+    ]
+    description: str
+    enforcement: Literal["hard", "soft"] = "hard"
+    targets: list[str] = Field(default_factory=list)
+    value: Any = None
+
+
+class DataLayerSpec(DeterministicModel):
+    schema_version: str = Field(default=ROADMAP_SCHEMA_VERSION)
+    layer_id: str
+    canonical_path: str
+    format: Literal["csv", "json", "markdown", "parquet", "mixed", "directory"]
+    required_fields: list[str] = Field(default_factory=list)
+    review_export_path: str = ""
+    description: str = ""
+
+
+class SourceWindowSpec(DeterministicModel):
+    schema_version: str = Field(default=ROADMAP_SCHEMA_VERSION)
+    source_window_id: str
+    years: list[str] = Field(default_factory=list)
+    source_root_ref: str
+    status: Literal["active", "planned", "deferred", "historical"] = "planned"
+    availability_condition: Optional[ConditionSpec] = None
+
+
+class ToolingPolicySpec(DeterministicModel):
+    schema_version: str = Field(default=ROADMAP_SCHEMA_VERSION)
+    policy_id: str
+    tool: str
+    mode: str
+    repo_root_uv_run_forbidden: bool = True
+    required_runner: str = ""
+    wrapper_path: str = ""
+    expected_repo_venv_python: str = ""
+    expected_repo_venv_home: str = ""
 
 
 class TaskSpec(DeterministicModel):
@@ -81,6 +140,8 @@ class TaskSpec(DeterministicModel):
     on_fail: Literal["block", "warn", "reroute"] = "block"
     reroute_to: list[str] = Field(default_factory=list)
     evidence_required: bool = True
+    tags: list[str] = Field(default_factory=list)
+    gate_class: Literal["science", "data", "ops", "manual", "release"] = "ops"
 
 
 class PhaseSpec(DeterministicModel):
@@ -91,6 +152,16 @@ class PhaseSpec(DeterministicModel):
     canonical: bool = True
     required_artifacts: list[str] = Field(default_factory=list)
     tasks: list[TaskSpec] = Field(default_factory=list)
+    lifecycle_state: Literal[
+        "planned",
+        "active",
+        "completed",
+        "historical",
+        "superseded",
+        "deferred",
+    ] = "planned"
+    source_window_id: str = ""
+    tags: list[str] = Field(default_factory=list)
 
 
 class IterationSpec(DeterministicModel):
@@ -115,6 +186,10 @@ class RoadmapModel(DeterministicModel):
     schema_version: str = Field(default=ROADMAP_SCHEMA_VERSION)
     project: dict[str, Any] = Field(default_factory=dict)
     settings: dict[str, Any] = Field(default_factory=dict)
+    policies: list[PolicySpec] = Field(default_factory=list)
+    data_layers: list[DataLayerSpec] = Field(default_factory=list)
+    source_windows: list[SourceWindowSpec] = Field(default_factory=list)
+    tooling_policies: list[ToolingPolicySpec] = Field(default_factory=list)
     iterations: list[IterationSpec] = Field(default_factory=list)
 
 
@@ -136,6 +211,33 @@ class TaskStateSnapshot(DeterministicModel):
     failed_preconditions: list[str] = Field(default_factory=list)
     failed_quality_checks: list[str] = Field(default_factory=list)
     missing_outputs: list[str] = Field(default_factory=list)
+    blocked_policy_ids: list[str] = Field(default_factory=list)
+    score: float = 0.0
+    context: dict[str, Any] = Field(default_factory=dict)
+
+
+class PhaseStateSnapshot(DeterministicModel):
+    phase_id: str
+    iteration_id: str
+    status: Literal[
+        "satisfied",
+        "ready",
+        "waiting_on_deps",
+        "blocked_precondition",
+        "blocked_quality",
+        "blocked_manual",
+        "deferred",
+        "historical",
+        "superseded",
+        "completed",
+    ]
+    lifecycle_state: str = "planned"
+    dependency_ids: list[str] = Field(default_factory=list)
+    missing_dependencies: list[str] = Field(default_factory=list)
+    required_artifacts: list[str] = Field(default_factory=list)
+    missing_outputs: list[str] = Field(default_factory=list)
+    blocked_policy_ids: list[str] = Field(default_factory=list)
+    source_window_notes: list[str] = Field(default_factory=list)
     score: float = 0.0
     context: dict[str, Any] = Field(default_factory=dict)
 
@@ -145,7 +247,12 @@ class OptimizationRecommendation(DeterministicModel):
     focus_iteration: str = ""
     focus_phase: str = ""
     recommended_task_ids: list[str] = Field(default_factory=list)
+    recommended_phase_ids: list[str] = Field(default_factory=list)
     blocked_task_ids: list[str] = Field(default_factory=list)
+    blocked_phase_ids: list[str] = Field(default_factory=list)
+    policy_block_ids: list[str] = Field(default_factory=list)
+    reorder_operations: list[dict[str, Any]] = Field(default_factory=list)
+    source_window_notes: list[str] = Field(default_factory=list)
     rationale: list[str] = Field(default_factory=list)
     proposal_only: bool = True
     patch_file: str = ""

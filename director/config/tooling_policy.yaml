@@ -1,0 +1,9 @@
+policies:
+  - policy_id: atlas_isolated_env
+    tool: atlas
+    mode: isolated_skill_env
+    repo_root_uv_run_forbidden: true
+    required_runner: ~/.codex/skills/atlas/scripts/atlas_cli.py
+    wrapper_path: scripts/atlas_isolated.sh
+    expected_repo_venv_python: "3.9"
+    expected_repo_venv_home: anaconda3/bin

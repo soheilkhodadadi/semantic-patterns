@@ -1,7 +1,7 @@
 <!-- generated_file: true -->
 <!-- source_model: /Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/model/roadmap_model.yaml -->
-<!-- source_sha256: d3700831d2786fcb36dac789a95a75529209cf4dc8e56eee74afa538818a1765 -->
-<!-- rendered_at: 2026-03-05T22:53:21.772841+00:00 -->
+<!-- source_sha256: 8732eb4e1df2c551897bd5583b936c699575c14c2ee8f624732a43a35d62e58f -->
+<!-- rendered_at: 2026-03-06T05:05:27.061902+00:00 -->
 
 # Roadmap Master
 
@@ -9,330 +9,442 @@ This document is generated from the canonical roadmap YAML model.
 
 Optimization proposals may recommend resequencing tasks or phases beyond the canonical order shown here.
 
-## Iteration 1 - Expand labels and retrain centroids
-Goal: Improve classifier reliability and scientific readiness while preserving truthful gate semantics.
+## Policies
+- `heldout_frozen` `dataset_freeze` enforcement=`hard` value=`True`
+- `human_human_irr_only` `methodology` enforcement=`hard` value=`True`
+- `no_downstream_outcome_peeking` `methodology` enforcement=`hard` value=`True`
+- `openai_assistive_only` `model_governance` enforcement=`hard` value=`assistive_only`
+- `no_significance_optimization` `analysis_governance` enforcement=`hard` value=`True`
+- `split_registry_required_before_retraining` `data_governance` enforcement=`hard` value=`True`
+- `sentence_quality_gate_before_labeling` `data_governance` enforcement=`hard` value=`True`
+- `sentence_quality_gate_before_irr` `data_governance` enforcement=`hard` value=`True`
+
+## Data Layers
+- `source_index` path=`data/metadata/available_filings_index.csv` format=`csv`
+- `manifest_registry` path=`data/manifests/manifests_metadata.json` format=`json`
+- `sentence_table` path=`data/processed/sentences/year=YYYY/ai_sentences.parquet` format=`parquet` review=`data/processed/sentences/year=YYYY/ai_sentences_sample.csv`
+- `split_registry` path=`data/metadata/splits/split_registry_v1.csv` format=`csv`
+- `label_table` path=`data/labels/v1/labels_master.parquet` format=`parquet`
+- `model_artifacts` path=`artifacts/models/<model_version>/` format=`mixed`
+- `classification_table` path=`data/processed/classifications/year=YYYY/model=<model_version>/classified_sentences.parquet` format=`parquet` review=`data/processed/classifications/year=YYYY/model=<model_version>/classified_sentences_sample.csv`
+- `panel` path=`data/panels/panel_v1.parquet` format=`parquet` review=`data/panels/panel_v1.csv`
+
+## Source Windows
+- `active_2021_2024` status=`active` years=2021, 2022, 2023, 2024 root=`env:SEC_SOURCE_DIR`
+- `historical_2000_2020` status=`deferred` years=2000-2020 root=`env:SEC_SOURCE_DIR`
+
+## Tooling Policies
+- `atlas_isolated_env` tool=`atlas` mode=`isolated_skill_env` wrapper=`scripts/atlas_isolated.sh`
+
+## Iteration 1 - Foundation, Canonical Contracts, and Bounded 2024 Pilot
+Goal: Establish canonical contracts, clean the execution surface, and build a bounded sentence-table pilot from 2024 10-K filings.
+
+### iteration1/baseline-asset-freeze
+- Title: Baseline Asset Freeze
+- Goal: Freeze current evaluation assets and classify duplicates or deprecations before new data work starts.
+- Lifecycle: `planned`
+- Depends on: none
+- Source window: `active_2021_2024`
+- Required artifacts: reports/validation/validation_asset_registry.json
+- Tags: data_contracts, validation_assets
+
+#### Tasks
+- `iteration1.assets.inventory_validation_assets` Inventory validation assets
+  - kind: `diagnostic` gate_class: `data` automation: `partial`
+  - depends_on: none
+  - inputs: data/validation/held_out_sentences.csv, data/validation/CollectedAiSentencesClassifiedCleaned.csv, data/validation/hand_labeled_ai_sentences_with_embeddings_revised.csv
+  - outputs: reports/validation/validation_asset_registry.json
+  - tags: asset_inventory, evaluation_fixture
+  - risks: R3, R6
+
+### iteration1/repo-hygiene-and-script-canon
+- Title: Repo Hygiene and Script Canon
+- Goal: Define canonical, transitional, and legacy scripts so the pipeline is understandable and maintainable.
+- Lifecycle: `planned`
+- Depends on: iteration1/baseline-asset-freeze
+- Source window: `none`
+- Required artifacts: docs/director/script_registry.md, director/snapshots/script_inventory.json
+- Tags: repo_hygiene, script_registry
+
+#### Tasks
+- `iteration1.repo.inventory_scripts` Inventory scripts
+  - kind: `diagnostic` gate_class: `ops` automation: `partial`
+  - depends_on: none
+  - inputs: none
+  - outputs: director/snapshots/script_inventory.json
+  - tags: inventory
+  - risks: R7
+- `iteration1.repo.publish_script_registry` Publish script registry
+  - kind: `reporting` gate_class: `ops` automation: `partial`
+  - depends_on: iteration1.repo.inventory_scripts
+  - inputs: director/snapshots/script_inventory.json
+  - outputs: docs/director/script_registry.md
+  - tags: documentation
+  - risks: R7
+
+### iteration1/tooling-isolation
+- Title: Tooling Isolation
+- Goal: Prevent Atlas and similar external tooling from mutating the repo runtime environment.
+- Lifecycle: `planned`
+- Depends on: iteration1/repo-hygiene-and-script-canon
+- Source window: `none`
+- Required artifacts: docs/director/tooling_isolation.md, director/config/tooling_policy.yaml
+- Tags: tooling, env_safety
+
+#### Tasks
+- `iteration1.tooling.publish_isolation_policy` Publish tooling isolation policy
+  - kind: `reporting` gate_class: `ops` automation: `partial`
+  - depends_on: none
+  - inputs: none
+  - outputs: docs/director/tooling_isolation.md, director/config/tooling_policy.yaml
+  - tags: atlas, env_safety
+  - risks: R4, R7
+
+### iteration1/source-index-contract
+- Title: Source Index Contract
+- Goal: Make the external SEC root the canonical raw-source interface and record active source windows.
+- Lifecycle: `planned`
+- Depends on: iteration1/tooling-isolation
+- Source window: `active_2021_2024`
+- Required artifacts: data/metadata/available_filings_index.csv, data/metadata/source_windows.json, reports/data/source_index_summary.json
+- Tags: source_index, external_sec
+
+#### Tasks
+- `iteration1.source.index_external_sec_root` Index external SEC root
+  - kind: `build` gate_class: `data` automation: `partial`
+  - depends_on: none
+  - inputs: none
+  - outputs: data/metadata/available_filings_index.csv, data/metadata/source_windows.json, reports/data/source_index_summary.json
+  - tags: source_index, source_window
+  - risks: R5
+
+### iteration1/sentence-table-pilot-2024
+- Title: Sentence Table Pilot 2024
+- Goal: Build a bounded 2024 10-K pilot manifest and canonical sentence table.
+- Lifecycle: `planned`
+- Depends on: iteration1/source-index-contract
+- Source window: `active_2021_2024`
+- Required artifacts: data/manifests/filings/pilot_2024_10k_v1.csv, data/processed/sentences/year=2024/ai_sentences.parquet, reports/data/pilot_2024_sentence_quality.json, data/processed/sentences/year=2024/ai_sentences_sample.csv
+- Tags: pilot, sentence_table
+
+#### Tasks
+- `iteration1.pilot.generate_2024_manifest` Generate bounded 2024 manifest
+  - kind: `build` gate_class: `data` automation: `partial`
+  - depends_on: none
+  - inputs: data/metadata/available_filings_index.csv
+  - outputs: data/manifests/filings/pilot_2024_10k_v1.csv
+  - tags: pilot_manifest
+  - risks: R5
+- `iteration1.pilot.extract_sentence_table` Extract canonical sentence table
+  - kind: `build` gate_class: `data` automation: `partial`
+  - depends_on: iteration1.pilot.generate_2024_manifest
+  - inputs: data/manifests/filings/pilot_2024_10k_v1.csv
+  - outputs: data/processed/sentences/year=2024/ai_sentences.parquet, data/processed/sentences/year=2024/ai_sentences_sample.csv, reports/data/pilot_2024_sentence_quality.json
+  - tags: sentence_table, fragment_audit
+  - risks: R5, R6
+
+### iteration1/rubric-and-api-bootstrap
+- Title: Rubric and API Bootstrap
+- Goal: Prepare rubric v1 and bounded assistive API usage without promoting API output to canonical labels.
+- Lifecycle: `planned`
+- Depends on: iteration1/sentence-table-pilot-2024
+- Source window: `active_2021_2024`
+- Required artifacts: docs/labeling_protocol.md, director/config/api_assistive_policy.yaml, reports/api/api_bootstrap_smoke_test.json
+- Tags: rubric, api_assistive
+
+#### Tasks
+- phase-level only in this roadmap version
+
+### iteration1/label-ops-bootstrap
+- Title: Label Ops Bootstrap
+- Goal: Generate the first clean labeling batch from the bounded pilot after sentence-quality gating.
+- Lifecycle: `planned`
+- Depends on: iteration1/rubric-and-api-bootstrap
+- Source window: `active_2021_2024`
+- Required artifacts: data/labels/v1/labeling_batch_v1.parquet, data/labels/v1/labeling_batch_v1.csv
+- Tags: label_ops, sentence_quality_gate
+
+#### Tasks
+- `iteration1.shared.audit_sentence_integrity` Audit sentence integrity
+  - kind: `diagnostic` gate_class: `data` automation: `partial`
+  - depends_on: none
+  - inputs: data/processed/sentences/year=2024/ai_sentences_sample.csv
+  - outputs: reports/data/pilot_2024_sentence_quality.json
+  - tags: sentence_quality_gate
+  - risks: R1, R5
+- `iteration1.labels.prepare_labeling_batch` Prepare first labeling batch
+  - kind: `build` gate_class: `data` automation: `partial`
+  - depends_on: iteration1.shared.audit_sentence_integrity
+  - inputs: data/processed/sentences/year=2024/ai_sentences.parquet
+  - outputs: data/labels/v1/labeling_batch_v1.parquet, data/labels/v1/labeling_batch_v1.csv
+  - tags: label_batch
+  - risks: R1, R2, R5
 
 ### iteration1/diagnostics-nlp
-- Title: Diagnostics Baseline and Failure Taxonomy
-- Goal: Establish a factual baseline and artifact fingerprints before changing the science pipeline.
+- Title: Historical Diagnostics Baseline
+- Goal: Preserved historical diagnostics work completed before roadmap-model v2.
+- Lifecycle: `historical`
 - Depends on: none
-- Required artifacts: reports/iteration1/phase0/baseline_eval_metrics.json, reports/iteration1/phase0/baseline_eval_confusion_matrix.csv, reports/iteration1/phase0/run_metadata.json, reports/iteration1/phase0/baseline_report.md
+- Source window: `none`
+- Required artifacts: reports/iteration1/phase0/baseline_report.md
+- Tags: historical
 
 #### Tasks
-- `iteration1.diagnostics.pipeline_map_confirmation` Pipeline map confirmation
-  - kind: `diagnostic`
-  - depends_on: none
-  - inputs: none
-  - outputs: docs/pipeline_map.md
-  - risks: R5, R6
-- `iteration1.diagnostics.heldout_baseline_evaluation` Held-out baseline evaluation
-  - kind: `validation`
-  - depends_on: iteration1.diagnostics.pipeline_map_confirmation
-  - inputs: data/validation/held_out_sentences.csv
-  - outputs: reports/iteration1/phase0/baseline_eval_metrics.json, reports/iteration1/phase0/baseline_eval_confusion_matrix.csv
-  - risks: R5, R6
-- `iteration1.diagnostics.tiny_batch_sanity_classification` Tiny batch sanity classification
-  - kind: `build`
-  - depends_on: iteration1.diagnostics.heldout_baseline_evaluation
-  - inputs: none
-  - outputs: reports/iteration1/phase0/baseline_batch_distribution.csv, reports/iteration1/phase0/run_metadata.json
-  - risks: R5, R6
-- `iteration1.diagnostics.batch_coverage_check` Batch coverage check
-  - kind: `validation`
-  - depends_on: iteration1.diagnostics.tiny_batch_sanity_classification
-  - inputs: none
-  - outputs: reports/iteration1/phase0/run_metadata.json
-  - risks: R5
-- `iteration1.diagnostics.failure_taxonomy_generation` Failure taxonomy generation
-  - kind: `analysis`
-  - depends_on: iteration1.diagnostics.heldout_baseline_evaluation
-  - inputs: none
-  - outputs: reports/iteration1/phase0/baseline_failure_taxonomy.csv
-  - risks: R6
-- `iteration1.diagnostics.baseline_report_assembly` Baseline report assembly
-  - kind: `reporting`
-  - depends_on: iteration1.diagnostics.batch_coverage_check, iteration1.diagnostics.failure_taxonomy_generation
-  - inputs: none
-  - outputs: reports/iteration1/phase0/baseline_report.md
-  - risks: R5, R6
+- phase-level only in this roadmap version
 
-### iteration1/label-expansion
-- Title: Label Expansion and Dataset Hygiene
-- Goal: Expand the labeled dataset with leakage-safe sampling and QA, without falsely passing the strict canonical science gate.
-- Depends on: iteration1/diagnostics-nlp
-- Required artifacts: reports/iteration1/phase1/sampling_summary.json, reports/iteration1/phase1/dedupe_report.json, reports/iteration1/phase1/qa_report.json, reports/iteration1/phase1/leakage_overlap_report.csv
+### iteration1/label-expansion-recovery
+- Title: Superseded Recovery Label Expansion
+- Goal: Preserved recovery branch work completed before roadmap-model v2.
+- Lifecycle: `superseded`
+- Depends on: none
+- Source window: `none`
+- Required artifacts: reports/iteration1/phase1_recovery/qa_report.json
+- Tags: superseded
 
 #### Tasks
-- `iteration1.label_expansion.audit_source_labeled_dataset` Audit source labeled dataset
-  - kind: `diagnostic`
-  - depends_on: none
-  - inputs: none
-  - outputs: data/validation/hand_labeled_ai_sentences_labeled_cleaned_revised.csv
-  - risks: R1, R3
-- `iteration1.label_expansion.audit_candidate_sentence_integrity` Audit candidate sentence integrity
-  - kind: `diagnostic`
-  - depends_on: iteration1.label_expansion.audit_source_labeled_dataset
-  - inputs: none
-  - outputs: data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv
-  - risks: R1, R5
-- `iteration1.label_expansion.build_labeling_sample` Build labeling sample
-  - kind: `build`
-  - depends_on: iteration1.label_expansion.audit_source_labeled_dataset
-  - inputs: none
-  - outputs: reports/iteration1/phase1/sampling_summary.json, data/labels/iteration1/labeling_sheet_for_manual.csv
-  - risks: R2, R3, R5
-- `iteration1.label_expansion.manual_labeling_handoff` Manual labeling handoff
-  - kind: `manual`
-  - depends_on: iteration1.label_expansion.build_labeling_sample
-  - inputs: none
-  - outputs: data/labels/iteration1/labeling_sheet_completed.csv
-  - risks: R1, R2
-- `iteration1.label_expansion.dedupe_merge` Dedupe merge
-  - kind: `build`
-  - depends_on: iteration1.label_expansion.manual_labeling_handoff
-  - inputs: none
-  - outputs: reports/iteration1/phase1/dedupe_report.json, data/labels/iteration1/expanded_labeled_sentences_preqa.csv
-  - risks: R1, R3, R6
-- `iteration1.label_expansion.dataset_qa` Dataset QA
-  - kind: `validation`
-  - depends_on: iteration1.label_expansion.dedupe_merge
-  - inputs: none
-  - outputs: reports/iteration1/phase1/qa_report.json, reports/iteration1/phase1/leakage_overlap_report.csv
-  - risks: R2, R3, R6
-- `iteration1.label_expansion.metadata_report_generation` Metadata and report generation
-  - kind: `reporting`
-  - depends_on: iteration1.label_expansion.dataset_qa
-  - inputs: none
-  - outputs: reports/iteration1/phase1/qa_report.json
-  - risks: R6
+- phase-level only in this roadmap version
 
 ### iteration1/irr-validation
-- Title: IRR Gate
-- Goal: Establish IRR infrastructure and prevent IRR execution from proceeding when source sentence quality is inadequate.
-- Depends on: iteration1/label-expansion
-- Required artifacts: data/labels/iteration1/irr/irr_subset_master.csv, data/labels/iteration1/irr/irr_subset_rater2_blinded.csv, reports/iteration1/phase2_irr/irr_kappa_report.json, reports/iteration1/phase2_irr/irr_status.json, data/labels/iteration1/irr/irr_adjudication_sheet.csv, reports/iteration1/phase2_irr/adjudication_status.json
+- Title: Superseded Recovery IRR Workflow
+- Goal: Preserved recovery IRR workflow completed before roadmap-model v2.
+- Lifecycle: `superseded`
+- Depends on: none
+- Source window: `none`
+- Required artifacts: reports/iteration1/phase2_irr/irr_status.json
+- Tags: superseded
 
 #### Tasks
-- `iteration1.shared.audit_sentence_integrity` Audit IRR source sentence integrity
-  - kind: `diagnostic`
+- phase-level only in this roadmap version
+
+
+## Iteration 2 - Label Expansion, Human IRR, and Frozen Training Set
+Goal: Build the first canonical human-labeled dataset, validate the rubric with true IRR, and freeze the split registry.
+
+### iteration2/dataset-expansion-2024
+- Title: Dataset Expansion 2024
+- Goal: Expand labeled coverage on clean pilot-derived sentences while keeping API use assistive only.
+- Lifecycle: `planned`
+- Depends on: iteration1/label-ops-bootstrap
+- Source window: `active_2021_2024`
+- Required artifacts: data/labels/v1/labels_master.parquet, reports/labels/label_expansion_summary.json
+- Tags: label_expansion, assistive_api
+
+#### Tasks
+- `iteration2.labels.expand_dataset` Expand canonical labels
+  - kind: `manual` gate_class: `manual` automation: `manual`
   - depends_on: none
-  - inputs: none
-  - outputs: data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv
+  - inputs: data/labels/v1/labeling_batch_v1.csv
+  - outputs: data/labels/v1/labels_master.parquet, reports/labels/label_expansion_summary.json
+  - tags: human_labeling
+  - risks: R1, R2, R3
+
+### iteration2/irr-and-adjudication
+- Title: IRR and Adjudication
+- Goal: Run true human-human IRR on a blinded subset and adjudicate disagreements.
+- Lifecycle: `planned`
+- Depends on: iteration2/dataset-expansion-2024
+- Source window: `active_2021_2024`
+- Required artifacts: data/labels/v1/irr_subset.parquet, reports/labels/irr_report.json, data/labels/v1/adjudication.parquet
+- Tags: irr, adjudication, sentence_quality_gate
+
+#### Tasks
+- `iteration2.shared.audit_sentence_integrity` Audit IRR sentence integrity
+  - kind: `diagnostic` gate_class: `data` automation: `partial`
+  - depends_on: none
+  - inputs: data/labels/v1/labels_master_review.csv
+  - outputs: reports/labels/irr_sentence_quality.json
+  - tags: sentence_quality_gate
   - risks: R1, R5
-- `iteration1.irr.prepare_subset` Prepare IRR subset
-  - kind: `build`
-  - depends_on: iteration1.shared.audit_sentence_integrity
-  - inputs: none
-  - outputs: data/labels/iteration1/irr/irr_subset_master.csv, data/labels/iteration1/irr/irr_subset_rater2_blinded.csv
-  - risks: R1, R2
-- `iteration1.irr.manual_rater2_handoff` Manual second-rater handoff
-  - kind: `manual`
-  - depends_on: iteration1.irr.prepare_subset
-  - inputs: none
-  - outputs: data/labels/iteration1/irr/irr_subset_rater2_completed.csv
-  - risks: R1
-- `iteration1.irr.compute_infrastructure_metrics` Compute infrastructure IRR metrics
-  - kind: `validation`
-  - depends_on: iteration1.irr.prepare_subset
-  - inputs: none
-  - outputs: reports/iteration1/phase2_irr/irr_kappa_report.json, reports/iteration1/phase2_irr/irr_status.json
-  - risks: R1
-- `iteration1.irr.build_adjudication_sheet` Build adjudication sheet
-  - kind: `build`
-  - depends_on: iteration1.irr.prepare_subset
-  - inputs: none
-  - outputs: data/labels/iteration1/irr/irr_adjudication_sheet.csv, reports/iteration1/phase2_irr/adjudication_status.json
-  - risks: R1
-- `iteration1.irr.strict_kappa_recheck` Strict kappa recheck
-  - kind: `validation`
-  - depends_on: iteration1.irr.manual_rater2_handoff
-  - inputs: none
-  - outputs: reports/iteration1/phase2_irr/irr_status_strict.json
-  - risks: R1
-- `iteration1.irr.final_adjudicated_merge` Final adjudicated merge
-  - kind: `build`
-  - depends_on: iteration1.irr.build_adjudication_sheet, iteration1.irr.manual_rater2_handoff
-  - inputs: none
-  - outputs: data/labels/iteration1/irr/final_labeled_sentences_recovery_adjudicated.csv
-  - risks: R1, R6
-
-### iteration1/centroid-retraining
-- Title: Centroid Retraining
-- Goal: Retrain centroid artifacts only after adjudicated labels and strict IRR gates are available.
-- Depends on: iteration1/irr-validation
-- Required artifacts: data/validation/hand_labeled_ai_sentences_with_embeddings_mpnet.csv, data/validation/centroids_mpnet.json
-
-#### Tasks
-- `iteration1.centroid.freeze_adjudicated_dataset` Freeze adjudicated training dataset
-  - kind: `validation`
-  - depends_on: iteration1.irr.strict_kappa_recheck, iteration1.irr.final_adjudicated_merge
-  - inputs: none
-  - outputs: data/labels/iteration1/irr/final_labeled_sentences_recovery_adjudicated.csv
+- `iteration2.irr.prepare_and_collect` Prepare and collect blinded IRR labels
+  - kind: `manual` gate_class: `manual` automation: `manual`
+  - depends_on: iteration2.shared.audit_sentence_integrity
+  - inputs: data/labels/v1/labels_master.parquet
+  - outputs: data/labels/v1/irr_subset.parquet, reports/labels/irr_report.json, data/labels/v1/adjudication.parquet
+  - tags: human_irr
   - risks: R1, R3
-- `iteration1.centroid.embed_labeled_sentences` Embed labeled sentences
-  - kind: `build`
-  - depends_on: iteration1.centroid.freeze_adjudicated_dataset
-  - inputs: none
-  - outputs: data/validation/hand_labeled_ai_sentences_with_embeddings_mpnet.csv
-  - risks: R4
-- `iteration1.centroid.compute_centroids` Compute centroids
-  - kind: `build`
-  - depends_on: iteration1.centroid.embed_labeled_sentences
-  - inputs: none
-  - outputs: data/validation/centroids_mpnet.json
-  - risks: R4, R6
-- `iteration1.centroid.fingerprint_centroid_metadata` Fingerprint centroid metadata
-  - kind: `reporting`
-  - depends_on: iteration1.centroid.compute_centroids
-  - inputs: none
-  - outputs: reports/iteration1/phase3/centroid_manifest.json
-  - risks: R4, R6
-- `iteration1.centroid.verify_label_mapping` Verify label mapping compatibility
-  - kind: `validation`
-  - depends_on: iteration1.centroid.compute_centroids
-  - inputs: none
-  - outputs: reports/iteration1/phase3/centroid_manifest.json
-  - risks: R6
 
-### iteration1/classifier-calibration
-- Title: Classifier Calibration
-- Goal: Tune and validate classification behavior without leakage.
-- Depends on: iteration1/centroid-retraining
-- Required artifacts: reports/iteration1/phase4/calibration_report.json
+### iteration2/split-registry-freeze
+- Title: Split Registry Freeze
+- Goal: Freeze train and validation sentence assignments after adjudication while keeping held-out separate.
+- Lifecycle: `planned`
+- Depends on: iteration2/irr-and-adjudication
+- Source window: `active_2021_2024`
+- Required artifacts: data/metadata/splits/split_registry_v1.csv, data/metadata/splits/split_registry_v1.json
+- Tags: split_registry, leakage_control
 
 #### Tasks
-- `iteration1.calibration.verify_split_registry` Verify split registry
-  - kind: `validation`
-  - depends_on: iteration1.centroid.verify_label_mapping
-  - inputs: none
-  - outputs: data/validation/split_registry.json
+- `iteration2.splits.freeze_registry` Freeze split registry
+  - kind: `build` gate_class: `data` automation: `partial`
+  - depends_on: none
+  - inputs: data/labels/v1/adjudication.parquet
+  - outputs: data/metadata/splits/split_registry_v1.csv, data/metadata/splits/split_registry_v1.json
+  - tags: split_registry
   - risks: R3, R6
-- `iteration1.calibration.threshold_pass` Run threshold pass on validation only
-  - kind: `analysis`
-  - depends_on: iteration1.calibration.verify_split_registry
-  - inputs: none
-  - outputs: reports/iteration1/phase4/calibration_report.json
-  - risks: R3, R4
-- `iteration1.calibration.heldout_evaluation` Run held-out evaluation
-  - kind: `validation`
-  - depends_on: iteration1.calibration.threshold_pass
-  - inputs: none
-  - outputs: reports/iteration1/phase4/heldout_eval_metrics.json
-  - risks: R4, R6
-- `iteration1.calibration.calibration_decision_report` Generate calibration decision report
-  - kind: `decision`
-  - depends_on: iteration1.calibration.heldout_evaluation
-  - inputs: none
-  - outputs: reports/iteration1/phase4/calibration_report.json
-  - risks: R3, R4
 
-### iteration1/batch-classification-2021-2024
-- Title: Batch Classification 2021-2024
-- Goal: Run bounded multi-year classification with explicit coverage and aggregation checks.
-- Depends on: iteration1/classifier-calibration
-- Required artifacts: reports/iteration1/phase5/batch_summary_report.md
+### iteration2/modeling-readiness-gate
+- Title: Modeling Readiness Gate
+- Goal: Gate retraining on class balance, sentence quality, adjudication completion, and split integrity.
+- Lifecycle: `planned`
+- Depends on: iteration2/split-registry-freeze
+- Source window: `active_2021_2024`
+- Required artifacts: reports/models/modeling_readiness_gate.json
+- Tags: modeling_gate
 
 #### Tasks
-- `iteration1.batch.build_year_file_manifest` Build year/file manifest
-  - kind: `diagnostic`
-  - depends_on: iteration1.calibration.calibration_decision_report
-  - inputs: none
-  - outputs: reports/iteration1/phase5/batch_manifest.json
-  - risks: R5
-- `iteration1.batch.classify_yearly_batches` Classify yearly batches
-  - kind: `build`
-  - depends_on: iteration1.batch.build_year_file_manifest
-  - inputs: none
-  - outputs: reports/iteration1/phase5/batch_summary_report.md
-  - risks: R5, R6
-- `iteration1.batch.coverage_and_skip_audit` Coverage and skip audit
-  - kind: `validation`
-  - depends_on: iteration1.batch.classify_yearly_batches
-  - inputs: none
-  - outputs: reports/iteration1/phase5/batch_coverage_report.json
-  - risks: R5
-- `iteration1.batch.aggregation_sanity_check` Aggregation sanity check
-  - kind: `validation`
-  - depends_on: iteration1.batch.classify_yearly_batches
-  - inputs: none
-  - outputs: data/final/ai_frequencies_by_firm_year.csv
-  - risks: R5, R6
-- `iteration1.batch.batch_summary_report` Batch summary report
-  - kind: `reporting`
-  - depends_on: iteration1.batch.coverage_and_skip_audit, iteration1.batch.aggregation_sanity_check
-  - inputs: none
-  - outputs: reports/iteration1/phase5/batch_summary_report.md
-  - risks: R5, R6
+- phase-level only in this roadmap version
 
-## Iteration 2 - Scale classification and integrate cross-walks
-Goal: Produce full-sample sentence and firm-year outputs for downstream analysis.
 
-### iteration2/full-sample-extraction
-- Title: Full-sample extraction
-- Goal: Scale extraction with validated lineage.
-- Depends on: none
-- Required artifacts: none
+## Iteration 3 - Retraining, Calibration, and Classification of 2021–2024
+Goal: Retrain the local model on adjudicated labels, calibrate on validation only, and classify the current active window.
+
+### iteration3/centroid-retraining
+- Title: Centroid Retraining
+- Goal: Embed the adjudicated training set, compute centroids, and fingerprint metadata.
+- Lifecycle: `planned`
+- Depends on: iteration2/modeling-readiness-gate
+- Source window: `active_2021_2024`
+- Required artifacts: artifacts/models/mpnet_v1/embeddings.parquet, artifacts/models/mpnet_v1/centroids.json, artifacts/models/mpnet_v1/metadata.json
+- Tags: retraining
 
 #### Tasks
+- phase-level only in this roadmap version
 
-### iteration2/full-sample-classification
-- Title: Full-sample classification
-- Goal: Scale classification with coverage controls.
-- Depends on: iteration2/full-sample-extraction
-- Required artifacts: none
-
-#### Tasks
-
-### iteration2/aggregation-and-crosswalks
-- Title: Aggregation and cross-walk integration
-- Goal: Build firm-year measures with validated joins.
-- Depends on: iteration2/full-sample-classification
-- Required artifacts: none
+### iteration3/classifier-calibration
+- Title: Classifier Calibration
+- Goal: Calibrate thresholds on validation only and evaluate on the frozen held-out set.
+- Lifecycle: `planned`
+- Depends on: iteration3/centroid-retraining
+- Source window: `active_2021_2024`
+- Required artifacts: reports/evaluation/calibration_v1.json, reports/evaluation/heldout_eval_v1.json
+- Tags: calibration, evaluation
 
 #### Tasks
+- phase-level only in this roadmap version
 
-## Iteration 3 - Evaluate OpenAI API strategy
-Goal: Decide whether LLM classification should augment the deterministic baseline.
-
-### iteration3/llm-pilot
-- Title: LLM pilot
-- Goal: Run a bounded comparison pilot.
-- Depends on: none
-- Required artifacts: none
-
-#### Tasks
-
-### iteration3/hybrid-routing-decision
-- Title: Hybrid routing decision
-- Goal: Record the production decision on LLM usage.
-- Depends on: iteration3/llm-pilot
-- Required artifacts: none
+### iteration3/active-window-batch-classification
+- Title: Active Window Batch Classification
+- Goal: Classify the active 2021–2024 source window with coverage and skip auditing.
+- Lifecycle: `planned`
+- Depends on: iteration3/classifier-calibration
+- Source window: `active_2021_2024`
+- Required artifacts: data/processed/classifications/year=2021/model=mpnet_v1/classified_sentences.parquet, data/processed/classifications/year=2022/model=mpnet_v1/classified_sentences.parquet, data/processed/classifications/year=2023/model=mpnet_v1/classified_sentences.parquet, data/processed/classifications/year=2024/model=mpnet_v1/classified_sentences.parquet, reports/classification/active_window_coverage_v1.json
+- Tags: batch_classification
 
 #### Tasks
+- phase-level only in this roadmap version
 
-## Iteration 4 - Final integration and production hardening
-Goal: Deliver a reproducible, auditable, publication-ready package.
-
-### iteration4/panel-assembly
-- Title: Panel assembly
-- Goal: Build the final panel and downstream datasets.
-- Depends on: none
-- Required artifacts: none
-
-#### Tasks
-
-### iteration4/robustness-analysis
-- Title: Robustness analysis
-- Goal: Run final empirical and robustness workflows.
-- Depends on: iteration4/panel-assembly
-- Required artifacts: none
+### iteration3/aggregation-sanity
+- Title: Aggregation Sanity
+- Goal: Aggregate sentence-level classifications to firm-year outputs and QA the active window snapshot.
+- Lifecycle: `planned`
+- Depends on: iteration3/active-window-batch-classification
+- Source window: `active_2021_2024`
+- Required artifacts: data/processed/aggregates/firm_year_ai_metrics_v1.parquet, reports/classification/aggregation_qa_v1.json
+- Tags: aggregation
 
 #### Tasks
+- phase-level only in this roadmap version
 
-### iteration4/release-packaging
-- Title: Release packaging
-- Goal: Package the repo, outputs, and audit trail for release.
-- Depends on: iteration4/robustness-analysis
-- Required artifacts: none
+
+## Iteration 4 - Panel Construction and Conditional Historical Backfill
+Goal: Build the active-window panel and cleanly separate that from any deferred historical source expansion.
+
+### iteration4/patents-and-controls-ingestion
+- Title: Patents and Controls Ingestion
+- Goal: Refresh patents, controls, and crosswalk inputs required for the active-window panel.
+- Lifecycle: `planned`
+- Depends on: iteration3/aggregation-sanity
+- Source window: `active_2021_2024`
+- Required artifacts: data/interim/patents/patent_metrics_v1.parquet, data/interim/controls/controls_v1.parquet
+- Tags: panel_inputs
 
 #### Tasks
+- phase-level only in this roadmap version
+
+### iteration4/panel-assembly-2021-2024
+- Title: Panel Assembly 2021-2024
+- Goal: Merge active-window AI metrics with patents and controls into the canonical panel.
+- Lifecycle: `planned`
+- Depends on: iteration4/patents-and-controls-ingestion
+- Source window: `active_2021_2024`
+- Required artifacts: data/panels/panel_v1.parquet, data/panels/panel_v1.csv, reports/panels/panel_merge_coverage_v1.json
+- Tags: panel
+
+#### Tasks
+- phase-level only in this roadmap version
+
+### iteration4/panel-qa-and-freeze
+- Title: Panel QA and Freeze
+- Goal: Validate panel schema, missingness, and transformation rules before freezing panel v1.
+- Lifecycle: `planned`
+- Depends on: iteration4/panel-assembly-2021-2024
+- Source window: `active_2021_2024`
+- Required artifacts: reports/panels/panel_v1_qa.json
+- Tags: panel_qa
+
+#### Tasks
+- phase-level only in this roadmap version
+
+### iteration4/historical-window-expansion-readiness
+- Title: Historical Window Expansion Readiness
+- Goal: Determine whether pre-2021 source availability permits historical backfill work.
+- Lifecycle: `deferred`
+- Depends on: iteration4/panel-qa-and-freeze
+- Source window: `historical_2000_2020`
+- Required artifacts: reports/data/historical_backfill_readiness.json
+- Tags: historical_backfill
+
+#### Tasks
+- phase-level only in this roadmap version
+
+
+## Iteration 5 - Analysis Outputs and Research Release Packaging
+Goal: Produce analysis outputs and a release package without making statistical significance an optimization target.
+
+### iteration5/regression-specification
+- Title: Regression Specification
+- Goal: Freeze regression inputs and define baseline and robustness specifications.
+- Lifecycle: `planned`
+- Depends on: iteration4/panel-qa-and-freeze
+- Source window: `active_2021_2024`
+- Required artifacts: reports/analysis/regression_specification_v1.json
+- Tags: analysis
+
+#### Tasks
+- phase-level only in this roadmap version
+
+### iteration5/results-generation
+- Title: Results Generation
+- Goal: Run baseline models and generate tables and figures with provenance.
+- Lifecycle: `planned`
+- Depends on: iteration5/regression-specification
+- Source window: `active_2021_2024`
+- Required artifacts: reports/analysis/results_manifest_v1.json
+- Tags: analysis
+
+#### Tasks
+- phase-level only in this roadmap version
+
+### iteration5/robustness-and-sensitivity
+- Title: Robustness and Sensitivity
+- Goal: Run alternative specifications and summarize directional stability.
+- Lifecycle: `planned`
+- Depends on: iteration5/results-generation
+- Source window: `active_2021_2024`
+- Required artifacts: reports/analysis/robustness_summary_v1.json
+- Tags: analysis
+
+#### Tasks
+- phase-level only in this roadmap version
+
+### iteration5/release-packaging
+- Title: Release Packaging
+- Goal: Package artifacts, docs, and reproducibility notes for research release.
+- Lifecycle: `planned`
+- Depends on: iteration5/robustness-and-sensitivity
+- Source window: `active_2021_2024`
+- Required artifacts: reports/release/release_manifest_v1.json
+- Tags: release
+
+#### Tasks
+- phase-level only in this roadmap version

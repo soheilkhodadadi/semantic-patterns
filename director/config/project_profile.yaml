@@ -4,11 +4,11 @@ iteration_log: docs/iteration_log.md
 roadmap_model_path: director/model/roadmap_model.yaml
 remediation_library_path: director/model/remediation_library.yaml
 canonical_validation_commands:
-  - make bootstrap
-  - make doctor
-  - make format
-  - make lint
-  - .venv/bin/pytest -q
+- make bootstrap
+- make doctor
+- make format
+- make lint
+- .venv/bin/pytest -q
 step_timeout_overrides:
   snapshot_seconds: 300
   validation_seconds: 1800
@@ -26,64 +26,49 @@ feature_flags:
   emit_roadmap_patch: true
 phase_command_map:
   iteration1/label-expansion-recovery:
-    - >-
-      .venv/bin/python -m semantic_ai_washing.labeling.build_labeling_sample
-      --target-total 220
-      --held-out data/validation/held_out_sentences.csv
-      --base-labeled data/validation/hand_labeled_ai_sentences_labeled_cleaned_revised.csv
-      --input-dir data/processed/sec
-      --years 2023,2024
-      --max-ai-files 120
-      --controls data/interim/controls/controls_by_firm_year.csv
-      --crosswalk data/externals/crosswalks/cik_gvkey.csv
-      --output-dir data/labels/iteration1/recovery
-      --report-dir reports/iteration1/phase1_recovery
-      --seed 20260227
-      --min-tokens 6
-      --min-class-target 25
-    - >-
-      .venv/bin/python -m semantic_ai_washing.labeling.dedupe_labeled_sentences
-      --base data/labels/iteration1/recovery/base_labeled_nonleaky.csv
-      --new data/labels/iteration1/recovery/labeling_sheet_completed.csv
-      --held-out data/validation/held_out_sentences.csv
-      --near-threshold 0.95
-      --output data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv
-      --uncertain-output data/labels/iteration1/recovery/uncertain_rows.csv
-      --conflicts-output data/labels/iteration1/recovery/label_conflicts.csv
-      --report reports/iteration1/phase1_recovery/dedupe_report.json
-    - >-
-      .venv/bin/python -m semantic_ai_washing.labeling.qa_labeled_dataset
-      --input data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv
-      --held-out data/validation/held_out_sentences.csv
-      --min-tokens 6
-      --min-class-count 25
-      --target-size 220
-      --output data/labels/iteration1/recovery/expanded_labeled_sentences.csv
-      --report reports/iteration1/phase1_recovery/qa_report.json
-      --leakage-report reports/iteration1/phase1_recovery/leakage_overlap_report.csv
+  - .venv/bin/python -m semantic_ai_washing.labeling.build_labeling_sample --target-total
+    220 --held-out data/validation/held_out_sentences.csv --base-labeled data/validation/hand_labeled_ai_sentences_labeled_cleaned_revised.csv
+    --input-dir data/processed/sec --years 2023,2024 --max-ai-files 120 --controls
+    data/interim/controls/controls_by_firm_year.csv --crosswalk data/externals/crosswalks/cik_gvkey.csv
+    --output-dir data/labels/iteration1/recovery --report-dir reports/iteration1/phase1_recovery
+    --seed 20260227 --min-tokens 6 --min-class-target 25
+  - .venv/bin/python -m semantic_ai_washing.labeling.dedupe_labeled_sentences --base
+    data/labels/iteration1/recovery/base_labeled_nonleaky.csv --new data/labels/iteration1/recovery/labeling_sheet_completed.csv
+    --held-out data/validation/held_out_sentences.csv --near-threshold 0.95 --output
+    data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv --uncertain-output
+    data/labels/iteration1/recovery/uncertain_rows.csv --conflicts-output data/labels/iteration1/recovery/label_conflicts.csv
+    --report reports/iteration1/phase1_recovery/dedupe_report.json
+  - .venv/bin/python -m semantic_ai_washing.labeling.qa_labeled_dataset --input data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv
+    --held-out data/validation/held_out_sentences.csv --min-tokens 6 --min-class-count
+    25 --target-size 220 --output data/labels/iteration1/recovery/expanded_labeled_sentences.csv
+    --report reports/iteration1/phase1_recovery/qa_report.json --leakage-report reports/iteration1/phase1_recovery/leakage_overlap_report.csv
 phase_artifact_map:
   iteration1/label-expansion-recovery:
-    - reports/iteration1/phase1_recovery/sampling_summary.json
-    - reports/iteration1/phase1_recovery/dedupe_report.json
-    - reports/iteration1/phase1_recovery/qa_report.json
-    - reports/iteration1/phase1_recovery/leakage_overlap_report.csv
+  - reports/iteration1/phase1_recovery/sampling_summary.json
+  - reports/iteration1/phase1_recovery/dedupe_report.json
+  - reports/iteration1/phase1_recovery/qa_report.json
+  - reports/iteration1/phase1_recovery/leakage_overlap_report.csv
 data_architecture_target:
   mode: hybrid-canonical
   source_index_layer:
-    description: References external SEC corpus by path without duplicating full filing bodies into repo.
+    description: References external SEC corpus by path without duplicating full filing
+      bodies into repo.
     source_location: env:SEC_SOURCE_DIR
   curated_sampling_layer:
     description: Stores reproducible sampling manifests for company/year/filing selection.
   sentence_table_layer:
-    description: Canonical structured AI sentence tables partitioned by year with stable sentence IDs.
+    description: Canonical structured AI sentence tables partitioned by year with
+      stable sentence IDs.
     partition_pattern: sentences/year=YYYY/
   classification_layer:
     description: Structured predicted-label tables partitioned by year and model version.
   split_registry_layer:
-    description: Frozen train/validation/test sentence-id registries with hashes and metadata.
+    description: Frozen train/validation/test sentence-id registries with hashes and
+      metadata.
   transitional_outputs:
-    description: Legacy *_ai_sentences.txt and *_classified.csv outputs remain operational during migration.
-    removal_target_iteration: "3"
+    description: Legacy *_ai_sentences.txt and *_classified.csv outputs remain operational
+      during migration.
+    removal_target_iteration: '3'
 runtime_data_policies:
   sec_source:
     require_env_var: SEC_SOURCE_DIR
@@ -92,45 +77,46 @@ runtime_data_policies:
     warn_on_root_level_processed_files: true
     root_level_glob: data/processed/sec/*.txt
 risk_register:
-  - code: R1
-    title: Label ambiguity
-    signal: Inter-rater reliability below kappa target.
-    mitigation: Require rubric + IRR gate before retraining.
-    backout: Pause retraining and adjudicate labels.
-    severity: 5
-  - code: R2
-    title: Class imbalance collapse
-    signal: Predictions collapse to dominant class.
-    mitigation: Enforce class floor and stratified sampling.
-    backout: Rebalance labels and freeze centroids.
-    severity: 4
-  - code: R3
-    title: Leakage across splits
-    signal: Held-out overlap or overfit threshold tuning.
-    mitigation: Hard overlap exclusion and frozen held-out set.
-    backout: Rollback to leakage-safe artifacts.
-    severity: 5
-  - code: R4
-    title: Non-determinism
-    signal: Metrics drift across unchanged reruns.
-    mitigation: Persist seeds, hashes, and metadata.
-    backout: Rebuild under pinned environment.
-    severity: 4
-  - code: R5
-    title: Silent skips
-    signal: Missing outputs despite successful status.
-    mitigation: Coverage counters and output manifests.
-    backout: Strict rerun with fail-fast checks.
-    severity: 4
-  - code: R6
-    title: Metadata mismatch
-    signal: Wrong centroid or label mapping consumed.
-    mitigation: Fingerprint artifacts and metadata checks.
-    backout: Restore known-good metadata.
-    severity: 4
-  - code: R7
-    title: Scope creep
-    signal: Hardening displaces science gates.
-    mitigation: Enforce phase gate boundaries.
-    backout: Defer non-critical hardening.
-    severity: 3
+- code: R1
+  title: Label ambiguity
+  signal: Inter-rater reliability below kappa target.
+  mitigation: Require rubric + IRR gate before retraining.
+  backout: Pause retraining and adjudicate labels.
+  severity: 5
+- code: R2
+  title: Class imbalance collapse
+  signal: Predictions collapse to dominant class.
+  mitigation: Enforce class floor and stratified sampling.
+  backout: Rebalance labels and freeze centroids.
+  severity: 4
+- code: R3
+  title: Leakage across splits
+  signal: Held-out overlap or overfit threshold tuning.
+  mitigation: Hard overlap exclusion and frozen held-out set.
+  backout: Rollback to leakage-safe artifacts.
+  severity: 5
+- code: R4
+  title: Non-determinism
+  signal: Metrics drift across unchanged reruns.
+  mitigation: Persist seeds, hashes, and metadata.
+  backout: Rebuild under pinned environment.
+  severity: 4
+- code: R5
+  title: Silent skips
+  signal: Missing outputs despite successful status.
+  mitigation: Coverage counters and output manifests.
+  backout: Strict rerun with fail-fast checks.
+  severity: 4
+- code: R6
+  title: Metadata mismatch
+  signal: Wrong centroid or label mapping consumed.
+  mitigation: Fingerprint artifacts and metadata checks.
+  backout: Restore known-good metadata.
+  severity: 4
+- code: R7
+  title: Scope creep
+  signal: Hardening displaces science gates.
+  mitigation: Enforce phase gate boundaries.
+  backout: Defer non-critical hardening.
+  severity: 3
+tooling_policy_path: director/config/tooling_policy.yaml

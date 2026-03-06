@@ -31,6 +31,7 @@ DEFAULT_CONFIG = {
         "iteration_log": "docs/iteration_log.md",
         "roadmap_model_path": "director/model/roadmap_model.yaml",
         "remediation_library_path": "director/model/remediation_library.yaml",
+        "tooling_policy_path": "director/config/tooling_policy.yaml",
         "canonical_validation_commands": [
             "make bootstrap",
             "make doctor",
@@ -68,6 +69,20 @@ DEFAULT_CONFIG = {
         "max_completion_tokens_per_call": 1200,
         "price_per_1k_prompt_tokens_usd": 0.0,
         "price_per_1k_completion_tokens_usd": 0.0,
+    },
+    "tooling_policy": {
+        "policies": [
+            {
+                "policy_id": "atlas_isolated_env",
+                "tool": "atlas",
+                "mode": "isolated_skill_env",
+                "repo_root_uv_run_forbidden": True,
+                "required_runner": "~/.codex/skills/atlas/scripts/atlas_cli.py",
+                "wrapper_path": "scripts/atlas_isolated.sh",
+                "expected_repo_venv_python": "3.9",
+                "expected_repo_venv_home": "anaconda3/bin",
+            }
+        ]
     },
 }
 
@@ -122,6 +137,7 @@ def ensure_default_configs(paths: DirectorPaths) -> None:
         "project_profile": paths.config_dir / "project_profile.yaml",
         "autonomy_policy": paths.config_dir / "autonomy_policy.yaml",
         "cost_policy": paths.config_dir / "cost_policy.yaml",
+        "tooling_policy": paths.config_dir / "tooling_policy.yaml",
     }
     for key, file_path in files.items():
         if not file_path.exists():
@@ -132,21 +148,27 @@ def ensure_default_configs(paths: DirectorPaths) -> None:
         _yaml_dump(
             roadmap_model,
             {
-                "schema_version": "1.1.0",
+                "schema_version": "1.2.0",
                 "project": {
                     "name": "semantic-patterns",
                     "description": "Canonical machine-readable roadmap model.",
                 },
                 "settings": {
-                    "active_horizon_iterations": ["1"],
+                    "active_horizon_iterations": ["1", "2"],
                     "optimizer_weights": DEFAULT_CONFIG["project_profile"]["optimization_weights"],
                     "defaults": {
                         "phase_execution_mode": "phase_first",
                         "proposal_only": True,
                         "allow_cross_iteration_rewrite": True,
                         "fragment_rate_threshold": 0.15,
+                        "active_source_window_id": "active_2021_2024",
+                        "canonical_table_format": "parquet",
                     },
                 },
+                "policies": [],
+                "data_layers": [],
+                "source_windows": [],
+                "tooling_policies": [],
                 "iterations": [],
             },
         )
@@ -156,7 +178,7 @@ def ensure_default_configs(paths: DirectorPaths) -> None:
         _yaml_dump(
             remediation_library,
             {
-                "schema_version": "1.1.0",
+                "schema_version": "1.2.0",
                 "tasks": [],
             },
         )
@@ -169,10 +191,12 @@ def load_configs(paths: DirectorPaths) -> dict[str, Any]:
     project_profile = _yaml_load(paths.config_dir / "project_profile.yaml")
     autonomy_policy = _yaml_load(paths.config_dir / "autonomy_policy.yaml")
     cost_policy = _yaml_load(paths.config_dir / "cost_policy.yaml")
+    tooling_policy = _yaml_load(paths.config_dir / "tooling_policy.yaml")
     return {
         "project_profile": {**DEFAULT_CONFIG["project_profile"], **project_profile},
         "autonomy_policy": {**DEFAULT_CONFIG["autonomy_policy"], **autonomy_policy},
         "cost_policy": {**DEFAULT_CONFIG["cost_policy"], **cost_policy},
+        "tooling_policy": {**DEFAULT_CONFIG["tooling_policy"], **tooling_policy},
     }
 
 
@@ -181,6 +205,7 @@ def required_file_paths(paths: DirectorPaths) -> list[Path]:
         paths.config_dir / "project_profile.yaml",
         paths.config_dir / "autonomy_policy.yaml",
         paths.config_dir / "cost_policy.yaml",
+        paths.config_dir / "tooling_policy.yaml",
         paths.snapshots_dir / "protocol_summary.json",
         paths.snapshots_dir / "roadmap_summary.json",
         paths.snapshots_dir / "iteration_state.json",
