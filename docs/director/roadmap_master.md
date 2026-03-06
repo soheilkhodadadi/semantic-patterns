@@ -1,13 +1,27 @@
 <!-- generated_file: true -->
 <!-- source_model: /Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/model/roadmap_model.yaml -->
-<!-- source_sha256: 738d108a7e41b38eecc69dd81bfdcce5dc1c19fe57f302f9597db1c843c09037 -->
-<!-- rendered_at: 2026-03-06T18:11:14.506397+00:00 -->
+<!-- source_sha256: 70d7604f7bf5fd6ea06ba46db493c33a510819ba585441267507d82d3180594a -->
+<!-- rendered_at: 2026-03-06T22:35:35.102697+00:00 -->
 
 # Roadmap Master
 
 This document is generated from the canonical roadmap YAML model.
 
 Optimization proposals may recommend resequencing tasks or phases beyond the canonical order shown here.
+
+## Branching Policy
+- integration branch template: `iteration{iteration_id}/integration`
+- work branch template: `iteration{iteration_id}/{slug}`
+- merge target: `main`
+- preferred merge strategy: `ff_only_if_possible_else_pr_merge_commit`
+- review approval required before next iteration: `true`
+- review approval required before main merge: `true`
+- starter prompt required: `true`
+
+## Review Workflow
+- Every iteration ends with `review-and-replan`.
+- Iterations 2-5 start with `kickoff-and-preflight`.
+- Approved reviews authorize the next iteration and main-merge closeout.
 
 ## Policies
 - `heldout_frozen` `dataset_freeze` enforcement=`hard` value=`True`
@@ -38,6 +52,20 @@ Optimization proposals may recommend resequencing tasks or phases beyond the can
 
 ## Iteration 1 - Foundation, Canonical Contracts, and Bounded 2024 Pilot
 Goal: Establish canonical contracts, clean the execution surface, and build a bounded sentence-table pilot from 2024 10-K filings.
+Entry criteria: Canonical roadmap model v2 is active and rendered., Active source window 2021-2024 is available through SEC_SOURCE_DIR or local source-root config.
+Exit criteria: Foundation phases passed through label-ops-bootstrap., Iteration 1 review approved and closeout branch plan generated.
+
+### iteration1/kickoff-and-preflight
+- Title: Historical Kickoff and Preflight
+- Goal: Traceability-only placeholder for the retroactively introduced iteration kickoff boundary.
+- Lifecycle: `historical`
+- Depends on: none
+- Source window: `none`
+- Required artifacts: director/reviews/iteration_1_kickoff.json
+- Tags: historical, kickoff
+
+#### Tasks
+- phase-level only in this roadmap version
 
 ### iteration1/baseline-asset-freeze
 - Title: Baseline Asset Freeze
@@ -200,6 +228,31 @@ Goal: Establish canonical contracts, clean the execution surface, and build a bo
   - tags: label_batch
   - risks: R1, R2, R5
 
+### iteration1/review-and-replan
+- Title: Review and Replan
+- Goal: Synthesize iteration evidence, approve closeout, and prepare the next iteration handoff.
+- Lifecycle: `planned`
+- Depends on: iteration1/label-ops-bootstrap
+- Source window: `none`
+- Required artifacts: director/reviews/iteration_1_review.json, director/reviews/iteration_1_review.md, director/reviews/iteration_1_patch_proposal.yaml, director/reviews/iteration_1_branch_plan.md, director/reviews/iteration_1_starter_prompt.md, director/reviews/iteration_1_approval.json
+- Tags: review, closeout
+
+#### Tasks
+- `iteration1.review.generate_review` Generate iteration review
+  - kind: `analysis` gate_class: `ops` automation: `partial`
+  - depends_on: none
+  - inputs: docs/iteration_log.md
+  - outputs: director/reviews/iteration_1_review.json, director/reviews/iteration_1_review.md, director/reviews/iteration_1_patch_proposal.yaml, director/reviews/iteration_1_branch_plan.md, director/reviews/iteration_1_starter_prompt.md
+  - tags: review_generation
+  - risks: R4, R7
+- `iteration1.review.approve_closeout` Approve iteration closeout
+  - kind: `manual` gate_class: `manual` automation: `manual`
+  - depends_on: iteration1.review.generate_review
+  - inputs: director/reviews/iteration_1_review.json
+  - outputs: director/reviews/iteration_1_approval.json
+  - tags: review_approval
+  - risks: R4
+
 ### iteration1/diagnostics-nlp
 - Title: Historical Diagnostics Baseline
 - Goal: Preserved historical diagnostics work completed before roadmap-model v2.
@@ -239,12 +292,32 @@ Goal: Establish canonical contracts, clean the execution surface, and build a bo
 
 ## Iteration 2 - Label Expansion, Human IRR, and Frozen Training Set
 Goal: Build the first canonical human-labeled dataset, validate the rubric with true IRR, and freeze the split registry.
+Entry criteria: Iteration 1 review approved., Iteration 2 kickoff completed on iteration2/integration., Use availability-aware quarter redistribution when leakage-safe filtering makes strict equal quarter quotas infeasible.
+Exit criteria: Canonical labels, IRR/adjudication, split registry, and modeling readiness gate are complete., Iteration 2 review approved.
+
+### iteration2/kickoff-and-preflight
+- Title: Kickoff and Preflight
+- Goal: Validate branch context and prior review approval before starting Iteration 2 work.
+- Lifecycle: `planned`
+- Depends on: iteration1/review-and-replan
+- Source window: `none`
+- Required artifacts: director/reviews/iteration_2_kickoff.json
+- Tags: kickoff, branch_policy
+
+#### Tasks
+- `iteration2.kickoff.verify_context` Verify kickoff context
+  - kind: `validation` gate_class: `ops` automation: `partial`
+  - depends_on: none
+  - inputs: director/reviews/iteration_1_approval.json
+  - outputs: director/reviews/iteration_2_kickoff.json
+  - tags: kickoff
+  - risks: R4, R7
 
 ### iteration2/dataset-expansion-2024
 - Title: Dataset Expansion 2024
 - Goal: Expand labeled coverage on clean pilot-derived sentences while keeping API use assistive only.
 - Lifecycle: `planned`
-- Depends on: iteration1/label-ops-bootstrap
+- Depends on: iteration2/kickoff-and-preflight
 - Source window: `active_2021_2024`
 - Required artifacts: data/labels/v1/labels_master.parquet, reports/labels/label_expansion_summary.json
 - Tags: label_expansion, assistive_api
@@ -313,15 +386,60 @@ Goal: Build the first canonical human-labeled dataset, validate the rubric with 
 #### Tasks
 - phase-level only in this roadmap version
 
+### iteration2/review-and-replan
+- Title: Review and Replan
+- Goal: Synthesize iteration evidence, approve closeout, and prepare the next iteration handoff.
+- Lifecycle: `planned`
+- Depends on: iteration2/modeling-readiness-gate
+- Source window: `none`
+- Required artifacts: director/reviews/iteration_2_review.json, director/reviews/iteration_2_review.md, director/reviews/iteration_2_patch_proposal.yaml, director/reviews/iteration_2_branch_plan.md, director/reviews/iteration_2_starter_prompt.md, director/reviews/iteration_2_approval.json
+- Tags: review, closeout
+
+#### Tasks
+- `iteration2.review.generate_review` Generate iteration review
+  - kind: `analysis` gate_class: `ops` automation: `partial`
+  - depends_on: none
+  - inputs: docs/iteration_log.md
+  - outputs: director/reviews/iteration_2_review.json, director/reviews/iteration_2_review.md, director/reviews/iteration_2_patch_proposal.yaml, director/reviews/iteration_2_branch_plan.md, director/reviews/iteration_2_starter_prompt.md
+  - tags: review_generation
+  - risks: R4, R7
+- `iteration2.review.approve_closeout` Approve iteration closeout
+  - kind: `manual` gate_class: `manual` automation: `manual`
+  - depends_on: iteration2.review.generate_review
+  - inputs: director/reviews/iteration_2_review.json
+  - outputs: director/reviews/iteration_2_approval.json
+  - tags: review_approval
+  - risks: R4
+
 
 ## Iteration 3 - Retraining, Calibration, and Classification of 2021–2024
 Goal: Retrain the local model on adjudicated labels, calibrate on validation only, and classify the current active window.
+Entry criteria: Iteration 2 review approved., Iteration 3 kickoff completed on iteration3/integration.
+Exit criteria: Retraining, calibration, active-window classification, and aggregation sanity are complete., Iteration 3 review approved.
+
+### iteration3/kickoff-and-preflight
+- Title: Kickoff and Preflight
+- Goal: Validate branch context and prior review approval before starting Iteration 3 work.
+- Lifecycle: `planned`
+- Depends on: iteration2/review-and-replan
+- Source window: `none`
+- Required artifacts: director/reviews/iteration_3_kickoff.json
+- Tags: kickoff, branch_policy
+
+#### Tasks
+- `iteration3.kickoff.verify_context` Verify kickoff context
+  - kind: `validation` gate_class: `ops` automation: `partial`
+  - depends_on: none
+  - inputs: director/reviews/iteration_2_approval.json
+  - outputs: director/reviews/iteration_3_kickoff.json
+  - tags: kickoff
+  - risks: R4, R7
 
 ### iteration3/centroid-retraining
 - Title: Centroid Retraining
 - Goal: Embed the adjudicated training set, compute centroids, and fingerprint metadata.
 - Lifecycle: `planned`
-- Depends on: iteration2/modeling-readiness-gate
+- Depends on: iteration3/kickoff-and-preflight
 - Source window: `active_2021_2024`
 - Required artifacts: artifacts/models/mpnet_v1/embeddings.parquet, artifacts/models/mpnet_v1/centroids.json, artifacts/models/mpnet_v1/metadata.json
 - Tags: retraining
@@ -365,15 +483,60 @@ Goal: Retrain the local model on adjudicated labels, calibrate on validation onl
 #### Tasks
 - phase-level only in this roadmap version
 
+### iteration3/review-and-replan
+- Title: Review and Replan
+- Goal: Synthesize iteration evidence, approve closeout, and prepare the next iteration handoff.
+- Lifecycle: `planned`
+- Depends on: iteration3/aggregation-sanity
+- Source window: `none`
+- Required artifacts: director/reviews/iteration_3_review.json, director/reviews/iteration_3_review.md, director/reviews/iteration_3_patch_proposal.yaml, director/reviews/iteration_3_branch_plan.md, director/reviews/iteration_3_starter_prompt.md, director/reviews/iteration_3_approval.json
+- Tags: review, closeout
+
+#### Tasks
+- `iteration3.review.generate_review` Generate iteration review
+  - kind: `analysis` gate_class: `ops` automation: `partial`
+  - depends_on: none
+  - inputs: docs/iteration_log.md
+  - outputs: director/reviews/iteration_3_review.json, director/reviews/iteration_3_review.md, director/reviews/iteration_3_patch_proposal.yaml, director/reviews/iteration_3_branch_plan.md, director/reviews/iteration_3_starter_prompt.md
+  - tags: review_generation
+  - risks: R4, R7
+- `iteration3.review.approve_closeout` Approve iteration closeout
+  - kind: `manual` gate_class: `manual` automation: `manual`
+  - depends_on: iteration3.review.generate_review
+  - inputs: director/reviews/iteration_3_review.json
+  - outputs: director/reviews/iteration_3_approval.json
+  - tags: review_approval
+  - risks: R4
+
 
 ## Iteration 4 - Panel Construction and Conditional Historical Backfill
 Goal: Build the active-window panel and cleanly separate that from any deferred historical source expansion.
+Entry criteria: Iteration 3 review approved., Iteration 4 kickoff completed on iteration4/integration.
+Exit criteria: Active-window panel is assembled and QA-frozen., Iteration 4 review approved.
+
+### iteration4/kickoff-and-preflight
+- Title: Kickoff and Preflight
+- Goal: Validate branch context and prior review approval before starting Iteration 4 work.
+- Lifecycle: `planned`
+- Depends on: iteration3/review-and-replan
+- Source window: `none`
+- Required artifacts: director/reviews/iteration_4_kickoff.json
+- Tags: kickoff, branch_policy
+
+#### Tasks
+- `iteration4.kickoff.verify_context` Verify kickoff context
+  - kind: `validation` gate_class: `ops` automation: `partial`
+  - depends_on: none
+  - inputs: director/reviews/iteration_3_approval.json
+  - outputs: director/reviews/iteration_4_kickoff.json
+  - tags: kickoff
+  - risks: R4, R7
 
 ### iteration4/patents-and-controls-ingestion
 - Title: Patents and Controls Ingestion
 - Goal: Refresh patents, controls, and crosswalk inputs required for the active-window panel.
 - Lifecycle: `planned`
-- Depends on: iteration3/aggregation-sanity
+- Depends on: iteration4/kickoff-and-preflight
 - Source window: `active_2021_2024`
 - Required artifacts: data/interim/patents/patent_metrics_v1.parquet, data/interim/controls/controls_v1.parquet
 - Tags: panel_inputs
@@ -417,15 +580,60 @@ Goal: Build the active-window panel and cleanly separate that from any deferred 
 #### Tasks
 - phase-level only in this roadmap version
 
+### iteration4/review-and-replan
+- Title: Review and Replan
+- Goal: Synthesize iteration evidence, approve closeout, and prepare the next iteration handoff.
+- Lifecycle: `planned`
+- Depends on: iteration4/panel-qa-and-freeze
+- Source window: `none`
+- Required artifacts: director/reviews/iteration_4_review.json, director/reviews/iteration_4_review.md, director/reviews/iteration_4_patch_proposal.yaml, director/reviews/iteration_4_branch_plan.md, director/reviews/iteration_4_starter_prompt.md, director/reviews/iteration_4_approval.json
+- Tags: review, closeout
+
+#### Tasks
+- `iteration4.review.generate_review` Generate iteration review
+  - kind: `analysis` gate_class: `ops` automation: `partial`
+  - depends_on: none
+  - inputs: docs/iteration_log.md
+  - outputs: director/reviews/iteration_4_review.json, director/reviews/iteration_4_review.md, director/reviews/iteration_4_patch_proposal.yaml, director/reviews/iteration_4_branch_plan.md, director/reviews/iteration_4_starter_prompt.md
+  - tags: review_generation
+  - risks: R4, R7
+- `iteration4.review.approve_closeout` Approve iteration closeout
+  - kind: `manual` gate_class: `manual` automation: `manual`
+  - depends_on: iteration4.review.generate_review
+  - inputs: director/reviews/iteration_4_review.json
+  - outputs: director/reviews/iteration_4_approval.json
+  - tags: review_approval
+  - risks: R4
+
 
 ## Iteration 5 - Analysis Outputs and Research Release Packaging
 Goal: Produce analysis outputs and a release package without making statistical significance an optimization target.
+Entry criteria: Iteration 4 review approved., Iteration 5 kickoff completed on iteration5/integration.
+Exit criteria: Analysis outputs and release artifacts are complete., Iteration 5 review approved.
+
+### iteration5/kickoff-and-preflight
+- Title: Kickoff and Preflight
+- Goal: Validate branch context and prior review approval before starting Iteration 5 work.
+- Lifecycle: `planned`
+- Depends on: iteration4/review-and-replan
+- Source window: `none`
+- Required artifacts: director/reviews/iteration_5_kickoff.json
+- Tags: kickoff, branch_policy
+
+#### Tasks
+- `iteration5.kickoff.verify_context` Verify kickoff context
+  - kind: `validation` gate_class: `ops` automation: `partial`
+  - depends_on: none
+  - inputs: director/reviews/iteration_4_approval.json
+  - outputs: director/reviews/iteration_5_kickoff.json
+  - tags: kickoff
+  - risks: R4, R7
 
 ### iteration5/regression-specification
 - Title: Regression Specification
 - Goal: Freeze regression inputs and define baseline and robustness specifications.
 - Lifecycle: `planned`
-- Depends on: iteration4/panel-qa-and-freeze
+- Depends on: iteration5/kickoff-and-preflight
 - Source window: `active_2021_2024`
 - Required artifacts: reports/analysis/regression_specification_v1.json
 - Tags: analysis
@@ -468,3 +676,37 @@ Goal: Produce analysis outputs and a release package without making statistical 
 
 #### Tasks
 - phase-level only in this roadmap version
+
+### iteration5/review-and-replan
+- Title: Review and Replan
+- Goal: Synthesize iteration evidence, approve closeout, and generate the final handoff package.
+- Lifecycle: `planned`
+- Depends on: iteration5/release-packaging
+- Source window: `none`
+- Required artifacts: director/reviews/iteration_5_review.json, director/reviews/iteration_5_review.md, director/reviews/iteration_5_patch_proposal.yaml, director/reviews/iteration_5_branch_plan.md, director/reviews/iteration_5_starter_prompt.md, director/reviews/iteration_5_approval.json
+- Tags: review, closeout
+
+#### Tasks
+- `iteration5.review.generate_review` Generate iteration review
+  - kind: `analysis` gate_class: `ops` automation: `partial`
+  - depends_on: none
+  - inputs: docs/iteration_log.md
+  - outputs: director/reviews/iteration_5_review.json, director/reviews/iteration_5_review.md, director/reviews/iteration_5_patch_proposal.yaml, director/reviews/iteration_5_branch_plan.md, director/reviews/iteration_5_starter_prompt.md
+  - tags: review_generation
+  - risks: R4, R7
+- `iteration5.review.approve_closeout` Approve iteration closeout
+  - kind: `manual` gate_class: `manual` automation: `manual`
+  - depends_on: iteration5.review.generate_review
+  - inputs: director/reviews/iteration_5_review.json
+  - outputs: director/reviews/iteration_5_approval.json
+  - tags: review_approval
+  - risks: R4
+
+
+## Approved Review Appendix
+### 181987a7-313a3a32
+- Scope: `iteration 1`
+- Accepted changes: optimizer-proposed_roadmap_patch_8732eb4e-3a3a3230-1, optimizer-proposed_roadmap_patch_8732eb4e-3a3a3230-2, optimizer-proposed_roadmap_patch_9d516339-3a3a3230-1, optimizer-proposed_roadmap_patch_9d516339-3a3a3230-2, optimizer-proposed_roadmap_patch_b2f116c5-3a3a3230-1, optimizer-proposed_roadmap_patch_b2f116c5-3a3a3230-2, optimizer-proposed_roadmap_patch_d3700831-313a6972-1, optimizer-proposed_roadmap_patch_d3700831-313a6972-2, optimizer-proposed_roadmap_patch_e08e31e6-3a3a3230-1, optimizer-proposed_roadmap_patch_e08e31e6-3a3a3230-2, optimizer-proposed_roadmap_patch_fb55837d-3a3a3230-1, optimizer-proposed_roadmap_patch_fb55837d-3a3a3230-2, review-availability-aware-quartering
+- Deferred changes: none
+- Next iteration: `2`
+- Entry criteria: Iteration 1 review approved., Iteration 2 kickoff completed on iteration2/integration.

@@ -60,6 +60,25 @@ def _minimal_model() -> dict:
                 "canonical_table_format": "parquet",
             },
         },
+        "branching_policy": {
+            "schema_version": "1.0.0",
+            "integration_branch_template": "iteration{iteration_id}/integration",
+            "work_branch_template": "iteration{iteration_id}/{slug}",
+            "merge_target": "main",
+            "preferred_merge_strategy": "ff_only_if_possible_else_pr_merge_commit",
+            "require_review_approval_before_next_iteration": True,
+            "require_review_approval_before_main_merge": True,
+            "suggest_new_chat_at_iteration_boundary": True,
+            "starter_prompt_required": True,
+            "tag_template": "iteration{iteration_id}-closeout",
+            "closeout_validation_commands": [
+                "make bootstrap",
+                "make doctor",
+                "make format",
+                "make lint",
+                ".venv/bin/pytest -q",
+            ],
+        },
         "policies": [
             {
                 "policy_id": "heldout_frozen",
@@ -117,6 +136,8 @@ def _minimal_model() -> dict:
                 "iteration_id": "1",
                 "title": "Foundation",
                 "goal": "goal",
+                "entry_criteria": [],
+                "exit_criteria": [],
                 "phases": [
                     {
                         "phase_id": "iteration1/label-ops-bootstrap",
@@ -229,6 +250,8 @@ def _minimal_model() -> dict:
                 "iteration_id": "2",
                 "title": "Future",
                 "goal": "goal",
+                "entry_criteria": [],
+                "exit_criteria": [],
                 "phases": [
                     {
                         "phase_id": "iteration2/source-index-contract",
@@ -476,6 +499,19 @@ def test_phase_dependencies_flow_into_task_readiness(tmp_path):
         "schema_version": "1.2.0",
         "project": {"name": "semantic-patterns", "description": "test"},
         "settings": {"defaults": {"phase_execution_mode": "phase_first"}},
+        "branching_policy": {
+            "schema_version": "1.0.0",
+            "integration_branch_template": "iteration{iteration_id}/integration",
+            "work_branch_template": "iteration{iteration_id}/{slug}",
+            "merge_target": "main",
+            "preferred_merge_strategy": "ff_only_if_possible_else_pr_merge_commit",
+            "require_review_approval_before_next_iteration": True,
+            "require_review_approval_before_main_merge": True,
+            "suggest_new_chat_at_iteration_boundary": True,
+            "starter_prompt_required": True,
+            "tag_template": "iteration{iteration_id}-closeout",
+            "closeout_validation_commands": [".venv/bin/pytest -q"],
+        },
         "policies": [],
         "data_layers": [],
         "source_windows": [],
@@ -485,6 +521,8 @@ def test_phase_dependencies_flow_into_task_readiness(tmp_path):
                 "iteration_id": "1",
                 "title": "Foundation",
                 "goal": "goal",
+                "entry_criteria": [],
+                "exit_criteria": [],
                 "phases": [
                     {
                         "phase_id": "iteration1/phase-a",

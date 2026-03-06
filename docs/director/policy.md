@@ -9,6 +9,9 @@
 - The optimizer is proposal-only. It may emit cross-iteration resequencing patches, but it may not rewrite the canonical roadmap automatically.
 - Manual tasks are first-class and must block truthfully when required outputs are absent.
 - Historical and superseded phases remain in the roadmap for traceability and are excluded from next-work ranking and execution.
+- Every iteration ends with an explicit `review-and-replan` phase.
+- Iterations 2-5 start with `kickoff-and-preflight`.
+- Next-iteration work is not authorized until the previous iteration review is approved.
 
 ## Scientific Policies
 - `held_out_sentences.csv` is frozen evaluation-only.
@@ -37,6 +40,21 @@
 - Every planning and execution event writes audit records under `director/runs/`.
 - Gate outcomes and blocker decisions are persisted as JSON artifacts.
 - Deferred blockers are tracked in `director/decisions/deferred_*.json`.
+- Iteration reviews, approvals, kickoff checks, branch plans, and starter prompts are persisted under `director/reviews/`.
+
+## Branch Lifecycle
+- Standard integration branch:
+  - `iteration{iteration_id}/integration`
+- Standard work branch:
+  - `iteration{iteration_id}/{slug}`
+- Stable merge target:
+  - `main`
+- Default iteration-boundary practice:
+  - approved review
+  - optional roadmap patch apply
+  - integration-branch closeout validation
+  - merge to `main`
+  - new-chat starter prompt for the next iteration
 
 ## Data Architecture Direction
 - Source filings are referenced via `SEC_SOURCE_DIR`; machine-specific committed defaults are forbidden.

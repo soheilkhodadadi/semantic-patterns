@@ -1,7 +1,7 @@
 {
-  "source_path": "docs/iteration_log.md",
-  "source_sha256": "99ab577b27b3c3581a73edcb6a7c4957d74795d11bc527ec379b83d2745363b3",
-  "ingested_at": "2026-03-06T16:52:20.383438+00:00",
+  "source_path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/docs/iteration_log.md",
+  "source_sha256": "90cff315bb0e64af2770fe54234f228565b9b81248b1eee3b93ffa9bd2cbdcf4",
+  "ingested_at": "2026-03-06T22:35:35.298148+00:00",
   "iteration_count": 2,
   "iterations": [
     {
@@ -383,7 +383,19 @@
         "Risks/issues encountered:",
         "Mitigation/resolution:",
         "Outcome:",
-        "Commits:"
+        "Commits:",
+        "Branch: `director/roadmap-model-v2`",
+        "Commit:",
+        "Scope:",
+        "Security note:",
+        "Branch: `director/roadmap-model-v2`",
+        "Selection basis:",
+        "Deliverables implemented:",
+        "Batch contract:",
+        "Generated artifacts:",
+        "Validation run:",
+        "Outcome:",
+        "Residual risks:"
       ]
     }
   ],
@@ -410,5 +422,5 @@
     "R7 scope control maintained (no retraining/calibration introduced).",
     "R2 class-balance and sample-size gate remains failed."
   ],
-  "last_successful_gate": "status: `passed` (`steps_passed=13`, `step_count=13`)"
+  "last_successful_gate": "phase status: `passed`"
 }

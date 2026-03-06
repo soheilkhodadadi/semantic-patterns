@@ -111,6 +111,7 @@ def roadmap_summary_dict(
         "schema_version": model.schema_version,
         "project": model.project,
         "settings": model.settings,
+        "branching_policy": model.branching_policy.model_dump(mode="json"),
         "policies": [item.model_dump(mode="json") for item in model.policies],
         "data_layers": [item.model_dump(mode="json") for item in model.data_layers],
         "source_windows": [item.model_dump(mode="json") for item in model.source_windows],

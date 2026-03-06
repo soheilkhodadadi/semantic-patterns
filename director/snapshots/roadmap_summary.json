@@ -1,6 +1,6 @@
 {
-  "source_path": "director/model/roadmap_model.yaml",
-  "source_sha256": "0331d6bd0a9736a42c574773c796e4f3b7c52338c84df4f8e1f221b026ee837f",
+  "source_path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/model/roadmap_model.yaml",
+  "source_sha256": "70d7604f7bf5fd6ea06ba46db493c33a510819ba585441267507d82d3180594a",
   "generated_from": "roadmap_model",
   "schema_version": "1.2.0",
   "project": {
@@ -29,6 +29,25 @@
       "active_source_window_id": "active_2021_2024",
       "canonical_table_format": "parquet"
     }
+  },
+  "branching_policy": {
+    "schema_version": "1.0.0",
+    "integration_branch_template": "iteration{iteration_id}/integration",
+    "work_branch_template": "iteration{iteration_id}/{slug}",
+    "merge_target": "main",
+    "preferred_merge_strategy": "ff_only_if_possible_else_pr_merge_commit",
+    "require_review_approval_before_next_iteration": true,
+    "require_review_approval_before_main_merge": true,
+    "suggest_new_chat_at_iteration_boundary": true,
+    "starter_prompt_required": true,
+    "tag_template": "iteration{iteration_id}-closeout",
+    "closeout_validation_commands": [
+      "make bootstrap",
+      "make doctor",
+      "make format",
+      "make lint",
+      ".venv/bin/pytest -q"
+    ]
   },
   "policies": [
     {
@@ -299,7 +318,33 @@
       "iteration_id": "1",
       "title": "Foundation, Canonical Contracts, and Bounded 2024 Pilot",
       "goal": "Establish canonical contracts, clean the execution surface, and build a bounded sentence-table pilot from 2024 10-K filings.",
+      "entry_criteria": [
+        "Canonical roadmap model v2 is active and rendered.",
+        "Active source window 2021-2024 is available through SEC_SOURCE_DIR or local source-root config."
+      ],
+      "exit_criteria": [
+        "Foundation phases passed through label-ops-bootstrap.",
+        "Iteration 1 review approved and closeout branch plan generated."
+      ],
       "phases": [
+        {
+          "schema_version": "1.0.0",
+          "phase_id": "iteration1/kickoff-and-preflight",
+          "title": "Historical Kickoff and Preflight",
+          "goal": "Traceability-only placeholder for the retroactively introduced iteration kickoff boundary.",
+          "depends_on": [],
+          "canonical": false,
+          "required_artifacts": [
+            "director/reviews/iteration_1_kickoff.json"
+          ],
+          "tasks": [],
+          "lifecycle_state": "historical",
+          "source_window_id": "",
+          "tags": [
+            "historical",
+            "kickoff"
+          ]
+        },
         {
           "schema_version": "1.0.0",
           "phase_id": "iteration1/baseline-asset-freeze",
@@ -1138,7 +1183,8 @@
           "canonical": true,
           "required_artifacts": [
             "data/labels/v1/labeling_batch_v1.parquet",
-            "data/labels/v1/labeling_batch_v1.csv"
+            "data/labels/v1/labeling_batch_v1.csv",
+            "reports/labels/labeling_batch_v1_summary.json"
           ],
           "tasks": [
             {
@@ -1281,8 +1327,55 @@
                   "reroute_to": []
                 }
               ],
-              "quality_checks": [],
-              "commands": [],
+              "quality_checks": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "labeling_batch_count",
+                  "kind": "json_field_compare",
+                  "target": "reports/labels/labeling_batch_v1_summary.json::selection.batch_row_count",
+                  "operator": "==",
+                  "expected": 240,
+                  "on_fail": "block",
+                  "message": "Labeling batch row count does not match the target contract.",
+                  "reroute_to": []
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "labeling_batch_quota_satisfied",
+                  "kind": "json_field_compare",
+                  "target": "reports/labels/labeling_batch_v1_summary.json::selection.quota_satisfied",
+                  "operator": "==",
+                  "expected": true,
+                  "on_fail": "block",
+                  "message": "Labeling batch quarter allocation did not satisfy the target contract.",
+                  "reroute_to": []
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "labeling_batch_no_leakage",
+                  "kind": "json_field_compare",
+                  "target": "reports/labels/labeling_batch_v1_summary.json::quality.heldout_overlap_count",
+                  "operator": "==",
+                  "expected": 0,
+                  "on_fail": "block",
+                  "message": "Labeling batch overlaps the frozen held-out set.",
+                  "reroute_to": []
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "labeling_batch_no_exact_duplicates",
+                  "kind": "json_field_compare",
+                  "target": "reports/labels/labeling_batch_v1_summary.json::quality.exact_duplicate_count",
+                  "operator": "==",
+                  "expected": 0,
+                  "on_fail": "block",
+                  "message": "Labeling batch contains exact duplicate sentence texts.",
+                  "reroute_to": []
+                }
+              ],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.labeling.build_labeling_batch --sentences data/processed/sentences/year=2024/ai_sentences.parquet --manifest data/manifests/filings/pilot_2024_10k_v1.csv --held-out data/validation/held_out_sentences.csv --output-parquet data/labels/v1/labeling_batch_v1.parquet --output-csv data/labels/v1/labeling_batch_v1.csv --report reports/labels/labeling_batch_v1_summary.json --batch-id labeling_batch_v1 --target-size 240 --base-quarter-quota 60 --min-tokens 6 --max-tokens 120 --seed 20260306"
+              ],
               "manual_handoff": false,
               "risks": [
                 "R1",
@@ -1306,6 +1399,215 @@
           "tags": [
             "label_ops",
             "sentence_quality_gate"
+          ]
+        },
+        {
+          "schema_version": "1.0.0",
+          "phase_id": "iteration1/review-and-replan",
+          "title": "Review and Replan",
+          "goal": "Synthesize iteration evidence, approve closeout, and prepare the next iteration handoff.",
+          "depends_on": [
+            "iteration1/label-ops-bootstrap"
+          ],
+          "canonical": true,
+          "required_artifacts": [
+            "director/reviews/iteration_1_review.json",
+            "director/reviews/iteration_1_review.md",
+            "director/reviews/iteration_1_patch_proposal.yaml",
+            "director/reviews/iteration_1_branch_plan.md",
+            "director/reviews/iteration_1_starter_prompt.md",
+            "director/reviews/iteration_1_approval.json"
+          ],
+          "tasks": [
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.review.generate_review",
+              "title": "Generate iteration review",
+              "description": "Build the structured IterationReview artifact set from execution evidence and roadmap state.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/review-and-replan",
+              "kind": "analysis",
+              "depends_on": [],
+              "inputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_log",
+                  "path": "docs/iteration_log.md",
+                  "kind": "markdown",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_review_json",
+                  "path": "director/reviews/iteration_1_review.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_review_md",
+                  "path": "director/reviews/iteration_1_review.md",
+                  "kind": "markdown",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_patch_yaml",
+                  "path": "director/reviews/iteration_1_patch_proposal.yaml",
+                  "kind": "file",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_branch_plan_md",
+                  "path": "director/reviews/iteration_1_branch_plan.md",
+                  "kind": "markdown",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_starter_prompt_md",
+                  "path": "director/reviews/iteration_1_starter_prompt.md",
+                  "kind": "markdown",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "preconditions": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration_log_exists",
+                  "kind": "artifact_exists",
+                  "target": "docs/iteration_log.md",
+                  "operator": "==",
+                  "expected": true,
+                  "on_fail": "block",
+                  "message": "Iteration log must exist before generating a review.",
+                  "reroute_to": []
+                }
+              ],
+              "quality_checks": [],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.director.cli review --iteration 1"
+              ],
+              "manual_handoff": false,
+              "risks": [
+                "R4",
+                "R7"
+              ],
+              "estimated_effort": 2,
+              "risk_reduction": 9,
+              "automation_level": "partial",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true,
+              "tags": [
+                "review_generation"
+              ],
+              "gate_class": "ops"
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.review.approve_closeout",
+              "title": "Approve iteration closeout",
+              "description": "Record manual review approval and explicitly accept or defer roadmap changes.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/review-and-replan",
+              "kind": "manual",
+              "depends_on": [
+                "iteration1.review.generate_review"
+              ],
+              "inputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_review_json",
+                  "path": "director/reviews/iteration_1_review.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_review_approval",
+                  "path": "director/reviews/iteration_1_approval.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "preconditions": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration_review_exists",
+                  "kind": "artifact_exists",
+                  "target": "director/reviews/iteration_1_review.json",
+                  "operator": "==",
+                  "expected": true,
+                  "on_fail": "block",
+                  "message": "Iteration review must exist before approval.",
+                  "reroute_to": []
+                }
+              ],
+              "quality_checks": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration_review_approved",
+                  "kind": "json_field_compare",
+                  "target": "director/reviews/iteration_1_approval.json::decision",
+                  "operator": "==",
+                  "expected": "approved",
+                  "on_fail": "block",
+                  "message": "Iteration review approval must be explicitly approved.",
+                  "reroute_to": []
+                }
+              ],
+              "commands": [],
+              "manual_handoff": true,
+              "risks": [
+                "R4"
+              ],
+              "estimated_effort": 2,
+              "risk_reduction": 9,
+              "automation_level": "manual",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true,
+              "tags": [
+                "review_approval"
+              ],
+              "gate_class": "manual"
+            }
+          ],
+          "lifecycle_state": "planned",
+          "source_window_id": "",
+          "tags": [
+            "review",
+            "closeout"
           ]
         },
         {
@@ -1366,14 +1668,110 @@
       "iteration_id": "2",
       "title": "Label Expansion, Human IRR, and Frozen Training Set",
       "goal": "Build the first canonical human-labeled dataset, validate the rubric with true IRR, and freeze the split registry.",
+      "entry_criteria": [
+        "Iteration 1 review approved.",
+        "Iteration 2 kickoff completed on iteration2/integration.",
+        "Use availability-aware quarter redistribution when leakage-safe filtering makes strict equal quarter quotas infeasible."
+      ],
+      "exit_criteria": [
+        "Canonical labels, IRR/adjudication, split registry, and modeling readiness gate are complete.",
+        "Iteration 2 review approved."
+      ],
       "phases": [
+        {
+          "schema_version": "1.0.0",
+          "phase_id": "iteration2/kickoff-and-preflight",
+          "title": "Kickoff and Preflight",
+          "goal": "Validate branch context and prior review approval before starting Iteration 2 work.",
+          "depends_on": [
+            "iteration1/review-and-replan"
+          ],
+          "canonical": true,
+          "required_artifacts": [
+            "director/reviews/iteration_2_kickoff.json"
+          ],
+          "tasks": [
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration2.kickoff.verify_context",
+              "title": "Verify kickoff context",
+              "description": "Confirm integration branch naming, prior review approval, and merge-base hygiene.",
+              "iteration_id": "2",
+              "phase_id": "iteration2/kickoff-and-preflight",
+              "kind": "validation",
+              "depends_on": [],
+              "inputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "prior_review_approval",
+                  "path": "director/reviews/iteration_1_approval.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "kickoff_report",
+                  "path": "director/reviews/iteration_2_kickoff.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "preconditions": [],
+              "quality_checks": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "kickoff_ready",
+                  "kind": "json_field_compare",
+                  "target": "director/reviews/iteration_2_kickoff.json::status",
+                  "operator": "==",
+                  "expected": "ready",
+                  "on_fail": "block",
+                  "message": "Iteration 2 kickoff is not ready.",
+                  "reroute_to": []
+                }
+              ],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.director.cli kickoff --iteration 2"
+              ],
+              "manual_handoff": false,
+              "risks": [
+                "R4",
+                "R7"
+              ],
+              "estimated_effort": 2,
+              "risk_reduction": 10,
+              "automation_level": "partial",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true,
+              "tags": [
+                "kickoff"
+              ],
+              "gate_class": "ops"
+            }
+          ],
+          "lifecycle_state": "planned",
+          "source_window_id": "",
+          "tags": [
+            "kickoff",
+            "branch_policy"
+          ]
+        },
         {
           "schema_version": "1.0.0",
           "phase_id": "iteration2/dataset-expansion-2024",
           "title": "Dataset Expansion 2024",
           "goal": "Expand labeled coverage on clean pilot-derived sentences while keeping API use assistive only.",
           "depends_on": [
-            "iteration1/label-ops-bootstrap"
+            "iteration2/kickoff-and-preflight"
           ],
           "canonical": true,
           "required_artifacts": [
@@ -1772,6 +2170,215 @@
           "tags": [
             "modeling_gate"
           ]
+        },
+        {
+          "schema_version": "1.0.0",
+          "phase_id": "iteration2/review-and-replan",
+          "title": "Review and Replan",
+          "goal": "Synthesize iteration evidence, approve closeout, and prepare the next iteration handoff.",
+          "depends_on": [
+            "iteration2/modeling-readiness-gate"
+          ],
+          "canonical": true,
+          "required_artifacts": [
+            "director/reviews/iteration_2_review.json",
+            "director/reviews/iteration_2_review.md",
+            "director/reviews/iteration_2_patch_proposal.yaml",
+            "director/reviews/iteration_2_branch_plan.md",
+            "director/reviews/iteration_2_starter_prompt.md",
+            "director/reviews/iteration_2_approval.json"
+          ],
+          "tasks": [
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration2.review.generate_review",
+              "title": "Generate iteration review",
+              "description": "Build the structured IterationReview artifact set from Iteration 2 evidence.",
+              "iteration_id": "2",
+              "phase_id": "iteration2/review-and-replan",
+              "kind": "analysis",
+              "depends_on": [],
+              "inputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_log",
+                  "path": "docs/iteration_log.md",
+                  "kind": "markdown",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_review_json",
+                  "path": "director/reviews/iteration_2_review.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_review_md",
+                  "path": "director/reviews/iteration_2_review.md",
+                  "kind": "markdown",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_patch_yaml",
+                  "path": "director/reviews/iteration_2_patch_proposal.yaml",
+                  "kind": "file",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_branch_plan_md",
+                  "path": "director/reviews/iteration_2_branch_plan.md",
+                  "kind": "markdown",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_starter_prompt_md",
+                  "path": "director/reviews/iteration_2_starter_prompt.md",
+                  "kind": "markdown",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "preconditions": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration_log_exists",
+                  "kind": "artifact_exists",
+                  "target": "docs/iteration_log.md",
+                  "operator": "==",
+                  "expected": true,
+                  "on_fail": "block",
+                  "message": "Iteration log must exist before generating a review.",
+                  "reroute_to": []
+                }
+              ],
+              "quality_checks": [],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.director.cli review --iteration 2"
+              ],
+              "manual_handoff": false,
+              "risks": [
+                "R4",
+                "R7"
+              ],
+              "estimated_effort": 2,
+              "risk_reduction": 9,
+              "automation_level": "partial",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true,
+              "tags": [
+                "review_generation"
+              ],
+              "gate_class": "ops"
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration2.review.approve_closeout",
+              "title": "Approve iteration closeout",
+              "description": "Record manual review approval and explicitly accept or defer roadmap changes.",
+              "iteration_id": "2",
+              "phase_id": "iteration2/review-and-replan",
+              "kind": "manual",
+              "depends_on": [
+                "iteration2.review.generate_review"
+              ],
+              "inputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_review_json",
+                  "path": "director/reviews/iteration_2_review.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_review_approval",
+                  "path": "director/reviews/iteration_2_approval.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "preconditions": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration_review_exists",
+                  "kind": "artifact_exists",
+                  "target": "director/reviews/iteration_2_review.json",
+                  "operator": "==",
+                  "expected": true,
+                  "on_fail": "block",
+                  "message": "Iteration review must exist before approval.",
+                  "reroute_to": []
+                }
+              ],
+              "quality_checks": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration_review_approved",
+                  "kind": "json_field_compare",
+                  "target": "director/reviews/iteration_2_approval.json::decision",
+                  "operator": "==",
+                  "expected": "approved",
+                  "on_fail": "block",
+                  "message": "Iteration review approval must be explicitly approved.",
+                  "reroute_to": []
+                }
+              ],
+              "commands": [],
+              "manual_handoff": true,
+              "risks": [
+                "R4"
+              ],
+              "estimated_effort": 2,
+              "risk_reduction": 9,
+              "automation_level": "manual",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true,
+              "tags": [
+                "review_approval"
+              ],
+              "gate_class": "manual"
+            }
+          ],
+          "lifecycle_state": "planned",
+          "source_window_id": "",
+          "tags": [
+            "review",
+            "closeout"
+          ]
         }
       ]
     },
@@ -1780,14 +2387,109 @@
       "iteration_id": "3",
       "title": "Retraining, Calibration, and Classification of 2021\u20132024",
       "goal": "Retrain the local model on adjudicated labels, calibrate on validation only, and classify the current active window.",
+      "entry_criteria": [
+        "Iteration 2 review approved.",
+        "Iteration 3 kickoff completed on iteration3/integration."
+      ],
+      "exit_criteria": [
+        "Retraining, calibration, active-window classification, and aggregation sanity are complete.",
+        "Iteration 3 review approved."
+      ],
       "phases": [
+        {
+          "schema_version": "1.0.0",
+          "phase_id": "iteration3/kickoff-and-preflight",
+          "title": "Kickoff and Preflight",
+          "goal": "Validate branch context and prior review approval before starting Iteration 3 work.",
+          "depends_on": [
+            "iteration2/review-and-replan"
+          ],
+          "canonical": true,
+          "required_artifacts": [
+            "director/reviews/iteration_3_kickoff.json"
+          ],
+          "tasks": [
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration3.kickoff.verify_context",
+              "title": "Verify kickoff context",
+              "description": "Confirm integration branch naming, prior review approval, and merge-base hygiene.",
+              "iteration_id": "3",
+              "phase_id": "iteration3/kickoff-and-preflight",
+              "kind": "validation",
+              "depends_on": [],
+              "inputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "prior_review_approval",
+                  "path": "director/reviews/iteration_2_approval.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "kickoff_report",
+                  "path": "director/reviews/iteration_3_kickoff.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "preconditions": [],
+              "quality_checks": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "kickoff_ready",
+                  "kind": "json_field_compare",
+                  "target": "director/reviews/iteration_3_kickoff.json::status",
+                  "operator": "==",
+                  "expected": "ready",
+                  "on_fail": "block",
+                  "message": "Iteration 3 kickoff is not ready.",
+                  "reroute_to": []
+                }
+              ],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.director.cli kickoff --iteration 3"
+              ],
+              "manual_handoff": false,
+              "risks": [
+                "R4",
+                "R7"
+              ],
+              "estimated_effort": 2,
+              "risk_reduction": 10,
+              "automation_level": "partial",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true,
+              "tags": [
+                "kickoff"
+              ],
+              "gate_class": "ops"
+            }
+          ],
+          "lifecycle_state": "planned",
+          "source_window_id": "",
+          "tags": [
+            "kickoff",
+            "branch_policy"
+          ]
+        },
         {
           "schema_version": "1.0.0",
           "phase_id": "iteration3/centroid-retraining",
           "title": "Centroid Retraining",
           "goal": "Embed the adjudicated training set, compute centroids, and fingerprint metadata.",
           "depends_on": [
-            "iteration2/modeling-readiness-gate"
+            "iteration3/kickoff-and-preflight"
           ],
           "canonical": true,
           "required_artifacts": [
@@ -1865,6 +2567,215 @@
           "tags": [
             "aggregation"
           ]
+        },
+        {
+          "schema_version": "1.0.0",
+          "phase_id": "iteration3/review-and-replan",
+          "title": "Review and Replan",
+          "goal": "Synthesize iteration evidence, approve closeout, and prepare the next iteration handoff.",
+          "depends_on": [
+            "iteration3/aggregation-sanity"
+          ],
+          "canonical": true,
+          "required_artifacts": [
+            "director/reviews/iteration_3_review.json",
+            "director/reviews/iteration_3_review.md",
+            "director/reviews/iteration_3_patch_proposal.yaml",
+            "director/reviews/iteration_3_branch_plan.md",
+            "director/reviews/iteration_3_starter_prompt.md",
+            "director/reviews/iteration_3_approval.json"
+          ],
+          "tasks": [
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration3.review.generate_review",
+              "title": "Generate iteration review",
+              "description": "Build the structured IterationReview artifact set from Iteration 3 evidence.",
+              "iteration_id": "3",
+              "phase_id": "iteration3/review-and-replan",
+              "kind": "analysis",
+              "depends_on": [],
+              "inputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_log",
+                  "path": "docs/iteration_log.md",
+                  "kind": "markdown",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_review_json",
+                  "path": "director/reviews/iteration_3_review.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_review_md",
+                  "path": "director/reviews/iteration_3_review.md",
+                  "kind": "markdown",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_patch_yaml",
+                  "path": "director/reviews/iteration_3_patch_proposal.yaml",
+                  "kind": "file",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_branch_plan_md",
+                  "path": "director/reviews/iteration_3_branch_plan.md",
+                  "kind": "markdown",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_starter_prompt_md",
+                  "path": "director/reviews/iteration_3_starter_prompt.md",
+                  "kind": "markdown",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "preconditions": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration_log_exists",
+                  "kind": "artifact_exists",
+                  "target": "docs/iteration_log.md",
+                  "operator": "==",
+                  "expected": true,
+                  "on_fail": "block",
+                  "message": "Iteration log must exist before generating a review.",
+                  "reroute_to": []
+                }
+              ],
+              "quality_checks": [],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.director.cli review --iteration 3"
+              ],
+              "manual_handoff": false,
+              "risks": [
+                "R4",
+                "R7"
+              ],
+              "estimated_effort": 2,
+              "risk_reduction": 9,
+              "automation_level": "partial",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true,
+              "tags": [
+                "review_generation"
+              ],
+              "gate_class": "ops"
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration3.review.approve_closeout",
+              "title": "Approve iteration closeout",
+              "description": "Record manual review approval and explicitly accept or defer roadmap changes.",
+              "iteration_id": "3",
+              "phase_id": "iteration3/review-and-replan",
+              "kind": "manual",
+              "depends_on": [
+                "iteration3.review.generate_review"
+              ],
+              "inputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_review_json",
+                  "path": "director/reviews/iteration_3_review.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_review_approval",
+                  "path": "director/reviews/iteration_3_approval.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "preconditions": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration_review_exists",
+                  "kind": "artifact_exists",
+                  "target": "director/reviews/iteration_3_review.json",
+                  "operator": "==",
+                  "expected": true,
+                  "on_fail": "block",
+                  "message": "Iteration review must exist before approval.",
+                  "reroute_to": []
+                }
+              ],
+              "quality_checks": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration_review_approved",
+                  "kind": "json_field_compare",
+                  "target": "director/reviews/iteration_3_approval.json::decision",
+                  "operator": "==",
+                  "expected": "approved",
+                  "on_fail": "block",
+                  "message": "Iteration review approval must be explicitly approved.",
+                  "reroute_to": []
+                }
+              ],
+              "commands": [],
+              "manual_handoff": true,
+              "risks": [
+                "R4"
+              ],
+              "estimated_effort": 2,
+              "risk_reduction": 9,
+              "automation_level": "manual",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true,
+              "tags": [
+                "review_approval"
+              ],
+              "gate_class": "manual"
+            }
+          ],
+          "lifecycle_state": "planned",
+          "source_window_id": "",
+          "tags": [
+            "review",
+            "closeout"
+          ]
         }
       ]
     },
@@ -1873,14 +2784,109 @@
       "iteration_id": "4",
       "title": "Panel Construction and Conditional Historical Backfill",
       "goal": "Build the active-window panel and cleanly separate that from any deferred historical source expansion.",
+      "entry_criteria": [
+        "Iteration 3 review approved.",
+        "Iteration 4 kickoff completed on iteration4/integration."
+      ],
+      "exit_criteria": [
+        "Active-window panel is assembled and QA-frozen.",
+        "Iteration 4 review approved."
+      ],
       "phases": [
+        {
+          "schema_version": "1.0.0",
+          "phase_id": "iteration4/kickoff-and-preflight",
+          "title": "Kickoff and Preflight",
+          "goal": "Validate branch context and prior review approval before starting Iteration 4 work.",
+          "depends_on": [
+            "iteration3/review-and-replan"
+          ],
+          "canonical": true,
+          "required_artifacts": [
+            "director/reviews/iteration_4_kickoff.json"
+          ],
+          "tasks": [
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration4.kickoff.verify_context",
+              "title": "Verify kickoff context",
+              "description": "Confirm integration branch naming, prior review approval, and merge-base hygiene.",
+              "iteration_id": "4",
+              "phase_id": "iteration4/kickoff-and-preflight",
+              "kind": "validation",
+              "depends_on": [],
+              "inputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "prior_review_approval",
+                  "path": "director/reviews/iteration_3_approval.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "kickoff_report",
+                  "path": "director/reviews/iteration_4_kickoff.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "preconditions": [],
+              "quality_checks": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "kickoff_ready",
+                  "kind": "json_field_compare",
+                  "target": "director/reviews/iteration_4_kickoff.json::status",
+                  "operator": "==",
+                  "expected": "ready",
+                  "on_fail": "block",
+                  "message": "Iteration 4 kickoff is not ready.",
+                  "reroute_to": []
+                }
+              ],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.director.cli kickoff --iteration 4"
+              ],
+              "manual_handoff": false,
+              "risks": [
+                "R4",
+                "R7"
+              ],
+              "estimated_effort": 2,
+              "risk_reduction": 10,
+              "automation_level": "partial",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true,
+              "tags": [
+                "kickoff"
+              ],
+              "gate_class": "ops"
+            }
+          ],
+          "lifecycle_state": "planned",
+          "source_window_id": "",
+          "tags": [
+            "kickoff",
+            "branch_policy"
+          ]
+        },
         {
           "schema_version": "1.0.0",
           "phase_id": "iteration4/patents-and-controls-ingestion",
           "title": "Patents and Controls Ingestion",
           "goal": "Refresh patents, controls, and crosswalk inputs required for the active-window panel.",
           "depends_on": [
-            "iteration3/aggregation-sanity"
+            "iteration4/kickoff-and-preflight"
           ],
           "canonical": true,
           "required_artifacts": [
@@ -1952,6 +2958,215 @@
           "tags": [
             "historical_backfill"
           ]
+        },
+        {
+          "schema_version": "1.0.0",
+          "phase_id": "iteration4/review-and-replan",
+          "title": "Review and Replan",
+          "goal": "Synthesize iteration evidence, approve closeout, and prepare the next iteration handoff.",
+          "depends_on": [
+            "iteration4/panel-qa-and-freeze"
+          ],
+          "canonical": true,
+          "required_artifacts": [
+            "director/reviews/iteration_4_review.json",
+            "director/reviews/iteration_4_review.md",
+            "director/reviews/iteration_4_patch_proposal.yaml",
+            "director/reviews/iteration_4_branch_plan.md",
+            "director/reviews/iteration_4_starter_prompt.md",
+            "director/reviews/iteration_4_approval.json"
+          ],
+          "tasks": [
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration4.review.generate_review",
+              "title": "Generate iteration review",
+              "description": "Build the structured IterationReview artifact set from Iteration 4 evidence.",
+              "iteration_id": "4",
+              "phase_id": "iteration4/review-and-replan",
+              "kind": "analysis",
+              "depends_on": [],
+              "inputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_log",
+                  "path": "docs/iteration_log.md",
+                  "kind": "markdown",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_review_json",
+                  "path": "director/reviews/iteration_4_review.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_review_md",
+                  "path": "director/reviews/iteration_4_review.md",
+                  "kind": "markdown",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_patch_yaml",
+                  "path": "director/reviews/iteration_4_patch_proposal.yaml",
+                  "kind": "file",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_branch_plan_md",
+                  "path": "director/reviews/iteration_4_branch_plan.md",
+                  "kind": "markdown",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_starter_prompt_md",
+                  "path": "director/reviews/iteration_4_starter_prompt.md",
+                  "kind": "markdown",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "preconditions": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration_log_exists",
+                  "kind": "artifact_exists",
+                  "target": "docs/iteration_log.md",
+                  "operator": "==",
+                  "expected": true,
+                  "on_fail": "block",
+                  "message": "Iteration log must exist before generating a review.",
+                  "reroute_to": []
+                }
+              ],
+              "quality_checks": [],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.director.cli review --iteration 4"
+              ],
+              "manual_handoff": false,
+              "risks": [
+                "R4",
+                "R7"
+              ],
+              "estimated_effort": 2,
+              "risk_reduction": 9,
+              "automation_level": "partial",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true,
+              "tags": [
+                "review_generation"
+              ],
+              "gate_class": "ops"
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration4.review.approve_closeout",
+              "title": "Approve iteration closeout",
+              "description": "Record manual review approval and explicitly accept or defer roadmap changes.",
+              "iteration_id": "4",
+              "phase_id": "iteration4/review-and-replan",
+              "kind": "manual",
+              "depends_on": [
+                "iteration4.review.generate_review"
+              ],
+              "inputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_review_json",
+                  "path": "director/reviews/iteration_4_review.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_review_approval",
+                  "path": "director/reviews/iteration_4_approval.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "preconditions": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration_review_exists",
+                  "kind": "artifact_exists",
+                  "target": "director/reviews/iteration_4_review.json",
+                  "operator": "==",
+                  "expected": true,
+                  "on_fail": "block",
+                  "message": "Iteration review must exist before approval.",
+                  "reroute_to": []
+                }
+              ],
+              "quality_checks": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration_review_approved",
+                  "kind": "json_field_compare",
+                  "target": "director/reviews/iteration_4_approval.json::decision",
+                  "operator": "==",
+                  "expected": "approved",
+                  "on_fail": "block",
+                  "message": "Iteration review approval must be explicitly approved.",
+                  "reroute_to": []
+                }
+              ],
+              "commands": [],
+              "manual_handoff": true,
+              "risks": [
+                "R4"
+              ],
+              "estimated_effort": 2,
+              "risk_reduction": 9,
+              "automation_level": "manual",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true,
+              "tags": [
+                "review_approval"
+              ],
+              "gate_class": "manual"
+            }
+          ],
+          "lifecycle_state": "planned",
+          "source_window_id": "",
+          "tags": [
+            "review",
+            "closeout"
+          ]
         }
       ]
     },
@@ -1960,14 +3175,109 @@
       "iteration_id": "5",
       "title": "Analysis Outputs and Research Release Packaging",
       "goal": "Produce analysis outputs and a release package without making statistical significance an optimization target.",
+      "entry_criteria": [
+        "Iteration 4 review approved.",
+        "Iteration 5 kickoff completed on iteration5/integration."
+      ],
+      "exit_criteria": [
+        "Analysis outputs and release artifacts are complete.",
+        "Iteration 5 review approved."
+      ],
       "phases": [
+        {
+          "schema_version": "1.0.0",
+          "phase_id": "iteration5/kickoff-and-preflight",
+          "title": "Kickoff and Preflight",
+          "goal": "Validate branch context and prior review approval before starting Iteration 5 work.",
+          "depends_on": [
+            "iteration4/review-and-replan"
+          ],
+          "canonical": true,
+          "required_artifacts": [
+            "director/reviews/iteration_5_kickoff.json"
+          ],
+          "tasks": [
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration5.kickoff.verify_context",
+              "title": "Verify kickoff context",
+              "description": "Confirm integration branch naming, prior review approval, and merge-base hygiene.",
+              "iteration_id": "5",
+              "phase_id": "iteration5/kickoff-and-preflight",
+              "kind": "validation",
+              "depends_on": [],
+              "inputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "prior_review_approval",
+                  "path": "director/reviews/iteration_4_approval.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "kickoff_report",
+                  "path": "director/reviews/iteration_5_kickoff.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "preconditions": [],
+              "quality_checks": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "kickoff_ready",
+                  "kind": "json_field_compare",
+                  "target": "director/reviews/iteration_5_kickoff.json::status",
+                  "operator": "==",
+                  "expected": "ready",
+                  "on_fail": "block",
+                  "message": "Iteration 5 kickoff is not ready.",
+                  "reroute_to": []
+                }
+              ],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.director.cli kickoff --iteration 5"
+              ],
+              "manual_handoff": false,
+              "risks": [
+                "R4",
+                "R7"
+              ],
+              "estimated_effort": 2,
+              "risk_reduction": 10,
+              "automation_level": "partial",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true,
+              "tags": [
+                "kickoff"
+              ],
+              "gate_class": "ops"
+            }
+          ],
+          "lifecycle_state": "planned",
+          "source_window_id": "",
+          "tags": [
+            "kickoff",
+            "branch_policy"
+          ]
+        },
         {
           "schema_version": "1.0.0",
           "phase_id": "iteration5/regression-specification",
           "title": "Regression Specification",
           "goal": "Freeze regression inputs and define baseline and robustness specifications.",
           "depends_on": [
-            "iteration4/panel-qa-and-freeze"
+            "iteration5/kickoff-and-preflight"
           ],
           "canonical": true,
           "required_artifacts": [
@@ -2036,11 +3346,233 @@
           "tags": [
             "release"
           ]
+        },
+        {
+          "schema_version": "1.0.0",
+          "phase_id": "iteration5/review-and-replan",
+          "title": "Review and Replan",
+          "goal": "Synthesize iteration evidence, approve closeout, and generate the final handoff package.",
+          "depends_on": [
+            "iteration5/release-packaging"
+          ],
+          "canonical": true,
+          "required_artifacts": [
+            "director/reviews/iteration_5_review.json",
+            "director/reviews/iteration_5_review.md",
+            "director/reviews/iteration_5_patch_proposal.yaml",
+            "director/reviews/iteration_5_branch_plan.md",
+            "director/reviews/iteration_5_starter_prompt.md",
+            "director/reviews/iteration_5_approval.json"
+          ],
+          "tasks": [
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration5.review.generate_review",
+              "title": "Generate iteration review",
+              "description": "Build the structured IterationReview artifact set from Iteration 5 evidence.",
+              "iteration_id": "5",
+              "phase_id": "iteration5/review-and-replan",
+              "kind": "analysis",
+              "depends_on": [],
+              "inputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_log",
+                  "path": "docs/iteration_log.md",
+                  "kind": "markdown",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_review_json",
+                  "path": "director/reviews/iteration_5_review.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_review_md",
+                  "path": "director/reviews/iteration_5_review.md",
+                  "kind": "markdown",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_patch_yaml",
+                  "path": "director/reviews/iteration_5_patch_proposal.yaml",
+                  "kind": "file",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_branch_plan_md",
+                  "path": "director/reviews/iteration_5_branch_plan.md",
+                  "kind": "markdown",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_starter_prompt_md",
+                  "path": "director/reviews/iteration_5_starter_prompt.md",
+                  "kind": "markdown",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "preconditions": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration_log_exists",
+                  "kind": "artifact_exists",
+                  "target": "docs/iteration_log.md",
+                  "operator": "==",
+                  "expected": true,
+                  "on_fail": "block",
+                  "message": "Iteration log must exist before generating a review.",
+                  "reroute_to": []
+                }
+              ],
+              "quality_checks": [],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.director.cli review --iteration 5"
+              ],
+              "manual_handoff": false,
+              "risks": [
+                "R4",
+                "R7"
+              ],
+              "estimated_effort": 2,
+              "risk_reduction": 9,
+              "automation_level": "partial",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true,
+              "tags": [
+                "review_generation"
+              ],
+              "gate_class": "ops"
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration5.review.approve_closeout",
+              "title": "Approve iteration closeout",
+              "description": "Record manual review approval and explicitly accept or defer roadmap changes.",
+              "iteration_id": "5",
+              "phase_id": "iteration5/review-and-replan",
+              "kind": "manual",
+              "depends_on": [
+                "iteration5.review.generate_review"
+              ],
+              "inputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_review_json",
+                  "path": "director/reviews/iteration_5_review.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "iteration_review_approval",
+                  "path": "director/reviews/iteration_5_approval.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "preconditions": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration_review_exists",
+                  "kind": "artifact_exists",
+                  "target": "director/reviews/iteration_5_review.json",
+                  "operator": "==",
+                  "expected": true,
+                  "on_fail": "block",
+                  "message": "Iteration review must exist before approval.",
+                  "reroute_to": []
+                }
+              ],
+              "quality_checks": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration_review_approved",
+                  "kind": "json_field_compare",
+                  "target": "director/reviews/iteration_5_approval.json::decision",
+                  "operator": "==",
+                  "expected": "approved",
+                  "on_fail": "block",
+                  "message": "Iteration review approval must be explicitly approved.",
+                  "reroute_to": []
+                }
+              ],
+              "commands": [],
+              "manual_handoff": true,
+              "risks": [
+                "R4"
+              ],
+              "estimated_effort": 2,
+              "risk_reduction": 9,
+              "automation_level": "manual",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true,
+              "tags": [
+                "review_approval"
+              ],
+              "gate_class": "manual"
+            }
+          ],
+          "lifecycle_state": "planned",
+          "source_window_id": "",
+          "tags": [
+            "review",
+            "closeout"
+          ]
         }
       ]
     }
   ],
   "phases": [
+    {
+      "iteration_id": "1",
+      "phase_id": "iteration1/kickoff-and-preflight",
+      "title": "Historical Kickoff and Preflight",
+      "goal": "Traceability-only placeholder for the retroactively introduced iteration kickoff boundary.",
+      "task_count": 0,
+      "depends_on": [],
+      "lifecycle_state": "historical",
+      "source_window_id": "",
+      "required_artifacts": [
+        "director/reviews/iteration_1_kickoff.json"
+      ]
+    },
     {
       "iteration_id": "1",
       "phase_id": "iteration1/baseline-asset-freeze",
@@ -2151,7 +3683,28 @@
       "source_window_id": "active_2021_2024",
       "required_artifacts": [
         "data/labels/v1/labeling_batch_v1.parquet",
-        "data/labels/v1/labeling_batch_v1.csv"
+        "data/labels/v1/labeling_batch_v1.csv",
+        "reports/labels/labeling_batch_v1_summary.json"
+      ]
+    },
+    {
+      "iteration_id": "1",
+      "phase_id": "iteration1/review-and-replan",
+      "title": "Review and Replan",
+      "goal": "Synthesize iteration evidence, approve closeout, and prepare the next iteration handoff.",
+      "task_count": 2,
+      "depends_on": [
+        "iteration1/label-ops-bootstrap"
+      ],
+      "lifecycle_state": "planned",
+      "source_window_id": "",
+      "required_artifacts": [
+        "director/reviews/iteration_1_review.json",
+        "director/reviews/iteration_1_review.md",
+        "director/reviews/iteration_1_patch_proposal.yaml",
+        "director/reviews/iteration_1_branch_plan.md",
+        "director/reviews/iteration_1_starter_prompt.md",
+        "director/reviews/iteration_1_approval.json"
       ]
     },
     {
@@ -2195,12 +3748,27 @@
     },
     {
       "iteration_id": "2",
+      "phase_id": "iteration2/kickoff-and-preflight",
+      "title": "Kickoff and Preflight",
+      "goal": "Validate branch context and prior review approval before starting Iteration 2 work.",
+      "task_count": 1,
+      "depends_on": [
+        "iteration1/review-and-replan"
+      ],
+      "lifecycle_state": "planned",
+      "source_window_id": "",
+      "required_artifacts": [
+        "director/reviews/iteration_2_kickoff.json"
+      ]
+    },
+    {
+      "iteration_id": "2",
       "phase_id": "iteration2/dataset-expansion-2024",
       "title": "Dataset Expansion 2024",
       "goal": "Expand labeled coverage on clean pilot-derived sentences while keeping API use assistive only.",
       "task_count": 1,
       "depends_on": [
-        "iteration1/label-ops-bootstrap"
+        "iteration2/kickoff-and-preflight"
       ],
       "lifecycle_state": "planned",
       "source_window_id": "active_2021_2024",
@@ -2258,13 +3826,48 @@
       ]
     },
     {
+      "iteration_id": "2",
+      "phase_id": "iteration2/review-and-replan",
+      "title": "Review and Replan",
+      "goal": "Synthesize iteration evidence, approve closeout, and prepare the next iteration handoff.",
+      "task_count": 2,
+      "depends_on": [
+        "iteration2/modeling-readiness-gate"
+      ],
+      "lifecycle_state": "planned",
+      "source_window_id": "",
+      "required_artifacts": [
+        "director/reviews/iteration_2_review.json",
+        "director/reviews/iteration_2_review.md",
+        "director/reviews/iteration_2_patch_proposal.yaml",
+        "director/reviews/iteration_2_branch_plan.md",
+        "director/reviews/iteration_2_starter_prompt.md",
+        "director/reviews/iteration_2_approval.json"
+      ]
+    },
+    {
+      "iteration_id": "3",
+      "phase_id": "iteration3/kickoff-and-preflight",
+      "title": "Kickoff and Preflight",
+      "goal": "Validate branch context and prior review approval before starting Iteration 3 work.",
+      "task_count": 1,
+      "depends_on": [
+        "iteration2/review-and-replan"
+      ],
+      "lifecycle_state": "planned",
+      "source_window_id": "",
+      "required_artifacts": [
+        "director/reviews/iteration_3_kickoff.json"
+      ]
+    },
+    {
       "iteration_id": "3",
       "phase_id": "iteration3/centroid-retraining",
       "title": "Centroid Retraining",
       "goal": "Embed the adjudicated training set, compute centroids, and fingerprint metadata.",
       "task_count": 0,
       "depends_on": [
-        "iteration2/modeling-readiness-gate"
+        "iteration3/kickoff-and-preflight"
       ],
       "lifecycle_state": "planned",
       "source_window_id": "active_2021_2024",
@@ -2326,13 +3929,48 @@
       ]
     },
     {
+      "iteration_id": "3",
+      "phase_id": "iteration3/review-and-replan",
+      "title": "Review and Replan",
+      "goal": "Synthesize iteration evidence, approve closeout, and prepare the next iteration handoff.",
+      "task_count": 2,
+      "depends_on": [
+        "iteration3/aggregation-sanity"
+      ],
+      "lifecycle_state": "planned",
+      "source_window_id": "",
+      "required_artifacts": [
+        "director/reviews/iteration_3_review.json",
+        "director/reviews/iteration_3_review.md",
+        "director/reviews/iteration_3_patch_proposal.yaml",
+        "director/reviews/iteration_3_branch_plan.md",
+        "director/reviews/iteration_3_starter_prompt.md",
+        "director/reviews/iteration_3_approval.json"
+      ]
+    },
+    {
+      "iteration_id": "4",
+      "phase_id": "iteration4/kickoff-and-preflight",
+      "title": "Kickoff and Preflight",
+      "goal": "Validate branch context and prior review approval before starting Iteration 4 work.",
+      "task_count": 1,
+      "depends_on": [
+        "iteration3/review-and-replan"
+      ],
+      "lifecycle_state": "planned",
+      "source_window_id": "",
+      "required_artifacts": [
+        "director/reviews/iteration_4_kickoff.json"
+      ]
+    },
+    {
       "iteration_id": "4",
       "phase_id": "iteration4/patents-and-controls-ingestion",
       "title": "Patents and Controls Ingestion",
       "goal": "Refresh patents, controls, and crosswalk inputs required for the active-window panel.",
       "task_count": 0,
       "depends_on": [
-        "iteration3/aggregation-sanity"
+        "iteration4/kickoff-and-preflight"
       ],
       "lifecycle_state": "planned",
       "source_window_id": "active_2021_2024",
@@ -2389,13 +4027,48 @@
       ]
     },
     {
+      "iteration_id": "4",
+      "phase_id": "iteration4/review-and-replan",
+      "title": "Review and Replan",
+      "goal": "Synthesize iteration evidence, approve closeout, and prepare the next iteration handoff.",
+      "task_count": 2,
+      "depends_on": [
+        "iteration4/panel-qa-and-freeze"
+      ],
+      "lifecycle_state": "planned",
+      "source_window_id": "",
+      "required_artifacts": [
+        "director/reviews/iteration_4_review.json",
+        "director/reviews/iteration_4_review.md",
+        "director/reviews/iteration_4_patch_proposal.yaml",
+        "director/reviews/iteration_4_branch_plan.md",
+        "director/reviews/iteration_4_starter_prompt.md",
+        "director/reviews/iteration_4_approval.json"
+      ]
+    },
+    {
+      "iteration_id": "5",
+      "phase_id": "iteration5/kickoff-and-preflight",
+      "title": "Kickoff and Preflight",
+      "goal": "Validate branch context and prior review approval before starting Iteration 5 work.",
+      "task_count": 1,
+      "depends_on": [
+        "iteration4/review-and-replan"
+      ],
+      "lifecycle_state": "planned",
+      "source_window_id": "",
+      "required_artifacts": [
+        "director/reviews/iteration_5_kickoff.json"
+      ]
+    },
+    {
       "iteration_id": "5",
       "phase_id": "iteration5/regression-specification",
       "title": "Regression Specification",
       "goal": "Freeze regression inputs and define baseline and robustness specifications.",
       "task_count": 0,
       "depends_on": [
-        "iteration4/panel-qa-and-freeze"
+        "iteration5/kickoff-and-preflight"
       ],
       "lifecycle_state": "planned",
       "source_window_id": "active_2021_2024",
@@ -2446,6 +4119,26 @@
       "source_window_id": "active_2021_2024",
       "required_artifacts": [
         "reports/release/release_manifest_v1.json"
+      ]
+    },
+    {
+      "iteration_id": "5",
+      "phase_id": "iteration5/review-and-replan",
+      "title": "Review and Replan",
+      "goal": "Synthesize iteration evidence, approve closeout, and generate the final handoff package.",
+      "task_count": 2,
+      "depends_on": [
+        "iteration5/release-packaging"
+      ],
+      "lifecycle_state": "planned",
+      "source_window_id": "",
+      "required_artifacts": [
+        "director/reviews/iteration_5_review.json",
+        "director/reviews/iteration_5_review.md",
+        "director/reviews/iteration_5_patch_proposal.yaml",
+        "director/reviews/iteration_5_branch_plan.md",
+        "director/reviews/iteration_5_starter_prompt.md",
+        "director/reviews/iteration_5_approval.json"
       ]
     }
   ],
@@ -3284,8 +4977,55 @@
           "reroute_to": []
         }
       ],
-      "quality_checks": [],
-      "commands": [],
+      "quality_checks": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "labeling_batch_count",
+          "kind": "json_field_compare",
+          "target": "reports/labels/labeling_batch_v1_summary.json::selection.batch_row_count",
+          "operator": "==",
+          "expected": 240,
+          "on_fail": "block",
+          "message": "Labeling batch row count does not match the target contract.",
+          "reroute_to": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "labeling_batch_quota_satisfied",
+          "kind": "json_field_compare",
+          "target": "reports/labels/labeling_batch_v1_summary.json::selection.quota_satisfied",
+          "operator": "==",
+          "expected": true,
+          "on_fail": "block",
+          "message": "Labeling batch quarter allocation did not satisfy the target contract.",
+          "reroute_to": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "labeling_batch_no_leakage",
+          "kind": "json_field_compare",
+          "target": "reports/labels/labeling_batch_v1_summary.json::quality.heldout_overlap_count",
+          "operator": "==",
+          "expected": 0,
+          "on_fail": "block",
+          "message": "Labeling batch overlaps the frozen held-out set.",
+          "reroute_to": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "labeling_batch_no_exact_duplicates",
+          "kind": "json_field_compare",
+          "target": "reports/labels/labeling_batch_v1_summary.json::quality.exact_duplicate_count",
+          "operator": "==",
+          "expected": 0,
+          "on_fail": "block",
+          "message": "Labeling batch contains exact duplicate sentence texts.",
+          "reroute_to": []
+        }
+      ],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.labeling.build_labeling_batch --sentences data/processed/sentences/year=2024/ai_sentences.parquet --manifest data/manifests/filings/pilot_2024_10k_v1.csv --held-out data/validation/held_out_sentences.csv --output-parquet data/labels/v1/labeling_batch_v1.parquet --output-csv data/labels/v1/labeling_batch_v1.csv --report reports/labels/labeling_batch_v1_summary.json --batch-id labeling_batch_v1 --target-size 240 --base-quarter-quota 60 --min-tokens 6 --max-tokens 120 --seed 20260306"
+      ],
       "manual_handoff": false,
       "risks": [
         "R1",
@@ -3302,6 +5042,255 @@
         "label_batch"
       ],
       "gate_class": "data"
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.review.generate_review",
+      "title": "Generate iteration review",
+      "description": "Build the structured IterationReview artifact set from execution evidence and roadmap state.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/review-and-replan",
+      "kind": "analysis",
+      "depends_on": [],
+      "inputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_log",
+          "path": "docs/iteration_log.md",
+          "kind": "markdown",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_review_json",
+          "path": "director/reviews/iteration_1_review.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_review_md",
+          "path": "director/reviews/iteration_1_review.md",
+          "kind": "markdown",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_patch_yaml",
+          "path": "director/reviews/iteration_1_patch_proposal.yaml",
+          "kind": "file",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_branch_plan_md",
+          "path": "director/reviews/iteration_1_branch_plan.md",
+          "kind": "markdown",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_starter_prompt_md",
+          "path": "director/reviews/iteration_1_starter_prompt.md",
+          "kind": "markdown",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "preconditions": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration_log_exists",
+          "kind": "artifact_exists",
+          "target": "docs/iteration_log.md",
+          "operator": "==",
+          "expected": true,
+          "on_fail": "block",
+          "message": "Iteration log must exist before generating a review.",
+          "reroute_to": []
+        }
+      ],
+      "quality_checks": [],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.director.cli review --iteration 1"
+      ],
+      "manual_handoff": false,
+      "risks": [
+        "R4",
+        "R7"
+      ],
+      "estimated_effort": 2,
+      "risk_reduction": 9,
+      "automation_level": "partial",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true,
+      "tags": [
+        "review_generation"
+      ],
+      "gate_class": "ops"
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.review.approve_closeout",
+      "title": "Approve iteration closeout",
+      "description": "Record manual review approval and explicitly accept or defer roadmap changes.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/review-and-replan",
+      "kind": "manual",
+      "depends_on": [
+        "iteration1.review.generate_review"
+      ],
+      "inputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_review_json",
+          "path": "director/reviews/iteration_1_review.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_review_approval",
+          "path": "director/reviews/iteration_1_approval.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "preconditions": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration_review_exists",
+          "kind": "artifact_exists",
+          "target": "director/reviews/iteration_1_review.json",
+          "operator": "==",
+          "expected": true,
+          "on_fail": "block",
+          "message": "Iteration review must exist before approval.",
+          "reroute_to": []
+        }
+      ],
+      "quality_checks": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration_review_approved",
+          "kind": "json_field_compare",
+          "target": "director/reviews/iteration_1_approval.json::decision",
+          "operator": "==",
+          "expected": "approved",
+          "on_fail": "block",
+          "message": "Iteration review approval must be explicitly approved.",
+          "reroute_to": []
+        }
+      ],
+      "commands": [],
+      "manual_handoff": true,
+      "risks": [
+        "R4"
+      ],
+      "estimated_effort": 2,
+      "risk_reduction": 9,
+      "automation_level": "manual",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true,
+      "tags": [
+        "review_approval"
+      ],
+      "gate_class": "manual"
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration2.kickoff.verify_context",
+      "title": "Verify kickoff context",
+      "description": "Confirm integration branch naming, prior review approval, and merge-base hygiene.",
+      "iteration_id": "2",
+      "phase_id": "iteration2/kickoff-and-preflight",
+      "kind": "validation",
+      "depends_on": [],
+      "inputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "prior_review_approval",
+          "path": "director/reviews/iteration_1_approval.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "kickoff_report",
+          "path": "director/reviews/iteration_2_kickoff.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "preconditions": [],
+      "quality_checks": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "kickoff_ready",
+          "kind": "json_field_compare",
+          "target": "director/reviews/iteration_2_kickoff.json::status",
+          "operator": "==",
+          "expected": "ready",
+          "on_fail": "block",
+          "message": "Iteration 2 kickoff is not ready.",
+          "reroute_to": []
+        }
+      ],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.director.cli kickoff --iteration 2"
+      ],
+      "manual_handoff": false,
+      "risks": [
+        "R4",
+        "R7"
+      ],
+      "estimated_effort": 2,
+      "risk_reduction": 10,
+      "automation_level": "partial",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true,
+      "tags": [
+        "kickoff"
+      ],
+      "gate_class": "ops"
     },
     {
       "schema_version": "1.0.0",
@@ -3621,6 +5610,936 @@
         "split_registry"
       ],
       "gate_class": "data"
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration2.review.generate_review",
+      "title": "Generate iteration review",
+      "description": "Build the structured IterationReview artifact set from Iteration 2 evidence.",
+      "iteration_id": "2",
+      "phase_id": "iteration2/review-and-replan",
+      "kind": "analysis",
+      "depends_on": [],
+      "inputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_log",
+          "path": "docs/iteration_log.md",
+          "kind": "markdown",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_review_json",
+          "path": "director/reviews/iteration_2_review.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_review_md",
+          "path": "director/reviews/iteration_2_review.md",
+          "kind": "markdown",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_patch_yaml",
+          "path": "director/reviews/iteration_2_patch_proposal.yaml",
+          "kind": "file",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_branch_plan_md",
+          "path": "director/reviews/iteration_2_branch_plan.md",
+          "kind": "markdown",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_starter_prompt_md",
+          "path": "director/reviews/iteration_2_starter_prompt.md",
+          "kind": "markdown",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "preconditions": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration_log_exists",
+          "kind": "artifact_exists",
+          "target": "docs/iteration_log.md",
+          "operator": "==",
+          "expected": true,
+          "on_fail": "block",
+          "message": "Iteration log must exist before generating a review.",
+          "reroute_to": []
+        }
+      ],
+      "quality_checks": [],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.director.cli review --iteration 2"
+      ],
+      "manual_handoff": false,
+      "risks": [
+        "R4",
+        "R7"
+      ],
+      "estimated_effort": 2,
+      "risk_reduction": 9,
+      "automation_level": "partial",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true,
+      "tags": [
+        "review_generation"
+      ],
+      "gate_class": "ops"
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration2.review.approve_closeout",
+      "title": "Approve iteration closeout",
+      "description": "Record manual review approval and explicitly accept or defer roadmap changes.",
+      "iteration_id": "2",
+      "phase_id": "iteration2/review-and-replan",
+      "kind": "manual",
+      "depends_on": [
+        "iteration2.review.generate_review"
+      ],
+      "inputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_review_json",
+          "path": "director/reviews/iteration_2_review.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_review_approval",
+          "path": "director/reviews/iteration_2_approval.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "preconditions": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration_review_exists",
+          "kind": "artifact_exists",
+          "target": "director/reviews/iteration_2_review.json",
+          "operator": "==",
+          "expected": true,
+          "on_fail": "block",
+          "message": "Iteration review must exist before approval.",
+          "reroute_to": []
+        }
+      ],
+      "quality_checks": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration_review_approved",
+          "kind": "json_field_compare",
+          "target": "director/reviews/iteration_2_approval.json::decision",
+          "operator": "==",
+          "expected": "approved",
+          "on_fail": "block",
+          "message": "Iteration review approval must be explicitly approved.",
+          "reroute_to": []
+        }
+      ],
+      "commands": [],
+      "manual_handoff": true,
+      "risks": [
+        "R4"
+      ],
+      "estimated_effort": 2,
+      "risk_reduction": 9,
+      "automation_level": "manual",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true,
+      "tags": [
+        "review_approval"
+      ],
+      "gate_class": "manual"
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration3.kickoff.verify_context",
+      "title": "Verify kickoff context",
+      "description": "Confirm integration branch naming, prior review approval, and merge-base hygiene.",
+      "iteration_id": "3",
+      "phase_id": "iteration3/kickoff-and-preflight",
+      "kind": "validation",
+      "depends_on": [],
+      "inputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "prior_review_approval",
+          "path": "director/reviews/iteration_2_approval.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "kickoff_report",
+          "path": "director/reviews/iteration_3_kickoff.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "preconditions": [],
+      "quality_checks": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "kickoff_ready",
+          "kind": "json_field_compare",
+          "target": "director/reviews/iteration_3_kickoff.json::status",
+          "operator": "==",
+          "expected": "ready",
+          "on_fail": "block",
+          "message": "Iteration 3 kickoff is not ready.",
+          "reroute_to": []
+        }
+      ],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.director.cli kickoff --iteration 3"
+      ],
+      "manual_handoff": false,
+      "risks": [
+        "R4",
+        "R7"
+      ],
+      "estimated_effort": 2,
+      "risk_reduction": 10,
+      "automation_level": "partial",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true,
+      "tags": [
+        "kickoff"
+      ],
+      "gate_class": "ops"
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration3.review.generate_review",
+      "title": "Generate iteration review",
+      "description": "Build the structured IterationReview artifact set from Iteration 3 evidence.",
+      "iteration_id": "3",
+      "phase_id": "iteration3/review-and-replan",
+      "kind": "analysis",
+      "depends_on": [],
+      "inputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_log",
+          "path": "docs/iteration_log.md",
+          "kind": "markdown",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_review_json",
+          "path": "director/reviews/iteration_3_review.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_review_md",
+          "path": "director/reviews/iteration_3_review.md",
+          "kind": "markdown",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_patch_yaml",
+          "path": "director/reviews/iteration_3_patch_proposal.yaml",
+          "kind": "file",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_branch_plan_md",
+          "path": "director/reviews/iteration_3_branch_plan.md",
+          "kind": "markdown",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_starter_prompt_md",
+          "path": "director/reviews/iteration_3_starter_prompt.md",
+          "kind": "markdown",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "preconditions": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration_log_exists",
+          "kind": "artifact_exists",
+          "target": "docs/iteration_log.md",
+          "operator": "==",
+          "expected": true,
+          "on_fail": "block",
+          "message": "Iteration log must exist before generating a review.",
+          "reroute_to": []
+        }
+      ],
+      "quality_checks": [],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.director.cli review --iteration 3"
+      ],
+      "manual_handoff": false,
+      "risks": [
+        "R4",
+        "R7"
+      ],
+      "estimated_effort": 2,
+      "risk_reduction": 9,
+      "automation_level": "partial",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true,
+      "tags": [
+        "review_generation"
+      ],
+      "gate_class": "ops"
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration3.review.approve_closeout",
+      "title": "Approve iteration closeout",
+      "description": "Record manual review approval and explicitly accept or defer roadmap changes.",
+      "iteration_id": "3",
+      "phase_id": "iteration3/review-and-replan",
+      "kind": "manual",
+      "depends_on": [
+        "iteration3.review.generate_review"
+      ],
+      "inputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_review_json",
+          "path": "director/reviews/iteration_3_review.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_review_approval",
+          "path": "director/reviews/iteration_3_approval.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "preconditions": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration_review_exists",
+          "kind": "artifact_exists",
+          "target": "director/reviews/iteration_3_review.json",
+          "operator": "==",
+          "expected": true,
+          "on_fail": "block",
+          "message": "Iteration review must exist before approval.",
+          "reroute_to": []
+        }
+      ],
+      "quality_checks": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration_review_approved",
+          "kind": "json_field_compare",
+          "target": "director/reviews/iteration_3_approval.json::decision",
+          "operator": "==",
+          "expected": "approved",
+          "on_fail": "block",
+          "message": "Iteration review approval must be explicitly approved.",
+          "reroute_to": []
+        }
+      ],
+      "commands": [],
+      "manual_handoff": true,
+      "risks": [
+        "R4"
+      ],
+      "estimated_effort": 2,
+      "risk_reduction": 9,
+      "automation_level": "manual",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true,
+      "tags": [
+        "review_approval"
+      ],
+      "gate_class": "manual"
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration4.kickoff.verify_context",
+      "title": "Verify kickoff context",
+      "description": "Confirm integration branch naming, prior review approval, and merge-base hygiene.",
+      "iteration_id": "4",
+      "phase_id": "iteration4/kickoff-and-preflight",
+      "kind": "validation",
+      "depends_on": [],
+      "inputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "prior_review_approval",
+          "path": "director/reviews/iteration_3_approval.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "kickoff_report",
+          "path": "director/reviews/iteration_4_kickoff.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "preconditions": [],
+      "quality_checks": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "kickoff_ready",
+          "kind": "json_field_compare",
+          "target": "director/reviews/iteration_4_kickoff.json::status",
+          "operator": "==",
+          "expected": "ready",
+          "on_fail": "block",
+          "message": "Iteration 4 kickoff is not ready.",
+          "reroute_to": []
+        }
+      ],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.director.cli kickoff --iteration 4"
+      ],
+      "manual_handoff": false,
+      "risks": [
+        "R4",
+        "R7"
+      ],
+      "estimated_effort": 2,
+      "risk_reduction": 10,
+      "automation_level": "partial",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true,
+      "tags": [
+        "kickoff"
+      ],
+      "gate_class": "ops"
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration4.review.generate_review",
+      "title": "Generate iteration review",
+      "description": "Build the structured IterationReview artifact set from Iteration 4 evidence.",
+      "iteration_id": "4",
+      "phase_id": "iteration4/review-and-replan",
+      "kind": "analysis",
+      "depends_on": [],
+      "inputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_log",
+          "path": "docs/iteration_log.md",
+          "kind": "markdown",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_review_json",
+          "path": "director/reviews/iteration_4_review.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_review_md",
+          "path": "director/reviews/iteration_4_review.md",
+          "kind": "markdown",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_patch_yaml",
+          "path": "director/reviews/iteration_4_patch_proposal.yaml",
+          "kind": "file",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_branch_plan_md",
+          "path": "director/reviews/iteration_4_branch_plan.md",
+          "kind": "markdown",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_starter_prompt_md",
+          "path": "director/reviews/iteration_4_starter_prompt.md",
+          "kind": "markdown",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "preconditions": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration_log_exists",
+          "kind": "artifact_exists",
+          "target": "docs/iteration_log.md",
+          "operator": "==",
+          "expected": true,
+          "on_fail": "block",
+          "message": "Iteration log must exist before generating a review.",
+          "reroute_to": []
+        }
+      ],
+      "quality_checks": [],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.director.cli review --iteration 4"
+      ],
+      "manual_handoff": false,
+      "risks": [
+        "R4",
+        "R7"
+      ],
+      "estimated_effort": 2,
+      "risk_reduction": 9,
+      "automation_level": "partial",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true,
+      "tags": [
+        "review_generation"
+      ],
+      "gate_class": "ops"
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration4.review.approve_closeout",
+      "title": "Approve iteration closeout",
+      "description": "Record manual review approval and explicitly accept or defer roadmap changes.",
+      "iteration_id": "4",
+      "phase_id": "iteration4/review-and-replan",
+      "kind": "manual",
+      "depends_on": [
+        "iteration4.review.generate_review"
+      ],
+      "inputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_review_json",
+          "path": "director/reviews/iteration_4_review.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_review_approval",
+          "path": "director/reviews/iteration_4_approval.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "preconditions": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration_review_exists",
+          "kind": "artifact_exists",
+          "target": "director/reviews/iteration_4_review.json",
+          "operator": "==",
+          "expected": true,
+          "on_fail": "block",
+          "message": "Iteration review must exist before approval.",
+          "reroute_to": []
+        }
+      ],
+      "quality_checks": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration_review_approved",
+          "kind": "json_field_compare",
+          "target": "director/reviews/iteration_4_approval.json::decision",
+          "operator": "==",
+          "expected": "approved",
+          "on_fail": "block",
+          "message": "Iteration review approval must be explicitly approved.",
+          "reroute_to": []
+        }
+      ],
+      "commands": [],
+      "manual_handoff": true,
+      "risks": [
+        "R4"
+      ],
+      "estimated_effort": 2,
+      "risk_reduction": 9,
+      "automation_level": "manual",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true,
+      "tags": [
+        "review_approval"
+      ],
+      "gate_class": "manual"
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration5.kickoff.verify_context",
+      "title": "Verify kickoff context",
+      "description": "Confirm integration branch naming, prior review approval, and merge-base hygiene.",
+      "iteration_id": "5",
+      "phase_id": "iteration5/kickoff-and-preflight",
+      "kind": "validation",
+      "depends_on": [],
+      "inputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "prior_review_approval",
+          "path": "director/reviews/iteration_4_approval.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "kickoff_report",
+          "path": "director/reviews/iteration_5_kickoff.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "preconditions": [],
+      "quality_checks": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "kickoff_ready",
+          "kind": "json_field_compare",
+          "target": "director/reviews/iteration_5_kickoff.json::status",
+          "operator": "==",
+          "expected": "ready",
+          "on_fail": "block",
+          "message": "Iteration 5 kickoff is not ready.",
+          "reroute_to": []
+        }
+      ],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.director.cli kickoff --iteration 5"
+      ],
+      "manual_handoff": false,
+      "risks": [
+        "R4",
+        "R7"
+      ],
+      "estimated_effort": 2,
+      "risk_reduction": 10,
+      "automation_level": "partial",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true,
+      "tags": [
+        "kickoff"
+      ],
+      "gate_class": "ops"
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration5.review.generate_review",
+      "title": "Generate iteration review",
+      "description": "Build the structured IterationReview artifact set from Iteration 5 evidence.",
+      "iteration_id": "5",
+      "phase_id": "iteration5/review-and-replan",
+      "kind": "analysis",
+      "depends_on": [],
+      "inputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_log",
+          "path": "docs/iteration_log.md",
+          "kind": "markdown",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_review_json",
+          "path": "director/reviews/iteration_5_review.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_review_md",
+          "path": "director/reviews/iteration_5_review.md",
+          "kind": "markdown",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_patch_yaml",
+          "path": "director/reviews/iteration_5_patch_proposal.yaml",
+          "kind": "file",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_branch_plan_md",
+          "path": "director/reviews/iteration_5_branch_plan.md",
+          "kind": "markdown",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_starter_prompt_md",
+          "path": "director/reviews/iteration_5_starter_prompt.md",
+          "kind": "markdown",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "preconditions": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration_log_exists",
+          "kind": "artifact_exists",
+          "target": "docs/iteration_log.md",
+          "operator": "==",
+          "expected": true,
+          "on_fail": "block",
+          "message": "Iteration log must exist before generating a review.",
+          "reroute_to": []
+        }
+      ],
+      "quality_checks": [],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.director.cli review --iteration 5"
+      ],
+      "manual_handoff": false,
+      "risks": [
+        "R4",
+        "R7"
+      ],
+      "estimated_effort": 2,
+      "risk_reduction": 9,
+      "automation_level": "partial",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true,
+      "tags": [
+        "review_generation"
+      ],
+      "gate_class": "ops"
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration5.review.approve_closeout",
+      "title": "Approve iteration closeout",
+      "description": "Record manual review approval and explicitly accept or defer roadmap changes.",
+      "iteration_id": "5",
+      "phase_id": "iteration5/review-and-replan",
+      "kind": "manual",
+      "depends_on": [
+        "iteration5.review.generate_review"
+      ],
+      "inputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_review_json",
+          "path": "director/reviews/iteration_5_review.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "iteration_review_approval",
+          "path": "director/reviews/iteration_5_approval.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "preconditions": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration_review_exists",
+          "kind": "artifact_exists",
+          "target": "director/reviews/iteration_5_review.json",
+          "operator": "==",
+          "expected": true,
+          "on_fail": "block",
+          "message": "Iteration review must exist before approval.",
+          "reroute_to": []
+        }
+      ],
+      "quality_checks": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration_review_approved",
+          "kind": "json_field_compare",
+          "target": "director/reviews/iteration_5_approval.json::decision",
+          "operator": "==",
+          "expected": "approved",
+          "on_fail": "block",
+          "message": "Iteration review approval must be explicitly approved.",
+          "reroute_to": []
+        }
+      ],
+      "commands": [],
+      "manual_handoff": true,
+      "risks": [
+        "R4"
+      ],
+      "estimated_effort": 2,
+      "risk_reduction": 9,
+      "automation_level": "manual",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true,
+      "tags": [
+        "review_approval"
+      ],
+      "gate_class": "manual"
     }
   ],
   "dependency_edges": [
@@ -3681,6 +6600,21 @@
     },
     {
       "from": "iteration1/label-ops-bootstrap",
+      "to": "iteration1/review-and-replan",
+      "type": "phase"
+    },
+    {
+      "from": "iteration1.review.generate_review",
+      "to": "iteration1.review.approve_closeout",
+      "type": "task"
+    },
+    {
+      "from": "iteration1/review-and-replan",
+      "to": "iteration2/kickoff-and-preflight",
+      "type": "phase"
+    },
+    {
+      "from": "iteration2/kickoff-and-preflight",
       "to": "iteration2/dataset-expansion-2024",
       "type": "phase"
     },
@@ -3706,6 +6640,21 @@
     },
     {
       "from": "iteration2/modeling-readiness-gate",
+      "to": "iteration2/review-and-replan",
+      "type": "phase"
+    },
+    {
+      "from": "iteration2.review.generate_review",
+      "to": "iteration2.review.approve_closeout",
+      "type": "task"
+    },
+    {
+      "from": "iteration2/review-and-replan",
+      "to": "iteration3/kickoff-and-preflight",
+      "type": "phase"
+    },
+    {
+      "from": "iteration3/kickoff-and-preflight",
       "to": "iteration3/centroid-retraining",
       "type": "phase"
     },
@@ -3726,6 +6675,21 @@
     },
     {
       "from": "iteration3/aggregation-sanity",
+      "to": "iteration3/review-and-replan",
+      "type": "phase"
+    },
+    {
+      "from": "iteration3.review.generate_review",
+      "to": "iteration3.review.approve_closeout",
+      "type": "task"
+    },
+    {
+      "from": "iteration3/review-and-replan",
+      "to": "iteration4/kickoff-and-preflight",
+      "type": "phase"
+    },
+    {
+      "from": "iteration4/kickoff-and-preflight",
       "to": "iteration4/patents-and-controls-ingestion",
       "type": "phase"
     },
@@ -3746,6 +6710,21 @@
     },
     {
       "from": "iteration4/panel-qa-and-freeze",
+      "to": "iteration4/review-and-replan",
+      "type": "phase"
+    },
+    {
+      "from": "iteration4.review.generate_review",
+      "to": "iteration4.review.approve_closeout",
+      "type": "task"
+    },
+    {
+      "from": "iteration4/review-and-replan",
+      "to": "iteration5/kickoff-and-preflight",
+      "type": "phase"
+    },
+    {
+      "from": "iteration5/kickoff-and-preflight",
       "to": "iteration5/regression-specification",
       "type": "phase"
     },
@@ -3763,9 +6742,19 @@
       "from": "iteration5/robustness-and-sensitivity",
       "to": "iteration5/release-packaging",
       "type": "phase"
+    },
+    {
+      "from": "iteration5/release-packaging",
+      "to": "iteration5/review-and-replan",
+      "type": "phase"
+    },
+    {
+      "from": "iteration5.review.generate_review",
+      "to": "iteration5.review.approve_closeout",
+      "type": "task"
     }
   ],
-  "manual_task_count": 4,
-  "quality_check_count": 4,
-  "risk_links": 29
+  "manual_task_count": 9,
+  "quality_check_count": 17,
+  "risk_links": 52
 }

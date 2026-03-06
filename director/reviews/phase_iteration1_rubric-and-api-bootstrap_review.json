@@ -1,0 +1,380 @@
+{
+  "schema_version": "1.2.0",
+  "review_id": "181987a7-313a6974",
+  "review_type": "phase",
+  "iteration_id": "1",
+  "phase_id": "iteration1/rubric-and-api-bootstrap",
+  "generated_at": "2026-03-06T22:31:33.672826+00:00",
+  "git": {
+    "branch": "director/iteration-review",
+    "commit": "25e176144eaf89ebdf2fc57da504bfbe949b56f7",
+    "dirty": true
+  },
+  "inputs": {
+    "roadmap_model": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/model/roadmap_model.yaml",
+    "iteration_log": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/docs/iteration_log.md",
+    "run_count": 3
+  },
+  "phase_summary": {
+    "phases": [
+      {
+        "phase_id": "iteration1/rubric-and-api-bootstrap",
+        "title": "Rubric and API Bootstrap",
+        "goal": "Prepare rubric v1 and bounded assistive API usage without promoting API output to canonical labels.",
+        "lifecycle_state": "planned",
+        "status": "passed",
+        "run_count": 3,
+        "latest_runbook_id": "73ff6330d958a0df",
+        "latest_state_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_state_73ff6330d958a0df.json",
+        "latest_result_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_result_73ff6330d958a0df.json"
+      }
+    ],
+    "completed": [
+      "iteration1/rubric-and-api-bootstrap"
+    ],
+    "blocked": [],
+    "deferred": [],
+    "historical": []
+  },
+  "blocker_summary": {
+    "blocker_count": 2,
+    "by_type": {
+      "runtime": 2
+    },
+    "repeated_signatures": [
+      {
+        "blocker_type": "runtime",
+        "signature": "python",
+        "count": 2,
+        "blocker_ids": [
+          "032d61f9ec3ecd06-step-014-runtime",
+          "b4f0258f4a638cd9-step-014-runtime"
+        ]
+      }
+    ]
+  },
+  "timing_summary": {
+    "total_automated_runtime_seconds": 95.664,
+    "total_validation_runtime_seconds": 87.843,
+    "slowest_phase": {
+      "phase_id": "iteration1/rubric-and-api-bootstrap",
+      "seconds": 95.664
+    },
+    "slowest_command": {
+      "command": ".venv/bin/pytest -q",
+      "seconds": 22.455,
+      "phase_id": "iteration1/rubric-and-api-bootstrap"
+    },
+    "rerun_count": 2
+  },
+  "manual_summary": {
+    "manual_task_count": 2,
+    "blocked_manual_count": 0,
+    "satisfied_manual_count": 2,
+    "tasks": [
+      {
+        "task_id": "iteration1.api.publish_assistive_policy",
+        "phase_id": "iteration1/rubric-and-api-bootstrap",
+        "status": "satisfied",
+        "outputs": [
+          "director/config/api_assistive_policy.yaml"
+        ]
+      },
+      {
+        "task_id": "iteration1.rubric.publish_rubric_v1",
+        "phase_id": "iteration1/rubric-and-api-bootstrap",
+        "status": "satisfied",
+        "outputs": [
+          "docs/labeling_protocol.md"
+        ]
+      }
+    ]
+  },
+  "quality_summary": {
+    "reports": {
+      "reports/api/api_bootstrap_smoke_test.json": {
+        "status": "passed"
+      }
+    }
+  },
+  "findings": [
+    {
+      "schema_version": "1.0.0",
+      "scope": "phase",
+      "finding_id": "runtime-python",
+      "category": "runtime_contract",
+      "severity": "high",
+      "summary": "Repeated blocker `python` occurred 2 times.",
+      "evidence_refs": [
+        "032d61f9ec3ecd06-step-014-runtime",
+        "b4f0258f4a638cd9-step-014-runtime"
+      ],
+      "recommended_action": "Review preconditions, request shape, and gate ordering before retrying the same step."
+    }
+  ],
+  "roadmap_changes": [
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_8732eb4e-3a3a3230-1",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.remediate_fragmented_sentences",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "target": "iteration1/label-ops-bootstrap",
+      "rationale": "Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration1/label-ops-bootstrap`.",
+      "status": "proposed"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_8732eb4e-3a3a3230-2",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.resample_from_clean_sentence_pool",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "target": "iteration1/label-ops-bootstrap",
+      "rationale": "Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration1/label-ops-bootstrap`.",
+      "status": "proposed"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_9d516339-3a3a3230-1",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.remediate_fragmented_sentences",
+        "before_phase": "iteration2/irr-and-adjudication",
+        "blocked_task_id": "iteration2.shared.audit_sentence_integrity"
+      },
+      "target": "iteration2/irr-and-adjudication",
+      "rationale": "Task `iteration2.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration2/irr-and-adjudication`.",
+      "status": "proposed"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_9d516339-3a3a3230-2",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.resample_from_clean_sentence_pool",
+        "before_phase": "iteration2/irr-and-adjudication",
+        "blocked_task_id": "iteration2.shared.audit_sentence_integrity"
+      },
+      "target": "iteration2/irr-and-adjudication",
+      "rationale": "Task `iteration2.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration2/irr-and-adjudication`.",
+      "status": "proposed"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_b2f116c5-3a3a3230-1",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.remediate_fragmented_sentences",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "target": "iteration1/label-ops-bootstrap",
+      "rationale": "Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration1/label-ops-bootstrap`.",
+      "status": "proposed"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_b2f116c5-3a3a3230-2",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.resample_from_clean_sentence_pool",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "target": "iteration1/label-ops-bootstrap",
+      "rationale": "Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration1/label-ops-bootstrap`.",
+      "status": "proposed"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_d3700831-313a6972-1",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.remediate_fragmented_sentences",
+        "before_phase": "iteration1/irr-validation",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "target": "iteration1/irr-validation",
+      "rationale": "Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration1/irr-validation`.",
+      "status": "proposed"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_d3700831-313a6972-2",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.resample_from_clean_sentence_pool",
+        "before_phase": "iteration1/irr-validation",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "target": "iteration1/irr-validation",
+      "rationale": "Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration1/irr-validation`.",
+      "status": "proposed"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_e08e31e6-3a3a3230-1",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.remediate_fragmented_sentences",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "target": "iteration1/label-ops-bootstrap",
+      "rationale": "Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration1/label-ops-bootstrap`.",
+      "status": "proposed"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_e08e31e6-3a3a3230-2",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.resample_from_clean_sentence_pool",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "target": "iteration1/label-ops-bootstrap",
+      "rationale": "Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration1/label-ops-bootstrap`.",
+      "status": "proposed"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_fb55837d-3a3a3230-1",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.remediate_fragmented_sentences",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "target": "iteration1/label-ops-bootstrap",
+      "rationale": "Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration1/label-ops-bootstrap`.",
+      "status": "proposed"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_fb55837d-3a3a3230-2",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.resample_from_clean_sentence_pool",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "target": "iteration1/label-ops-bootstrap",
+      "rationale": "Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration1/label-ops-bootstrap`.",
+      "status": "proposed"
+    }
+  ],
+  "carryover_blockers": [
+    {
+      "schema_version": "1.0.0",
+      "deferred_id": "51a4c7ed8c613dc7",
+      "decision_id": "cde09cd3d28fb567",
+      "blocker_id": "115d7b0ec26e20bc-step-009-runtime",
+      "until_iteration": "2",
+      "until_phase": "full-classification",
+      "criteria": "Increase sampled supply and align recovery target-size policy before retry",
+      "created_at": "2026-03-03T17:37:01.161934+00:00",
+      "status": "active",
+      "context": {
+        "decision_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/decisions/decision_cde09cd3d28fb567.json"
+      },
+      "path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/decisions/deferred_51a4c7ed8c613dc7.json"
+    },
+    {
+      "schema_version": "1.0.0",
+      "deferred_id": "6fa72b112467c617",
+      "decision_id": "c5828a0ba91f06fb",
+      "blocker_id": "31bb0b5874d88bca-step-004-runtime",
+      "until_iteration": "2",
+      "until_phase": "full-classification",
+      "criteria": "Resume after data architecture stabilization and Phase 1 science recovery",
+      "created_at": "2026-03-03T02:52:37.710187+00:00",
+      "status": "active",
+      "context": {
+        "decision_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/decisions/decision_c5828a0ba91f06fb.json"
+      },
+      "path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/decisions/deferred_6fa72b112467c617.json"
+    },
+    {
+      "schema_version": "1.0.0",
+      "deferred_id": "eedb6fbadba43363",
+      "decision_id": "8bbeeba8186ff739",
+      "blocker_id": "31bb0b5874d88bca-step-004-runtime",
+      "until_iteration": "2",
+      "until_phase": "full-classification",
+      "criteria": "Resume after Phase 1 label expansion blockers are addressed",
+      "created_at": "2026-03-03T02:53:23.844095+00:00",
+      "status": "active",
+      "context": {
+        "decision_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/decisions/decision_8bbeeba8186ff739.json"
+      },
+      "path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/decisions/deferred_eedb6fbadba43363.json"
+    }
+  ],
+  "branch_closeout": {
+    "current_branch": "director/iteration-review",
+    "integration_branch": "iteration1/integration",
+    "merge_target": "main",
+    "tag": "iteration1-closeout",
+    "closeout_validation_commands": [
+      "make bootstrap",
+      "make doctor",
+      "make format",
+      "make lint",
+      ".venv/bin/pytest -q"
+    ],
+    "steps": [
+      "git push origin director/iteration-review",
+      "git switch iteration1/integration",
+      "git merge --ff-only director/iteration-review",
+      "git switch main",
+      "git pull --ff-only",
+      "git switch iteration1/integration",
+      "git merge --ff-only main"
+    ],
+    "merge_strategy_note": "Prefer ff-only. If ff-only is not possible, use a non-interactive PR/merge-commit workflow after rerunning closeout validation.",
+    "next_iteration_steps": [
+      "git switch main",
+      "git pull --ff-only",
+      "git switch -c iteration2/integration"
+    ]
+  },
+  "next_iteration": {
+    "iteration_id": "2",
+    "recommended_phase": "iteration2/kickoff-and-preflight",
+    "entry_criteria": [
+      "Iteration 1 review approved.",
+      "Iteration 2 kickoff completed on iteration2/integration."
+    ],
+    "authorized": false
+  },
+  "artifacts": {
+    "review_json": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/reviews/phase_iteration1_rubric-and-api-bootstrap_review.json",
+    "review_md": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/reviews/phase_iteration1_rubric-and-api-bootstrap_review.md",
+    "patch_yaml": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/reviews/phase_iteration1_rubric-and-api-bootstrap_patch_proposal.yaml",
+    "branch_plan": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/reviews/phase_iteration1_rubric-and-api-bootstrap_branch_plan.md",
+    "starter_prompt": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/reviews/phase_iteration1_rubric-and-api-bootstrap_starter_prompt.md",
+    "approval_json": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/reviews/phase_iteration1_rubric-and-api-bootstrap_approval.json",
+    "kickoff_json": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/reviews/iteration_1_kickoff.json",
+    "patch_apply_json": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/reviews/phase_iteration1_rubric-and-api-bootstrap_patch_apply.json"
+  },
+  "status": "draft"
+}

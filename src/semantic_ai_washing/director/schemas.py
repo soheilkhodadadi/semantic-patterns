@@ -110,6 +110,20 @@ class ToolingPolicySpec(DeterministicModel):
     expected_repo_venv_home: str = ""
 
 
+class BranchingPolicySpec(DeterministicModel):
+    schema_version: str = Field(default=ROADMAP_SCHEMA_VERSION)
+    integration_branch_template: str
+    work_branch_template: str
+    merge_target: str
+    preferred_merge_strategy: str
+    require_review_approval_before_next_iteration: bool = True
+    require_review_approval_before_main_merge: bool = True
+    suggest_new_chat_at_iteration_boundary: bool = True
+    starter_prompt_required: bool = True
+    tag_template: str
+    closeout_validation_commands: list[str] = Field(default_factory=list)
+
+
 class ApiAssistivePromptSpec(DeterministicModel):
     schema_version: str = Field(default=ROADMAP_SCHEMA_VERSION)
     label_set: list[str] = Field(default_factory=list)
@@ -265,6 +279,8 @@ class IterationSpec(DeterministicModel):
     iteration_id: str
     title: str
     goal: str
+    entry_criteria: list[str] = Field(default_factory=list)
+    exit_criteria: list[str] = Field(default_factory=list)
     phases: list[PhaseSpec] = Field(default_factory=list)
 
 
@@ -283,6 +299,7 @@ class RoadmapModel(DeterministicModel):
     schema_version: str = Field(default=ROADMAP_SCHEMA_VERSION)
     project: dict[str, Any] = Field(default_factory=dict)
     settings: dict[str, Any] = Field(default_factory=dict)
+    branching_policy: BranchingPolicySpec
     policies: list[PolicySpec] = Field(default_factory=list)
     data_layers: list[DataLayerSpec] = Field(default_factory=list)
     source_windows: list[SourceWindowSpec] = Field(default_factory=list)
@@ -374,6 +391,122 @@ class OptimizationReport(DeterministicModel):
     patch_file: str = ""
     task_states: list[TaskStateSnapshot] = Field(default_factory=list)
     recommendation: OptimizationRecommendation
+
+
+class ReviewFinding(DeterministicModel):
+    scope: Literal["iteration", "phase"]
+    finding_id: str
+    category: Literal[
+        "planning_error",
+        "dependency_order",
+        "gate_weakness",
+        "gate_overconstraint",
+        "tooling_env",
+        "runtime_contract",
+        "manual_workflow",
+        "policy_gap",
+        "artifact_schema",
+        "data_quality",
+    ]
+    severity: Literal["low", "medium", "high"] = "medium"
+    summary: str
+    evidence_refs: list[str] = Field(default_factory=list)
+    recommended_action: str
+
+
+class ReviewChangeProposal(DeterministicModel):
+    change_id: str
+    source: Literal["optimizer_patch", "review_inference", "manual_carryover"]
+    operation: dict[str, Any] = Field(default_factory=dict)
+    target: str
+    rationale: str
+    status: Literal["proposed", "accepted", "deferred"] = "proposed"
+
+
+class StarterPromptArtifact(DeterministicModel):
+    iteration_id: str
+    generated_at: str
+    recommended_new_chat: bool = True
+    prompt_markdown_path: str
+    stable_checkpoint_commits: list[str] = Field(default_factory=list)
+    key_artifacts: list[str] = Field(default_factory=list)
+    next_phase: str = ""
+    constraints: list[str] = Field(default_factory=list)
+
+
+class IterationReview(DeterministicModel):
+    schema_version: str = Field(default=ROADMAP_SCHEMA_VERSION)
+    review_id: str
+    review_type: Literal["iteration"] = "iteration"
+    iteration_id: str
+    generated_at: str
+    git: dict[str, Any] = Field(default_factory=dict)
+    inputs: dict[str, Any] = Field(default_factory=dict)
+    phase_summary: dict[str, Any] = Field(default_factory=dict)
+    blocker_summary: dict[str, Any] = Field(default_factory=dict)
+    timing_summary: dict[str, Any] = Field(default_factory=dict)
+    manual_summary: dict[str, Any] = Field(default_factory=dict)
+    quality_summary: dict[str, Any] = Field(default_factory=dict)
+    findings: list[ReviewFinding] = Field(default_factory=list)
+    roadmap_changes: list[ReviewChangeProposal] = Field(default_factory=list)
+    carryover_blockers: list[dict[str, Any]] = Field(default_factory=list)
+    branch_closeout: dict[str, Any] = Field(default_factory=dict)
+    next_iteration: dict[str, Any] = Field(default_factory=dict)
+    artifacts: dict[str, Any] = Field(default_factory=dict)
+    status: Literal["draft", "approved", "deferred"] = "draft"
+
+
+class PhaseReview(DeterministicModel):
+    schema_version: str = Field(default=ROADMAP_SCHEMA_VERSION)
+    review_id: str
+    review_type: Literal["phase"] = "phase"
+    iteration_id: str
+    phase_id: str
+    generated_at: str
+    git: dict[str, Any] = Field(default_factory=dict)
+    inputs: dict[str, Any] = Field(default_factory=dict)
+    phase_summary: dict[str, Any] = Field(default_factory=dict)
+    blocker_summary: dict[str, Any] = Field(default_factory=dict)
+    timing_summary: dict[str, Any] = Field(default_factory=dict)
+    manual_summary: dict[str, Any] = Field(default_factory=dict)
+    quality_summary: dict[str, Any] = Field(default_factory=dict)
+    findings: list[ReviewFinding] = Field(default_factory=list)
+    roadmap_changes: list[ReviewChangeProposal] = Field(default_factory=list)
+    carryover_blockers: list[dict[str, Any]] = Field(default_factory=list)
+    branch_closeout: dict[str, Any] = Field(default_factory=dict)
+    next_iteration: dict[str, Any] = Field(default_factory=dict)
+    artifacts: dict[str, Any] = Field(default_factory=dict)
+    status: Literal["draft", "approved", "deferred"] = "draft"
+
+
+class ReviewApproval(DeterministicModel):
+    schema_version: str = Field(default=ROADMAP_SCHEMA_VERSION)
+    approval_id: str
+    review_id: str
+    iteration_id: str
+    decision: Literal["approved", "deferred"]
+    accepted_change_ids: list[str] = Field(default_factory=list)
+    deferred_change_ids: list[str] = Field(default_factory=list)
+    branch_closeout_approved: bool = False
+    next_iteration_authorized: bool = False
+    created_at: str
+    notes: str = ""
+
+
+class KickoffReport(DeterministicModel):
+    schema_version: str = Field(default=ROADMAP_SCHEMA_VERSION)
+    kickoff_id: str
+    iteration_id: str
+    generated_at: str
+    git: dict[str, Any] = Field(default_factory=dict)
+    expected_branch: str
+    base_branch: str
+    review_approval_file: str = ""
+    checks: list[dict[str, Any]] = Field(default_factory=list)
+    status: Literal["ready", "blocked"] = "blocked"
+    starter_prompt_path: str = ""
+    branch_plan_path: str = ""
+    rationale: list[str] = Field(default_factory=list)
 
 
 class ProjectIntent(DeterministicModel):

@@ -1,0 +1,85 @@
+schema_version: 1.0.0
+proposal_id: 181987a7-313a3a32
+source_roadmap_sha256: 181987a70f34c82a086a43f75fdfaab3f4a783134fef320b7e00842dc4d06425
+focus_iteration: '1'
+focus_phase: ''
+operations:
+- op: insert_before_phase
+  task_id: common.remediate_fragmented_sentences
+  before_phase: iteration1/label-ops-bootstrap
+  blocked_task_id: iteration1.shared.audit_sentence_integrity
+- op: insert_before_phase
+  task_id: common.resample_from_clean_sentence_pool
+  before_phase: iteration1/label-ops-bootstrap
+  blocked_task_id: iteration1.shared.audit_sentence_integrity
+- op: insert_before_phase
+  task_id: common.remediate_fragmented_sentences
+  before_phase: iteration2/irr-and-adjudication
+  blocked_task_id: iteration2.shared.audit_sentence_integrity
+- op: insert_before_phase
+  task_id: common.resample_from_clean_sentence_pool
+  before_phase: iteration2/irr-and-adjudication
+  blocked_task_id: iteration2.shared.audit_sentence_integrity
+- op: insert_before_phase
+  task_id: common.remediate_fragmented_sentences
+  before_phase: iteration1/label-ops-bootstrap
+  blocked_task_id: iteration1.shared.audit_sentence_integrity
+- op: insert_before_phase
+  task_id: common.resample_from_clean_sentence_pool
+  before_phase: iteration1/label-ops-bootstrap
+  blocked_task_id: iteration1.shared.audit_sentence_integrity
+- op: insert_before_phase
+  task_id: common.remediate_fragmented_sentences
+  before_phase: iteration1/irr-validation
+  blocked_task_id: iteration1.shared.audit_sentence_integrity
+- op: insert_before_phase
+  task_id: common.resample_from_clean_sentence_pool
+  before_phase: iteration1/irr-validation
+  blocked_task_id: iteration1.shared.audit_sentence_integrity
+- op: insert_before_phase
+  task_id: common.remediate_fragmented_sentences
+  before_phase: iteration1/label-ops-bootstrap
+  blocked_task_id: iteration1.shared.audit_sentence_integrity
+- op: insert_before_phase
+  task_id: common.resample_from_clean_sentence_pool
+  before_phase: iteration1/label-ops-bootstrap
+  blocked_task_id: iteration1.shared.audit_sentence_integrity
+- op: insert_before_phase
+  task_id: common.remediate_fragmented_sentences
+  before_phase: iteration1/label-ops-bootstrap
+  blocked_task_id: iteration1.shared.audit_sentence_integrity
+- op: insert_before_phase
+  task_id: common.resample_from_clean_sentence_pool
+  before_phase: iteration1/label-ops-bootstrap
+  blocked_task_id: iteration1.shared.audit_sentence_integrity
+- op: append_iteration_entry_criteria
+  iteration_id: '2'
+  value: Use availability-aware quarter redistribution when leakage-safe filtering
+    makes strict equal quarter quotas infeasible.
+rationale:
+- Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences`
+  before `iteration1/label-ops-bootstrap`.
+- Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences`
+  before `iteration1/label-ops-bootstrap`.
+- Task `iteration2.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences`
+  before `iteration2/irr-and-adjudication`.
+- Task `iteration2.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences`
+  before `iteration2/irr-and-adjudication`.
+- Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences`
+  before `iteration1/label-ops-bootstrap`.
+- Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences`
+  before `iteration1/label-ops-bootstrap`.
+- Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences`
+  before `iteration1/irr-validation`.
+- Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences`
+  before `iteration1/irr-validation`.
+- Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences`
+  before `iteration1/label-ops-bootstrap`.
+- Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences`
+  before `iteration1/label-ops-bootstrap`.
+- Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences`
+  before `iteration1/label-ops-bootstrap`.
+- Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences`
+  before `iteration1/label-ops-bootstrap`.
+- 'Review inference: Strict equal quarter quotas were infeasible after leakage-safe
+  filtering; availability-aware redistribution was required.'

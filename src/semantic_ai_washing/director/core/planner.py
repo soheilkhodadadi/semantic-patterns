@@ -510,6 +510,8 @@ def runbook_to_json(path: str, output_path: str) -> str:
 def plan_output_manifest(plan_result: dict[str, Any]) -> dict[str, Any]:
     return {
         "runbook_id": plan_result["runbook_id"],
+        "iteration_id": str(plan_result.get("iteration_id", "")),
+        "phase_name": str(plan_result.get("phase_name", "")),
         "generated_at": now_utc_iso(),
         "files": {
             "runbook_yaml": plan_result["runbook_file"],

@@ -56,6 +56,16 @@ Every run should update:
 - optimization artifacts
 - iteration log evidence
 
+## Boundary Reviews
+At iteration boundaries, the control loop adds a formal review layer:
+1. Generate `IterationReview`
+2. Approve or defer closeout
+3. Optionally apply accepted roadmap changes
+4. Generate the next-iteration starter prompt
+5. Validate kickoff on the integration branch
+
+This gives director an explicit lessons-learned and stage-gate mechanism instead of burying planning corrections inside execution logs.
+
 ## Policy
 - The optimizer is proposal-only.
 - Cross-iteration resequencing may be recommended, but not auto-applied.

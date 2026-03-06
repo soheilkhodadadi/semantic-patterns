@@ -4,9 +4,16 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from typing import Any
 
 from semantic_ai_washing.director.core.utils import now_utc_iso, sha256_file
-from semantic_ai_washing.director.schemas import OptimizationRecommendation, RoadmapModel
+from semantic_ai_washing.director.schemas import (
+    IterationReview,
+    OptimizationRecommendation,
+    PhaseReview,
+    RoadmapModel,
+    StarterPromptArtifact,
+)
 
 ROADMAP_NOTICE_TEMPLATE = [
     "<!-- generated_file: true -->",
@@ -18,7 +25,12 @@ ROADMAP_NOTICE_TEMPLATE = [
 _SHA_RE = re.compile(r"^<!-- source_sha256: (?P<sha>[a-f0-9]+) -->$", re.M)
 
 
-def render_roadmap_markdown(model: RoadmapModel, source_model: str, source_sha256: str) -> str:
+def render_roadmap_markdown(
+    model: RoadmapModel,
+    source_model: str,
+    source_sha256: str,
+    approved_reviews: list[dict] | None = None,
+) -> str:
     lines = [
         notice_line.format(
             source_model=source_model,
@@ -35,6 +47,24 @@ def render_roadmap_markdown(model: RoadmapModel, source_model: str, source_sha25
             "This document is generated from the canonical roadmap YAML model.",
             "",
             "Optimization proposals may recommend resequencing tasks or phases beyond the canonical order shown here.",
+            "",
+            "## Branching Policy",
+        ]
+    )
+    lines.extend(
+        [
+            f"- integration branch template: `{model.branching_policy.integration_branch_template}`",
+            f"- work branch template: `{model.branching_policy.work_branch_template}`",
+            f"- merge target: `{model.branching_policy.merge_target}`",
+            f"- preferred merge strategy: `{model.branching_policy.preferred_merge_strategy}`",
+            f"- review approval required before next iteration: `{str(model.branching_policy.require_review_approval_before_next_iteration).lower()}`",
+            f"- review approval required before main merge: `{str(model.branching_policy.require_review_approval_before_main_merge).lower()}`",
+            f"- starter prompt required: `{str(model.branching_policy.starter_prompt_required).lower()}`",
+            "",
+            "## Review Workflow",
+            "- Every iteration ends with `review-and-replan`.",
+            "- Iterations 2-5 start with `kickoff-and-preflight`.",
+            "- Approved reviews authorize the next iteration and main-merge closeout.",
             "",
             "## Policies",
         ]
@@ -81,6 +111,8 @@ def render_roadmap_markdown(model: RoadmapModel, source_model: str, source_sha25
                 "",
                 f"## Iteration {iteration.iteration_id} - {iteration.title}",
                 f"Goal: {iteration.goal}",
+                f"Entry criteria: {', '.join(iteration.entry_criteria) if iteration.entry_criteria else 'none'}",
+                f"Exit criteria: {', '.join(iteration.exit_criteria) if iteration.exit_criteria else 'none'}",
                 "",
             ]
         )
@@ -118,6 +150,24 @@ def render_roadmap_markdown(model: RoadmapModel, source_model: str, source_sha25
                 lines.append("#### Tasks")
                 lines.append("- phase-level only in this roadmap version")
             lines.append("")
+    approved_reviews = approved_reviews or []
+    lines.extend(["", "## Approved Review Appendix"])
+    if approved_reviews:
+        for review in approved_reviews:
+            scope = review.get("phase_id") or f"iteration {review.get('iteration_id', '')}"
+            lines.extend(
+                [
+                    f"### {review.get('review_id', '')}",
+                    f"- Scope: `{scope}`",
+                    f"- Accepted changes: {', '.join(review.get('accepted_change_ids', [])) or 'none'}",
+                    f"- Deferred changes: {', '.join(review.get('deferred_change_ids', [])) or 'none'}",
+                    f"- Next iteration: `{(review.get('next_iteration') or {}).get('iteration_id', '') or 'none'}`",
+                    f"- Entry criteria: {', '.join((review.get('next_iteration') or {}).get('entry_criteria', [])) or 'none'}",
+                    "",
+                ]
+            )
+    else:
+        lines.append("- none")
     return "\n".join(lines).strip() + "\n"
 
 
@@ -209,4 +259,119 @@ def render_optimization_markdown(
         lines.append(
             f"- `{row['task_id']}` `{row['status']}` score={row.get('score', 0.0)} phase=`{row['phase_id']}`"
         )
+    return "\n".join(lines).strip() + "\n"
+
+
+def render_review_markdown(review: IterationReview | PhaseReview) -> str:
+    scope = (
+        review.phase_id if isinstance(review, PhaseReview) else f"iteration {review.iteration_id}"
+    )
+    lines = [
+        f"# Review: {review.review_id}",
+        "",
+        f"- Type: `{review.review_type}`",
+        f"- Scope: `{scope}`",
+        f"- Generated at: `{review.generated_at}`",
+        f"- Status: `{review.status}`",
+        "",
+        "## Phase Summary",
+    ]
+    for item in review.phase_summary.get("phases", []):
+        lines.append(
+            f"- `{item['phase_id']}` status=`{item['status']}` lifecycle=`{item['lifecycle_state']}` runs={item['run_count']}"
+        )
+    lines.extend(["", "## Blockers"])
+    for key, value in review.blocker_summary.items():
+        lines.append(f"- {key}: `{value}`")
+    lines.extend(["", "## Findings"])
+    if review.findings:
+        for finding in review.findings:
+            lines.append(
+                f"- `{finding.finding_id}` `{finding.category}` severity=`{finding.severity}`: {finding.summary}"
+            )
+    else:
+        lines.append("- none")
+    lines.extend(["", "## Roadmap Changes"])
+    if review.roadmap_changes:
+        for change in review.roadmap_changes:
+            lines.append(
+                f"- `{change.change_id}` source=`{change.source}` status=`{change.status}` target=`{change.target}`"
+            )
+    else:
+        lines.append("- none")
+    lines.extend(["", "## Next Iteration"])
+    lines.append(
+        f"- recommended phase: `{review.next_iteration.get('recommended_phase', '') or 'none'}`"
+    )
+    lines.append(
+        f"- entry criteria: {', '.join(review.next_iteration.get('entry_criteria', [])) or 'none'}"
+    )
+    return "\n".join(lines).strip() + "\n"
+
+
+def render_branch_plan_markdown(
+    branch_plan: dict[str, Any], next_phase: str, starter_prompt_path: str
+) -> str:
+    lines = [
+        "# Branch Plan",
+        "",
+        f"- Current branch: `{branch_plan.get('current_branch', '')}`",
+        f"- Integration branch: `{branch_plan.get('integration_branch', '')}`",
+        f"- Merge target: `{branch_plan.get('merge_target', '')}`",
+        f"- Suggested next phase: `{next_phase or 'none'}`",
+        f"- Starter prompt: `{starter_prompt_path or 'none'}`",
+        "",
+        "## Closeout Steps",
+    ]
+    for step in branch_plan.get("steps", []):
+        lines.append(f"- `{step}`")
+    merge_note = str(branch_plan.get("merge_strategy_note", "")).strip()
+    if merge_note:
+        lines.extend(["", "## Merge Strategy", f"- {merge_note}"])
+    lines.extend(["", "## Next Iteration Steps"])
+    for step in branch_plan.get("next_iteration_steps", []):
+        lines.append(f"- `{step}`")
+    return "\n".join(lines).strip() + "\n"
+
+
+def render_starter_prompt_markdown(starter: StarterPromptArtifact) -> str:
+    next_iteration_id = ""
+    next_phase = starter.next_phase or ""
+    if next_phase.startswith("iteration"):
+        next_iteration_id = next_phase.split("/", 1)[0].replace("iteration", "")
+    lines = [
+        f"# Iteration {starter.iteration_id} Starter Prompt",
+        "",
+        f"- Recommended new chat: `{str(starter.recommended_new_chat).lower()}`",
+        f"- Next phase: `{next_phase or 'none'}`",
+        "",
+        "## Stable Checkpoints",
+    ]
+    for commit in starter.stable_checkpoint_commits:
+        lines.append(f"- `{commit}`")
+    lines.extend(["", "## Key Artifacts"])
+    for path in starter.key_artifacts:
+        lines.append(f"- `{path}`")
+    lines.extend(["", "## Constraints"])
+    for item in starter.constraints:
+        lines.append(f"- {item}")
+    lines.extend(["", "## First Commands"])
+    if next_iteration_id:
+        lines.extend(
+            [
+                "- `git switch main`",
+                "- `git pull --ff-only`",
+                f"- `git switch -c iteration{next_iteration_id}/integration`",
+                f"- `.venv/bin/python -m semantic_ai_washing.director.cli kickoff --iteration {next_iteration_id}`",
+            ]
+        )
+    else:
+        lines.append("- determine the next iteration boundary before kickoff")
+    lines.extend(
+        [
+            "",
+            "## Prompt",
+            "Use the iteration integration branch as the default base. Start from the next recommended phase, preserve proposal-only roadmap changes until explicitly approved, and prefer a new Codex chat at approved iteration boundaries.",
+        ]
+    )
     return "\n".join(lines).strip() + "\n"

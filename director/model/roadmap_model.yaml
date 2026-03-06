@@ -1,11 +1,11 @@
-schema_version: "1.2.0"
+schema_version: 1.2.0
 project:
   name: semantic-patterns
   description: Policy-gated roadmap for AI-washing pipeline transformation.
 settings:
   active_horizon_iterations:
-    - "1"
-    - "2"
+  - '1'
+  - '2'
   optimizer_weights:
     unblock_value: 5
     critical_path_depth: 4
@@ -21,1203 +21,2311 @@ settings:
     fragment_rate_threshold: 0.15
     active_source_window_id: active_2021_2024
     canonical_table_format: parquet
+branching_policy:
+  schema_version: 1.0.0
+  integration_branch_template: iteration{iteration_id}/integration
+  work_branch_template: iteration{iteration_id}/{slug}
+  merge_target: main
+  preferred_merge_strategy: ff_only_if_possible_else_pr_merge_commit
+  require_review_approval_before_next_iteration: true
+  require_review_approval_before_main_merge: true
+  suggest_new_chat_at_iteration_boundary: true
+  starter_prompt_required: true
+  tag_template: iteration{iteration_id}-closeout
+  closeout_validation_commands:
+  - make bootstrap
+  - make doctor
+  - make format
+  - make lint
+  - .venv/bin/pytest -q
 policies:
-  - policy_id: heldout_frozen
-    kind: dataset_freeze
-    description: held_out_sentences.csv is evaluation-only.
-    enforcement: hard
-    targets:
-      - data/validation/held_out_sentences.csv
-    value: true
-  - policy_id: human_human_irr_only
-    kind: methodology
-    description: IRR requires blinded human-human comparison.
-    enforcement: hard
-    targets:
-      - iteration2/irr-and-adjudication
-    value: true
-  - policy_id: no_downstream_outcome_peeking
-    kind: methodology
-    description: Labeling and adjudication decisions must not use downstream outcomes.
-    enforcement: hard
-    targets:
-      - iteration2/irr-and-adjudication
-      - iteration5/results-generation
-    value: true
-  - policy_id: openai_assistive_only
-    kind: model_governance
-    description: API outputs are assistive until a later benchmark gate passes.
-    enforcement: hard
-    targets:
-      - iteration1/rubric-and-api-bootstrap
-      - iteration2/dataset-expansion-2024
-      - iteration3/classifier-calibration
-    value: assistive_only
-  - policy_id: no_significance_optimization
-    kind: analysis_governance
-    description: Statistical significance is not an optimization target.
-    enforcement: hard
-    targets:
-      - iteration5/results-generation
-      - iteration5/robustness-and-sensitivity
-    value: true
-  - policy_id: split_registry_required_before_retraining
-    kind: data_governance
-    description: Retraining requires a frozen split registry with no held-out overlap.
-    enforcement: hard
-    targets:
-      - iteration3/centroid-retraining
-    value: true
-  - policy_id: sentence_quality_gate_before_labeling
-    kind: data_governance
-    description: Sentence quality must pass before manual labeling begins.
-    enforcement: hard
-    targets:
-      - iteration1/label-ops-bootstrap
-      - iteration2/dataset-expansion-2024
-    value: true
-  - policy_id: sentence_quality_gate_before_irr
-    kind: data_governance
-    description: Sentence quality must pass before IRR work begins.
-    enforcement: hard
-    targets:
-      - iteration2/irr-and-adjudication
-    value: true
+- policy_id: heldout_frozen
+  kind: dataset_freeze
+  description: held_out_sentences.csv is evaluation-only.
+  enforcement: hard
+  targets:
+  - data/validation/held_out_sentences.csv
+  value: true
+- policy_id: human_human_irr_only
+  kind: methodology
+  description: IRR requires blinded human-human comparison.
+  enforcement: hard
+  targets:
+  - iteration2/irr-and-adjudication
+  value: true
+- policy_id: no_downstream_outcome_peeking
+  kind: methodology
+  description: Labeling and adjudication decisions must not use downstream outcomes.
+  enforcement: hard
+  targets:
+  - iteration2/irr-and-adjudication
+  - iteration5/results-generation
+  value: true
+- policy_id: openai_assistive_only
+  kind: model_governance
+  description: API outputs are assistive until a later benchmark gate passes.
+  enforcement: hard
+  targets:
+  - iteration1/rubric-and-api-bootstrap
+  - iteration2/dataset-expansion-2024
+  - iteration3/classifier-calibration
+  value: assistive_only
+- policy_id: no_significance_optimization
+  kind: analysis_governance
+  description: Statistical significance is not an optimization target.
+  enforcement: hard
+  targets:
+  - iteration5/results-generation
+  - iteration5/robustness-and-sensitivity
+  value: true
+- policy_id: split_registry_required_before_retraining
+  kind: data_governance
+  description: Retraining requires a frozen split registry with no held-out overlap.
+  enforcement: hard
+  targets:
+  - iteration3/centroid-retraining
+  value: true
+- policy_id: sentence_quality_gate_before_labeling
+  kind: data_governance
+  description: Sentence quality must pass before manual labeling begins.
+  enforcement: hard
+  targets:
+  - iteration1/label-ops-bootstrap
+  - iteration2/dataset-expansion-2024
+  value: true
+- policy_id: sentence_quality_gate_before_irr
+  kind: data_governance
+  description: Sentence quality must pass before IRR work begins.
+  enforcement: hard
+  targets:
+  - iteration2/irr-and-adjudication
+  value: true
 data_layers:
-  - layer_id: source_index
-    canonical_path: data/metadata/available_filings_index.csv
-    format: csv
-    required_fields: [cik, year, quarter, form, filename, path, source_root, index_timestamp, source_window_id]
-    description: Canonical index over the external SEC corpus without copying raw filing bodies.
-  - layer_id: manifest_registry
-    canonical_path: data/manifests/manifests_metadata.json
-    format: json
-    required_fields: [manifest_id, selection_reason, sampling_seed]
-    description: Reproducible filing and sentence manifests.
-  - layer_id: sentence_table
-    canonical_path: data/processed/sentences/year=YYYY/ai_sentences.parquet
-    format: parquet
-    required_fields: [sentence_id, sentence, sentence_norm, source_file, source_year, source_quarter, source_form, source_cik, sentence_index, extractor_version, keyword_version, manifest_id, integrity_flags, fragment_score]
-    review_export_path: data/processed/sentences/year=YYYY/ai_sentences_sample.csv
-    description: Canonical AI sentence table partitioned by year.
-  - layer_id: split_registry
-    canonical_path: data/metadata/splits/split_registry_v1.csv
-    format: csv
-    required_fields: [sentence_id, split, split_version, assignment_reason, seed, source_manifest_id]
-    description: Frozen split registry independent of sentence storage.
-  - layer_id: label_table
-    canonical_path: data/labels/v1/labels_master.parquet
-    format: parquet
-    required_fields: [sentence_id, sentence, label, label_source, rater_id, is_uncertain, uncertainty_note, adjudicated_label, label_version]
-    description: Canonical human and assistive label store.
-  - layer_id: model_artifacts
-    canonical_path: artifacts/models/<model_version>/
-    format: mixed
-    description: Embeddings, centroids, metadata, and evaluation outputs.
-  - layer_id: classification_table
-    canonical_path: data/processed/classifications/year=YYYY/model=<model_version>/classified_sentences.parquet
-    format: parquet
-    review_export_path: data/processed/classifications/year=YYYY/model=<model_version>/classified_sentences_sample.csv
-    description: Canonical sentence-level predicted labels for active source windows.
-  - layer_id: panel
-    canonical_path: data/panels/panel_v1.parquet
-    format: parquet
-    review_export_path: data/panels/panel_v1.csv
-    description: Analysis-ready firm-year panel.
+- layer_id: source_index
+  canonical_path: data/metadata/available_filings_index.csv
+  format: csv
+  required_fields:
+  - cik
+  - year
+  - quarter
+  - form
+  - filename
+  - path
+  - source_root
+  - index_timestamp
+  - source_window_id
+  description: Canonical index over the external SEC corpus without copying raw filing
+    bodies.
+- layer_id: manifest_registry
+  canonical_path: data/manifests/manifests_metadata.json
+  format: json
+  required_fields:
+  - manifest_id
+  - selection_reason
+  - sampling_seed
+  description: Reproducible filing and sentence manifests.
+- layer_id: sentence_table
+  canonical_path: data/processed/sentences/year=YYYY/ai_sentences.parquet
+  format: parquet
+  required_fields:
+  - sentence_id
+  - sentence
+  - sentence_norm
+  - source_file
+  - source_year
+  - source_quarter
+  - source_form
+  - source_cik
+  - sentence_index
+  - extractor_version
+  - keyword_version
+  - manifest_id
+  - integrity_flags
+  - fragment_score
+  review_export_path: data/processed/sentences/year=YYYY/ai_sentences_sample.csv
+  description: Canonical AI sentence table partitioned by year.
+- layer_id: split_registry
+  canonical_path: data/metadata/splits/split_registry_v1.csv
+  format: csv
+  required_fields:
+  - sentence_id
+  - split
+  - split_version
+  - assignment_reason
+  - seed
+  - source_manifest_id
+  description: Frozen split registry independent of sentence storage.
+- layer_id: label_table
+  canonical_path: data/labels/v1/labels_master.parquet
+  format: parquet
+  required_fields:
+  - sentence_id
+  - sentence
+  - label
+  - label_source
+  - rater_id
+  - is_uncertain
+  - uncertainty_note
+  - adjudicated_label
+  - label_version
+  description: Canonical human and assistive label store.
+- layer_id: model_artifacts
+  canonical_path: artifacts/models/<model_version>/
+  format: mixed
+  description: Embeddings, centroids, metadata, and evaluation outputs.
+- layer_id: classification_table
+  canonical_path: data/processed/classifications/year=YYYY/model=<model_version>/classified_sentences.parquet
+  format: parquet
+  review_export_path: data/processed/classifications/year=YYYY/model=<model_version>/classified_sentences_sample.csv
+  description: Canonical sentence-level predicted labels for active source windows.
+- layer_id: panel
+  canonical_path: data/panels/panel_v1.parquet
+  format: parquet
+  review_export_path: data/panels/panel_v1.csv
+  description: Analysis-ready firm-year panel.
 source_windows:
-  - source_window_id: active_2021_2024
-    years: ["2021", "2022", "2023", "2024"]
-    source_root_ref: env:SEC_SOURCE_DIR
-    status: active
-  - source_window_id: historical_2000_2020
-    years: ["2000-2020"]
-    source_root_ref: env:SEC_SOURCE_DIR
-    status: deferred
-    availability_condition:
-      condition_id: historical_window_available
-      kind: indexed_years_include
-      target: data/metadata/source_windows.json
-      operator: in
-      expected: "<=2020"
-      on_fail: reroute
-      message: Historical years are not currently indexed in the active source window.
-      reroute_to: []
+- source_window_id: active_2021_2024
+  years:
+  - '2021'
+  - '2022'
+  - '2023'
+  - '2024'
+  source_root_ref: env:SEC_SOURCE_DIR
+  status: active
+- source_window_id: historical_2000_2020
+  years:
+  - 2000-2020
+  source_root_ref: env:SEC_SOURCE_DIR
+  status: deferred
+  availability_condition:
+    condition_id: historical_window_available
+    kind: indexed_years_include
+    target: data/metadata/source_windows.json
+    operator: in
+    expected: <=2020
+    on_fail: reroute
+    message: Historical years are not currently indexed in the active source window.
+    reroute_to: []
 tooling_policies:
-  - policy_id: atlas_isolated_env
-    tool: atlas
-    mode: isolated_skill_env
-    repo_root_uv_run_forbidden: true
-    required_runner: ~/.codex/skills/atlas/scripts/atlas_cli.py
-    wrapper_path: scripts/atlas_isolated.sh
-    expected_repo_venv_python: "3.9"
-    expected_repo_venv_home: anaconda3/bin
+- policy_id: atlas_isolated_env
+  tool: atlas
+  mode: isolated_skill_env
+  repo_root_uv_run_forbidden: true
+  required_runner: ~/.codex/skills/atlas/scripts/atlas_cli.py
+  wrapper_path: scripts/atlas_isolated.sh
+  expected_repo_venv_python: '3.9'
+  expected_repo_venv_home: anaconda3/bin
 iterations:
-  - iteration_id: "1"
-    title: Foundation, Canonical Contracts, and Bounded 2024 Pilot
-    goal: Establish canonical contracts, clean the execution surface, and build a bounded sentence-table pilot from 2024 10-K filings.
-    phases:
-      - phase_id: iteration1/baseline-asset-freeze
-        title: Baseline Asset Freeze
-        goal: Freeze current evaluation assets and classify duplicates or deprecations before new data work starts.
-        lifecycle_state: planned
-        canonical: true
-        depends_on: []
-        required_artifacts:
-          - reports/validation/validation_asset_registry.json
-        source_window_id: active_2021_2024
-        tags: [data_contracts, validation_assets]
-        tasks:
-          - task_id: iteration1.assets.inventory_validation_assets
-            title: Inventory validation assets
-            description: Inventory and fingerprint existing held-out and labeled validation assets.
-            iteration_id: "1"
-            phase_id: iteration1/baseline-asset-freeze
-            kind: diagnostic
-            depends_on: []
-            inputs:
-              - artifact_id: heldout
-                path: data/validation/held_out_sentences.csv
-                kind: csv
-                required: true
-              - artifact_id: collected_cleaned
-                path: data/validation/CollectedAiSentencesClassifiedCleaned.csv
-                kind: csv
-                required: true
-              - artifact_id: hand_labeled_revised
-                path: data/validation/hand_labeled_ai_sentences_with_embeddings_revised.csv
-                kind: csv
-                required: true
-            outputs:
-              - artifact_id: validation_asset_registry
-                path: reports/validation/validation_asset_registry.json
-                kind: json
-                required: true
-            preconditions:
-              - condition_id: heldout_exists
-                kind: artifact_exists
-                target: data/validation/held_out_sentences.csv
-                operator: "=="
-                expected: true
-                on_fail: block
-                message: Held-out evaluation asset is missing.
-                reroute_to: []
-            quality_checks: []
-            commands:
-              - .venv/bin/python -m semantic_ai_washing.director.tasks.validation_assets --output reports/validation/validation_asset_registry.json
-            manual_handoff: false
-            risks: [R3, R6]
-            estimated_effort: 2
-            risk_reduction: 8
-            automation_level: partial
-            on_fail: block
-            reroute_to: []
-            evidence_required: true
-            tags: [asset_inventory, evaluation_fixture]
-            gate_class: data
-      - phase_id: iteration1/repo-hygiene-and-script-canon
-        title: Repo Hygiene and Script Canon
-        goal: Define canonical, transitional, and legacy scripts so the pipeline is understandable and maintainable.
-        lifecycle_state: planned
-        canonical: true
-        depends_on:
-          - iteration1/baseline-asset-freeze
-        required_artifacts:
-          - docs/director/script_registry.md
-          - director/snapshots/script_inventory.json
-        tags: [repo_hygiene, script_registry]
-        tasks:
-          - task_id: iteration1.repo.inventory_scripts
-            title: Inventory scripts
-            description: Catalog scripts under canonical, transitional, and legacy buckets.
-            iteration_id: "1"
-            phase_id: iteration1/repo-hygiene-and-script-canon
-            kind: diagnostic
-            depends_on: []
-            inputs: []
-            outputs:
-              - artifact_id: script_inventory
-                path: director/snapshots/script_inventory.json
-                kind: json
-                required: true
-            preconditions: []
-            quality_checks: []
-            commands:
-              - .venv/bin/python -m semantic_ai_washing.director.tasks.script_inventory --mode inventory --output-inventory director/snapshots/script_inventory.json
-            manual_handoff: false
-            risks: [R7]
-            estimated_effort: 2
-            risk_reduction: 7
-            automation_level: partial
-            on_fail: block
-            reroute_to: []
-            evidence_required: true
-            tags: [inventory]
-            gate_class: ops
-          - task_id: iteration1.repo.publish_script_registry
-            title: Publish script registry
-            description: Publish canonical entrypoints and legacy archive/removal intent.
-            iteration_id: "1"
-            phase_id: iteration1/repo-hygiene-and-script-canon
-            kind: reporting
-            depends_on:
-              - iteration1.repo.inventory_scripts
-            inputs:
-              - artifact_id: script_inventory
-                path: director/snapshots/script_inventory.json
-                kind: json
-                required: true
-            outputs:
-              - artifact_id: script_registry
-                path: docs/director/script_registry.md
-                kind: markdown
-                required: true
-            preconditions:
-              - condition_id: script_inventory_exists
-                kind: artifact_exists
-                target: director/snapshots/script_inventory.json
-                operator: "=="
-                expected: true
-                on_fail: block
-                message: Script inventory must exist before publishing registry.
-                reroute_to: []
-            quality_checks: []
-            commands:
-              - .venv/bin/python -m semantic_ai_washing.director.tasks.script_inventory --mode publish --input-inventory director/snapshots/script_inventory.json --output-registry docs/director/script_registry.md
-            manual_handoff: false
-            risks: [R7]
-            estimated_effort: 2
-            risk_reduction: 6
-            automation_level: partial
-            on_fail: block
-            reroute_to: []
-            evidence_required: true
-            tags: [documentation]
-            gate_class: ops
-      - phase_id: iteration1/tooling-isolation
-        title: Tooling Isolation
-        goal: Prevent Atlas and similar external tooling from mutating the repo runtime environment.
-        lifecycle_state: planned
-        canonical: true
-        depends_on:
-          - iteration1/repo-hygiene-and-script-canon
-        required_artifacts:
-          - docs/director/tooling_isolation.md
-          - director/config/tooling_policy.yaml
-        tags: [tooling, env_safety]
-        tasks:
-          - task_id: iteration1.tooling.publish_isolation_policy
-            title: Publish tooling isolation policy
-            description: Write Atlas and external tool isolation rules and wrapper expectations.
-            iteration_id: "1"
-            phase_id: iteration1/tooling-isolation
-            kind: reporting
-            depends_on: []
-            inputs: []
-            outputs:
-              - artifact_id: tooling_policy_doc
-                path: docs/director/tooling_isolation.md
-                kind: markdown
-                required: true
-              - artifact_id: tooling_policy
-                path: director/config/tooling_policy.yaml
-                kind: file
-                required: true
-            preconditions: []
-            quality_checks: []
-            commands: []
-            manual_handoff: false
-            risks: [R4, R7]
-            estimated_effort: 2
-            risk_reduction: 7
-            automation_level: partial
-            on_fail: block
-            reroute_to: []
-            evidence_required: true
-            tags: [atlas, env_safety]
-            gate_class: ops
-      - phase_id: iteration1/source-index-contract
-        title: Source Index Contract
-        goal: Make the external SEC root the canonical raw-source interface and record active source windows.
-        lifecycle_state: planned
-        canonical: true
-        depends_on:
-          - iteration1/tooling-isolation
-        required_artifacts:
-          - data/metadata/available_filings_index.csv
-          - data/metadata/source_windows.json
-          - reports/data/source_index_summary.json
-        source_window_id: active_2021_2024
-        tags: [source_index, external_sec]
-        tasks:
-          - task_id: iteration1.source.index_external_sec_root
-            title: Index external SEC root
-            description: Index the active external source window from SEC_SOURCE_DIR without copying raw filing bodies.
-            iteration_id: "1"
-            phase_id: iteration1/source-index-contract
-            kind: build
-            depends_on: []
-            inputs: []
-            outputs:
-              - artifact_id: filings_index
-                path: data/metadata/available_filings_index.csv
-                kind: csv
-                required: true
-              - artifact_id: source_windows
-                path: data/metadata/source_windows.json
-                kind: json
-                required: true
-              - artifact_id: source_index_summary
-                path: reports/data/source_index_summary.json
-                kind: json
-                required: true
-            preconditions: []
-            quality_checks: []
-            commands:
-              - .venv/bin/python -m semantic_ai_washing.data.index_sec_filings --output-csv data/metadata/available_filings_index.csv --output-source-windows data/metadata/source_windows.json --output-summary reports/data/source_index_summary.json
-            manual_handoff: false
-            risks: [R5]
-            estimated_effort: 3
-            risk_reduction: 8
-            automation_level: partial
-            on_fail: block
-            reroute_to: []
-            evidence_required: true
-            tags: [source_index, source_window]
-            gate_class: data
-      - phase_id: iteration1/sentence-table-pilot-2024
-        title: Sentence Table Pilot 2024
-        goal: Build a bounded 2024 10-K pilot manifest and canonical sentence table.
-        lifecycle_state: planned
-        canonical: true
-        depends_on:
-          - iteration1/source-index-contract
-        required_artifacts:
-          - data/manifests/filings/pilot_2024_10k_v1.csv
-          - data/processed/sentences/year=2024/ai_sentences.parquet
-          - reports/data/pilot_2024_sentence_quality.json
-          - data/processed/sentences/year=2024/ai_sentences_sample.csv
-        source_window_id: active_2021_2024
-        tags: [pilot, sentence_table]
-        tasks:
-          - task_id: iteration1.pilot.generate_2024_manifest
-            title: Generate bounded 2024 manifest
-            description: Generate a deterministic 2024 10-K filing manifest capped at 240 filings.
-            iteration_id: "1"
-            phase_id: iteration1/sentence-table-pilot-2024
-            kind: build
-            depends_on: []
-            inputs:
-              - artifact_id: filings_index
-                path: data/metadata/available_filings_index.csv
-                kind: csv
-                required: true
-            outputs:
-              - artifact_id: pilot_manifest
-                path: data/manifests/filings/pilot_2024_10k_v1.csv
-                kind: csv
-                required: true
-              - artifact_id: pilot_manifest_summary
-                path: reports/data/pilot_2024_manifest_summary.json
-                kind: json
-                required: true
-            preconditions:
-              - condition_id: filings_index_exists
-                kind: artifact_exists
-                target: data/metadata/available_filings_index.csv
-                operator: "=="
-                expected: true
-                on_fail: block
-                message: Source index must exist before pilot manifest generation.
-                reroute_to: []
-            quality_checks: []
-            commands:
-              - .venv/bin/python -m semantic_ai_washing.data.build_filing_manifest --index data/metadata/available_filings_index.csv --year 2024 --form 10-K --target-size 240 --quarter-quota 60 --controls data/interim/controls/controls_by_firm_year.csv --crosswalk data/externals/crosswalks/cik_gvkey.csv --manifest-id pilot_2024_10k_v1 --seed 20260305 --output data/manifests/filings/pilot_2024_10k_v1.csv --report reports/data/pilot_2024_manifest_summary.json
-            manual_handoff: false
-            risks: [R5]
-            estimated_effort: 3
-            risk_reduction: 8
-            automation_level: partial
-            on_fail: block
-            reroute_to: []
-            evidence_required: true
-            tags: [pilot_manifest]
-            gate_class: data
-          - task_id: iteration1.pilot.extract_sentence_table
-            title: Extract canonical sentence table
-            description: Extract AI-related sentences from the bounded 2024 pilot into canonical sentence tables.
-            iteration_id: "1"
-            phase_id: iteration1/sentence-table-pilot-2024
-            kind: build
-            depends_on:
-              - iteration1.pilot.generate_2024_manifest
-            inputs:
-              - artifact_id: pilot_manifest
-                path: data/manifests/filings/pilot_2024_10k_v1.csv
-                kind: csv
-                required: true
-            outputs:
-              - artifact_id: sentence_table_2024
-                path: data/processed/sentences/year=2024/ai_sentences.parquet
-                kind: parquet
-                required: true
-              - artifact_id: sentence_table_sample_2024
-                path: data/processed/sentences/year=2024/ai_sentences_sample.csv
-                kind: csv
-                required: true
-              - artifact_id: sentence_quality_report
-                path: reports/data/pilot_2024_sentence_quality.json
-                kind: json
-                required: true
-            preconditions:
-              - condition_id: pilot_manifest_exists
-                kind: artifact_exists
-                target: data/manifests/filings/pilot_2024_10k_v1.csv
-                operator: "=="
-                expected: true
-                on_fail: block
-                message: Pilot manifest missing.
-                reroute_to: []
-            quality_checks: []
-            commands:
-              - .venv/bin/python -m semantic_ai_washing.data.extract_sentence_table --manifest data/manifests/filings/pilot_2024_10k_v1.csv --output data/processed/sentences/year=2024/ai_sentences.parquet --sample-output data/processed/sentences/year=2024/ai_sentences_sample.csv --report reports/data/pilot_2024_sentence_quality.json --min-tokens 6 --sample-size 200
-            manual_handoff: false
-            risks: [R5, R6]
-            estimated_effort: 4
-            risk_reduction: 9
-            automation_level: partial
-            on_fail: block
-            reroute_to: []
-            evidence_required: true
-            tags: [sentence_table, fragment_audit]
-            gate_class: data
-      - phase_id: iteration1/rubric-and-api-bootstrap
-        title: Rubric and API Bootstrap
-        goal: Prepare rubric v1 and bounded assistive API usage without promoting API output to canonical labels.
-        lifecycle_state: planned
-        canonical: true
-        depends_on:
-          - iteration1/sentence-table-pilot-2024
-        required_artifacts:
-          - docs/labeling_protocol.md
-          - director/config/api_assistive_policy.yaml
-          - reports/api/api_bootstrap_smoke_test.json
-        source_window_id: active_2021_2024
-        tags: [rubric, api_assistive]
-        tasks:
-          - task_id: iteration1.rubric.publish_rubric_v1
-            title: Publish rubric v1
-            description: Finalize the labeling protocol for the sentence-table pilot and assistive-only API usage.
-            iteration_id: "1"
-            phase_id: iteration1/rubric-and-api-bootstrap
-            kind: manual
-            depends_on: []
-            inputs:
-              - artifact_id: pilot_sentence_quality_report
-                path: reports/data/pilot_2024_sentence_quality.json
-                kind: json
-                required: true
-            outputs:
-              - artifact_id: labeling_protocol
-                path: docs/labeling_protocol.md
-                kind: markdown
-                required: true
-            preconditions:
-              - condition_id: pilot_sentence_quality_exists
-                kind: artifact_exists
-                target: reports/data/pilot_2024_sentence_quality.json
-                operator: "=="
-                expected: true
-                on_fail: block
-                message: Sentence quality report missing.
-                reroute_to: []
-            quality_checks: []
-            commands: []
-            manual_handoff: true
-            risks: [R1]
-            estimated_effort: 3
-            risk_reduction: 6
-            automation_level: manual
-            on_fail: block
-            reroute_to: []
-            evidence_required: true
-            tags: [rubric_v1, api_assistive]
-            gate_class: manual
-          - task_id: iteration1.api.publish_assistive_policy
-            title: Publish assistive API policy
-            description: Add the bounded assistive-only API policy file for the bootstrap smoke test.
-            iteration_id: "1"
-            phase_id: iteration1/rubric-and-api-bootstrap
-            kind: manual
-            depends_on: []
-            inputs: []
-            outputs:
-              - artifact_id: assistive_api_policy
-                path: director/config/api_assistive_policy.yaml
-                kind: file
-                required: true
-            preconditions: []
-            quality_checks:
-              - condition_id: assistive_api_policy_hash_present
-                kind: file_hash_present
-                target: director/config/api_assistive_policy.yaml
-                operator: "=="
-                expected: true
-                on_fail: block
-                message: Assistive API policy file missing or unreadable.
-                reroute_to: []
-            commands: []
-            manual_handoff: true
-            risks: [R4, R7]
-            estimated_effort: 2
-            risk_reduction: 7
-            automation_level: manual
-            on_fail: block
-            reroute_to: []
-            evidence_required: true
-            tags: [api_assistive_policy]
-            gate_class: manual
-          - task_id: iteration1.api.run_smoke_test
-            title: Run assistive API smoke test
-            description: Execute one bounded live Responses API request and record usage and result metadata.
-            iteration_id: "1"
-            phase_id: iteration1/rubric-and-api-bootstrap
-            kind: validation
-            depends_on:
-              - iteration1.rubric.publish_rubric_v1
-              - iteration1.api.publish_assistive_policy
-            inputs:
-              - artifact_id: labeling_protocol
-                path: docs/labeling_protocol.md
-                kind: markdown
-                required: true
-              - artifact_id: assistive_api_policy
-                path: director/config/api_assistive_policy.yaml
-                kind: file
-                required: true
-              - artifact_id: sentence_review_export
-                path: data/processed/sentences/year=2024/ai_sentences_sample.csv
-                kind: csv
-                required: true
-            outputs:
-              - artifact_id: api_smoke_report
-                path: reports/api/api_bootstrap_smoke_test.json
-                kind: json
-                required: true
-            preconditions:
-              - condition_id: sentence_review_export_exists
-                kind: artifact_exists
-                target: data/processed/sentences/year=2024/ai_sentences_sample.csv
-                operator: "=="
-                expected: true
-                on_fail: block
-                message: Sentence review export missing for API smoke test.
-                reroute_to: []
-            quality_checks:
-              - condition_id: api_smoke_status_passed
-                kind: json_field_compare
-                target: reports/api/api_bootstrap_smoke_test.json::status
-                operator: "=="
-                expected: passed
-                on_fail: block
-                message: API smoke test did not pass.
-                reroute_to: []
-            commands:
-              - .venv/bin/python -m semantic_ai_washing.director.tasks.api_bootstrap --policy director/config/api_assistive_policy.yaml --mode live
-            manual_handoff: false
-            risks: [R4, R7]
-            estimated_effort: 3
-            risk_reduction: 8
-            automation_level: partial
-            on_fail: block
-            reroute_to: []
-            evidence_required: true
-            tags: [api_assistive, smoke_test]
-            gate_class: ops
-      - phase_id: iteration1/label-ops-bootstrap
-        title: Label Ops Bootstrap
-        goal: Generate the first clean labeling batch from the bounded pilot after sentence-quality gating.
-        lifecycle_state: planned
-        canonical: true
-        depends_on:
-          - iteration1/rubric-and-api-bootstrap
-        required_artifacts:
-          - data/labels/v1/labeling_batch_v1.parquet
-          - data/labels/v1/labeling_batch_v1.csv
-          - reports/labels/labeling_batch_v1_summary.json
-        source_window_id: active_2021_2024
-        tags: [label_ops, sentence_quality_gate]
-        tasks:
-          - task_id: iteration1.shared.audit_sentence_integrity
-            title: Audit sentence integrity
-            description: Assess whether pilot-derived sentence datasets contain fragmented or low-quality rows before labeling.
-            iteration_id: "1"
-            phase_id: iteration1/label-ops-bootstrap
-            kind: diagnostic
-            depends_on: []
-            inputs:
-              - artifact_id: sentence_review_export
-                path: data/processed/sentences/year=2024/ai_sentences_sample.csv
-                kind: csv
-                required: true
-            outputs:
-              - artifact_id: sentence_integrity_report
-                path: reports/data/pilot_2024_sentence_quality.json
-                kind: json
-                required: true
-            preconditions:
-              - condition_id: sentence_review_export_exists
-                kind: artifact_exists
-                target: data/processed/sentences/year=2024/ai_sentences_sample.csv
-                operator: "=="
-                expected: true
-                on_fail: block
-                message: Sentence review export missing.
-                reroute_to: []
-            quality_checks:
-              - condition_id: sentence_fragment_threshold
-                kind: sentence_fragment_rate_lte
-                target: data/processed/sentences/year=2024/ai_sentences_sample.csv
-                operator: "<="
-                expected: 0.15
-                on_fail: reroute
-                message: Pilot sentence fragmentation exceeds threshold.
-                reroute_to:
-                  - common.remediate_fragmented_sentences
-                  - common.resample_from_clean_sentence_pool
-            commands: []
-            manual_handoff: false
-            risks: [R1, R5]
-            estimated_effort: 2
-            risk_reduction: 9
-            automation_level: partial
-            on_fail: reroute
-            reroute_to:
-              - common.remediate_fragmented_sentences
-              - common.resample_from_clean_sentence_pool
-            evidence_required: true
-            tags: [sentence_quality_gate]
-            gate_class: data
-          - task_id: iteration1.labels.prepare_labeling_batch
-            title: Prepare first labeling batch
-            description: Select clean candidate sentences and build the first labeling batch exports.
-            iteration_id: "1"
-            phase_id: iteration1/label-ops-bootstrap
-            kind: build
-            depends_on:
-              - iteration1.shared.audit_sentence_integrity
-            inputs:
-              - artifact_id: sentence_table_2024
-                path: data/processed/sentences/year=2024/ai_sentences.parquet
-                kind: parquet
-                required: true
-            outputs:
-              - artifact_id: labeling_batch_parquet
-                path: data/labels/v1/labeling_batch_v1.parquet
-                kind: parquet
-                required: true
-              - artifact_id: labeling_batch_csv
-                path: data/labels/v1/labeling_batch_v1.csv
-                kind: csv
-                required: true
-            preconditions:
-              - condition_id: sentence_table_exists
-                kind: artifact_exists
-                target: data/processed/sentences/year=2024/ai_sentences.parquet
-                operator: "=="
-                expected: true
-                on_fail: block
-                message: Sentence table missing.
-                reroute_to: []
-            quality_checks:
-              - condition_id: labeling_batch_count
-                kind: json_field_compare
-                target: reports/labels/labeling_batch_v1_summary.json::selection.batch_row_count
-                operator: "=="
-                expected: 240
-                on_fail: block
-                message: Labeling batch row count does not match the target contract.
-                reroute_to: []
-              - condition_id: labeling_batch_quota_satisfied
-                kind: json_field_compare
-                target: reports/labels/labeling_batch_v1_summary.json::selection.quota_satisfied
-                operator: "=="
-                expected: true
-                on_fail: block
-                message: Labeling batch quarter allocation did not satisfy the target contract.
-                reroute_to: []
-              - condition_id: labeling_batch_no_leakage
-                kind: json_field_compare
-                target: reports/labels/labeling_batch_v1_summary.json::quality.heldout_overlap_count
-                operator: "=="
-                expected: 0
-                on_fail: block
-                message: Labeling batch overlaps the frozen held-out set.
-                reroute_to: []
-              - condition_id: labeling_batch_no_exact_duplicates
-                kind: json_field_compare
-                target: reports/labels/labeling_batch_v1_summary.json::quality.exact_duplicate_count
-                operator: "=="
-                expected: 0
-                on_fail: block
-                message: Labeling batch contains exact duplicate sentence texts.
-                reroute_to: []
-            commands:
-              - >-
-                .venv/bin/python -m semantic_ai_washing.labeling.build_labeling_batch
-                --sentences data/processed/sentences/year=2024/ai_sentences.parquet
-                --manifest data/manifests/filings/pilot_2024_10k_v1.csv
-                --held-out data/validation/held_out_sentences.csv
-                --output-parquet data/labels/v1/labeling_batch_v1.parquet
-                --output-csv data/labels/v1/labeling_batch_v1.csv
-                --report reports/labels/labeling_batch_v1_summary.json
-                --batch-id labeling_batch_v1
-                --target-size 240
-                --base-quarter-quota 60
-                --min-tokens 6
-                --max-tokens 120
-                --seed 20260306
-            manual_handoff: false
-            risks: [R1, R2, R5]
-            estimated_effort: 3
-            risk_reduction: 8
-            automation_level: partial
-            on_fail: block
-            reroute_to: []
-            evidence_required: true
-            tags: [label_batch]
-            gate_class: data
-      - phase_id: iteration1/diagnostics-nlp
-        title: Historical Diagnostics Baseline
-        goal: Preserved historical diagnostics work completed before roadmap-model v2.
-        lifecycle_state: historical
-        canonical: false
-        depends_on: []
-        required_artifacts:
-          - reports/iteration1/phase0/baseline_report.md
-        tags: [historical]
-        tasks: []
-      - phase_id: iteration1/label-expansion-recovery
-        title: Superseded Recovery Label Expansion
-        goal: Preserved recovery branch work completed before roadmap-model v2.
-        lifecycle_state: superseded
-        canonical: false
-        depends_on: []
-        required_artifacts:
-          - reports/iteration1/phase1_recovery/qa_report.json
-        tags: [superseded]
-        tasks: []
-      - phase_id: iteration1/irr-validation
-        title: Superseded Recovery IRR Workflow
-        goal: Preserved recovery IRR workflow completed before roadmap-model v2.
-        lifecycle_state: superseded
-        canonical: false
-        depends_on: []
-        required_artifacts:
-          - reports/iteration1/phase2_irr/irr_status.json
-        tags: [superseded]
-        tasks: []
-  - iteration_id: "2"
-    title: Label Expansion, Human IRR, and Frozen Training Set
-    goal: Build the first canonical human-labeled dataset, validate the rubric with true IRR, and freeze the split registry.
-    phases:
-      - phase_id: iteration2/dataset-expansion-2024
-        title: Dataset Expansion 2024
-        goal: Expand labeled coverage on clean pilot-derived sentences while keeping API use assistive only.
-        lifecycle_state: planned
-        canonical: true
-        depends_on:
-          - iteration1/label-ops-bootstrap
-        required_artifacts:
-          - data/labels/v1/labels_master.parquet
-          - reports/labels/label_expansion_summary.json
-        source_window_id: active_2021_2024
-        tags: [label_expansion, assistive_api]
-        tasks:
-          - task_id: iteration2.labels.expand_dataset
-            title: Expand canonical labels
-            description: Run bounded human labeling workflow on clean pilot-derived sentences.
-            iteration_id: "2"
-            phase_id: iteration2/dataset-expansion-2024
-            kind: manual
-            depends_on: []
-            inputs:
-              - artifact_id: labeling_batch_csv
-                path: data/labels/v1/labeling_batch_v1.csv
-                kind: csv
-                required: true
-            outputs:
-              - artifact_id: labels_master
-                path: data/labels/v1/labels_master.parquet
-                kind: parquet
-                required: true
-              - artifact_id: label_expansion_summary
-                path: reports/labels/label_expansion_summary.json
-                kind: json
-                required: true
-            preconditions:
-              - condition_id: labeling_batch_exists
-                kind: artifact_exists
-                target: data/labels/v1/labeling_batch_v1.csv
-                operator: "=="
-                expected: true
-                on_fail: block
-                message: Labeling batch is missing.
-                reroute_to: []
-            quality_checks: []
-            commands: []
-            manual_handoff: true
-            risks: [R1, R2, R3]
-            estimated_effort: 8
-            risk_reduction: 9
-            automation_level: manual
-            on_fail: block
-            reroute_to: []
-            evidence_required: true
-            tags: [human_labeling]
-            gate_class: manual
-      - phase_id: iteration2/irr-and-adjudication
-        title: IRR and Adjudication
-        goal: Run true human-human IRR on a blinded subset and adjudicate disagreements.
-        lifecycle_state: planned
-        canonical: true
-        depends_on:
-          - iteration2/dataset-expansion-2024
-        required_artifacts:
-          - data/labels/v1/irr_subset.parquet
-          - reports/labels/irr_report.json
-          - data/labels/v1/adjudication.parquet
-        source_window_id: active_2021_2024
-        tags: [irr, adjudication, sentence_quality_gate]
-        tasks:
-          - task_id: iteration2.shared.audit_sentence_integrity
-            title: Audit IRR sentence integrity
-            description: Re-check sentence integrity before blinded IRR work starts.
-            iteration_id: "2"
-            phase_id: iteration2/irr-and-adjudication
-            kind: diagnostic
-            depends_on: []
-            inputs:
-              - artifact_id: labels_master_review
-                path: data/labels/v1/labels_master_review.csv
-                kind: csv
-                required: true
-            outputs:
-              - artifact_id: irr_sentence_quality_report
-                path: reports/labels/irr_sentence_quality.json
-                kind: json
-                required: true
-            preconditions:
-              - condition_id: labels_master_review_exists
-                kind: artifact_exists
-                target: data/labels/v1/labels_master_review.csv
-                operator: "=="
-                expected: true
-                on_fail: block
-                message: Review CSV is missing for IRR sentence audit.
-                reroute_to: []
-            quality_checks:
-              - condition_id: irr_sentence_fragment_threshold
-                kind: sentence_fragment_rate_lte
-                target: data/labels/v1/labels_master_review.csv
-                operator: "<="
-                expected: 0.15
-                on_fail: reroute
-                message: IRR source quality is too low for reliable human rating.
-                reroute_to:
-                  - common.remediate_fragmented_sentences
-                  - common.resample_from_clean_sentence_pool
-            commands: []
-            manual_handoff: false
-            risks: [R1, R5]
-            estimated_effort: 2
-            risk_reduction: 9
-            automation_level: partial
-            on_fail: reroute
-            reroute_to:
-              - common.remediate_fragmented_sentences
-              - common.resample_from_clean_sentence_pool
-            evidence_required: true
-            tags: [sentence_quality_gate]
-            gate_class: data
-          - task_id: iteration2.irr.prepare_and_collect
-            title: Prepare and collect blinded IRR labels
-            description: Prepare blinded IRR subset and collect second-rater labels.
-            iteration_id: "2"
-            phase_id: iteration2/irr-and-adjudication
-            kind: manual
-            depends_on:
-              - iteration2.shared.audit_sentence_integrity
-            inputs:
-              - artifact_id: labels_master
-                path: data/labels/v1/labels_master.parquet
-                kind: parquet
-                required: true
-            outputs:
-              - artifact_id: irr_subset
-                path: data/labels/v1/irr_subset.parquet
-                kind: parquet
-                required: true
-              - artifact_id: irr_report
-                path: reports/labels/irr_report.json
-                kind: json
-                required: true
-              - artifact_id: adjudication
-                path: data/labels/v1/adjudication.parquet
-                kind: parquet
-                required: true
-            preconditions:
-              - condition_id: labels_master_exists
-                kind: artifact_exists
-                target: data/labels/v1/labels_master.parquet
-                operator: "=="
-                expected: true
-                on_fail: block
-                message: Canonical labels must exist before IRR.
-                reroute_to: []
-            quality_checks: []
-            commands: []
-            manual_handoff: true
-            risks: [R1, R3]
-            estimated_effort: 9
-            risk_reduction: 10
-            automation_level: manual
-            on_fail: block
-            reroute_to: []
-            evidence_required: true
-            tags: [human_irr]
-            gate_class: manual
-      - phase_id: iteration2/split-registry-freeze
-        title: Split Registry Freeze
-        goal: Freeze train and validation sentence assignments after adjudication while keeping held-out separate.
-        lifecycle_state: planned
-        canonical: true
-        depends_on:
-          - iteration2/irr-and-adjudication
-        required_artifacts:
-          - data/metadata/splits/split_registry_v1.csv
-          - data/metadata/splits/split_registry_v1.json
-        source_window_id: active_2021_2024
-        tags: [split_registry, leakage_control]
-        tasks:
-          - task_id: iteration2.splits.freeze_registry
-            title: Freeze split registry
-            description: Generate and fingerprint the canonical split registry from adjudicated labels.
-            iteration_id: "2"
-            phase_id: iteration2/split-registry-freeze
-            kind: build
-            depends_on: []
-            inputs:
-              - artifact_id: adjudication
-                path: data/labels/v1/adjudication.parquet
-                kind: parquet
-                required: true
-            outputs:
-              - artifact_id: split_registry_csv
-                path: data/metadata/splits/split_registry_v1.csv
-                kind: csv
-                required: true
-              - artifact_id: split_registry_json
-                path: data/metadata/splits/split_registry_v1.json
-                kind: json
-                required: true
-            preconditions:
-              - condition_id: adjudication_exists
-                kind: artifact_exists
-                target: data/labels/v1/adjudication.parquet
-                operator: "=="
-                expected: true
-                on_fail: block
-                message: Adjudication artifacts are required before split freeze.
-                reroute_to: []
-            quality_checks: []
-            commands: []
-            manual_handoff: false
-            risks: [R3, R6]
-            estimated_effort: 3
-            risk_reduction: 9
-            automation_level: partial
-            on_fail: block
-            reroute_to:
-              - common.rebuild_split_registry
-            evidence_required: true
-            tags: [split_registry]
-            gate_class: data
-      - phase_id: iteration2/modeling-readiness-gate
-        title: Modeling Readiness Gate
-        goal: Gate retraining on class balance, sentence quality, adjudication completion, and split integrity.
-        lifecycle_state: planned
-        canonical: true
-        depends_on:
-          - iteration2/split-registry-freeze
-        required_artifacts:
-          - reports/models/modeling_readiness_gate.json
-        source_window_id: active_2021_2024
-        tags: [modeling_gate]
-        tasks: []
-  - iteration_id: "3"
-    title: Retraining, Calibration, and Classification of 2021–2024
-    goal: Retrain the local model on adjudicated labels, calibrate on validation only, and classify the current active window.
-    phases:
-      - phase_id: iteration3/centroid-retraining
-        title: Centroid Retraining
-        goal: Embed the adjudicated training set, compute centroids, and fingerprint metadata.
-        lifecycle_state: planned
-        canonical: true
-        depends_on:
-          - iteration2/modeling-readiness-gate
-        required_artifacts:
-          - artifacts/models/mpnet_v1/embeddings.parquet
-          - artifacts/models/mpnet_v1/centroids.json
-          - artifacts/models/mpnet_v1/metadata.json
-        source_window_id: active_2021_2024
-        tags: [retraining]
-        tasks: []
-      - phase_id: iteration3/classifier-calibration
-        title: Classifier Calibration
-        goal: Calibrate thresholds on validation only and evaluate on the frozen held-out set.
-        lifecycle_state: planned
-        canonical: true
-        depends_on:
-          - iteration3/centroid-retraining
-        required_artifacts:
-          - reports/evaluation/calibration_v1.json
-          - reports/evaluation/heldout_eval_v1.json
-        source_window_id: active_2021_2024
-        tags: [calibration, evaluation]
-        tasks: []
-      - phase_id: iteration3/active-window-batch-classification
-        title: Active Window Batch Classification
-        goal: Classify the active 2021–2024 source window with coverage and skip auditing.
-        lifecycle_state: planned
-        canonical: true
-        depends_on:
-          - iteration3/classifier-calibration
-        required_artifacts:
-          - data/processed/classifications/year=2021/model=mpnet_v1/classified_sentences.parquet
-          - data/processed/classifications/year=2022/model=mpnet_v1/classified_sentences.parquet
-          - data/processed/classifications/year=2023/model=mpnet_v1/classified_sentences.parquet
-          - data/processed/classifications/year=2024/model=mpnet_v1/classified_sentences.parquet
-          - reports/classification/active_window_coverage_v1.json
-        source_window_id: active_2021_2024
-        tags: [batch_classification]
-        tasks: []
-      - phase_id: iteration3/aggregation-sanity
-        title: Aggregation Sanity
-        goal: Aggregate sentence-level classifications to firm-year outputs and QA the active window snapshot.
-        lifecycle_state: planned
-        canonical: true
-        depends_on:
-          - iteration3/active-window-batch-classification
-        required_artifacts:
-          - data/processed/aggregates/firm_year_ai_metrics_v1.parquet
-          - reports/classification/aggregation_qa_v1.json
-        source_window_id: active_2021_2024
-        tags: [aggregation]
-        tasks: []
-  - iteration_id: "4"
-    title: Panel Construction and Conditional Historical Backfill
-    goal: Build the active-window panel and cleanly separate that from any deferred historical source expansion.
-    phases:
-      - phase_id: iteration4/patents-and-controls-ingestion
-        title: Patents and Controls Ingestion
-        goal: Refresh patents, controls, and crosswalk inputs required for the active-window panel.
-        lifecycle_state: planned
-        canonical: true
-        depends_on:
-          - iteration3/aggregation-sanity
-        required_artifacts:
-          - data/interim/patents/patent_metrics_v1.parquet
-          - data/interim/controls/controls_v1.parquet
-        source_window_id: active_2021_2024
-        tags: [panel_inputs]
-        tasks: []
-      - phase_id: iteration4/panel-assembly-2021-2024
-        title: Panel Assembly 2021-2024
-        goal: Merge active-window AI metrics with patents and controls into the canonical panel.
-        lifecycle_state: planned
-        canonical: true
-        depends_on:
-          - iteration4/patents-and-controls-ingestion
-        required_artifacts:
-          - data/panels/panel_v1.parquet
-          - data/panels/panel_v1.csv
-          - reports/panels/panel_merge_coverage_v1.json
-        source_window_id: active_2021_2024
-        tags: [panel]
-        tasks: []
-      - phase_id: iteration4/panel-qa-and-freeze
-        title: Panel QA and Freeze
-        goal: Validate panel schema, missingness, and transformation rules before freezing panel v1.
-        lifecycle_state: planned
-        canonical: true
-        depends_on:
-          - iteration4/panel-assembly-2021-2024
-        required_artifacts:
-          - reports/panels/panel_v1_qa.json
-        source_window_id: active_2021_2024
-        tags: [panel_qa]
-        tasks: []
-      - phase_id: iteration4/historical-window-expansion-readiness
-        title: Historical Window Expansion Readiness
-        goal: Determine whether pre-2021 source availability permits historical backfill work.
-        lifecycle_state: deferred
-        canonical: true
-        depends_on:
-          - iteration4/panel-qa-and-freeze
-        required_artifacts:
-          - reports/data/historical_backfill_readiness.json
-        source_window_id: historical_2000_2020
-        tags: [historical_backfill]
-        tasks: []
-  - iteration_id: "5"
-    title: Analysis Outputs and Research Release Packaging
-    goal: Produce analysis outputs and a release package without making statistical significance an optimization target.
-    phases:
-      - phase_id: iteration5/regression-specification
-        title: Regression Specification
-        goal: Freeze regression inputs and define baseline and robustness specifications.
-        lifecycle_state: planned
-        canonical: true
-        depends_on:
-          - iteration4/panel-qa-and-freeze
-        required_artifacts:
-          - reports/analysis/regression_specification_v1.json
-        source_window_id: active_2021_2024
-        tags: [analysis]
-        tasks: []
-      - phase_id: iteration5/results-generation
-        title: Results Generation
-        goal: Run baseline models and generate tables and figures with provenance.
-        lifecycle_state: planned
-        canonical: true
-        depends_on:
-          - iteration5/regression-specification
-        required_artifacts:
-          - reports/analysis/results_manifest_v1.json
-        source_window_id: active_2021_2024
-        tags: [analysis]
-        tasks: []
-      - phase_id: iteration5/robustness-and-sensitivity
-        title: Robustness and Sensitivity
-        goal: Run alternative specifications and summarize directional stability.
-        lifecycle_state: planned
-        canonical: true
-        depends_on:
-          - iteration5/results-generation
-        required_artifacts:
-          - reports/analysis/robustness_summary_v1.json
-        source_window_id: active_2021_2024
-        tags: [analysis]
-        tasks: []
-      - phase_id: iteration5/release-packaging
-        title: Release Packaging
-        goal: Package artifacts, docs, and reproducibility notes for research release.
-        lifecycle_state: planned
-        canonical: true
-        depends_on:
-          - iteration5/robustness-and-sensitivity
-        required_artifacts:
-          - reports/release/release_manifest_v1.json
-        source_window_id: active_2021_2024
-        tags: [release]
-        tasks: []
+- iteration_id: '1'
+  title: Foundation, Canonical Contracts, and Bounded 2024 Pilot
+  goal: Establish canonical contracts, clean the execution surface, and build a bounded
+    sentence-table pilot from 2024 10-K filings.
+  entry_criteria:
+  - Canonical roadmap model v2 is active and rendered.
+  - Active source window 2021-2024 is available through SEC_SOURCE_DIR or local source-root
+    config.
+  exit_criteria:
+  - Foundation phases passed through label-ops-bootstrap.
+  - Iteration 1 review approved and closeout branch plan generated.
+  phases:
+  - phase_id: iteration1/kickoff-and-preflight
+    title: Historical Kickoff and Preflight
+    goal: Traceability-only placeholder for the retroactively introduced iteration
+      kickoff boundary.
+    lifecycle_state: historical
+    canonical: false
+    depends_on: []
+    required_artifacts:
+    - director/reviews/iteration_1_kickoff.json
+    tags:
+    - historical
+    - kickoff
+    tasks: []
+  - phase_id: iteration1/baseline-asset-freeze
+    title: Baseline Asset Freeze
+    goal: Freeze current evaluation assets and classify duplicates or deprecations
+      before new data work starts.
+    lifecycle_state: planned
+    canonical: true
+    depends_on: []
+    required_artifacts:
+    - reports/validation/validation_asset_registry.json
+    source_window_id: active_2021_2024
+    tags:
+    - data_contracts
+    - validation_assets
+    tasks:
+    - task_id: iteration1.assets.inventory_validation_assets
+      title: Inventory validation assets
+      description: Inventory and fingerprint existing held-out and labeled validation
+        assets.
+      iteration_id: '1'
+      phase_id: iteration1/baseline-asset-freeze
+      kind: diagnostic
+      depends_on: []
+      inputs:
+      - artifact_id: heldout
+        path: data/validation/held_out_sentences.csv
+        kind: csv
+        required: true
+      - artifact_id: collected_cleaned
+        path: data/validation/CollectedAiSentencesClassifiedCleaned.csv
+        kind: csv
+        required: true
+      - artifact_id: hand_labeled_revised
+        path: data/validation/hand_labeled_ai_sentences_with_embeddings_revised.csv
+        kind: csv
+        required: true
+      outputs:
+      - artifact_id: validation_asset_registry
+        path: reports/validation/validation_asset_registry.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: heldout_exists
+        kind: artifact_exists
+        target: data/validation/held_out_sentences.csv
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Held-out evaluation asset is missing.
+        reroute_to: []
+      quality_checks: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.director.tasks.validation_assets --output
+        reports/validation/validation_asset_registry.json
+      manual_handoff: false
+      risks:
+      - R3
+      - R6
+      estimated_effort: 2
+      risk_reduction: 8
+      automation_level: partial
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - asset_inventory
+      - evaluation_fixture
+      gate_class: data
+  - phase_id: iteration1/repo-hygiene-and-script-canon
+    title: Repo Hygiene and Script Canon
+    goal: Define canonical, transitional, and legacy scripts so the pipeline is understandable
+      and maintainable.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration1/baseline-asset-freeze
+    required_artifacts:
+    - docs/director/script_registry.md
+    - director/snapshots/script_inventory.json
+    tags:
+    - repo_hygiene
+    - script_registry
+    tasks:
+    - task_id: iteration1.repo.inventory_scripts
+      title: Inventory scripts
+      description: Catalog scripts under canonical, transitional, and legacy buckets.
+      iteration_id: '1'
+      phase_id: iteration1/repo-hygiene-and-script-canon
+      kind: diagnostic
+      depends_on: []
+      inputs: []
+      outputs:
+      - artifact_id: script_inventory
+        path: director/snapshots/script_inventory.json
+        kind: json
+        required: true
+      preconditions: []
+      quality_checks: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.director.tasks.script_inventory --mode
+        inventory --output-inventory director/snapshots/script_inventory.json
+      manual_handoff: false
+      risks:
+      - R7
+      estimated_effort: 2
+      risk_reduction: 7
+      automation_level: partial
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - inventory
+      gate_class: ops
+    - task_id: iteration1.repo.publish_script_registry
+      title: Publish script registry
+      description: Publish canonical entrypoints and legacy archive/removal intent.
+      iteration_id: '1'
+      phase_id: iteration1/repo-hygiene-and-script-canon
+      kind: reporting
+      depends_on:
+      - iteration1.repo.inventory_scripts
+      inputs:
+      - artifact_id: script_inventory
+        path: director/snapshots/script_inventory.json
+        kind: json
+        required: true
+      outputs:
+      - artifact_id: script_registry
+        path: docs/director/script_registry.md
+        kind: markdown
+        required: true
+      preconditions:
+      - condition_id: script_inventory_exists
+        kind: artifact_exists
+        target: director/snapshots/script_inventory.json
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Script inventory must exist before publishing registry.
+        reroute_to: []
+      quality_checks: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.director.tasks.script_inventory --mode
+        publish --input-inventory director/snapshots/script_inventory.json --output-registry
+        docs/director/script_registry.md
+      manual_handoff: false
+      risks:
+      - R7
+      estimated_effort: 2
+      risk_reduction: 6
+      automation_level: partial
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - documentation
+      gate_class: ops
+  - phase_id: iteration1/tooling-isolation
+    title: Tooling Isolation
+    goal: Prevent Atlas and similar external tooling from mutating the repo runtime
+      environment.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration1/repo-hygiene-and-script-canon
+    required_artifacts:
+    - docs/director/tooling_isolation.md
+    - director/config/tooling_policy.yaml
+    tags:
+    - tooling
+    - env_safety
+    tasks:
+    - task_id: iteration1.tooling.publish_isolation_policy
+      title: Publish tooling isolation policy
+      description: Write Atlas and external tool isolation rules and wrapper expectations.
+      iteration_id: '1'
+      phase_id: iteration1/tooling-isolation
+      kind: reporting
+      depends_on: []
+      inputs: []
+      outputs:
+      - artifact_id: tooling_policy_doc
+        path: docs/director/tooling_isolation.md
+        kind: markdown
+        required: true
+      - artifact_id: tooling_policy
+        path: director/config/tooling_policy.yaml
+        kind: file
+        required: true
+      preconditions: []
+      quality_checks: []
+      commands: []
+      manual_handoff: false
+      risks:
+      - R4
+      - R7
+      estimated_effort: 2
+      risk_reduction: 7
+      automation_level: partial
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - atlas
+      - env_safety
+      gate_class: ops
+  - phase_id: iteration1/source-index-contract
+    title: Source Index Contract
+    goal: Make the external SEC root the canonical raw-source interface and record
+      active source windows.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration1/tooling-isolation
+    required_artifacts:
+    - data/metadata/available_filings_index.csv
+    - data/metadata/source_windows.json
+    - reports/data/source_index_summary.json
+    source_window_id: active_2021_2024
+    tags:
+    - source_index
+    - external_sec
+    tasks:
+    - task_id: iteration1.source.index_external_sec_root
+      title: Index external SEC root
+      description: Index the active external source window from SEC_SOURCE_DIR without
+        copying raw filing bodies.
+      iteration_id: '1'
+      phase_id: iteration1/source-index-contract
+      kind: build
+      depends_on: []
+      inputs: []
+      outputs:
+      - artifact_id: filings_index
+        path: data/metadata/available_filings_index.csv
+        kind: csv
+        required: true
+      - artifact_id: source_windows
+        path: data/metadata/source_windows.json
+        kind: json
+        required: true
+      - artifact_id: source_index_summary
+        path: reports/data/source_index_summary.json
+        kind: json
+        required: true
+      preconditions: []
+      quality_checks: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.data.index_sec_filings --output-csv
+        data/metadata/available_filings_index.csv --output-source-windows data/metadata/source_windows.json
+        --output-summary reports/data/source_index_summary.json
+      manual_handoff: false
+      risks:
+      - R5
+      estimated_effort: 3
+      risk_reduction: 8
+      automation_level: partial
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - source_index
+      - source_window
+      gate_class: data
+  - phase_id: iteration1/sentence-table-pilot-2024
+    title: Sentence Table Pilot 2024
+    goal: Build a bounded 2024 10-K pilot manifest and canonical sentence table.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration1/source-index-contract
+    required_artifacts:
+    - data/manifests/filings/pilot_2024_10k_v1.csv
+    - data/processed/sentences/year=2024/ai_sentences.parquet
+    - reports/data/pilot_2024_sentence_quality.json
+    - data/processed/sentences/year=2024/ai_sentences_sample.csv
+    source_window_id: active_2021_2024
+    tags:
+    - pilot
+    - sentence_table
+    tasks:
+    - task_id: iteration1.pilot.generate_2024_manifest
+      title: Generate bounded 2024 manifest
+      description: Generate a deterministic 2024 10-K filing manifest capped at 240
+        filings.
+      iteration_id: '1'
+      phase_id: iteration1/sentence-table-pilot-2024
+      kind: build
+      depends_on: []
+      inputs:
+      - artifact_id: filings_index
+        path: data/metadata/available_filings_index.csv
+        kind: csv
+        required: true
+      outputs:
+      - artifact_id: pilot_manifest
+        path: data/manifests/filings/pilot_2024_10k_v1.csv
+        kind: csv
+        required: true
+      - artifact_id: pilot_manifest_summary
+        path: reports/data/pilot_2024_manifest_summary.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: filings_index_exists
+        kind: artifact_exists
+        target: data/metadata/available_filings_index.csv
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Source index must exist before pilot manifest generation.
+        reroute_to: []
+      quality_checks: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.data.build_filing_manifest --index
+        data/metadata/available_filings_index.csv --year 2024 --form 10-K --target-size
+        240 --quarter-quota 60 --controls data/interim/controls/controls_by_firm_year.csv
+        --crosswalk data/externals/crosswalks/cik_gvkey.csv --manifest-id pilot_2024_10k_v1
+        --seed 20260305 --output data/manifests/filings/pilot_2024_10k_v1.csv --report
+        reports/data/pilot_2024_manifest_summary.json
+      manual_handoff: false
+      risks:
+      - R5
+      estimated_effort: 3
+      risk_reduction: 8
+      automation_level: partial
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - pilot_manifest
+      gate_class: data
+    - task_id: iteration1.pilot.extract_sentence_table
+      title: Extract canonical sentence table
+      description: Extract AI-related sentences from the bounded 2024 pilot into canonical
+        sentence tables.
+      iteration_id: '1'
+      phase_id: iteration1/sentence-table-pilot-2024
+      kind: build
+      depends_on:
+      - iteration1.pilot.generate_2024_manifest
+      inputs:
+      - artifact_id: pilot_manifest
+        path: data/manifests/filings/pilot_2024_10k_v1.csv
+        kind: csv
+        required: true
+      outputs:
+      - artifact_id: sentence_table_2024
+        path: data/processed/sentences/year=2024/ai_sentences.parquet
+        kind: parquet
+        required: true
+      - artifact_id: sentence_table_sample_2024
+        path: data/processed/sentences/year=2024/ai_sentences_sample.csv
+        kind: csv
+        required: true
+      - artifact_id: sentence_quality_report
+        path: reports/data/pilot_2024_sentence_quality.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: pilot_manifest_exists
+        kind: artifact_exists
+        target: data/manifests/filings/pilot_2024_10k_v1.csv
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Pilot manifest missing.
+        reroute_to: []
+      quality_checks: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.data.extract_sentence_table --manifest
+        data/manifests/filings/pilot_2024_10k_v1.csv --output data/processed/sentences/year=2024/ai_sentences.parquet
+        --sample-output data/processed/sentences/year=2024/ai_sentences_sample.csv
+        --report reports/data/pilot_2024_sentence_quality.json --min-tokens 6 --sample-size
+        200
+      manual_handoff: false
+      risks:
+      - R5
+      - R6
+      estimated_effort: 4
+      risk_reduction: 9
+      automation_level: partial
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - sentence_table
+      - fragment_audit
+      gate_class: data
+  - phase_id: iteration1/rubric-and-api-bootstrap
+    title: Rubric and API Bootstrap
+    goal: Prepare rubric v1 and bounded assistive API usage without promoting API
+      output to canonical labels.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration1/sentence-table-pilot-2024
+    required_artifacts:
+    - docs/labeling_protocol.md
+    - director/config/api_assistive_policy.yaml
+    - reports/api/api_bootstrap_smoke_test.json
+    source_window_id: active_2021_2024
+    tags:
+    - rubric
+    - api_assistive
+    tasks:
+    - task_id: iteration1.rubric.publish_rubric_v1
+      title: Publish rubric v1
+      description: Finalize the labeling protocol for the sentence-table pilot and
+        assistive-only API usage.
+      iteration_id: '1'
+      phase_id: iteration1/rubric-and-api-bootstrap
+      kind: manual
+      depends_on: []
+      inputs:
+      - artifact_id: pilot_sentence_quality_report
+        path: reports/data/pilot_2024_sentence_quality.json
+        kind: json
+        required: true
+      outputs:
+      - artifact_id: labeling_protocol
+        path: docs/labeling_protocol.md
+        kind: markdown
+        required: true
+      preconditions:
+      - condition_id: pilot_sentence_quality_exists
+        kind: artifact_exists
+        target: reports/data/pilot_2024_sentence_quality.json
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Sentence quality report missing.
+        reroute_to: []
+      quality_checks: []
+      commands: []
+      manual_handoff: true
+      risks:
+      - R1
+      estimated_effort: 3
+      risk_reduction: 6
+      automation_level: manual
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - rubric_v1
+      - api_assistive
+      gate_class: manual
+    - task_id: iteration1.api.publish_assistive_policy
+      title: Publish assistive API policy
+      description: Add the bounded assistive-only API policy file for the bootstrap
+        smoke test.
+      iteration_id: '1'
+      phase_id: iteration1/rubric-and-api-bootstrap
+      kind: manual
+      depends_on: []
+      inputs: []
+      outputs:
+      - artifact_id: assistive_api_policy
+        path: director/config/api_assistive_policy.yaml
+        kind: file
+        required: true
+      preconditions: []
+      quality_checks:
+      - condition_id: assistive_api_policy_hash_present
+        kind: file_hash_present
+        target: director/config/api_assistive_policy.yaml
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Assistive API policy file missing or unreadable.
+        reroute_to: []
+      commands: []
+      manual_handoff: true
+      risks:
+      - R4
+      - R7
+      estimated_effort: 2
+      risk_reduction: 7
+      automation_level: manual
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - api_assistive_policy
+      gate_class: manual
+    - task_id: iteration1.api.run_smoke_test
+      title: Run assistive API smoke test
+      description: Execute one bounded live Responses API request and record usage
+        and result metadata.
+      iteration_id: '1'
+      phase_id: iteration1/rubric-and-api-bootstrap
+      kind: validation
+      depends_on:
+      - iteration1.rubric.publish_rubric_v1
+      - iteration1.api.publish_assistive_policy
+      inputs:
+      - artifact_id: labeling_protocol
+        path: docs/labeling_protocol.md
+        kind: markdown
+        required: true
+      - artifact_id: assistive_api_policy
+        path: director/config/api_assistive_policy.yaml
+        kind: file
+        required: true
+      - artifact_id: sentence_review_export
+        path: data/processed/sentences/year=2024/ai_sentences_sample.csv
+        kind: csv
+        required: true
+      outputs:
+      - artifact_id: api_smoke_report
+        path: reports/api/api_bootstrap_smoke_test.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: sentence_review_export_exists
+        kind: artifact_exists
+        target: data/processed/sentences/year=2024/ai_sentences_sample.csv
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Sentence review export missing for API smoke test.
+        reroute_to: []
+      quality_checks:
+      - condition_id: api_smoke_status_passed
+        kind: json_field_compare
+        target: reports/api/api_bootstrap_smoke_test.json::status
+        operator: ==
+        expected: passed
+        on_fail: block
+        message: API smoke test did not pass.
+        reroute_to: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.director.tasks.api_bootstrap --policy
+        director/config/api_assistive_policy.yaml --mode live
+      manual_handoff: false
+      risks:
+      - R4
+      - R7
+      estimated_effort: 3
+      risk_reduction: 8
+      automation_level: partial
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - api_assistive
+      - smoke_test
+      gate_class: ops
+  - phase_id: iteration1/label-ops-bootstrap
+    title: Label Ops Bootstrap
+    goal: Generate the first clean labeling batch from the bounded pilot after sentence-quality
+      gating.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration1/rubric-and-api-bootstrap
+    required_artifacts:
+    - data/labels/v1/labeling_batch_v1.parquet
+    - data/labels/v1/labeling_batch_v1.csv
+    - reports/labels/labeling_batch_v1_summary.json
+    source_window_id: active_2021_2024
+    tags:
+    - label_ops
+    - sentence_quality_gate
+    tasks:
+    - task_id: iteration1.shared.audit_sentence_integrity
+      title: Audit sentence integrity
+      description: Assess whether pilot-derived sentence datasets contain fragmented
+        or low-quality rows before labeling.
+      iteration_id: '1'
+      phase_id: iteration1/label-ops-bootstrap
+      kind: diagnostic
+      depends_on: []
+      inputs:
+      - artifact_id: sentence_review_export
+        path: data/processed/sentences/year=2024/ai_sentences_sample.csv
+        kind: csv
+        required: true
+      outputs:
+      - artifact_id: sentence_integrity_report
+        path: reports/data/pilot_2024_sentence_quality.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: sentence_review_export_exists
+        kind: artifact_exists
+        target: data/processed/sentences/year=2024/ai_sentences_sample.csv
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Sentence review export missing.
+        reroute_to: []
+      quality_checks:
+      - condition_id: sentence_fragment_threshold
+        kind: sentence_fragment_rate_lte
+        target: data/processed/sentences/year=2024/ai_sentences_sample.csv
+        operator: <=
+        expected: 0.15
+        on_fail: reroute
+        message: Pilot sentence fragmentation exceeds threshold.
+        reroute_to:
+        - common.remediate_fragmented_sentences
+        - common.resample_from_clean_sentence_pool
+      commands: []
+      manual_handoff: false
+      risks:
+      - R1
+      - R5
+      estimated_effort: 2
+      risk_reduction: 9
+      automation_level: partial
+      on_fail: reroute
+      reroute_to:
+      - common.remediate_fragmented_sentences
+      - common.resample_from_clean_sentence_pool
+      evidence_required: true
+      tags:
+      - sentence_quality_gate
+      gate_class: data
+    - task_id: iteration1.labels.prepare_labeling_batch
+      title: Prepare first labeling batch
+      description: Select clean candidate sentences and build the first labeling batch
+        exports.
+      iteration_id: '1'
+      phase_id: iteration1/label-ops-bootstrap
+      kind: build
+      depends_on:
+      - iteration1.shared.audit_sentence_integrity
+      inputs:
+      - artifact_id: sentence_table_2024
+        path: data/processed/sentences/year=2024/ai_sentences.parquet
+        kind: parquet
+        required: true
+      outputs:
+      - artifact_id: labeling_batch_parquet
+        path: data/labels/v1/labeling_batch_v1.parquet
+        kind: parquet
+        required: true
+      - artifact_id: labeling_batch_csv
+        path: data/labels/v1/labeling_batch_v1.csv
+        kind: csv
+        required: true
+      preconditions:
+      - condition_id: sentence_table_exists
+        kind: artifact_exists
+        target: data/processed/sentences/year=2024/ai_sentences.parquet
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Sentence table missing.
+        reroute_to: []
+      quality_checks:
+      - condition_id: labeling_batch_count
+        kind: json_field_compare
+        target: reports/labels/labeling_batch_v1_summary.json::selection.batch_row_count
+        operator: ==
+        expected: 240
+        on_fail: block
+        message: Labeling batch row count does not match the target contract.
+        reroute_to: []
+      - condition_id: labeling_batch_quota_satisfied
+        kind: json_field_compare
+        target: reports/labels/labeling_batch_v1_summary.json::selection.quota_satisfied
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Labeling batch quarter allocation did not satisfy the target contract.
+        reroute_to: []
+      - condition_id: labeling_batch_no_leakage
+        kind: json_field_compare
+        target: reports/labels/labeling_batch_v1_summary.json::quality.heldout_overlap_count
+        operator: ==
+        expected: 0
+        on_fail: block
+        message: Labeling batch overlaps the frozen held-out set.
+        reroute_to: []
+      - condition_id: labeling_batch_no_exact_duplicates
+        kind: json_field_compare
+        target: reports/labels/labeling_batch_v1_summary.json::quality.exact_duplicate_count
+        operator: ==
+        expected: 0
+        on_fail: block
+        message: Labeling batch contains exact duplicate sentence texts.
+        reroute_to: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.labeling.build_labeling_batch --sentences
+        data/processed/sentences/year=2024/ai_sentences.parquet --manifest data/manifests/filings/pilot_2024_10k_v1.csv
+        --held-out data/validation/held_out_sentences.csv --output-parquet data/labels/v1/labeling_batch_v1.parquet
+        --output-csv data/labels/v1/labeling_batch_v1.csv --report reports/labels/labeling_batch_v1_summary.json
+        --batch-id labeling_batch_v1 --target-size 240 --base-quarter-quota 60 --min-tokens
+        6 --max-tokens 120 --seed 20260306
+      manual_handoff: false
+      risks:
+      - R1
+      - R2
+      - R5
+      estimated_effort: 3
+      risk_reduction: 8
+      automation_level: partial
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - label_batch
+      gate_class: data
+  - phase_id: iteration1/review-and-replan
+    title: Review and Replan
+    goal: Synthesize iteration evidence, approve closeout, and prepare the next iteration
+      handoff.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration1/label-ops-bootstrap
+    required_artifacts:
+    - director/reviews/iteration_1_review.json
+    - director/reviews/iteration_1_review.md
+    - director/reviews/iteration_1_patch_proposal.yaml
+    - director/reviews/iteration_1_branch_plan.md
+    - director/reviews/iteration_1_starter_prompt.md
+    - director/reviews/iteration_1_approval.json
+    tags:
+    - review
+    - closeout
+    tasks:
+    - task_id: iteration1.review.generate_review
+      title: Generate iteration review
+      description: Build the structured IterationReview artifact set from execution
+        evidence and roadmap state.
+      iteration_id: '1'
+      phase_id: iteration1/review-and-replan
+      kind: analysis
+      depends_on: []
+      inputs:
+      - artifact_id: iteration_log
+        path: docs/iteration_log.md
+        kind: markdown
+        required: true
+      outputs:
+      - artifact_id: iteration_review_json
+        path: director/reviews/iteration_1_review.json
+        kind: json
+        required: true
+      - artifact_id: iteration_review_md
+        path: director/reviews/iteration_1_review.md
+        kind: markdown
+        required: true
+      - artifact_id: iteration_patch_yaml
+        path: director/reviews/iteration_1_patch_proposal.yaml
+        kind: file
+        required: true
+      - artifact_id: iteration_branch_plan_md
+        path: director/reviews/iteration_1_branch_plan.md
+        kind: markdown
+        required: true
+      - artifact_id: iteration_starter_prompt_md
+        path: director/reviews/iteration_1_starter_prompt.md
+        kind: markdown
+        required: true
+      preconditions:
+      - condition_id: iteration_log_exists
+        kind: artifact_exists
+        target: docs/iteration_log.md
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Iteration log must exist before generating a review.
+        reroute_to: []
+      quality_checks: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.director.cli review --iteration 1
+      manual_handoff: false
+      risks:
+      - R4
+      - R7
+      estimated_effort: 2
+      risk_reduction: 9
+      automation_level: partial
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - review_generation
+      gate_class: ops
+    - task_id: iteration1.review.approve_closeout
+      title: Approve iteration closeout
+      description: Record manual review approval and explicitly accept or defer roadmap
+        changes.
+      iteration_id: '1'
+      phase_id: iteration1/review-and-replan
+      kind: manual
+      depends_on:
+      - iteration1.review.generate_review
+      inputs:
+      - artifact_id: iteration_review_json
+        path: director/reviews/iteration_1_review.json
+        kind: json
+        required: true
+      outputs:
+      - artifact_id: iteration_review_approval
+        path: director/reviews/iteration_1_approval.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: iteration_review_exists
+        kind: artifact_exists
+        target: director/reviews/iteration_1_review.json
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Iteration review must exist before approval.
+        reroute_to: []
+      quality_checks:
+      - condition_id: iteration_review_approved
+        kind: json_field_compare
+        target: director/reviews/iteration_1_approval.json::decision
+        operator: ==
+        expected: approved
+        on_fail: block
+        message: Iteration review approval must be explicitly approved.
+        reroute_to: []
+      commands: []
+      manual_handoff: true
+      risks:
+      - R4
+      estimated_effort: 2
+      risk_reduction: 9
+      automation_level: manual
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - review_approval
+      gate_class: manual
+  - phase_id: iteration1/diagnostics-nlp
+    title: Historical Diagnostics Baseline
+    goal: Preserved historical diagnostics work completed before roadmap-model v2.
+    lifecycle_state: historical
+    canonical: false
+    depends_on: []
+    required_artifacts:
+    - reports/iteration1/phase0/baseline_report.md
+    tags:
+    - historical
+    tasks: []
+  - phase_id: iteration1/label-expansion-recovery
+    title: Superseded Recovery Label Expansion
+    goal: Preserved recovery branch work completed before roadmap-model v2.
+    lifecycle_state: superseded
+    canonical: false
+    depends_on: []
+    required_artifacts:
+    - reports/iteration1/phase1_recovery/qa_report.json
+    tags:
+    - superseded
+    tasks: []
+  - phase_id: iteration1/irr-validation
+    title: Superseded Recovery IRR Workflow
+    goal: Preserved recovery IRR workflow completed before roadmap-model v2.
+    lifecycle_state: superseded
+    canonical: false
+    depends_on: []
+    required_artifacts:
+    - reports/iteration1/phase2_irr/irr_status.json
+    tags:
+    - superseded
+    tasks: []
+- iteration_id: '2'
+  title: Label Expansion, Human IRR, and Frozen Training Set
+  goal: Build the first canonical human-labeled dataset, validate the rubric with
+    true IRR, and freeze the split registry.
+  entry_criteria:
+  - Iteration 1 review approved.
+  - Iteration 2 kickoff completed on iteration2/integration.
+  - Use availability-aware quarter redistribution when leakage-safe filtering makes
+    strict equal quarter quotas infeasible.
+  exit_criteria:
+  - Canonical labels, IRR/adjudication, split registry, and modeling readiness gate
+    are complete.
+  - Iteration 2 review approved.
+  phases:
+  - phase_id: iteration2/kickoff-and-preflight
+    title: Kickoff and Preflight
+    goal: Validate branch context and prior review approval before starting Iteration
+      2 work.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration1/review-and-replan
+    required_artifacts:
+    - director/reviews/iteration_2_kickoff.json
+    tags:
+    - kickoff
+    - branch_policy
+    tasks:
+    - task_id: iteration2.kickoff.verify_context
+      title: Verify kickoff context
+      description: Confirm integration branch naming, prior review approval, and merge-base
+        hygiene.
+      iteration_id: '2'
+      phase_id: iteration2/kickoff-and-preflight
+      kind: validation
+      depends_on: []
+      inputs:
+      - artifact_id: prior_review_approval
+        path: director/reviews/iteration_1_approval.json
+        kind: json
+        required: true
+      outputs:
+      - artifact_id: kickoff_report
+        path: director/reviews/iteration_2_kickoff.json
+        kind: json
+        required: true
+      preconditions: []
+      quality_checks:
+      - condition_id: kickoff_ready
+        kind: json_field_compare
+        target: director/reviews/iteration_2_kickoff.json::status
+        operator: ==
+        expected: ready
+        on_fail: block
+        message: Iteration 2 kickoff is not ready.
+        reroute_to: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.director.cli kickoff --iteration 2
+      manual_handoff: false
+      risks:
+      - R4
+      - R7
+      estimated_effort: 2
+      risk_reduction: 10
+      automation_level: partial
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - kickoff
+      gate_class: ops
+  - phase_id: iteration2/dataset-expansion-2024
+    title: Dataset Expansion 2024
+    goal: Expand labeled coverage on clean pilot-derived sentences while keeping API
+      use assistive only.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration2/kickoff-and-preflight
+    required_artifacts:
+    - data/labels/v1/labels_master.parquet
+    - reports/labels/label_expansion_summary.json
+    source_window_id: active_2021_2024
+    tags:
+    - label_expansion
+    - assistive_api
+    tasks:
+    - task_id: iteration2.labels.expand_dataset
+      title: Expand canonical labels
+      description: Run bounded human labeling workflow on clean pilot-derived sentences.
+      iteration_id: '2'
+      phase_id: iteration2/dataset-expansion-2024
+      kind: manual
+      depends_on: []
+      inputs:
+      - artifact_id: labeling_batch_csv
+        path: data/labels/v1/labeling_batch_v1.csv
+        kind: csv
+        required: true
+      outputs:
+      - artifact_id: labels_master
+        path: data/labels/v1/labels_master.parquet
+        kind: parquet
+        required: true
+      - artifact_id: label_expansion_summary
+        path: reports/labels/label_expansion_summary.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: labeling_batch_exists
+        kind: artifact_exists
+        target: data/labels/v1/labeling_batch_v1.csv
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Labeling batch is missing.
+        reroute_to: []
+      quality_checks: []
+      commands: []
+      manual_handoff: true
+      risks:
+      - R1
+      - R2
+      - R3
+      estimated_effort: 8
+      risk_reduction: 9
+      automation_level: manual
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - human_labeling
+      gate_class: manual
+  - phase_id: iteration2/irr-and-adjudication
+    title: IRR and Adjudication
+    goal: Run true human-human IRR on a blinded subset and adjudicate disagreements.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration2/dataset-expansion-2024
+    required_artifacts:
+    - data/labels/v1/irr_subset.parquet
+    - reports/labels/irr_report.json
+    - data/labels/v1/adjudication.parquet
+    source_window_id: active_2021_2024
+    tags:
+    - irr
+    - adjudication
+    - sentence_quality_gate
+    tasks:
+    - task_id: iteration2.shared.audit_sentence_integrity
+      title: Audit IRR sentence integrity
+      description: Re-check sentence integrity before blinded IRR work starts.
+      iteration_id: '2'
+      phase_id: iteration2/irr-and-adjudication
+      kind: diagnostic
+      depends_on: []
+      inputs:
+      - artifact_id: labels_master_review
+        path: data/labels/v1/labels_master_review.csv
+        kind: csv
+        required: true
+      outputs:
+      - artifact_id: irr_sentence_quality_report
+        path: reports/labels/irr_sentence_quality.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: labels_master_review_exists
+        kind: artifact_exists
+        target: data/labels/v1/labels_master_review.csv
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Review CSV is missing for IRR sentence audit.
+        reroute_to: []
+      quality_checks:
+      - condition_id: irr_sentence_fragment_threshold
+        kind: sentence_fragment_rate_lte
+        target: data/labels/v1/labels_master_review.csv
+        operator: <=
+        expected: 0.15
+        on_fail: reroute
+        message: IRR source quality is too low for reliable human rating.
+        reroute_to:
+        - common.remediate_fragmented_sentences
+        - common.resample_from_clean_sentence_pool
+      commands: []
+      manual_handoff: false
+      risks:
+      - R1
+      - R5
+      estimated_effort: 2
+      risk_reduction: 9
+      automation_level: partial
+      on_fail: reroute
+      reroute_to:
+      - common.remediate_fragmented_sentences
+      - common.resample_from_clean_sentence_pool
+      evidence_required: true
+      tags:
+      - sentence_quality_gate
+      gate_class: data
+    - task_id: iteration2.irr.prepare_and_collect
+      title: Prepare and collect blinded IRR labels
+      description: Prepare blinded IRR subset and collect second-rater labels.
+      iteration_id: '2'
+      phase_id: iteration2/irr-and-adjudication
+      kind: manual
+      depends_on:
+      - iteration2.shared.audit_sentence_integrity
+      inputs:
+      - artifact_id: labels_master
+        path: data/labels/v1/labels_master.parquet
+        kind: parquet
+        required: true
+      outputs:
+      - artifact_id: irr_subset
+        path: data/labels/v1/irr_subset.parquet
+        kind: parquet
+        required: true
+      - artifact_id: irr_report
+        path: reports/labels/irr_report.json
+        kind: json
+        required: true
+      - artifact_id: adjudication
+        path: data/labels/v1/adjudication.parquet
+        kind: parquet
+        required: true
+      preconditions:
+      - condition_id: labels_master_exists
+        kind: artifact_exists
+        target: data/labels/v1/labels_master.parquet
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Canonical labels must exist before IRR.
+        reroute_to: []
+      quality_checks: []
+      commands: []
+      manual_handoff: true
+      risks:
+      - R1
+      - R3
+      estimated_effort: 9
+      risk_reduction: 10
+      automation_level: manual
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - human_irr
+      gate_class: manual
+  - phase_id: iteration2/split-registry-freeze
+    title: Split Registry Freeze
+    goal: Freeze train and validation sentence assignments after adjudication while
+      keeping held-out separate.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration2/irr-and-adjudication
+    required_artifacts:
+    - data/metadata/splits/split_registry_v1.csv
+    - data/metadata/splits/split_registry_v1.json
+    source_window_id: active_2021_2024
+    tags:
+    - split_registry
+    - leakage_control
+    tasks:
+    - task_id: iteration2.splits.freeze_registry
+      title: Freeze split registry
+      description: Generate and fingerprint the canonical split registry from adjudicated
+        labels.
+      iteration_id: '2'
+      phase_id: iteration2/split-registry-freeze
+      kind: build
+      depends_on: []
+      inputs:
+      - artifact_id: adjudication
+        path: data/labels/v1/adjudication.parquet
+        kind: parquet
+        required: true
+      outputs:
+      - artifact_id: split_registry_csv
+        path: data/metadata/splits/split_registry_v1.csv
+        kind: csv
+        required: true
+      - artifact_id: split_registry_json
+        path: data/metadata/splits/split_registry_v1.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: adjudication_exists
+        kind: artifact_exists
+        target: data/labels/v1/adjudication.parquet
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Adjudication artifacts are required before split freeze.
+        reroute_to: []
+      quality_checks: []
+      commands: []
+      manual_handoff: false
+      risks:
+      - R3
+      - R6
+      estimated_effort: 3
+      risk_reduction: 9
+      automation_level: partial
+      on_fail: block
+      reroute_to:
+      - common.rebuild_split_registry
+      evidence_required: true
+      tags:
+      - split_registry
+      gate_class: data
+  - phase_id: iteration2/modeling-readiness-gate
+    title: Modeling Readiness Gate
+    goal: Gate retraining on class balance, sentence quality, adjudication completion,
+      and split integrity.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration2/split-registry-freeze
+    required_artifacts:
+    - reports/models/modeling_readiness_gate.json
+    source_window_id: active_2021_2024
+    tags:
+    - modeling_gate
+    tasks: []
+  - phase_id: iteration2/review-and-replan
+    title: Review and Replan
+    goal: Synthesize iteration evidence, approve closeout, and prepare the next iteration
+      handoff.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration2/modeling-readiness-gate
+    required_artifacts:
+    - director/reviews/iteration_2_review.json
+    - director/reviews/iteration_2_review.md
+    - director/reviews/iteration_2_patch_proposal.yaml
+    - director/reviews/iteration_2_branch_plan.md
+    - director/reviews/iteration_2_starter_prompt.md
+    - director/reviews/iteration_2_approval.json
+    tags:
+    - review
+    - closeout
+    tasks:
+    - task_id: iteration2.review.generate_review
+      title: Generate iteration review
+      description: Build the structured IterationReview artifact set from Iteration
+        2 evidence.
+      iteration_id: '2'
+      phase_id: iteration2/review-and-replan
+      kind: analysis
+      depends_on: []
+      inputs:
+      - artifact_id: iteration_log
+        path: docs/iteration_log.md
+        kind: markdown
+        required: true
+      outputs:
+      - artifact_id: iteration_review_json
+        path: director/reviews/iteration_2_review.json
+        kind: json
+        required: true
+      - artifact_id: iteration_review_md
+        path: director/reviews/iteration_2_review.md
+        kind: markdown
+        required: true
+      - artifact_id: iteration_patch_yaml
+        path: director/reviews/iteration_2_patch_proposal.yaml
+        kind: file
+        required: true
+      - artifact_id: iteration_branch_plan_md
+        path: director/reviews/iteration_2_branch_plan.md
+        kind: markdown
+        required: true
+      - artifact_id: iteration_starter_prompt_md
+        path: director/reviews/iteration_2_starter_prompt.md
+        kind: markdown
+        required: true
+      preconditions:
+      - condition_id: iteration_log_exists
+        kind: artifact_exists
+        target: docs/iteration_log.md
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Iteration log must exist before generating a review.
+        reroute_to: []
+      quality_checks: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.director.cli review --iteration 2
+      manual_handoff: false
+      risks:
+      - R4
+      - R7
+      estimated_effort: 2
+      risk_reduction: 9
+      automation_level: partial
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - review_generation
+      gate_class: ops
+    - task_id: iteration2.review.approve_closeout
+      title: Approve iteration closeout
+      description: Record manual review approval and explicitly accept or defer roadmap
+        changes.
+      iteration_id: '2'
+      phase_id: iteration2/review-and-replan
+      kind: manual
+      depends_on:
+      - iteration2.review.generate_review
+      inputs:
+      - artifact_id: iteration_review_json
+        path: director/reviews/iteration_2_review.json
+        kind: json
+        required: true
+      outputs:
+      - artifact_id: iteration_review_approval
+        path: director/reviews/iteration_2_approval.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: iteration_review_exists
+        kind: artifact_exists
+        target: director/reviews/iteration_2_review.json
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Iteration review must exist before approval.
+        reroute_to: []
+      quality_checks:
+      - condition_id: iteration_review_approved
+        kind: json_field_compare
+        target: director/reviews/iteration_2_approval.json::decision
+        operator: ==
+        expected: approved
+        on_fail: block
+        message: Iteration review approval must be explicitly approved.
+        reroute_to: []
+      commands: []
+      manual_handoff: true
+      risks:
+      - R4
+      estimated_effort: 2
+      risk_reduction: 9
+      automation_level: manual
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - review_approval
+      gate_class: manual
+- iteration_id: '3'
+  title: "Retraining, Calibration, and Classification of 2021\u20132024"
+  goal: Retrain the local model on adjudicated labels, calibrate on validation only,
+    and classify the current active window.
+  entry_criteria:
+  - Iteration 2 review approved.
+  - Iteration 3 kickoff completed on iteration3/integration.
+  exit_criteria:
+  - Retraining, calibration, active-window classification, and aggregation sanity
+    are complete.
+  - Iteration 3 review approved.
+  phases:
+  - phase_id: iteration3/kickoff-and-preflight
+    title: Kickoff and Preflight
+    goal: Validate branch context and prior review approval before starting Iteration
+      3 work.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration2/review-and-replan
+    required_artifacts:
+    - director/reviews/iteration_3_kickoff.json
+    tags:
+    - kickoff
+    - branch_policy
+    tasks:
+    - task_id: iteration3.kickoff.verify_context
+      title: Verify kickoff context
+      description: Confirm integration branch naming, prior review approval, and merge-base
+        hygiene.
+      iteration_id: '3'
+      phase_id: iteration3/kickoff-and-preflight
+      kind: validation
+      depends_on: []
+      inputs:
+      - artifact_id: prior_review_approval
+        path: director/reviews/iteration_2_approval.json
+        kind: json
+        required: true
+      outputs:
+      - artifact_id: kickoff_report
+        path: director/reviews/iteration_3_kickoff.json
+        kind: json
+        required: true
+      preconditions: []
+      quality_checks:
+      - condition_id: kickoff_ready
+        kind: json_field_compare
+        target: director/reviews/iteration_3_kickoff.json::status
+        operator: ==
+        expected: ready
+        on_fail: block
+        message: Iteration 3 kickoff is not ready.
+        reroute_to: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.director.cli kickoff --iteration 3
+      manual_handoff: false
+      risks:
+      - R4
+      - R7
+      estimated_effort: 2
+      risk_reduction: 10
+      automation_level: partial
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - kickoff
+      gate_class: ops
+  - phase_id: iteration3/centroid-retraining
+    title: Centroid Retraining
+    goal: Embed the adjudicated training set, compute centroids, and fingerprint metadata.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration3/kickoff-and-preflight
+    required_artifacts:
+    - artifacts/models/mpnet_v1/embeddings.parquet
+    - artifacts/models/mpnet_v1/centroids.json
+    - artifacts/models/mpnet_v1/metadata.json
+    source_window_id: active_2021_2024
+    tags:
+    - retraining
+    tasks: []
+  - phase_id: iteration3/classifier-calibration
+    title: Classifier Calibration
+    goal: Calibrate thresholds on validation only and evaluate on the frozen held-out
+      set.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration3/centroid-retraining
+    required_artifacts:
+    - reports/evaluation/calibration_v1.json
+    - reports/evaluation/heldout_eval_v1.json
+    source_window_id: active_2021_2024
+    tags:
+    - calibration
+    - evaluation
+    tasks: []
+  - phase_id: iteration3/active-window-batch-classification
+    title: Active Window Batch Classification
+    goal: "Classify the active 2021\u20132024 source window with coverage and skip\
+      \ auditing."
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration3/classifier-calibration
+    required_artifacts:
+    - data/processed/classifications/year=2021/model=mpnet_v1/classified_sentences.parquet
+    - data/processed/classifications/year=2022/model=mpnet_v1/classified_sentences.parquet
+    - data/processed/classifications/year=2023/model=mpnet_v1/classified_sentences.parquet
+    - data/processed/classifications/year=2024/model=mpnet_v1/classified_sentences.parquet
+    - reports/classification/active_window_coverage_v1.json
+    source_window_id: active_2021_2024
+    tags:
+    - batch_classification
+    tasks: []
+  - phase_id: iteration3/aggregation-sanity
+    title: Aggregation Sanity
+    goal: Aggregate sentence-level classifications to firm-year outputs and QA the
+      active window snapshot.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration3/active-window-batch-classification
+    required_artifacts:
+    - data/processed/aggregates/firm_year_ai_metrics_v1.parquet
+    - reports/classification/aggregation_qa_v1.json
+    source_window_id: active_2021_2024
+    tags:
+    - aggregation
+    tasks: []
+  - phase_id: iteration3/review-and-replan
+    title: Review and Replan
+    goal: Synthesize iteration evidence, approve closeout, and prepare the next iteration
+      handoff.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration3/aggregation-sanity
+    required_artifacts:
+    - director/reviews/iteration_3_review.json
+    - director/reviews/iteration_3_review.md
+    - director/reviews/iteration_3_patch_proposal.yaml
+    - director/reviews/iteration_3_branch_plan.md
+    - director/reviews/iteration_3_starter_prompt.md
+    - director/reviews/iteration_3_approval.json
+    tags:
+    - review
+    - closeout
+    tasks:
+    - task_id: iteration3.review.generate_review
+      title: Generate iteration review
+      description: Build the structured IterationReview artifact set from Iteration
+        3 evidence.
+      iteration_id: '3'
+      phase_id: iteration3/review-and-replan
+      kind: analysis
+      depends_on: []
+      inputs:
+      - artifact_id: iteration_log
+        path: docs/iteration_log.md
+        kind: markdown
+        required: true
+      outputs:
+      - artifact_id: iteration_review_json
+        path: director/reviews/iteration_3_review.json
+        kind: json
+        required: true
+      - artifact_id: iteration_review_md
+        path: director/reviews/iteration_3_review.md
+        kind: markdown
+        required: true
+      - artifact_id: iteration_patch_yaml
+        path: director/reviews/iteration_3_patch_proposal.yaml
+        kind: file
+        required: true
+      - artifact_id: iteration_branch_plan_md
+        path: director/reviews/iteration_3_branch_plan.md
+        kind: markdown
+        required: true
+      - artifact_id: iteration_starter_prompt_md
+        path: director/reviews/iteration_3_starter_prompt.md
+        kind: markdown
+        required: true
+      preconditions:
+      - condition_id: iteration_log_exists
+        kind: artifact_exists
+        target: docs/iteration_log.md
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Iteration log must exist before generating a review.
+        reroute_to: []
+      quality_checks: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.director.cli review --iteration 3
+      manual_handoff: false
+      risks:
+      - R4
+      - R7
+      estimated_effort: 2
+      risk_reduction: 9
+      automation_level: partial
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - review_generation
+      gate_class: ops
+    - task_id: iteration3.review.approve_closeout
+      title: Approve iteration closeout
+      description: Record manual review approval and explicitly accept or defer roadmap
+        changes.
+      iteration_id: '3'
+      phase_id: iteration3/review-and-replan
+      kind: manual
+      depends_on:
+      - iteration3.review.generate_review
+      inputs:
+      - artifact_id: iteration_review_json
+        path: director/reviews/iteration_3_review.json
+        kind: json
+        required: true
+      outputs:
+      - artifact_id: iteration_review_approval
+        path: director/reviews/iteration_3_approval.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: iteration_review_exists
+        kind: artifact_exists
+        target: director/reviews/iteration_3_review.json
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Iteration review must exist before approval.
+        reroute_to: []
+      quality_checks:
+      - condition_id: iteration_review_approved
+        kind: json_field_compare
+        target: director/reviews/iteration_3_approval.json::decision
+        operator: ==
+        expected: approved
+        on_fail: block
+        message: Iteration review approval must be explicitly approved.
+        reroute_to: []
+      commands: []
+      manual_handoff: true
+      risks:
+      - R4
+      estimated_effort: 2
+      risk_reduction: 9
+      automation_level: manual
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - review_approval
+      gate_class: manual
+- iteration_id: '4'
+  title: Panel Construction and Conditional Historical Backfill
+  goal: Build the active-window panel and cleanly separate that from any deferred
+    historical source expansion.
+  entry_criteria:
+  - Iteration 3 review approved.
+  - Iteration 4 kickoff completed on iteration4/integration.
+  exit_criteria:
+  - Active-window panel is assembled and QA-frozen.
+  - Iteration 4 review approved.
+  phases:
+  - phase_id: iteration4/kickoff-and-preflight
+    title: Kickoff and Preflight
+    goal: Validate branch context and prior review approval before starting Iteration
+      4 work.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration3/review-and-replan
+    required_artifacts:
+    - director/reviews/iteration_4_kickoff.json
+    tags:
+    - kickoff
+    - branch_policy
+    tasks:
+    - task_id: iteration4.kickoff.verify_context
+      title: Verify kickoff context
+      description: Confirm integration branch naming, prior review approval, and merge-base
+        hygiene.
+      iteration_id: '4'
+      phase_id: iteration4/kickoff-and-preflight
+      kind: validation
+      depends_on: []
+      inputs:
+      - artifact_id: prior_review_approval
+        path: director/reviews/iteration_3_approval.json
+        kind: json
+        required: true
+      outputs:
+      - artifact_id: kickoff_report
+        path: director/reviews/iteration_4_kickoff.json
+        kind: json
+        required: true
+      preconditions: []
+      quality_checks:
+      - condition_id: kickoff_ready
+        kind: json_field_compare
+        target: director/reviews/iteration_4_kickoff.json::status
+        operator: ==
+        expected: ready
+        on_fail: block
+        message: Iteration 4 kickoff is not ready.
+        reroute_to: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.director.cli kickoff --iteration 4
+      manual_handoff: false
+      risks:
+      - R4
+      - R7
+      estimated_effort: 2
+      risk_reduction: 10
+      automation_level: partial
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - kickoff
+      gate_class: ops
+  - phase_id: iteration4/patents-and-controls-ingestion
+    title: Patents and Controls Ingestion
+    goal: Refresh patents, controls, and crosswalk inputs required for the active-window
+      panel.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration4/kickoff-and-preflight
+    required_artifacts:
+    - data/interim/patents/patent_metrics_v1.parquet
+    - data/interim/controls/controls_v1.parquet
+    source_window_id: active_2021_2024
+    tags:
+    - panel_inputs
+    tasks: []
+  - phase_id: iteration4/panel-assembly-2021-2024
+    title: Panel Assembly 2021-2024
+    goal: Merge active-window AI metrics with patents and controls into the canonical
+      panel.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration4/patents-and-controls-ingestion
+    required_artifacts:
+    - data/panels/panel_v1.parquet
+    - data/panels/panel_v1.csv
+    - reports/panels/panel_merge_coverage_v1.json
+    source_window_id: active_2021_2024
+    tags:
+    - panel
+    tasks: []
+  - phase_id: iteration4/panel-qa-and-freeze
+    title: Panel QA and Freeze
+    goal: Validate panel schema, missingness, and transformation rules before freezing
+      panel v1.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration4/panel-assembly-2021-2024
+    required_artifacts:
+    - reports/panels/panel_v1_qa.json
+    source_window_id: active_2021_2024
+    tags:
+    - panel_qa
+    tasks: []
+  - phase_id: iteration4/historical-window-expansion-readiness
+    title: Historical Window Expansion Readiness
+    goal: Determine whether pre-2021 source availability permits historical backfill
+      work.
+    lifecycle_state: deferred
+    canonical: true
+    depends_on:
+    - iteration4/panel-qa-and-freeze
+    required_artifacts:
+    - reports/data/historical_backfill_readiness.json
+    source_window_id: historical_2000_2020
+    tags:
+    - historical_backfill
+    tasks: []
+  - phase_id: iteration4/review-and-replan
+    title: Review and Replan
+    goal: Synthesize iteration evidence, approve closeout, and prepare the next iteration
+      handoff.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration4/panel-qa-and-freeze
+    required_artifacts:
+    - director/reviews/iteration_4_review.json
+    - director/reviews/iteration_4_review.md
+    - director/reviews/iteration_4_patch_proposal.yaml
+    - director/reviews/iteration_4_branch_plan.md
+    - director/reviews/iteration_4_starter_prompt.md
+    - director/reviews/iteration_4_approval.json
+    tags:
+    - review
+    - closeout
+    tasks:
+    - task_id: iteration4.review.generate_review
+      title: Generate iteration review
+      description: Build the structured IterationReview artifact set from Iteration
+        4 evidence.
+      iteration_id: '4'
+      phase_id: iteration4/review-and-replan
+      kind: analysis
+      depends_on: []
+      inputs:
+      - artifact_id: iteration_log
+        path: docs/iteration_log.md
+        kind: markdown
+        required: true
+      outputs:
+      - artifact_id: iteration_review_json
+        path: director/reviews/iteration_4_review.json
+        kind: json
+        required: true
+      - artifact_id: iteration_review_md
+        path: director/reviews/iteration_4_review.md
+        kind: markdown
+        required: true
+      - artifact_id: iteration_patch_yaml
+        path: director/reviews/iteration_4_patch_proposal.yaml
+        kind: file
+        required: true
+      - artifact_id: iteration_branch_plan_md
+        path: director/reviews/iteration_4_branch_plan.md
+        kind: markdown
+        required: true
+      - artifact_id: iteration_starter_prompt_md
+        path: director/reviews/iteration_4_starter_prompt.md
+        kind: markdown
+        required: true
+      preconditions:
+      - condition_id: iteration_log_exists
+        kind: artifact_exists
+        target: docs/iteration_log.md
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Iteration log must exist before generating a review.
+        reroute_to: []
+      quality_checks: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.director.cli review --iteration 4
+      manual_handoff: false
+      risks:
+      - R4
+      - R7
+      estimated_effort: 2
+      risk_reduction: 9
+      automation_level: partial
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - review_generation
+      gate_class: ops
+    - task_id: iteration4.review.approve_closeout
+      title: Approve iteration closeout
+      description: Record manual review approval and explicitly accept or defer roadmap
+        changes.
+      iteration_id: '4'
+      phase_id: iteration4/review-and-replan
+      kind: manual
+      depends_on:
+      - iteration4.review.generate_review
+      inputs:
+      - artifact_id: iteration_review_json
+        path: director/reviews/iteration_4_review.json
+        kind: json
+        required: true
+      outputs:
+      - artifact_id: iteration_review_approval
+        path: director/reviews/iteration_4_approval.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: iteration_review_exists
+        kind: artifact_exists
+        target: director/reviews/iteration_4_review.json
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Iteration review must exist before approval.
+        reroute_to: []
+      quality_checks:
+      - condition_id: iteration_review_approved
+        kind: json_field_compare
+        target: director/reviews/iteration_4_approval.json::decision
+        operator: ==
+        expected: approved
+        on_fail: block
+        message: Iteration review approval must be explicitly approved.
+        reroute_to: []
+      commands: []
+      manual_handoff: true
+      risks:
+      - R4
+      estimated_effort: 2
+      risk_reduction: 9
+      automation_level: manual
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - review_approval
+      gate_class: manual
+- iteration_id: '5'
+  title: Analysis Outputs and Research Release Packaging
+  goal: Produce analysis outputs and a release package without making statistical
+    significance an optimization target.
+  entry_criteria:
+  - Iteration 4 review approved.
+  - Iteration 5 kickoff completed on iteration5/integration.
+  exit_criteria:
+  - Analysis outputs and release artifacts are complete.
+  - Iteration 5 review approved.
+  phases:
+  - phase_id: iteration5/kickoff-and-preflight
+    title: Kickoff and Preflight
+    goal: Validate branch context and prior review approval before starting Iteration
+      5 work.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration4/review-and-replan
+    required_artifacts:
+    - director/reviews/iteration_5_kickoff.json
+    tags:
+    - kickoff
+    - branch_policy
+    tasks:
+    - task_id: iteration5.kickoff.verify_context
+      title: Verify kickoff context
+      description: Confirm integration branch naming, prior review approval, and merge-base
+        hygiene.
+      iteration_id: '5'
+      phase_id: iteration5/kickoff-and-preflight
+      kind: validation
+      depends_on: []
+      inputs:
+      - artifact_id: prior_review_approval
+        path: director/reviews/iteration_4_approval.json
+        kind: json
+        required: true
+      outputs:
+      - artifact_id: kickoff_report
+        path: director/reviews/iteration_5_kickoff.json
+        kind: json
+        required: true
+      preconditions: []
+      quality_checks:
+      - condition_id: kickoff_ready
+        kind: json_field_compare
+        target: director/reviews/iteration_5_kickoff.json::status
+        operator: ==
+        expected: ready
+        on_fail: block
+        message: Iteration 5 kickoff is not ready.
+        reroute_to: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.director.cli kickoff --iteration 5
+      manual_handoff: false
+      risks:
+      - R4
+      - R7
+      estimated_effort: 2
+      risk_reduction: 10
+      automation_level: partial
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - kickoff
+      gate_class: ops
+  - phase_id: iteration5/regression-specification
+    title: Regression Specification
+    goal: Freeze regression inputs and define baseline and robustness specifications.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration5/kickoff-and-preflight
+    required_artifacts:
+    - reports/analysis/regression_specification_v1.json
+    source_window_id: active_2021_2024
+    tags:
+    - analysis
+    tasks: []
+  - phase_id: iteration5/results-generation
+    title: Results Generation
+    goal: Run baseline models and generate tables and figures with provenance.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration5/regression-specification
+    required_artifacts:
+    - reports/analysis/results_manifest_v1.json
+    source_window_id: active_2021_2024
+    tags:
+    - analysis
+    tasks: []
+  - phase_id: iteration5/robustness-and-sensitivity
+    title: Robustness and Sensitivity
+    goal: Run alternative specifications and summarize directional stability.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration5/results-generation
+    required_artifacts:
+    - reports/analysis/robustness_summary_v1.json
+    source_window_id: active_2021_2024
+    tags:
+    - analysis
+    tasks: []
+  - phase_id: iteration5/release-packaging
+    title: Release Packaging
+    goal: Package artifacts, docs, and reproducibility notes for research release.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration5/robustness-and-sensitivity
+    required_artifacts:
+    - reports/release/release_manifest_v1.json
+    source_window_id: active_2021_2024
+    tags:
+    - release
+    tasks: []
+  - phase_id: iteration5/review-and-replan
+    title: Review and Replan
+    goal: Synthesize iteration evidence, approve closeout, and generate the final
+      handoff package.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration5/release-packaging
+    required_artifacts:
+    - director/reviews/iteration_5_review.json
+    - director/reviews/iteration_5_review.md
+    - director/reviews/iteration_5_patch_proposal.yaml
+    - director/reviews/iteration_5_branch_plan.md
+    - director/reviews/iteration_5_starter_prompt.md
+    - director/reviews/iteration_5_approval.json
+    tags:
+    - review
+    - closeout
+    tasks:
+    - task_id: iteration5.review.generate_review
+      title: Generate iteration review
+      description: Build the structured IterationReview artifact set from Iteration
+        5 evidence.
+      iteration_id: '5'
+      phase_id: iteration5/review-and-replan
+      kind: analysis
+      depends_on: []
+      inputs:
+      - artifact_id: iteration_log
+        path: docs/iteration_log.md
+        kind: markdown
+        required: true
+      outputs:
+      - artifact_id: iteration_review_json
+        path: director/reviews/iteration_5_review.json
+        kind: json
+        required: true
+      - artifact_id: iteration_review_md
+        path: director/reviews/iteration_5_review.md
+        kind: markdown
+        required: true
+      - artifact_id: iteration_patch_yaml
+        path: director/reviews/iteration_5_patch_proposal.yaml
+        kind: file
+        required: true
+      - artifact_id: iteration_branch_plan_md
+        path: director/reviews/iteration_5_branch_plan.md
+        kind: markdown
+        required: true
+      - artifact_id: iteration_starter_prompt_md
+        path: director/reviews/iteration_5_starter_prompt.md
+        kind: markdown
+        required: true
+      preconditions:
+      - condition_id: iteration_log_exists
+        kind: artifact_exists
+        target: docs/iteration_log.md
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Iteration log must exist before generating a review.
+        reroute_to: []
+      quality_checks: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.director.cli review --iteration 5
+      manual_handoff: false
+      risks:
+      - R4
+      - R7
+      estimated_effort: 2
+      risk_reduction: 9
+      automation_level: partial
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - review_generation
+      gate_class: ops
+    - task_id: iteration5.review.approve_closeout
+      title: Approve iteration closeout
+      description: Record manual review approval and explicitly accept or defer roadmap
+        changes.
+      iteration_id: '5'
+      phase_id: iteration5/review-and-replan
+      kind: manual
+      depends_on:
+      - iteration5.review.generate_review
+      inputs:
+      - artifact_id: iteration_review_json
+        path: director/reviews/iteration_5_review.json
+        kind: json
+        required: true
+      outputs:
+      - artifact_id: iteration_review_approval
+        path: director/reviews/iteration_5_approval.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: iteration_review_exists
+        kind: artifact_exists
+        target: director/reviews/iteration_5_review.json
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Iteration review must exist before approval.
+        reroute_to: []
+      quality_checks:
+      - condition_id: iteration_review_approved
+        kind: json_field_compare
+        target: director/reviews/iteration_5_approval.json::decision
+        operator: ==
+        expected: approved
+        on_fail: block
+        message: Iteration review approval must be explicitly approved.
+        reroute_to: []
+      commands: []
+      manual_handoff: true
+      risks:
+      - R4
+      estimated_effort: 2
+      risk_reduction: 9
+      automation_level: manual
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - review_approval
+      gate_class: manual

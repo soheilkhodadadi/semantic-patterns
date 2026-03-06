@@ -50,6 +50,31 @@ python -m semantic_ai_washing.director.cli run \
 
 If execution blocks, a blocker event and ranked recovery options are written to `director/decisions/`.
 
+## Review an Iteration
+```bash
+python -m semantic_ai_washing.director.cli review --iteration 1
+python -m semantic_ai_washing.director.cli review --iteration 1 --phase rubric-and-api-bootstrap
+```
+
+## Approve a Review
+```bash
+python -m semantic_ai_washing.director.cli approve-review \
+  --review-file director/reviews/iteration_1_review.json \
+  --decision approve \
+  --accept-patch all
+```
+
+## Apply Accepted Roadmap Changes
+```bash
+python -m semantic_ai_washing.director.cli apply-review-patch \
+  --approval-file director/reviews/iteration_1_approval.json
+```
+
+## Kick Off the Next Iteration
+```bash
+python -m semantic_ai_washing.director.cli kickoff --iteration 2
+```
+
 ## Decide or Defer
 ```bash
 python -m semantic_ai_washing.director.cli decide \

@@ -15,11 +15,13 @@ from semantic_ai_washing.director.core.config import (
     load_configs,
     required_file_paths,
 )
+from semantic_ai_washing.director.core.branching import validate_iteration_boundaries
 from semantic_ai_washing.director.core.cost import CostController
 from semantic_ai_washing.director.core.decision import DecisionEngine
 from semantic_ai_washing.director.core.optimizer import DirectorOptimizer
 from semantic_ai_washing.director.core.executor import RunbookExecutor
 from semantic_ai_washing.director.core.planner import PlannerEngine, write_plan_manifest
+from semantic_ai_washing.director.core.review import ReviewEngine, load_approved_review_summaries
 from semantic_ai_washing.director.core.render import (
     is_rendered_roadmap_fresh,
     render_roadmap_markdown,
@@ -38,6 +40,7 @@ from semantic_ai_washing.director.core.state import StateCompiler
 from semantic_ai_washing.director.core.utils import (
     dump_json,
     git_info,
+    load_json,
     now_utc_iso,
     repository_root,
     sha256_file,
@@ -134,6 +137,7 @@ def _render_roadmap_command(args: argparse.Namespace) -> int:
         model=model,
         source_model=str(model_path),
         source_sha256=sha256_file(model_path),
+        approved_reviews=load_approved_review_summaries(paths.reviews_dir),
     )
     output_path.write_text(markdown, encoding="utf-8")
     print(f"[director] roadmap rendered: {output_path}")
@@ -261,6 +265,110 @@ def _run_command(args: argparse.Namespace) -> int:
     return 0 if result.get("status") == "passed" else 2
 
 
+def _review_command(args: argparse.Namespace) -> int:
+    repo_root = repository_root(args.repo_root)
+    paths = get_director_paths(repo_root)
+    config = load_configs(paths)
+    profile = config.get("project_profile", {})
+    engine = ReviewEngine(
+        repo_root=repo_root,
+        paths=paths,
+        roadmap_model_path=str(
+            resolve_model_path(repo_root, profile.get("roadmap_model_path", ""))
+        ),
+        iteration_log_path=str(Path(repo_root) / "docs" / "iteration_log.md"),
+    )
+    review = engine.generate_review(iteration_id=args.iteration, phase_name=args.phase or "")
+    print(json.dumps(review.as_deterministic_dict(), indent=2))
+    return 0
+
+
+def _approve_review_command(args: argparse.Namespace) -> int:
+    repo_root = repository_root(args.repo_root)
+    paths = get_director_paths(repo_root)
+    config = load_configs(paths)
+    profile = config.get("project_profile", {})
+    engine = ReviewEngine(
+        repo_root=repo_root,
+        paths=paths,
+        roadmap_model_path=str(
+            resolve_model_path(repo_root, profile.get("roadmap_model_path", ""))
+        ),
+        iteration_log_path=str(Path(repo_root) / "docs" / "iteration_log.md"),
+    )
+    approval = engine.approve_review(
+        review_file=args.review_file,
+        decision=args.decision,
+        accept_patch=args.accept_patch,
+    )
+    print(json.dumps(approval.as_deterministic_dict(), indent=2))
+    return 0
+
+
+def _apply_review_patch_command(args: argparse.Namespace) -> int:
+    repo_root = repository_root(args.repo_root)
+    paths = get_director_paths(repo_root)
+    config = load_configs(paths)
+    profile = config.get("project_profile", {})
+    model_path = resolve_model_path(repo_root, profile.get("roadmap_model_path", ""))
+    engine = ReviewEngine(
+        repo_root=repo_root,
+        paths=paths,
+        roadmap_model_path=str(model_path),
+        iteration_log_path=str(Path(repo_root) / "docs" / "iteration_log.md"),
+    )
+    result = engine.apply_review_patch(args.approval_file)
+
+    model = load_roadmap_model(model_path)
+    roadmap_doc = Path(repo_root) / "docs" / "director" / "roadmap_master.md"
+    roadmap_doc.write_text(
+        render_roadmap_markdown(
+            model=model,
+            source_model=str(model_path),
+            source_sha256=sha256_file(model_path),
+            approved_reviews=load_approved_review_summaries(paths.reviews_dir),
+        ),
+        encoding="utf-8",
+    )
+
+    protocol_path = Path(repo_root) / "docs" / "director" / "implementation_protocol_master.md"
+    iteration_log_path = Path(repo_root) / "docs" / "iteration_log.md"
+    ingest_result: dict[str, Any] = {}
+    if protocol_path.exists() and iteration_log_path.exists():
+        ingestor = SnapshotIngestor(paths.snapshots_dir)
+        ingest_result = ingestor.ingest(
+            protocol_path=str(protocol_path),
+            roadmap_path="",
+            roadmap_model_path=str(model_path),
+            iteration_log_path=str(iteration_log_path),
+            atlas_search="",
+            atlas_limit=20,
+            enable_atlas=False,
+        )
+    result["rendered_roadmap"] = str(roadmap_doc)
+    result["ingest"] = ingest_result
+    print(json.dumps(result, indent=2))
+    return 0
+
+
+def _kickoff_command(args: argparse.Namespace) -> int:
+    repo_root = repository_root(args.repo_root)
+    paths = get_director_paths(repo_root)
+    config = load_configs(paths)
+    profile = config.get("project_profile", {})
+    engine = ReviewEngine(
+        repo_root=repo_root,
+        paths=paths,
+        roadmap_model_path=str(
+            resolve_model_path(repo_root, profile.get("roadmap_model_path", ""))
+        ),
+        iteration_log_path=str(Path(repo_root) / "docs" / "iteration_log.md"),
+    )
+    report = engine.kickoff(args.iteration)
+    print(json.dumps(report.as_deterministic_dict(), indent=2))
+    return 0 if report.status == "ready" else 2
+
+
 def _status_command(args: argparse.Namespace) -> int:
     repo_root = repository_root(args.repo_root)
     paths = get_director_paths(repo_root)
@@ -273,6 +381,11 @@ def _status_command(args: argparse.Namespace) -> int:
     )
     recommendations = sorted(
         paths.optimization_dir.glob("recommendation_*.json"), key=lambda p: p.stat().st_mtime
+    )
+    reviews = sorted(paths.reviews_dir.glob("*_review.json"), key=lambda p: p.stat().st_mtime)
+    approvals = sorted(paths.reviews_dir.glob("*_approval.json"), key=lambda p: p.stat().st_mtime)
+    kickoffs = sorted(
+        paths.reviews_dir.glob("iteration_*_kickoff.json"), key=lambda p: p.stat().st_mtime
     )
     latest_recommendation_id = ""
     if recommendations:
@@ -291,6 +404,17 @@ def _status_command(args: argparse.Namespace) -> int:
                 }
             )
 
+    latest_approval_payload = (load_json(approvals[-1], default={}) if approvals else {}) or {}
+    branch_policy_summary = {}
+    try:
+        config = load_configs(paths)
+        profile = config.get("project_profile", {})
+        model_path = resolve_model_path(repo_root, profile.get("roadmap_model_path", ""))
+        model = load_roadmap_model(model_path)
+        branch_policy_summary = model.branching_policy.model_dump(mode="json")
+    except Exception:
+        branch_policy_summary = {}
+
     payload = {
         "repo_root": str(paths.repo_root),
         "git": git_info(repo_root),
@@ -303,6 +427,13 @@ def _status_command(args: argparse.Namespace) -> int:
         "latest_execution_state": str(states[-1]) if states else "",
         "latest_recommendation_id": latest_recommendation_id,
         "latest_recommendation": str(recommendations[-1]) if recommendations else "",
+        "latest_review": str(reviews[-1]) if reviews else "",
+        "latest_review_approval": str(approvals[-1]) if approvals else "",
+        "latest_kickoff": str(kickoffs[-1]) if kickoffs else "",
+        "next_iteration_authorized": bool(
+            latest_approval_payload.get("next_iteration_authorized", False)
+        ),
+        "branching_policy": branch_policy_summary,
         "active_deferred_blockers": active_deferred,
     }
     print(json.dumps(payload, indent=2))
@@ -470,8 +601,9 @@ def _doctor_command(args: argparse.Namespace) -> int:
     remediation_path = resolve_model_path(repo_root, profile.get("remediation_library_path", ""))
     roadmap_doc = Path(repo_root) / "docs" / "director" / "roadmap_master.md"
 
+    loaded_model = None
     try:
-        load_roadmap_model(model_path)
+        loaded_model = load_roadmap_model(model_path)
         checks.append(
             {
                 "name": "roadmap_model_schema",
@@ -485,6 +617,22 @@ def _doctor_command(args: argparse.Namespace) -> int:
                 "name": "roadmap_model_schema",
                 "ok": False,
                 "detail": str(exc),
+            }
+        )
+    checks.append(
+        {
+            "name": "branching_policy_present",
+            "ok": loaded_model is not None and loaded_model.branching_policy is not None,
+            "detail": str(model_path),
+        }
+    )
+    if loaded_model is not None:
+        boundary_checks = validate_iteration_boundaries(loaded_model)
+        checks.append(
+            {
+                "name": "iteration_boundary_phases",
+                "ok": all(item["ok"] for item in boundary_checks),
+                "detail": boundary_checks,
             }
         )
 
@@ -567,6 +715,34 @@ def build_parser() -> argparse.ArgumentParser:
     optimize_cmd.add_argument("--iteration")
     optimize_cmd.add_argument("--phase")
     optimize_cmd.set_defaults(func=_optimize_command)
+
+    review_cmd = subparsers.add_parser(
+        "review", help="Generate iteration or phase review artifacts"
+    )
+    review_cmd.add_argument("--iteration", required=True)
+    review_cmd.add_argument("--phase")
+    review_cmd.set_defaults(func=_review_command)
+
+    approve_review_cmd = subparsers.add_parser(
+        "approve-review", help="Approve or defer a review and record accepted patch changes"
+    )
+    approve_review_cmd.add_argument("--review-file", required=True)
+    approve_review_cmd.add_argument("--decision", required=True, choices=["approve", "defer"])
+    approve_review_cmd.add_argument("--accept-patch", default="none")
+    approve_review_cmd.set_defaults(func=_approve_review_command)
+
+    apply_review_patch_cmd = subparsers.add_parser(
+        "apply-review-patch",
+        help="Apply accepted roadmap changes from a review approval artifact",
+    )
+    apply_review_patch_cmd.add_argument("--approval-file", required=True)
+    apply_review_patch_cmd.set_defaults(func=_apply_review_patch_command)
+
+    kickoff_cmd = subparsers.add_parser(
+        "kickoff", help="Validate iteration kickoff branch context and approval state"
+    )
+    kickoff_cmd.add_argument("--iteration", required=True)
+    kickoff_cmd.set_defaults(func=_kickoff_command)
 
     decide_cmd = subparsers.add_parser("decide", help="Rank recovery options for a blocker")
     decide_cmd.add_argument("--blocker-file")

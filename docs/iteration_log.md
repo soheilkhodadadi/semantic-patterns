@@ -1336,3 +1336,86 @@ Rules:
 - Residual risks:
   - FF12 balancing is best-effort because manifest-level industry coverage remains sparse
   - the batch is diverse and leakage-safe, but downstream label quality still depends on manual human execution in Iteration 2
+
+## 2026-03-06 - Iteration Review / Branch Lifecycle / Handoff Controls
+
+- Preflight checkpoint:
+  - pushed validated baseline branch: `director/roadmap-model-v2`
+  - stable base commit before review-layer work: `25e176144eaf89ebdf2fc57da504bfbe949b56f7`
+  - created implementation branch: `director/iteration-review`
+- Scope implemented:
+  - formal `IterationReview` and `PhaseReview` artifacts
+  - explicit review approval flow and proposal-only patch application
+  - kickoff validation for next iteration branch/start readiness
+  - canonical branching policy in roadmap model
+  - generated branch-plan and starter-prompt artifacts for iteration closeout
+  - explicit kickoff/review boundary phases across Iterations 1-5
+- Key code/config/docs added or updated:
+  - `src/semantic_ai_washing/director/core/review.py`
+  - `src/semantic_ai_washing/director/core/branching.py`
+  - `src/semantic_ai_washing/director/cli.py`
+  - `src/semantic_ai_washing/director/schemas.py`
+  - `director/model/roadmap_model.yaml`
+  - `docs/director/review_workflow.md`
+  - `docs/director/branching_policy.md`
+  - `docs/director/roadmap_master.md`
+  - `docs/director/quickstart.md`
+  - `docs/director/policy.md`
+  - `docs/director/continuous_planning.md`
+- Review artifacts generated:
+  - iteration review JSON:
+    - `director/reviews/iteration_1_review.json`
+  - iteration review Markdown:
+    - `director/reviews/iteration_1_review.md`
+  - iteration patch proposal:
+    - `director/reviews/iteration_1_patch_proposal.yaml`
+  - branch closeout plan:
+    - `director/reviews/iteration_1_branch_plan.md`
+  - next-iteration starter prompt:
+    - `director/reviews/iteration_1_starter_prompt.md`
+  - review approval:
+    - `director/reviews/iteration_1_approval.json`
+  - patch application result:
+    - `director/reviews/iteration_1_patch_apply.json`
+  - phase review example:
+    - `director/reviews/phase_iteration1_rubric-and-api-bootstrap_review.json`
+    - `director/reviews/phase_iteration1_rubric-and-api-bootstrap_review.md`
+  - kickoff evidence:
+    - `director/reviews/iteration_2_kickoff.json`
+- Review/approval results:
+  - `review --iteration 1` -> pass
+  - `review --iteration 1 --phase rubric-and-api-bootstrap` -> pass
+  - `approve-review --review-file director/reviews/iteration_1_review.json --decision approve --accept-patch all` -> pass
+    - `next_iteration_authorized: true`
+  - `apply-review-patch --approval-file director/reviews/iteration_1_approval.json` -> pass
+    - supported accepted changes applied
+    - unsupported accepted patch operations are now recorded explicitly as `skipped_operations`
+    - rendered roadmap and roadmap/protocol/iteration snapshots refreshed
+  - `kickoff --iteration 2` -> blocked as designed
+    - current branch mismatch:
+      - expected `iteration2/integration`
+      - actual `director/iteration-review`
+    - tracked changes present in working tree during implementation
+    - prior Iteration 1 review approval was accepted correctly
+- Roadmap/control changes introduced:
+  - each iteration now includes explicit boundary phases:
+    - `kickoff-and-preflight`
+    - `review-and-replan`
+  - Iteration 2 kickoff now depends on Iteration 1 review closeout
+  - next-iteration start can be authorized by review approval while still truthfully blocked on branch context until kickoff conditions are satisfied
+  - generated roadmap now includes:
+    - branching policy
+    - review workflow
+    - entry criteria
+    - exit criteria
+    - approved review summary appendix when present
+- Validation run:
+  - `make doctor` -> pass
+  - `make format` -> pass
+  - `make lint` -> pass
+  - focused review-layer regression:
+    - `.venv/bin/pytest -q tests/test_director_review.py tests/test_director_roadmap_model.py tests/test_director_cli.py` -> pass
+- Residual notes:
+  - kickoff blocking is expected until work is moved onto a clean `iteration2/integration` branch
+  - unsupported roadmap patch operations remain proposal-only and are surfaced in review artifacts instead of being silently dropped
+  - API key was re-exposed in chat during prior live smoke validation and should be rotated again; no secret was written to tracked files

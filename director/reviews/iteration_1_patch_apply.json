@@ -1,0 +1,197 @@
+{
+  "review_id": "181987a7-313a3a32",
+  "approval_file": "director/reviews/iteration_1_approval.json",
+  "patch_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/reviews/iteration_1_patch_proposal.yaml",
+  "applied_operations": [],
+  "skipped_operations": [
+    {
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.remediate_fragmented_sentences",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "reason": "unsupported_patch_operation"
+    },
+    {
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.resample_from_clean_sentence_pool",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "reason": "unsupported_patch_operation"
+    },
+    {
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.remediate_fragmented_sentences",
+        "before_phase": "iteration2/irr-and-adjudication",
+        "blocked_task_id": "iteration2.shared.audit_sentence_integrity"
+      },
+      "reason": "unsupported_patch_operation"
+    },
+    {
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.resample_from_clean_sentence_pool",
+        "before_phase": "iteration2/irr-and-adjudication",
+        "blocked_task_id": "iteration2.shared.audit_sentence_integrity"
+      },
+      "reason": "unsupported_patch_operation"
+    },
+    {
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.remediate_fragmented_sentences",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "reason": "unsupported_patch_operation"
+    },
+    {
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.resample_from_clean_sentence_pool",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "reason": "unsupported_patch_operation"
+    },
+    {
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.remediate_fragmented_sentences",
+        "before_phase": "iteration1/irr-validation",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "reason": "unsupported_patch_operation"
+    },
+    {
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.resample_from_clean_sentence_pool",
+        "before_phase": "iteration1/irr-validation",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "reason": "unsupported_patch_operation"
+    },
+    {
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.remediate_fragmented_sentences",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "reason": "unsupported_patch_operation"
+    },
+    {
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.resample_from_clean_sentence_pool",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "reason": "unsupported_patch_operation"
+    },
+    {
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.remediate_fragmented_sentences",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "reason": "unsupported_patch_operation"
+    },
+    {
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.resample_from_clean_sentence_pool",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "reason": "unsupported_patch_operation"
+    }
+  ],
+  "source_patch_operations": [
+    {
+      "op": "insert_before_phase",
+      "task_id": "common.remediate_fragmented_sentences",
+      "before_phase": "iteration1/label-ops-bootstrap",
+      "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+    },
+    {
+      "op": "insert_before_phase",
+      "task_id": "common.resample_from_clean_sentence_pool",
+      "before_phase": "iteration1/label-ops-bootstrap",
+      "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+    },
+    {
+      "op": "insert_before_phase",
+      "task_id": "common.remediate_fragmented_sentences",
+      "before_phase": "iteration2/irr-and-adjudication",
+      "blocked_task_id": "iteration2.shared.audit_sentence_integrity"
+    },
+    {
+      "op": "insert_before_phase",
+      "task_id": "common.resample_from_clean_sentence_pool",
+      "before_phase": "iteration2/irr-and-adjudication",
+      "blocked_task_id": "iteration2.shared.audit_sentence_integrity"
+    },
+    {
+      "op": "insert_before_phase",
+      "task_id": "common.remediate_fragmented_sentences",
+      "before_phase": "iteration1/label-ops-bootstrap",
+      "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+    },
+    {
+      "op": "insert_before_phase",
+      "task_id": "common.resample_from_clean_sentence_pool",
+      "before_phase": "iteration1/label-ops-bootstrap",
+      "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+    },
+    {
+      "op": "insert_before_phase",
+      "task_id": "common.remediate_fragmented_sentences",
+      "before_phase": "iteration1/irr-validation",
+      "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+    },
+    {
+      "op": "insert_before_phase",
+      "task_id": "common.resample_from_clean_sentence_pool",
+      "before_phase": "iteration1/irr-validation",
+      "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+    },
+    {
+      "op": "insert_before_phase",
+      "task_id": "common.remediate_fragmented_sentences",
+      "before_phase": "iteration1/label-ops-bootstrap",
+      "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+    },
+    {
+      "op": "insert_before_phase",
+      "task_id": "common.resample_from_clean_sentence_pool",
+      "before_phase": "iteration1/label-ops-bootstrap",
+      "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+    },
+    {
+      "op": "insert_before_phase",
+      "task_id": "common.remediate_fragmented_sentences",
+      "before_phase": "iteration1/label-ops-bootstrap",
+      "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+    },
+    {
+      "op": "insert_before_phase",
+      "task_id": "common.resample_from_clean_sentence_pool",
+      "before_phase": "iteration1/label-ops-bootstrap",
+      "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+    },
+    {
+      "op": "append_iteration_entry_criteria",
+      "iteration_id": "2",
+      "value": "Use availability-aware quarter redistribution when leakage-safe filtering makes strict equal quarter quotas infeasible."
+    }
+  ],
+  "roadmap_model_path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/model/roadmap_model.yaml",
+  "applied_at": "2026-03-06T22:35:34.919021+00:00"
+}

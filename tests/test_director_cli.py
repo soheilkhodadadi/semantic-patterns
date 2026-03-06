@@ -90,10 +90,29 @@ settings:
     proposal_only: true
     allow_cross_iteration_rewrite: true
     fragment_rate_threshold: 0.15
+branching_policy:
+  schema_version: "1.0.0"
+  integration_branch_template: "iteration{iteration_id}/integration"
+  work_branch_template: "iteration{iteration_id}/{slug}"
+  merge_target: "main"
+  preferred_merge_strategy: "ff_only_if_possible_else_pr_merge_commit"
+  require_review_approval_before_next_iteration: true
+  require_review_approval_before_main_merge: true
+  suggest_new_chat_at_iteration_boundary: true
+  starter_prompt_required: true
+  tag_template: "iteration{iteration_id}-closeout"
+  closeout_validation_commands:
+    - .venv/bin/pytest -q
+policies: []
+data_layers: []
+source_windows: []
+tooling_policies: []
 iterations:
   - iteration_id: "1"
     title: test
     goal: test
+    entry_criteria: []
+    exit_criteria: []
     phases:
       - phase_id: iteration1/irr-validation
         title: IRR

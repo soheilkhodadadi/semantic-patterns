@@ -20,6 +20,7 @@ class DirectorPaths:
     snapshots_dir: Path
     plans_dir: Path
     optimization_dir: Path
+    reviews_dir: Path
     runs_dir: Path
     decisions_dir: Path
     cache_dir: Path
@@ -98,6 +99,7 @@ def get_director_paths(repo_root: str = ".") -> DirectorPaths:
         snapshots_dir=director_root / "snapshots",
         plans_dir=director_root / "plans",
         optimization_dir=director_root / "optimization",
+        reviews_dir=director_root / "reviews",
         runs_dir=director_root / "runs",
         decisions_dir=director_root / "decisions",
         cache_dir=director_root / "cache",
@@ -111,6 +113,7 @@ def ensure_director_dirs(paths: DirectorPaths) -> None:
     ensure_dir(paths.snapshots_dir)
     ensure_dir(paths.plans_dir)
     ensure_dir(paths.optimization_dir)
+    ensure_dir(paths.reviews_dir)
     ensure_dir(paths.runs_dir)
     ensure_dir(paths.decisions_dir)
     ensure_dir(paths.cache_dir)
@@ -164,6 +167,25 @@ def ensure_default_configs(paths: DirectorPaths) -> None:
                         "active_source_window_id": "active_2021_2024",
                         "canonical_table_format": "parquet",
                     },
+                },
+                "branching_policy": {
+                    "schema_version": "1.0.0",
+                    "integration_branch_template": "iteration{iteration_id}/integration",
+                    "work_branch_template": "iteration{iteration_id}/{slug}",
+                    "merge_target": "main",
+                    "preferred_merge_strategy": "ff_only_if_possible_else_pr_merge_commit",
+                    "require_review_approval_before_next_iteration": True,
+                    "require_review_approval_before_main_merge": True,
+                    "suggest_new_chat_at_iteration_boundary": True,
+                    "starter_prompt_required": True,
+                    "tag_template": "iteration{iteration_id}-closeout",
+                    "closeout_validation_commands": [
+                        "make bootstrap",
+                        "make doctor",
+                        "make format",
+                        "make lint",
+                        ".venv/bin/pytest -q",
+                    ],
                 },
                 "policies": [],
                 "data_layers": [],

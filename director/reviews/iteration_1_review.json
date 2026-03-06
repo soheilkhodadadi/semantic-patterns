@@ -1,0 +1,628 @@
+{
+  "schema_version": "1.2.0",
+  "review_id": "181987a7-313a3a32",
+  "review_type": "iteration",
+  "iteration_id": "1",
+  "generated_at": "2026-03-06T22:31:35.809449+00:00",
+  "git": {
+    "branch": "director/iteration-review",
+    "commit": "25e176144eaf89ebdf2fc57da504bfbe949b56f7",
+    "dirty": true
+  },
+  "inputs": {
+    "roadmap_model": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/model/roadmap_model.yaml",
+    "iteration_log": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/docs/iteration_log.md",
+    "run_count": 26
+  },
+  "phase_summary": {
+    "phases": [
+      {
+        "phase_id": "iteration1/kickoff-and-preflight",
+        "title": "Historical Kickoff and Preflight",
+        "goal": "Traceability-only placeholder for the retroactively introduced iteration kickoff boundary.",
+        "lifecycle_state": "historical",
+        "status": "historical",
+        "run_count": 0,
+        "latest_runbook_id": "",
+        "latest_state_file": "",
+        "latest_result_file": ""
+      },
+      {
+        "phase_id": "iteration1/baseline-asset-freeze",
+        "title": "Baseline Asset Freeze",
+        "goal": "Freeze current evaluation assets and classify duplicates or deprecations before new data work starts.",
+        "lifecycle_state": "planned",
+        "status": "passed",
+        "run_count": 2,
+        "latest_runbook_id": "8e98f992d1de07fc",
+        "latest_state_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_state_8e98f992d1de07fc.json",
+        "latest_result_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_result_8e98f992d1de07fc.json"
+      },
+      {
+        "phase_id": "iteration1/repo-hygiene-and-script-canon",
+        "title": "Repo Hygiene and Script Canon",
+        "goal": "Define canonical, transitional, and legacy scripts so the pipeline is understandable and maintainable.",
+        "lifecycle_state": "planned",
+        "status": "passed",
+        "run_count": 1,
+        "latest_runbook_id": "65384ecfb68ad78d",
+        "latest_state_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_state_65384ecfb68ad78d.json",
+        "latest_result_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_result_65384ecfb68ad78d.json"
+      },
+      {
+        "phase_id": "iteration1/tooling-isolation",
+        "title": "Tooling Isolation",
+        "goal": "Prevent Atlas and similar external tooling from mutating the repo runtime environment.",
+        "lifecycle_state": "planned",
+        "status": "unstarted",
+        "run_count": 0,
+        "latest_runbook_id": "",
+        "latest_state_file": "",
+        "latest_result_file": ""
+      },
+      {
+        "phase_id": "iteration1/source-index-contract",
+        "title": "Source Index Contract",
+        "goal": "Make the external SEC root the canonical raw-source interface and record active source windows.",
+        "lifecycle_state": "planned",
+        "status": "passed",
+        "run_count": 1,
+        "latest_runbook_id": "0a62e7356305be6f",
+        "latest_state_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_state_0a62e7356305be6f.json",
+        "latest_result_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_result_0a62e7356305be6f.json"
+      },
+      {
+        "phase_id": "iteration1/sentence-table-pilot-2024",
+        "title": "Sentence Table Pilot 2024",
+        "goal": "Build a bounded 2024 10-K pilot manifest and canonical sentence table.",
+        "lifecycle_state": "planned",
+        "status": "passed",
+        "run_count": 1,
+        "latest_runbook_id": "1a84f9c9937bc0d3",
+        "latest_state_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_state_1a84f9c9937bc0d3.json",
+        "latest_result_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_result_1a84f9c9937bc0d3.json"
+      },
+      {
+        "phase_id": "iteration1/rubric-and-api-bootstrap",
+        "title": "Rubric and API Bootstrap",
+        "goal": "Prepare rubric v1 and bounded assistive API usage without promoting API output to canonical labels.",
+        "lifecycle_state": "planned",
+        "status": "passed",
+        "run_count": 3,
+        "latest_runbook_id": "73ff6330d958a0df",
+        "latest_state_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_state_73ff6330d958a0df.json",
+        "latest_result_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_result_73ff6330d958a0df.json"
+      },
+      {
+        "phase_id": "iteration1/label-ops-bootstrap",
+        "title": "Label Ops Bootstrap",
+        "goal": "Generate the first clean labeling batch from the bounded pilot after sentence-quality gating.",
+        "lifecycle_state": "planned",
+        "status": "passed",
+        "run_count": 2,
+        "latest_runbook_id": "16d394fb26b6a459",
+        "latest_state_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_state_16d394fb26b6a459.json",
+        "latest_result_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_result_16d394fb26b6a459.json"
+      },
+      {
+        "phase_id": "iteration1/review-and-replan",
+        "title": "Review and Replan",
+        "goal": "Synthesize iteration evidence, approve closeout, and prepare the next iteration handoff.",
+        "lifecycle_state": "planned",
+        "status": "unstarted",
+        "run_count": 0,
+        "latest_runbook_id": "",
+        "latest_state_file": "",
+        "latest_result_file": ""
+      },
+      {
+        "phase_id": "iteration1/diagnostics-nlp",
+        "title": "Historical Diagnostics Baseline",
+        "goal": "Preserved historical diagnostics work completed before roadmap-model v2.",
+        "lifecycle_state": "historical",
+        "status": "historical",
+        "run_count": 0,
+        "latest_runbook_id": "",
+        "latest_state_file": "",
+        "latest_result_file": ""
+      },
+      {
+        "phase_id": "iteration1/label-expansion-recovery",
+        "title": "Superseded Recovery Label Expansion",
+        "goal": "Preserved recovery branch work completed before roadmap-model v2.",
+        "lifecycle_state": "superseded",
+        "status": "deferred_blocked",
+        "run_count": 5,
+        "latest_runbook_id": "115d7b0ec26e20bc",
+        "latest_state_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_state_115d7b0ec26e20bc.json",
+        "latest_result_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_result_115d7b0ec26e20bc.json"
+      },
+      {
+        "phase_id": "iteration1/irr-validation",
+        "title": "Superseded Recovery IRR Workflow",
+        "goal": "Preserved recovery IRR workflow completed before roadmap-model v2.",
+        "lifecycle_state": "superseded",
+        "status": "passed",
+        "run_count": 4,
+        "latest_runbook_id": "e332495a856a965e",
+        "latest_state_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_state_e332495a856a965e.json",
+        "latest_result_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_result_e332495a856a965e.json"
+      }
+    ],
+    "completed": [
+      "iteration1/baseline-asset-freeze",
+      "iteration1/irr-validation",
+      "iteration1/label-ops-bootstrap",
+      "iteration1/repo-hygiene-and-script-canon",
+      "iteration1/rubric-and-api-bootstrap",
+      "iteration1/sentence-table-pilot-2024",
+      "iteration1/source-index-contract"
+    ],
+    "blocked": [],
+    "deferred": [
+      "iteration1/label-expansion-recovery"
+    ],
+    "historical": [
+      "iteration1/diagnostics-nlp",
+      "iteration1/irr-validation",
+      "iteration1/kickoff-and-preflight",
+      "iteration1/label-expansion-recovery"
+    ]
+  },
+  "blocker_summary": {
+    "blocker_count": 5,
+    "by_type": {
+      "runtime": 5
+    },
+    "repeated_signatures": [
+      {
+        "blocker_type": "runtime",
+        "signature": "python",
+        "count": 5,
+        "blocker_ids": [
+          "b63bc7d3c3984263-step-002-runtime",
+          "31bb0b5874d88bca-step-004-runtime",
+          "115d7b0ec26e20bc-step-009-runtime",
+          "032d61f9ec3ecd06-step-014-runtime",
+          "b4f0258f4a638cd9-step-014-runtime"
+        ]
+      }
+    ]
+  },
+  "timing_summary": {
+    "total_automated_runtime_seconds": 941.33,
+    "total_validation_runtime_seconds": 297.378,
+    "slowest_phase": {
+      "phase_id": "iteration1/label-expansion-recovery",
+      "seconds": 426.702
+    },
+    "slowest_command": {
+      "command": ".venv/bin/python -m semantic_ai_washing.labeling.build_labeling_sample --target-total 220 --held-out data/validation/held_out_sentences.csv --base-labeled data/validation/hand_labeled_ai_sentences_labeled_cleaned_revised.csv --input-dir data/processed/sec --years 2023,2024 --max-ai-files 120 --controls data/interim/controls/controls_by_firm_year.csv --crosswalk data/externals/crosswalks/cik_gvkey.csv --output-dir data/labels/iteration1/recovery --report-dir reports/iteration1/phase1_recovery --seed 20260227 --min-tokens 6 --min-class-target 25",
+      "seconds": 391.066,
+      "phase_id": "iteration1/label-expansion-recovery"
+    },
+    "rerun_count": 17
+  },
+  "manual_summary": {
+    "manual_task_count": 3,
+    "blocked_manual_count": 0,
+    "satisfied_manual_count": 2,
+    "tasks": [
+      {
+        "task_id": "iteration1.api.publish_assistive_policy",
+        "phase_id": "iteration1/rubric-and-api-bootstrap",
+        "status": "satisfied",
+        "outputs": [
+          "director/config/api_assistive_policy.yaml"
+        ]
+      },
+      {
+        "task_id": "iteration1.rubric.publish_rubric_v1",
+        "phase_id": "iteration1/rubric-and-api-bootstrap",
+        "status": "satisfied",
+        "outputs": [
+          "docs/labeling_protocol.md"
+        ]
+      },
+      {
+        "task_id": "iteration1.review.approve_closeout",
+        "phase_id": "iteration1/review-and-replan",
+        "status": "waiting_on_deps",
+        "outputs": [
+          "director/reviews/iteration_1_approval.json"
+        ]
+      }
+    ]
+  },
+  "quality_summary": {
+    "reports": {
+      "director/snapshots/script_inventory.json": {
+        "summary": {
+          "python_module_count": 137,
+          "canonical_count": 82,
+          "transitional_count": 53,
+          "legacy_count": 2,
+          "entrypoint_count": 91,
+          "entrypoint_counts": {
+            "transitional": 53,
+            "canonical": 37,
+            "legacy": 1
+          },
+          "hygiene_finding_count": 37
+        }
+      },
+      "reports/api/api_bootstrap_smoke_test.json": {
+        "status": "passed"
+      },
+      "reports/iteration1/phase1_recovery/qa_report.json": {
+        "summary": {
+          "status": "fail",
+          "violations": [
+            "target_size_mismatch:121!=220"
+          ],
+          "row_count": 121,
+          "class_counts": {
+            "Irrelevant": 47,
+            "Actionable": 34,
+            "Speculative": 40
+          },
+          "leakage_overlap_count": 0,
+          "near_duplicate_pair_count": 0,
+          "sample_id_duplicate_count": 0,
+          "sentence_id_duplicate_count": 0,
+          "sentence_norm_duplicate_count": 0
+        }
+      },
+      "reports/iteration1/phase2_irr/irr_status.json": {
+        "status": "pending_rater2"
+      },
+      "reports/labels/labeling_batch_v1_summary.json": {
+        "selection": {
+          "batch_row_count": 240,
+          "target_size": 240,
+          "quota_satisfied": true,
+          "quarter_quotas_used": {
+            "1": 37,
+            "2": 68,
+            "3": 68,
+            "4": 67
+          },
+          "selected_quarter_counts": {
+            "1": 37,
+            "2": 68,
+            "3": 68,
+            "4": 67
+          },
+          "selected_file_count": 96,
+          "selected_ff12_counts": {
+            "11": 3,
+            "12": 231,
+            "3": 1,
+            "6": 3,
+            "9": 2
+          },
+          "selected_known_ff12_count": 14,
+          "selected_unknown_ff12_count": 226,
+          "selected_length_counts": {
+            "long": 148,
+            "medium": 91,
+            "short": 1
+          },
+          "selected_edge_case_count": 171
+        },
+        "quality": {
+          "heldout_overlap_count": 0,
+          "exact_duplicate_count": 0
+        }
+      }
+    }
+  },
+  "findings": [
+    {
+      "schema_version": "1.0.0",
+      "scope": "iteration",
+      "finding_id": "runtime-python",
+      "category": "runtime_contract",
+      "severity": "high",
+      "summary": "Repeated blocker `python` occurred 5 times.",
+      "evidence_refs": [
+        "b63bc7d3c3984263-step-002-runtime",
+        "31bb0b5874d88bca-step-004-runtime",
+        "115d7b0ec26e20bc-step-009-runtime",
+        "032d61f9ec3ecd06-step-014-runtime",
+        "b4f0258f4a638cd9-step-014-runtime"
+      ],
+      "recommended_action": "Review preconditions, request shape, and gate ordering before retrying the same step."
+    },
+    {
+      "schema_version": "1.0.0",
+      "scope": "iteration",
+      "finding_id": "availability-aware-quartering",
+      "category": "gate_overconstraint",
+      "severity": "medium",
+      "summary": "Strict equal quarter quotas were infeasible after leakage-safe filtering; availability-aware redistribution was required.",
+      "evidence_refs": [
+        "reports/labels/labeling_batch_v1_summary.json"
+      ],
+      "recommended_action": "Preserve availability-aware quota logic in future manual labeling stages."
+    }
+  ],
+  "roadmap_changes": [
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_8732eb4e-3a3a3230-1",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.remediate_fragmented_sentences",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "target": "iteration1/label-ops-bootstrap",
+      "rationale": "Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration1/label-ops-bootstrap`.",
+      "status": "accepted"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_8732eb4e-3a3a3230-2",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.resample_from_clean_sentence_pool",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "target": "iteration1/label-ops-bootstrap",
+      "rationale": "Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration1/label-ops-bootstrap`.",
+      "status": "accepted"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_9d516339-3a3a3230-1",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.remediate_fragmented_sentences",
+        "before_phase": "iteration2/irr-and-adjudication",
+        "blocked_task_id": "iteration2.shared.audit_sentence_integrity"
+      },
+      "target": "iteration2/irr-and-adjudication",
+      "rationale": "Task `iteration2.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration2/irr-and-adjudication`.",
+      "status": "accepted"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_9d516339-3a3a3230-2",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.resample_from_clean_sentence_pool",
+        "before_phase": "iteration2/irr-and-adjudication",
+        "blocked_task_id": "iteration2.shared.audit_sentence_integrity"
+      },
+      "target": "iteration2/irr-and-adjudication",
+      "rationale": "Task `iteration2.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration2/irr-and-adjudication`.",
+      "status": "accepted"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_b2f116c5-3a3a3230-1",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.remediate_fragmented_sentences",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "target": "iteration1/label-ops-bootstrap",
+      "rationale": "Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration1/label-ops-bootstrap`.",
+      "status": "accepted"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_b2f116c5-3a3a3230-2",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.resample_from_clean_sentence_pool",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "target": "iteration1/label-ops-bootstrap",
+      "rationale": "Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration1/label-ops-bootstrap`.",
+      "status": "accepted"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_d3700831-313a6972-1",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.remediate_fragmented_sentences",
+        "before_phase": "iteration1/irr-validation",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "target": "iteration1/irr-validation",
+      "rationale": "Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration1/irr-validation`.",
+      "status": "accepted"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_d3700831-313a6972-2",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.resample_from_clean_sentence_pool",
+        "before_phase": "iteration1/irr-validation",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "target": "iteration1/irr-validation",
+      "rationale": "Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration1/irr-validation`.",
+      "status": "accepted"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_e08e31e6-3a3a3230-1",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.remediate_fragmented_sentences",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "target": "iteration1/label-ops-bootstrap",
+      "rationale": "Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration1/label-ops-bootstrap`.",
+      "status": "accepted"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_e08e31e6-3a3a3230-2",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.resample_from_clean_sentence_pool",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "target": "iteration1/label-ops-bootstrap",
+      "rationale": "Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration1/label-ops-bootstrap`.",
+      "status": "accepted"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_fb55837d-3a3a3230-1",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.remediate_fragmented_sentences",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "target": "iteration1/label-ops-bootstrap",
+      "rationale": "Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration1/label-ops-bootstrap`.",
+      "status": "accepted"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_fb55837d-3a3a3230-2",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.resample_from_clean_sentence_pool",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "target": "iteration1/label-ops-bootstrap",
+      "rationale": "Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration1/label-ops-bootstrap`.",
+      "status": "accepted"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "review-availability-aware-quartering",
+      "source": "review_inference",
+      "operation": {
+        "op": "append_iteration_entry_criteria",
+        "iteration_id": "2",
+        "value": "Use availability-aware quarter redistribution when leakage-safe filtering makes strict equal quarter quotas infeasible."
+      },
+      "target": "iteration2",
+      "rationale": "Preserve availability-aware quota logic in future manual labeling stages.",
+      "status": "accepted"
+    }
+  ],
+  "carryover_blockers": [
+    {
+      "schema_version": "1.0.0",
+      "deferred_id": "51a4c7ed8c613dc7",
+      "decision_id": "cde09cd3d28fb567",
+      "blocker_id": "115d7b0ec26e20bc-step-009-runtime",
+      "until_iteration": "2",
+      "until_phase": "full-classification",
+      "criteria": "Increase sampled supply and align recovery target-size policy before retry",
+      "created_at": "2026-03-03T17:37:01.161934+00:00",
+      "status": "active",
+      "context": {
+        "decision_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/decisions/decision_cde09cd3d28fb567.json"
+      },
+      "path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/decisions/deferred_51a4c7ed8c613dc7.json"
+    },
+    {
+      "schema_version": "1.0.0",
+      "deferred_id": "6fa72b112467c617",
+      "decision_id": "c5828a0ba91f06fb",
+      "blocker_id": "31bb0b5874d88bca-step-004-runtime",
+      "until_iteration": "2",
+      "until_phase": "full-classification",
+      "criteria": "Resume after data architecture stabilization and Phase 1 science recovery",
+      "created_at": "2026-03-03T02:52:37.710187+00:00",
+      "status": "active",
+      "context": {
+        "decision_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/decisions/decision_c5828a0ba91f06fb.json"
+      },
+      "path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/decisions/deferred_6fa72b112467c617.json"
+    },
+    {
+      "schema_version": "1.0.0",
+      "deferred_id": "eedb6fbadba43363",
+      "decision_id": "8bbeeba8186ff739",
+      "blocker_id": "31bb0b5874d88bca-step-004-runtime",
+      "until_iteration": "2",
+      "until_phase": "full-classification",
+      "criteria": "Resume after Phase 1 label expansion blockers are addressed",
+      "created_at": "2026-03-03T02:53:23.844095+00:00",
+      "status": "active",
+      "context": {
+        "decision_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/decisions/decision_8bbeeba8186ff739.json"
+      },
+      "path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/decisions/deferred_eedb6fbadba43363.json"
+    }
+  ],
+  "branch_closeout": {
+    "current_branch": "director/iteration-review",
+    "integration_branch": "iteration1/integration",
+    "merge_target": "main",
+    "tag": "iteration1-closeout",
+    "closeout_validation_commands": [
+      "make bootstrap",
+      "make doctor",
+      "make format",
+      "make lint",
+      ".venv/bin/pytest -q"
+    ],
+    "steps": [
+      "git push origin director/iteration-review",
+      "git switch iteration1/integration",
+      "git merge --ff-only director/iteration-review",
+      "git switch main",
+      "git pull --ff-only",
+      "git switch iteration1/integration",
+      "git merge --ff-only main"
+    ],
+    "merge_strategy_note": "Prefer ff-only. If ff-only is not possible, use a non-interactive PR/merge-commit workflow after rerunning closeout validation.",
+    "next_iteration_steps": [
+      "git switch main",
+      "git pull --ff-only",
+      "git switch -c iteration2/integration"
+    ]
+  },
+  "next_iteration": {
+    "iteration_id": "2",
+    "recommended_phase": "iteration2/kickoff-and-preflight",
+    "entry_criteria": [
+      "Iteration 1 review approved.",
+      "Iteration 2 kickoff completed on iteration2/integration."
+    ],
+    "authorized": false
+  },
+  "artifacts": {
+    "review_json": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/reviews/iteration_1_review.json",
+    "review_md": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/reviews/iteration_1_review.md",
+    "patch_yaml": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/reviews/iteration_1_patch_proposal.yaml",
+    "branch_plan": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/reviews/iteration_1_branch_plan.md",
+    "starter_prompt": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/reviews/iteration_1_starter_prompt.md",
+    "approval_json": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/reviews/iteration_1_approval.json",
+    "kickoff_json": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/reviews/iteration_1_kickoff.json",
+    "patch_apply_json": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/reviews/iteration_1_patch_apply.json"
+  },
+  "status": "approved"
+}
