@@ -932,7 +932,7 @@ Rules:
     - `iteration1.pilot.generate_2024_manifest`
   - next recommended implementation phase: `iteration1/repo-hygiene-and-script-canon`
 - Commits:
-  - pending local commit for baseline-asset-freeze task implementation
+  - baseline-asset-freeze task implementation: `a4f50d652f4581ec9f5b9f04c3f1430a95fc6080`
 
 ### Phase: repo-hygiene-and-script-canon (execution update)
 - Date: 2026-03-05
@@ -999,4 +999,4 @@ Rules:
     - `common.remediate_fragmented_sentences`
   - next recommended implementation phase: `iteration1/source-index-contract`
 - Commits:
-  - pending local commit for repo-hygiene-and-script-canon task implementation
+  - repo-hygiene-and-script-canon task implementation: `3a522197fdec0914d8f9ed864f81837de967cb42`
