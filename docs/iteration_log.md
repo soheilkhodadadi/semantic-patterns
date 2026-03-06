@@ -1083,4 +1083,4 @@ Rules:
     - `common.resample_from_clean_sentence_pool`
   - next implementation focus shifts to `iteration1/sentence-table-pilot-2024`
 - Commits:
-  - pending local commit for source-index-contract implementation
+  - source-index-contract implementation: `f6f00933414c375769c59efe72572b8344cc635b`
