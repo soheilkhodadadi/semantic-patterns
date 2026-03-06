@@ -933,3 +933,70 @@ Rules:
   - next recommended implementation phase: `iteration1/repo-hygiene-and-script-canon`
 - Commits:
   - pending local commit for baseline-asset-freeze task implementation
+
+### Phase: repo-hygiene-and-script-canon (execution update)
+- Date: 2026-03-05
+- Branch: `director/roadmap-model-v2`
+- Selection basis:
+  - optimizer recommendation before execution: `director/optimization/recommendation_fb55837d-3a3a3230.json`
+  - selected canonical next phase: `iteration1/repo-hygiene-and-script-canon`
+- Deliverables implemented:
+  - executable task module:
+    - `src/semantic_ai_washing/director/tasks/script_inventory.py`
+  - roadmap task wiring:
+    - `director/model/roadmap_model.yaml`
+    - `docs/director/roadmap_master.md`
+  - generated phase artifacts:
+    - `director/snapshots/script_inventory.json`
+    - `docs/director/script_registry.md`
+  - regression coverage:
+    - `tests/test_director_script_inventory.py`
+- Inventory outcomes:
+  - canonical implementation namespace confirmed as `src/semantic_ai_washing`
+  - compatibility mirrors under `src/aggregation`, `src/analysis`, `src/classification`, `src/config`, `src/core`, `src/data`, `src/modeling`, `src/patents`, `src/scripts`, `src/tests`, and `src/tmp` classified as transitional shims
+  - `src/semantic_ai_washing/tmp/*` classified as legacy scratch namespace
+  - `src/semantic_ai_washing/data/extract_sample_filings.py` classified as transitional current implementation with planned replacement `source index + bounded filing manifest against SEC_SOURCE_DIR`
+  - `src/semantic_ai_washing/data/extract_ai_sentences.py` classified as transitional current implementation with planned replacement `year-partitioned sentence table writer`
+  - current inventory summary:
+    - python modules inventoried: `131`
+    - canonical: `76`
+    - transitional: `53`
+    - legacy: `2`
+    - hygiene findings in repo-controlled trees: `37`
+- Validation run:
+  - targeted validation:
+    - `.venv/bin/pytest -q tests/test_director_script_inventory.py tests/test_director_validation_assets.py tests/test_director_roadmap_model.py` -> `10 passed`
+  - direct artifact generation:
+    - `.venv/bin/python -m semantic_ai_washing.director.tasks.script_inventory --mode both --output-inventory director/snapshots/script_inventory.json --output-registry docs/director/script_registry.md` -> pass
+  - phase planning:
+    - `.venv/bin/python -m semantic_ai_washing.director.cli render-roadmap` -> pass
+    - `.venv/bin/python -m semantic_ai_washing.director.cli plan --iteration 1 --phase repo-hygiene-and-script-canon` -> pass
+      - runbook: `director/plans/runbook_65384ecfb68ad78d.yaml`
+      - plan: `director/plans/plan_65384ecfb68ad78d.md`
+      - decision scaffold: `director/decisions/decision_65384ecfb68ad78d.json`
+  - phase execution:
+    - `.venv/bin/python -m semantic_ai_washing.director.cli run --runbook director/plans/runbook_65384ecfb68ad78d.yaml --mode autonomous` -> pass
+      - execution state: `director/runs/execution_state_65384ecfb68ad78d.json`
+      - execution result: `director/runs/execution_result_65384ecfb68ad78d.json`
+      - status: `passed` (`steps_passed=13`, `step_count=13`)
+    - canonical validation preamble executed inside runbook:
+      - `make bootstrap` -> pass
+      - `make doctor` -> pass
+      - `make format` -> pass
+      - `make lint` -> pass
+      - `.venv/bin/pytest -q` -> pass
+- Risks/issues encountered:
+  - the registry is intentionally large because it inventories all Python modules and all transitional mirrors, not just operator-facing CLIs
+  - hygiene findings are currently diagnostic only; this phase does not delete caches or metadata files
+- Mitigation/resolution:
+  - Markdown registry now distinguishes canonical entrypoints from transitional surfaces and legacy scratch modules
+  - planned replacements for `extract_sample_filings.py` and `extract_ai_sentences.py` are now explicit and tied to future roadmap phases
+- Next optimizer output after phase completion:
+  - recommendation: `director/optimization/recommendation_e08e31e6-3a3a3230.json`
+  - top ready tasks:
+    - `iteration1.source.index_external_sec_root`
+    - `iteration1.pilot.generate_2024_manifest`
+    - `common.remediate_fragmented_sentences`
+  - next recommended implementation phase: `iteration1/source-index-contract`
+- Commits:
+  - pending local commit for repo-hygiene-and-script-canon task implementation

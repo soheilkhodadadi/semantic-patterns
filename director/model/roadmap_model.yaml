@@ -241,7 +241,8 @@ iterations:
                 required: true
             preconditions: []
             quality_checks: []
-            commands: []
+            commands:
+              - .venv/bin/python -m semantic_ai_washing.director.tasks.script_inventory --mode inventory --output-inventory director/snapshots/script_inventory.json
             manual_handoff: false
             risks: [R7]
             estimated_effort: 2
@@ -280,7 +281,8 @@ iterations:
                 message: Script inventory must exist before publishing registry.
                 reroute_to: []
             quality_checks: []
-            commands: []
+            commands:
+              - .venv/bin/python -m semantic_ai_washing.director.tasks.script_inventory --mode publish --input-inventory director/snapshots/script_inventory.json --output-registry docs/director/script_registry.md
             manual_handoff: false
             risks: [R7]
             estimated_effort: 2
