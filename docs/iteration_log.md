@@ -1258,3 +1258,81 @@ Rules:
   - this is an intentional and truthful block, not a silent pass or stall
 - Commits:
   - rubric-and-api-bootstrap implementation: `4ab72b812489d3f060d12f5b27462acb2d4061c3`
+
+## 2026-03-06 - API Bootstrap Fix Checkpoint
+
+- Branch: `director/roadmap-model-v2`
+- Commit:
+  - `174d36f3ea46fd0e4ec3c3552232b57fe3ecdbe4` `director: fix assistive api bootstrap transport and smoke validation`
+- Scope:
+  - corrected Responses API request shape for shared director transport
+  - enabled structured JSON smoke responses for assistive bootstrap
+  - recorded successful live smoke artifact in `reports/api/api_bootstrap_smoke_test.json`
+- Security note:
+  - the OpenAI key was re-exposed in chat during live validation and must be rotated again after this checkpoint
+
+## 2026-03-06 - Iteration 1 / Label Ops Bootstrap
+
+- Branch: `director/roadmap-model-v2`
+- Selection basis:
+  - prior completed dependency: `iteration1/rubric-and-api-bootstrap`
+  - optimizer state after API fix: downstream label ops became the top executable phase
+- Deliverables implemented:
+  - canonical label-batch builder:
+    - `src/semantic_ai_washing/labeling/build_labeling_batch.py`
+  - roadmap-model phase wiring and gating:
+    - `director/model/roadmap_model.yaml`
+  - rubric update for label-ops bootstrap:
+    - `docs/labeling_protocol.md`
+  - generated director docs/snapshots:
+    - `docs/director/roadmap_master.md`
+    - `docs/director/script_registry.md`
+    - `director/snapshots/script_inventory.json`
+  - regression coverage:
+    - `tests/test_labeling_batch.py`
+    - `tests/test_director_roadmap_model.py`
+- Batch contract:
+  - target rows: `240`
+  - clean filters:
+    - `fragment_score == 0`
+    - `6 <= token_count <= 120`
+  - leakage exclusion against `data/validation/held_out_sentences.csv`
+  - exact-text dedupe by `sentence_text_id`
+  - quarter redistribution is availability-aware because strict `60/quarter` was infeasible after hard leakage-safe filtering
+- Generated artifacts:
+  - batch parquet:
+    - `data/labels/v1/labeling_batch_v1.parquet`
+  - batch csv:
+    - `data/labels/v1/labeling_batch_v1.csv`
+  - batch summary:
+    - `reports/labels/labeling_batch_v1_summary.json`
+      - `batch_row_count`: `240`
+      - `quarter_quotas_used`: `{"1": 37, "2": 68, "3": 68, "4": 67}`
+      - `heldout_overlap_count`: `0`
+      - `exact_duplicate_count`: `0`
+- Validation run:
+  - `make bootstrap` -> pass
+  - `make doctor` -> pass
+  - `make format` -> pass
+  - `make lint` -> pass
+  - `.venv/bin/pytest -q` -> `78 passed`
+  - direct batch build:
+    - `.venv/bin/python -m semantic_ai_washing.labeling.build_labeling_batch --sentences data/processed/sentences/year=2024/ai_sentences.parquet --manifest data/manifests/filings/pilot_2024_10k_v1.csv --held-out data/validation/held_out_sentences.csv --output-parquet data/labels/v1/labeling_batch_v1.parquet --output-csv data/labels/v1/labeling_batch_v1.csv --report reports/labels/labeling_batch_v1_summary.json --batch-id labeling_batch_v1 --target-size 240 --base-quarter-quota 60 --min-tokens 6 --max-tokens 120 --seed 20260306` -> pass
+  - director planning:
+    - runbook: `director/plans/runbook_16d394fb26b6a459.yaml`
+    - plan: `director/plans/plan_16d394fb26b6a459.md`
+  - director execution:
+    - result: `director/runs/execution_result_16d394fb26b6a459.json`
+    - status: `passed`
+    - steps: `13/13`
+  - post-phase optimize:
+    - recommendation: `director/optimization/recommendation_738d108a-3a3a3230.json`
+- Outcome:
+  - implementation status: complete
+  - phase status: `passed`
+  - next blocker is truthful and manual:
+    - `iteration2/dataset-expansion-2024`
+    - task `iteration2.labels.expand_dataset` is `blocked_manual`
+- Residual risks:
+  - FF12 balancing is best-effort because manifest-level industry coverage remains sparse
+  - the batch is diverse and leakage-safe, but downstream label quality still depends on manual human execution in Iteration 2

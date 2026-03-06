@@ -100,3 +100,20 @@ Rows with labels outside this set fail QA.
 - Generating canonical labels for the training set.
 - Replacing the blinded human second-rater workflow.
 - Reusing held-out sentences as training or assistive prompt examples.
+
+## Label Ops Bootstrap (Iteration 1)
+
+- `labeling_batch_v1` is leakage-safe against the frozen held-out dataset.
+- Exact duplicate sentence texts are removed before the batch is created.
+- The first bootstrap batch is human-labeling-ready and leaves review fields blank:
+  - `label`
+  - `is_uncertain`
+  - `uncertainty_note`
+- API suggestions are intentionally excluded from `labeling_batch_v1`.
+- The bootstrap batch contract is:
+  - `240` rows total
+  - availability-aware quarter redistribution after clean-filter, held-out exclusion, and exact-text dedupe
+  - exact quarter counts are recorded in `reports/labels/labeling_batch_v1_summary.json`
+- Batch creation consumes only the canonical 2024 sentence table and the bounded pilot manifest:
+  - `data/processed/sentences/year=2024/ai_sentences.parquet`
+  - `data/manifests/filings/pilot_2024_10k_v1.csv`

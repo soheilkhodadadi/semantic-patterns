@@ -18,6 +18,7 @@ from semantic_ai_washing.director.core.render import (
     render_roadmap_markdown,
 )
 from semantic_ai_washing.director.core.roadmap_model import (
+    find_phase,
     load_remediation_library,
     load_roadmap_model,
 )
@@ -615,4 +616,27 @@ def test_phase_dependencies_flow_into_task_readiness(tmp_path):
     assert (
         "iteration1.phase_a.blocked"
         in state_map["iteration1.phase_b.ready_without_phase_dep_fix"].missing_dependencies
+    )
+
+
+def test_actual_label_ops_phase_has_executable_batch_builder():
+    model = load_roadmap_model("director/model/roadmap_model.yaml")
+    phase = find_phase(model, iteration_id="1", phase_name="label-ops-bootstrap")
+
+    assert phase is not None
+    assert "reports/labels/labeling_batch_v1_summary.json" in phase.required_artifacts
+
+    task = next(
+        task for task in phase.tasks if task.task_id == "iteration1.labels.prepare_labeling_batch"
+    )
+    assert task.commands
+    assert "semantic_ai_washing.labeling.build_labeling_batch" in task.commands[0]
+    quality_targets = {condition.target for condition in task.quality_checks}
+    assert (
+        "reports/labels/labeling_batch_v1_summary.json::selection.batch_row_count"
+        in quality_targets
+    )
+    assert (
+        "reports/labels/labeling_batch_v1_summary.json::quality.heldout_overlap_count"
+        in quality_targets
     )

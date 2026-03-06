@@ -1,0 +1,80 @@
+{
+  "generated_at_utc": "2026-03-06T18:13:05.841761+00:00",
+  "git_commit": "174d36f3ea46fd0e4ec3c3552232b57fe3ecdbe4",
+  "inputs": {
+    "sentences": "data/processed/sentences/year=2024/ai_sentences.parquet",
+    "manifest": "data/manifests/filings/pilot_2024_10k_v1.csv",
+    "held_out": "data/validation/held_out_sentences.csv"
+  },
+  "parameters": {
+    "batch_id": "labeling_batch_v1",
+    "target_size": 240,
+    "base_quarter_quota": 60,
+    "min_tokens": 6,
+    "max_tokens": 120,
+    "seed": 20260306
+  },
+  "candidate_stats": {
+    "source_rows": 1134,
+    "rows_after_clean_filters": 1093,
+    "heldout_overlap_removed": 85,
+    "exact_text_duplicates_removed": 43,
+    "rows_after_filters": 965,
+    "available_quarter_counts": {
+      "1": 37,
+      "2": 211,
+      "3": 392,
+      "4": 325
+    },
+    "available_file_counts": {
+      "total_unique_files": 96,
+      "quarter_unique_file_counts": {
+        "1": 16,
+        "2": 23,
+        "3": 32,
+        "4": 25
+      }
+    }
+  },
+  "selection": {
+    "batch_row_count": 240,
+    "target_size": 240,
+    "quota_satisfied": true,
+    "quarter_quotas_used": {
+      "1": 37,
+      "2": 68,
+      "3": 68,
+      "4": 67
+    },
+    "selected_quarter_counts": {
+      "1": 37,
+      "2": 68,
+      "3": 68,
+      "4": 67
+    },
+    "selected_file_count": 96,
+    "selected_ff12_counts": {
+      "11": 3,
+      "12": 231,
+      "3": 1,
+      "6": 3,
+      "9": 2
+    },
+    "selected_known_ff12_count": 14,
+    "selected_unknown_ff12_count": 226,
+    "selected_length_counts": {
+      "long": 148,
+      "medium": 91,
+      "short": 1
+    },
+    "selected_edge_case_count": 171
+  },
+  "quality": {
+    "heldout_overlap_count": 0,
+    "exact_duplicate_count": 0
+  },
+  "artifacts": {
+    "parquet": "data/labels/v1/labeling_batch_v1.parquet",
+    "csv": "data/labels/v1/labeling_batch_v1.csv"
+  }
+}

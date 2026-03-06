@@ -643,6 +643,7 @@ iterations:
         required_artifacts:
           - data/labels/v1/labeling_batch_v1.parquet
           - data/labels/v1/labeling_batch_v1.csv
+          - reports/labels/labeling_batch_v1_summary.json
         source_window_id: active_2021_2024
         tags: [label_ops, sentence_quality_gate]
         tasks:
@@ -727,8 +728,54 @@ iterations:
                 on_fail: block
                 message: Sentence table missing.
                 reroute_to: []
-            quality_checks: []
-            commands: []
+            quality_checks:
+              - condition_id: labeling_batch_count
+                kind: json_field_compare
+                target: reports/labels/labeling_batch_v1_summary.json::selection.batch_row_count
+                operator: "=="
+                expected: 240
+                on_fail: block
+                message: Labeling batch row count does not match the target contract.
+                reroute_to: []
+              - condition_id: labeling_batch_quota_satisfied
+                kind: json_field_compare
+                target: reports/labels/labeling_batch_v1_summary.json::selection.quota_satisfied
+                operator: "=="
+                expected: true
+                on_fail: block
+                message: Labeling batch quarter allocation did not satisfy the target contract.
+                reroute_to: []
+              - condition_id: labeling_batch_no_leakage
+                kind: json_field_compare
+                target: reports/labels/labeling_batch_v1_summary.json::quality.heldout_overlap_count
+                operator: "=="
+                expected: 0
+                on_fail: block
+                message: Labeling batch overlaps the frozen held-out set.
+                reroute_to: []
+              - condition_id: labeling_batch_no_exact_duplicates
+                kind: json_field_compare
+                target: reports/labels/labeling_batch_v1_summary.json::quality.exact_duplicate_count
+                operator: "=="
+                expected: 0
+                on_fail: block
+                message: Labeling batch contains exact duplicate sentence texts.
+                reroute_to: []
+            commands:
+              - >-
+                .venv/bin/python -m semantic_ai_washing.labeling.build_labeling_batch
+                --sentences data/processed/sentences/year=2024/ai_sentences.parquet
+                --manifest data/manifests/filings/pilot_2024_10k_v1.csv
+                --held-out data/validation/held_out_sentences.csv
+                --output-parquet data/labels/v1/labeling_batch_v1.parquet
+                --output-csv data/labels/v1/labeling_batch_v1.csv
+                --report reports/labels/labeling_batch_v1_summary.json
+                --batch-id labeling_batch_v1
+                --target-size 240
+                --base-quarter-quota 60
+                --min-tokens 6
+                --max-tokens 120
+                --seed 20260306
             manual_handoff: false
             risks: [R1, R2, R5]
             estimated_effort: 3

@@ -1,18 +1,18 @@
 <!-- generated_file: true -->
 <!-- source_inventory: director/snapshots/script_inventory.json -->
-<!-- source_sha256: 4dc66e19a24313cf68451bdf15654378949e2712ee79ba81874b23cbdad27390 -->
-<!-- rendered_at: 2026-03-06T07:45:13.098417+00:00 -->
+<!-- source_sha256: 9cf7a335691293707960b4f41e739eb54d5113b4496bad8276650005bfe6b260 -->
+<!-- rendered_at: 2026-03-06T18:11:13.507905+00:00 -->
 
 # Script Registry
 
 This document is generated from the repo script inventory snapshot.
 
 ## Summary
-- Python modules inventoried: `133`
-- Canonical modules: `78`
+- Python modules inventoried: `137`
+- Canonical modules: `82`
 - Transitional modules: `53`
 - Legacy modules: `2`
-- Entrypoints: `89`
+- Entrypoints: `91`
 - Hygiene findings: `37`
 
 ## Canonical Entrypoints
@@ -42,9 +42,11 @@ This document is generated from the repo script inventory snapshot.
 | `semantic_ai_washing.diagnostics.phase0_baseline` | `python -m semantic_ai_washing.diagnostics.phase0_baseline` | Phase 0 diagnostics baseline runner for Iteration 1. |
 | `semantic_ai_washing.director.__main__` | `python -m semantic_ai_washing.director.__main__` | primary implementation namespace under semantic_ai_washing |
 | `semantic_ai_washing.director.cli` | `python -m semantic_ai_washing.director.cli` | CLI entrypoint for the autonomous director package. |
+| `semantic_ai_washing.director.tasks.api_bootstrap` | `python -m semantic_ai_washing.director.tasks.api_bootstrap` | Run a bounded assistive-only OpenAI API smoke test. |
 | `semantic_ai_washing.director.tasks.script_inventory` | `python -m semantic_ai_washing.director.tasks.script_inventory` | Generate a repo script inventory and a human-readable script registry. |
 | `semantic_ai_washing.director.tasks.validation_assets` | `python -m semantic_ai_washing.director.tasks.validation_assets` | Generate a canonical registry for current validation assets. |
 | `semantic_ai_washing.labeling.adjudicate_irr_labels` | `python -m semantic_ai_washing.labeling.adjudicate_irr_labels` | Create adjudication artifacts and optionally merge final IRR labels. |
+| `semantic_ai_washing.labeling.build_labeling_batch` | `python -m semantic_ai_washing.labeling.build_labeling_batch` | Build the canonical labeling batch for Iteration 1 label ops bootstrap. |
 | `semantic_ai_washing.labeling.build_labeling_sample` | `python -m semantic_ai_washing.labeling.build_labeling_sample` | Build Phase 1 labeling sample with leakage controls and stable IDs. |
 | `semantic_ai_washing.labeling.compute_irr_metrics` | `python -m semantic_ai_washing.labeling.compute_irr_metrics` | Compute IRR metrics (Cohen's kappa + disagreement taxonomy). |
 | `semantic_ai_washing.labeling.dedupe_labeled_sentences` | `python -m semantic_ai_washing.labeling.dedupe_labeled_sentences` | Deduplicate and merge labeled datasets for Phase 1. |

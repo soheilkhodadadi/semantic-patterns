@@ -1,7 +1,7 @@
 <!-- generated_file: true -->
 <!-- source_model: /Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/model/roadmap_model.yaml -->
-<!-- source_sha256: 0331d6bd0a9736a42c574773c796e4f3b7c52338c84df4f8e1f221b026ee837f -->
-<!-- rendered_at: 2026-03-06T16:51:14.009886+00:00 -->
+<!-- source_sha256: 738d108a7e41b38eecc69dd81bfdcce5dc1c19fe57f302f9597db1c843c09037 -->
+<!-- rendered_at: 2026-03-06T18:11:14.506397+00:00 -->
 
 # Roadmap Master
 
@@ -181,7 +181,7 @@ Goal: Establish canonical contracts, clean the execution surface, and build a bo
 - Lifecycle: `planned`
 - Depends on: iteration1/rubric-and-api-bootstrap
 - Source window: `active_2021_2024`
-- Required artifacts: data/labels/v1/labeling_batch_v1.parquet, data/labels/v1/labeling_batch_v1.csv
+- Required artifacts: data/labels/v1/labeling_batch_v1.parquet, data/labels/v1/labeling_batch_v1.csv, reports/labels/labeling_batch_v1_summary.json
 - Tags: label_ops, sentence_quality_gate
 
 #### Tasks
