@@ -1,5 +1,5 @@
 {
-  "status": "missing_key",
+  "status": "passed",
   "mode": "live",
   "policy_path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/config/api_assistive_policy.yaml",
   "model": "gpt-5-mini",
@@ -19,21 +19,28 @@
   "request_summary": {
     "store": false,
     "max_output_tokens": 200,
-    "prompt_hash": "6302a83ea5c1ce47663c3af3e2bbe80d2a5625e7fdb3c6fdfa7581a3cd363d8c"
+    "prompt_hash": "60c4ee57ab324cef0b81de36be90545466fb2d245b06c80a657d8ad5c62e9fcd",
+    "response_id": "resp_08bc71ce8af35fb10169ab0fb868e08191a2f168256509cf26"
   },
-  "response_summary": {},
-  "usage": {},
-  "cost_estimation_status": "not_applicable",
-  "latency_ms": 0,
-  "error": {
-    "type": "missing_key",
-    "message": "OPENAI_API_KEY is required for live mode",
-    "http_status": null
+  "response_summary": {
+    "label": "Speculative",
+    "confidence": "high",
+    "rationale": "Forward-looking strategic intent about future investments and priorities, not immediate actionable steps.",
+    "assistive_only": true
   },
-  "generated_at": "2026-03-06T16:50:10.639578+00:00",
+  "usage": {
+    "prompt_tokens": 234,
+    "completion_tokens": 58,
+    "total_tokens": 292,
+    "estimated_cost_usd": 0.0
+  },
+  "cost_estimation_status": "pricing_unconfigured",
+  "latency_ms": 1610.264,
+  "error": null,
+  "generated_at": "2026-03-06T17:32:40.125238+00:00",
   "git": {
     "branch": "director/roadmap-model-v2",
-    "commit": "47363777f19c43045cb13cedeae159fd3894b4ae",
+    "commit": "bfe48945b7ff9c828e6f31c45e0a5079fccda985",
     "dirty": true
   }
 }

@@ -92,11 +92,11 @@ def build_prompt_messages(policy: ApiAssistivePolicy, sentence: str) -> list[dic
     return [
         {
             "role": "system",
-            "content": [{"type": "text", "text": policy.prompt_spec.system_prompt}],
+            "content": [{"type": "input_text", "text": policy.prompt_spec.system_prompt}],
         },
         {
             "role": "user",
-            "content": [{"type": "text", "text": user_text}],
+            "content": [{"type": "input_text", "text": user_text}],
         },
     ]
 

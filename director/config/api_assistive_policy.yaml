@@ -9,6 +9,29 @@ request:
   store: false
   timeout_seconds: 60
   max_output_tokens: 200
+  reasoning_effort: minimal
+  text_format:
+    type: json_schema
+    name: assistive_label_result
+    strict: true
+    schema:
+      type: object
+      additionalProperties: false
+      properties:
+        label:
+          type: string
+          enum: [Actionable, Speculative, Irrelevant]
+        confidence:
+          type: string
+          enum: [high, medium, low]
+        rationale:
+          type: string
+          minLength: 1
+          maxLength: 140
+        assistive_only:
+          type: boolean
+          enum: [true]
+      required: [label, confidence, rationale, assistive_only]
 
 budget:
   max_live_requests_per_run: 1
@@ -53,8 +76,11 @@ prompt_spec:
     and must not be treated as canonical. Classify one filing sentence into exactly
     one label from Actionable, Speculative, Irrelevant. Return JSON only.
   user_prompt_template: >
-    Label this sentence using the project rubric. Return JSON with keys:
-    label, confidence, rationale, assistive_only.
+    Label this sentence using the project rubric. Return exactly one JSON object with:
+    label in {Actionable, Speculative, Irrelevant},
+    confidence in {high, medium, low},
+    rationale under 20 words,
+    assistive_only equal to true.
 
 smoke_output:
   report_path: reports/api/api_bootstrap_smoke_test.json

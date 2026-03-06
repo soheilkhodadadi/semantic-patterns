@@ -158,6 +158,17 @@ def run_api_bootstrap(
 
     start = time.perf_counter()
     try:
+        extra_payload: dict[str, Any] = {}
+        reasoning_effort = str(policy.request.get("reasoning_effort", "")).strip()
+        if reasoning_effort:
+            extra_payload["reasoning"] = {"effort": reasoning_effort}
+        text_format = policy.request.get("text_format", "")
+        if isinstance(text_format, dict) and text_format:
+            extra_payload["text"] = {"format": text_format}
+        else:
+            text_format_value = str(text_format).strip()
+            if text_format_value:
+                extra_payload["text"] = {"format": {"type": text_format_value}}
         response_payload = call_responses_api(
             model=policy.model,
             input_payload=messages,
@@ -169,6 +180,7 @@ def run_api_bootstrap(
                 policy.request.get("timeout_seconds", policy.selection.timeout_seconds) or 60
             ),
             store=bool(policy.request.get("store", policy.selection.store)),
+            extra_payload=extra_payload or None,
         )
     except OpenAIResponsesHTTPError as exc:
         payload["status"] = "auth_failed" if exc.status_code in {401, 403} else "request_failed"

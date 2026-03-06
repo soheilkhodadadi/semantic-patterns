@@ -81,14 +81,14 @@ def refine_plan_markdown(
                 "role": "system",
                 "content": [
                     {
-                        "type": "text",
+                        "type": "input_text",
                         "text": "You are a strict engineering planner. Preserve constraints and avoid scope creep.",
                     }
                 ],
             },
             {
                 "role": "user",
-                "content": [{"type": "text", "text": prompt}],
+                "content": [{"type": "input_text", "text": prompt}],
             },
         ],
         "max_output_tokens": max_completion_tokens,
