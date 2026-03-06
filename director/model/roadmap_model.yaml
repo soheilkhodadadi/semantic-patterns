@@ -202,7 +202,8 @@ iterations:
                 message: Held-out evaluation asset is missing.
                 reroute_to: []
             quality_checks: []
-            commands: []
+            commands:
+              - .venv/bin/python -m semantic_ai_washing.director.tasks.validation_assets --output reports/validation/validation_asset_registry.json
             manual_handoff: false
             risks: [R3, R6]
             estimated_effort: 2

@@ -882,3 +882,54 @@ Rules:
 - CI status:
   - local targeted validation pass (`director tests`, `render-roadmap`, `ingest`, `optimize`, `plan`)
   - full repo validation pending before merge/push
+
+### Phase: baseline-asset-freeze (execution update)
+- Date: 2026-03-05
+- Branch: `director/roadmap-model-v2`
+- Selection basis:
+  - optimizer recommendation before execution: `director/optimization/recommendation_8732eb4e-3a3a3230.json`
+  - selected canonical next phase: `iteration1/baseline-asset-freeze`
+- Deliverables implemented:
+  - executable task module:
+    - `src/semantic_ai_washing/director/tasks/__init__.py`
+    - `src/semantic_ai_washing/director/tasks/validation_assets.py`
+  - roadmap task wiring:
+    - `director/model/roadmap_model.yaml`
+    - `docs/director/roadmap_master.md`
+  - regression coverage:
+    - `tests/test_director_validation_assets.py`
+- Phase artifact generated:
+  - `reports/validation/validation_asset_registry.json`
+- Registry outcomes:
+  - `data/validation/held_out_sentences.csv` classified as `canonical_frozen_evaluation_set`
+  - `data/validation/CollectedAiSentencesClassifiedCleaned.csv` classified as `historical_duplicate_of_held_out`
+  - `data/validation/hand_labeled_ai_sentences_with_embeddings_revised.csv` classified as `historical_training_seed_with_embeddings`
+  - held-out vs collected cleaned relationship: `historical_duplicate` with exact normalized sentence+label match
+  - held-out vs hand-labeled relationship: `partial_overlap` (`99` normalized sentences overlap)
+- Validation run:
+  - targeted validation:
+    - `.venv/bin/pytest -q tests/test_director_validation_assets.py tests/test_director_roadmap_model.py` -> `8 passed`
+  - phase planning:
+    - `.venv/bin/python -m semantic_ai_washing.director.cli render-roadmap` -> pass
+    - `.venv/bin/python -m semantic_ai_washing.director.cli plan --iteration 1 --phase baseline-asset-freeze` -> pass
+      - runbook: `director/plans/runbook_8e98f992d1de07fc.yaml`
+      - plan: `director/plans/plan_8e98f992d1de07fc.md`
+      - decision scaffold: `director/decisions/decision_8e98f992d1de07fc.json`
+  - phase execution:
+    - `.venv/bin/python -m semantic_ai_washing.director.cli run --runbook director/plans/runbook_8e98f992d1de07fc.yaml --mode autonomous` -> pass
+      - execution state: `director/runs/execution_state_8e98f992d1de07fc.json`
+      - execution result: `director/runs/execution_result_8e98f992d1de07fc.json`
+      - status: `passed` (`steps_passed=10`, `step_count=10`)
+- Risks/issues encountered:
+  - canonical gate `baseline-asset-freeze-gate-003` still checks artifact presence (`docs/iteration_log.md`) rather than semantic evidence content; the log was updated manually after execution for truthful recordkeeping.
+- Mitigation/resolution:
+  - phase is now executable and reproducible via director rather than a no-op artifact expectation.
+- Next optimizer output after phase completion:
+  - recommendation: `director/optimization/recommendation_fb55837d-3a3a3230.json`
+  - top ready tasks:
+    - `iteration1.repo.inventory_scripts`
+    - `iteration1.source.index_external_sec_root`
+    - `iteration1.pilot.generate_2024_manifest`
+  - next recommended implementation phase: `iteration1/repo-hygiene-and-script-canon`
+- Commits:
+  - pending local commit for baseline-asset-freeze task implementation
