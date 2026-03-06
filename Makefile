@@ -69,6 +69,12 @@ doctor:
 		echo "[ERROR] cannot import semantic_ai_washing from $(VENV_DIR)"; \
 		exit 1; \
 	fi
+	@if $(VENV_PYTHON) -c "import pyarrow" >/dev/null 2>&1; then \
+		echo "[OK] pyarrow import works in $(VENV_DIR)"; \
+	else \
+		echo "[ERROR] cannot import pyarrow from $(VENV_DIR)"; \
+		exit 1; \
+	fi
 	@$(VENV_PYTHON) -m ruff --version
 	@$(VENV_PYTHON) -m pytest --version
 	@echo "[OK] doctor complete"

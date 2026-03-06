@@ -37,7 +37,10 @@ TOP_LEVEL_MIRROR_BUCKETS = {
 
 TRANSITIONAL_CANONICAL_MODULES: dict[str, dict[str, str]] = {
     "semantic_ai_washing.data.extract_sample_filings": {
-        "replacement_path": "source index + bounded filing manifest against SEC_SOURCE_DIR",
+        "replacement_path": (
+            "semantic_ai_washing.data.build_filing_manifest + "
+            "semantic_ai_washing.data.extract_sentence_table"
+        ),
         "replacement_phase": "iteration1/source-index-contract",
         "notes": (
             "Current implementation copies raw filings into data/processed/sec. "
@@ -45,9 +48,7 @@ TRANSITIONAL_CANONICAL_MODULES: dict[str, dict[str, str]] = {
         ),
     },
     "semantic_ai_washing.data.extract_ai_sentences": {
-        "replacement_path": (
-            "sentence-table writer producing data/processed/sentences/year=YYYY/ai_sentences.parquet"
-        ),
+        "replacement_path": "semantic_ai_washing.data.extract_sentence_table",
         "replacement_phase": "iteration1/sentence-table-pilot-2024",
         "notes": (
             "Current implementation writes per-filing *_ai_sentences.txt review files. "

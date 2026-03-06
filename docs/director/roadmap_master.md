@@ -1,7 +1,7 @@
 <!-- generated_file: true -->
 <!-- source_model: /Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/model/roadmap_model.yaml -->
-<!-- source_sha256: b2f116c585c9f41eba994a62654b216a93d9b94983246513ca819005e6435dba -->
-<!-- rendered_at: 2026-03-06T07:09:28.009831+00:00 -->
+<!-- source_sha256: 9d5163391171ba7929d8488c25621f0df5a6602f9f8054cc3a82acae6e5ebba9 -->
+<!-- rendered_at: 2026-03-06T07:45:13.665063+00:00 -->
 
 # Roadmap Master
 
@@ -132,7 +132,7 @@ Goal: Establish canonical contracts, clean the execution surface, and build a bo
   - kind: `build` gate_class: `data` automation: `partial`
   - depends_on: none
   - inputs: data/metadata/available_filings_index.csv
-  - outputs: data/manifests/filings/pilot_2024_10k_v1.csv
+  - outputs: data/manifests/filings/pilot_2024_10k_v1.csv, reports/data/pilot_2024_manifest_summary.json
   - tags: pilot_manifest
   - risks: R5
 - `iteration1.pilot.extract_sentence_table` Extract canonical sentence table

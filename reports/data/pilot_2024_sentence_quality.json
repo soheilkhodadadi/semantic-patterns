@@ -1,0 +1,45 @@
+{
+  "manifest_metadata": {
+    "manifest_id": "pilot_2024_10k_v1",
+    "target_size": 240,
+    "filings_attempted": 240,
+    "filings_succeeded": 240,
+    "filings_failed": 0
+  },
+  "extraction_counts": {
+    "total_segmented_sentences": 444726,
+    "total_ai_sentences_retained": 1134,
+    "average_ai_sentences_per_filing": 4.725
+  },
+  "quality_metrics": {
+    "fragment_rate": 0.004409,
+    "integrity_flag_counts": {
+      "short_sentence": 5
+    },
+    "token_count_summary": {
+      "count": 1134,
+      "min": 3,
+      "p50": 31.0,
+      "mean": 42.05291,
+      "max": 894
+    }
+  },
+  "coverage_metrics": {
+    "quarter_counts": {
+      "1": 60,
+      "2": 60,
+      "3": 60,
+      "4": 60
+    },
+    "ff12_known_filing_count": 48,
+    "ff12_unknown_filing_count": 192
+  },
+  "failure_summary": {
+    "read_errors_count": 0,
+    "failed_files": []
+  },
+  "output_fingerprints": {
+    "parquet_sha256": "1c51e06e9933e43548dc9cdf859b84cffe6e20113f0afae201a9207ca77c1722",
+    "sample_csv_sha256": "3f3a6c3b01d528a2076f451147ccefa00ecb64f9ef29b1aadf8260720c020583"
+  }
+}

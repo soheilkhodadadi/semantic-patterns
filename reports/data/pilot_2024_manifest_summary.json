@@ -1,0 +1,45 @@
+{
+  "manifest_id": "pilot_2024_10k_v1",
+  "seed": 20260305,
+  "target_size": 240,
+  "quarter_quota": 60,
+  "total_eligible_candidate_count": 6878,
+  "quarter_candidate_counts": {
+    "1": 4980,
+    "2": 1104,
+    "3": 413,
+    "4": 381
+  },
+  "selected_quarter_counts": {
+    "1": 60,
+    "2": 60,
+    "3": 60,
+    "4": 60
+  },
+  "selected_ff12_counts": {
+    "1": 1,
+    "2": 1,
+    "3": 4,
+    "4": 2,
+    "5": 1,
+    "6": 4,
+    "7": 2,
+    "9": 6,
+    "10": 4,
+    "11": 17,
+    "12": 198
+  },
+  "industry_metadata_coverage_counts": {
+    "eligible": {
+      "cik_gvkey": 5,
+      "controls_by_firm_year": 43,
+      "unknown": 6830
+    },
+    "selected": {
+      "cik_gvkey": 5,
+      "controls_by_firm_year": 43,
+      "unknown": 192
+    }
+  },
+  "quota_satisfied": true
+}

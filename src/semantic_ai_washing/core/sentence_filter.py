@@ -143,6 +143,35 @@ def segment_sentences(text: str) -> List[str]:
 _PUNCTUATION_END = re.compile(r"[\.\?!]$")
 _PAGE_MARKER = re.compile(r"[\-\u2013\u2014]\s*\d+\s*[\-\u2013\u2014]")
 _PAGE_MARKER_LINE = re.compile(r"^\s*[\-\u2013\u2014]\s*\d+\s*[\-\u2013\u2014]\s*$")
+_NON_WORD_RE = re.compile(r"[^\w\s]+", re.UNICODE)
+_WS_RE = re.compile(r"\s+")
+
+
+def normalize_sentence_text(text: str) -> str:
+    """Return the canonical normalized text form used for sentence-table identifiers."""
+    if text is None:
+        return ""
+    lowered = str(text).lower().strip()
+    lowered = _NON_WORD_RE.sub(" ", lowered)
+    lowered = _WS_RE.sub(" ", lowered)
+    return lowered.strip()
+
+
+def get_sentence_integrity_flags(text: str, min_tokens: int = 6) -> list[str]:
+    """Return deterministic integrity flags for a sentence candidate."""
+    fragment = "" if text is None else str(text).strip()
+    flags: list[str] = []
+    if not fragment:
+        return ["short_sentence"]
+    if _PUNCTUATION_END.search(fragment) is None:
+        flags.append("missing_terminal_punct")
+    if _starts_with_lower(fragment):
+        flags.append("lowercase_start")
+    if len([token for token in fragment.split() if token.strip()]) < min_tokens:
+        flags.append("short_sentence")
+    if _is_page_fragment(fragment) or _PAGE_MARKER_LINE.match(fragment) is not None:
+        flags.append("page_fragment_like")
+    return flags
 
 
 def _should_skip_fragment(fragment: str) -> bool:

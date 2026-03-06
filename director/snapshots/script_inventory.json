@@ -1,20 +1,20 @@
 {
-  "generated_at": "2026-03-06T07:12:12.854866+00:00",
+  "generated_at": "2026-03-06T07:45:13.048875+00:00",
   "git": {
     "branch": "director/roadmap-model-v2",
-    "commit": "a7f6e82cd000e9a22db9bd47f33e5815c551ea75",
+    "commit": "6d41f6e85192d3623322047c036dbdda45562481",
     "dirty": true
   },
   "repo_root": "semantic-patterns",
   "summary": {
-    "python_module_count": 131,
-    "canonical_count": 76,
+    "python_module_count": 133,
+    "canonical_count": 78,
     "transitional_count": 53,
     "legacy_count": 2,
-    "entrypoint_count": 87,
+    "entrypoint_count": 89,
     "entrypoint_counts": {
       "transitional": 53,
-      "canonical": 33,
+      "canonical": 35,
       "legacy": 1
     },
     "hygiene_finding_count": 37
@@ -224,6 +224,24 @@
       "notes": ""
     },
     {
+      "path": "src/semantic_ai_washing/data/build_filing_manifest.py",
+      "module": "semantic_ai_washing.data.build_filing_manifest",
+      "domain": "data",
+      "classification": "canonical",
+      "rationale": "primary implementation namespace under semantic_ai_washing",
+      "status_detail": "current_implementation",
+      "doc_summary": "Build a deterministic filing manifest for the bounded 2024 sentence-table pilot.",
+      "has_main_guard": true,
+      "has_main_function": true,
+      "is_entrypoint": true,
+      "canonical_target": "",
+      "canonical_invocation": "python -m semantic_ai_washing.data.build_filing_manifest",
+      "replacement_path": "",
+      "replacement_phase": "",
+      "removal_target": "",
+      "notes": ""
+    },
+    {
       "path": "src/semantic_ai_washing/data/clean_compustat.py",
       "module": "semantic_ai_washing.data.clean_compustat",
       "domain": "data",
@@ -326,6 +344,24 @@
       "is_entrypoint": true,
       "canonical_target": "",
       "canonical_invocation": "python -m semantic_ai_washing.data.download_sec",
+      "replacement_path": "",
+      "replacement_phase": "",
+      "removal_target": "",
+      "notes": ""
+    },
+    {
+      "path": "src/semantic_ai_washing/data/extract_sentence_table.py",
+      "module": "semantic_ai_washing.data.extract_sentence_table",
+      "domain": "data",
+      "classification": "canonical",
+      "rationale": "primary implementation namespace under semantic_ai_washing",
+      "status_detail": "current_implementation",
+      "doc_summary": "Extract a canonical sentence table from a bounded filing manifest.",
+      "has_main_guard": true,
+      "has_main_function": true,
+      "is_entrypoint": true,
+      "canonical_target": "",
+      "canonical_invocation": "python -m semantic_ai_washing.data.extract_sentence_table",
       "replacement_path": "",
       "replacement_phase": "",
       "removal_target": "",
@@ -1462,7 +1498,7 @@
       "is_entrypoint": true,
       "canonical_target": "",
       "canonical_invocation": "python -m semantic_ai_washing.data.extract_ai_sentences",
-      "replacement_path": "sentence-table writer producing data/processed/sentences/year=YYYY/ai_sentences.parquet",
+      "replacement_path": "semantic_ai_washing.data.extract_sentence_table",
       "replacement_phase": "iteration1/sentence-table-pilot-2024",
       "removal_target": "",
       "notes": "Current implementation writes per-filing *_ai_sentences.txt review files. Target architecture promotes year-partitioned sentence tables."
@@ -1480,7 +1516,7 @@
       "is_entrypoint": true,
       "canonical_target": "",
       "canonical_invocation": "python -m semantic_ai_washing.data.extract_sample_filings",
-      "replacement_path": "source index + bounded filing manifest against SEC_SOURCE_DIR",
+      "replacement_path": "semantic_ai_washing.data.build_filing_manifest + semantic_ai_washing.data.extract_sentence_table",
       "replacement_phase": "iteration1/source-index-contract",
       "removal_target": "",
       "notes": "Current implementation copies raw filings into data/processed/sec. Target architecture keeps raw filings external and indexes them instead."
@@ -2972,6 +3008,24 @@
       "notes": ""
     },
     {
+      "path": "src/semantic_ai_washing/data/build_filing_manifest.py",
+      "module": "semantic_ai_washing.data.build_filing_manifest",
+      "domain": "data",
+      "classification": "canonical",
+      "rationale": "primary implementation namespace under semantic_ai_washing",
+      "status_detail": "current_implementation",
+      "doc_summary": "Build a deterministic filing manifest for the bounded 2024 sentence-table pilot.",
+      "has_main_guard": true,
+      "has_main_function": true,
+      "is_entrypoint": true,
+      "canonical_target": "",
+      "canonical_invocation": "python -m semantic_ai_washing.data.build_filing_manifest",
+      "replacement_path": "",
+      "replacement_phase": "",
+      "removal_target": "",
+      "notes": ""
+    },
+    {
       "path": "src/semantic_ai_washing/data/clean_compustat.py",
       "module": "semantic_ai_washing.data.clean_compustat",
       "domain": "data",
@@ -3092,7 +3146,7 @@
       "is_entrypoint": true,
       "canonical_target": "",
       "canonical_invocation": "python -m semantic_ai_washing.data.extract_ai_sentences",
-      "replacement_path": "sentence-table writer producing data/processed/sentences/year=YYYY/ai_sentences.parquet",
+      "replacement_path": "semantic_ai_washing.data.extract_sentence_table",
       "replacement_phase": "iteration1/sentence-table-pilot-2024",
       "removal_target": "",
       "notes": "Current implementation writes per-filing *_ai_sentences.txt review files. Target architecture promotes year-partitioned sentence tables."
@@ -3110,10 +3164,28 @@
       "is_entrypoint": true,
       "canonical_target": "",
       "canonical_invocation": "python -m semantic_ai_washing.data.extract_sample_filings",
-      "replacement_path": "source index + bounded filing manifest against SEC_SOURCE_DIR",
+      "replacement_path": "semantic_ai_washing.data.build_filing_manifest + semantic_ai_washing.data.extract_sentence_table",
       "replacement_phase": "iteration1/source-index-contract",
       "removal_target": "",
       "notes": "Current implementation copies raw filings into data/processed/sec. Target architecture keeps raw filings external and indexes them instead."
+    },
+    {
+      "path": "src/semantic_ai_washing/data/extract_sentence_table.py",
+      "module": "semantic_ai_washing.data.extract_sentence_table",
+      "domain": "data",
+      "classification": "canonical",
+      "rationale": "primary implementation namespace under semantic_ai_washing",
+      "status_detail": "current_implementation",
+      "doc_summary": "Extract a canonical sentence table from a bounded filing manifest.",
+      "has_main_guard": true,
+      "has_main_function": true,
+      "is_entrypoint": true,
+      "canonical_target": "",
+      "canonical_invocation": "python -m semantic_ai_washing.data.extract_sentence_table",
+      "replacement_path": "",
+      "replacement_phase": "",
+      "removal_target": "",
+      "notes": ""
     },
     {
       "path": "src/semantic_ai_washing/data/index_sec_filings.py",

@@ -1,18 +1,18 @@
 <!-- generated_file: true -->
 <!-- source_inventory: director/snapshots/script_inventory.json -->
-<!-- source_sha256: 7b03b408d97c2441cd79d7404b3c28cd142fbce91d5cc0d00ae71e4cbf90afe3 -->
-<!-- rendered_at: 2026-03-06T07:12:12.898425+00:00 -->
+<!-- source_sha256: 4dc66e19a24313cf68451bdf15654378949e2712ee79ba81874b23cbdad27390 -->
+<!-- rendered_at: 2026-03-06T07:45:13.098417+00:00 -->
 
 # Script Registry
 
 This document is generated from the repo script inventory snapshot.
 
 ## Summary
-- Python modules inventoried: `131`
-- Canonical modules: `76`
+- Python modules inventoried: `133`
+- Canonical modules: `78`
 - Transitional modules: `53`
 - Legacy modules: `2`
-- Entrypoints: `87`
+- Entrypoints: `89`
 - Hygiene findings: `37`
 
 ## Canonical Entrypoints
@@ -29,12 +29,14 @@ This document is generated from the repo script inventory snapshot.
 | `semantic_ai_washing.core.plots` | `python -m semantic_ai_washing.core.plots` | primary implementation namespace under semantic_ai_washing |
 | `semantic_ai_washing.core.score_sentences` | `python -m semantic_ai_washing.core.score_sentences` | primary implementation namespace under semantic_ai_washing |
 | `semantic_ai_washing.data.build_company_list` | `python -m semantic_ai_washing.data.build_company_list` | Build a reproducible firm list (~50 CIKs) that **have a 10‑K in each year 2021–2024** |
+| `semantic_ai_washing.data.build_filing_manifest` | `python -m semantic_ai_washing.data.build_filing_manifest` | Build a deterministic filing manifest for the bounded 2024 sentence-table pilot. |
 | `semantic_ai_washing.data.clean_compustat` | `python -m semantic_ai_washing.data.clean_compustat` | primary implementation namespace under semantic_ai_washing |
 | `semantic_ai_washing.data.clean_crsp` | `python -m semantic_ai_washing.data.clean_crsp` | primary implementation namespace under semantic_ai_washing |
 | `semantic_ai_washing.data.clean_sec` | `python -m semantic_ai_washing.data.clean_sec` | primary implementation namespace under semantic_ai_washing |
 | `semantic_ai_washing.data.download_compustat` | `python -m semantic_ai_washing.data.download_compustat` | primary implementation namespace under semantic_ai_washing |
 | `semantic_ai_washing.data.download_crsp` | `python -m semantic_ai_washing.data.download_crsp` | primary implementation namespace under semantic_ai_washing |
 | `semantic_ai_washing.data.download_sec` | `python -m semantic_ai_washing.data.download_sec` | primary implementation namespace under semantic_ai_washing |
+| `semantic_ai_washing.data.extract_sentence_table` | `python -m semantic_ai_washing.data.extract_sentence_table` | Extract a canonical sentence table from a bounded filing manifest. |
 | `semantic_ai_washing.data.index_sec_filings` | `python -m semantic_ai_washing.data.index_sec_filings` | Index the external SEC corpus and emit source-window metadata. |
 | `semantic_ai_washing.data.pull_compustat_controls` | `python -m semantic_ai_washing.data.pull_compustat_controls` | Pull Compustat controls from WRDS, build a CIK↔GVKEY crosswalk for your 50 firms, |
 | `semantic_ai_washing.diagnostics.phase0_baseline` | `python -m semantic_ai_washing.diagnostics.phase0_baseline` | Phase 0 diagnostics baseline runner for Iteration 1. |
@@ -102,8 +104,8 @@ This document is generated from the repo script inventory snapshot.
 | `src/scripts/index_sec_filings.py` | `semantic_ai_washing.data.index_sec_filings` | python -m semantic_ai_washing.data.index_sec_filings | Iteration 3 |
 | `src/scripts/run_pipeline.py` | `semantic_ai_washing.scripts.run_pipeline` | python -m semantic_ai_washing.scripts.run_pipeline | Iteration 3 |
 | `src/scripts/score_sentences.py` | `semantic_ai_washing.core.score_sentences` | python -m semantic_ai_washing.core.score_sentences | Iteration 3 |
-| `src/semantic_ai_washing/data/extract_ai_sentences.py` | `semantic_ai_washing.data.extract_ai_sentences` | sentence-table writer producing data/processed/sentences/year=YYYY/ai_sentences.parquet | iteration1/sentence-table-pilot-2024 |
-| `src/semantic_ai_washing/data/extract_sample_filings.py` | `semantic_ai_washing.data.extract_sample_filings` | source index + bounded filing manifest against SEC_SOURCE_DIR | iteration1/source-index-contract |
+| `src/semantic_ai_washing/data/extract_ai_sentences.py` | `semantic_ai_washing.data.extract_ai_sentences` | semantic_ai_washing.data.extract_sentence_table | iteration1/sentence-table-pilot-2024 |
+| `src/semantic_ai_washing/data/extract_sample_filings.py` | `semantic_ai_washing.data.extract_sample_filings` | semantic_ai_washing.data.build_filing_manifest + semantic_ai_washing.data.extract_sentence_table | iteration1/source-index-contract |
 | `src/semantic_ai_washing/scripts/run_pipeline.py` | `semantic_ai_washing.scripts.run_pipeline` | director runbooks or a future explicit pipeline CLI | iteration5/release-packaging |
 | `src/tests/evaluate_classifier_on_held_out.py` | `semantic_ai_washing.tests.evaluate_classifier_on_held_out` | python -m semantic_ai_washing.tests.evaluate_classifier_on_held_out | Iteration 1 deprecation window |
 | `src/tests/spot_check_classifications.py` | `semantic_ai_washing.tests.spot_check_classifications` | python -m semantic_ai_washing.tests.spot_check_classifications | Iteration 1 deprecation window |

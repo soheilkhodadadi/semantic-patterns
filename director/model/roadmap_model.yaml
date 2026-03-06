@@ -416,6 +416,10 @@ iterations:
                 path: data/manifests/filings/pilot_2024_10k_v1.csv
                 kind: csv
                 required: true
+              - artifact_id: pilot_manifest_summary
+                path: reports/data/pilot_2024_manifest_summary.json
+                kind: json
+                required: true
             preconditions:
               - condition_id: filings_index_exists
                 kind: artifact_exists
@@ -426,7 +430,8 @@ iterations:
                 message: Source index must exist before pilot manifest generation.
                 reroute_to: []
             quality_checks: []
-            commands: []
+            commands:
+              - .venv/bin/python -m semantic_ai_washing.data.build_filing_manifest --index data/metadata/available_filings_index.csv --year 2024 --form 10-K --target-size 240 --quarter-quota 60 --controls data/interim/controls/controls_by_firm_year.csv --crosswalk data/externals/crosswalks/cik_gvkey.csv --manifest-id pilot_2024_10k_v1 --seed 20260305 --output data/manifests/filings/pilot_2024_10k_v1.csv --report reports/data/pilot_2024_manifest_summary.json
             manual_handoff: false
             risks: [R5]
             estimated_effort: 3
@@ -473,7 +478,8 @@ iterations:
                 message: Pilot manifest missing.
                 reroute_to: []
             quality_checks: []
-            commands: []
+            commands:
+              - .venv/bin/python -m semantic_ai_washing.data.extract_sentence_table --manifest data/manifests/filings/pilot_2024_10k_v1.csv --output data/processed/sentences/year=2024/ai_sentences.parquet --sample-output data/processed/sentences/year=2024/ai_sentences_sample.csv --report reports/data/pilot_2024_sentence_quality.json --min-tokens 6 --sample-size 200
             manual_handoff: false
             risks: [R5, R6]
             estimated_effort: 4
