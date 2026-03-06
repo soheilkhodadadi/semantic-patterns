@@ -4,29 +4,17 @@ from __future__ import annotations
 
 import json
 import os
-import urllib.error
-import urllib.request
 from typing import Any
 
 from semantic_ai_washing.director.core.cost import CostController
+from semantic_ai_washing.director.core.openai_responses import (
+    OpenAIResponsesError,
+    OpenAIResponsesHTTPError,
+    call_responses_api,
+    extract_response_text,
+)
 from semantic_ai_washing.director.core.utils import now_utc_iso, sha256_text
 from semantic_ai_washing.director.schemas import CostUsageRecord
-
-OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses"
-
-
-def _extract_response_text(payload: dict[str, Any]) -> str:
-    if isinstance(payload.get("output_text"), str) and payload["output_text"].strip():
-        return payload["output_text"].strip()
-
-    output = payload.get("output", [])
-    chunks: list[str] = []
-    for item in output:
-        for content in item.get("content", []):
-            text = content.get("text")
-            if text:
-                chunks.append(text)
-    return "\n".join(chunks).strip()
 
 
 def refine_plan_markdown(
@@ -106,32 +94,22 @@ def refine_plan_markdown(
         "max_output_tokens": max_completion_tokens,
     }
 
-    req = urllib.request.Request(
-        OPENAI_RESPONSES_URL,
-        data=json.dumps(request_payload).encode("utf-8"),
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        },
-        method="POST",
-    )
-
     try:
-        with urllib.request.urlopen(req, timeout=60) as resp:
-            raw = resp.read().decode("utf-8")
-        data = json.loads(raw)
-    except (
-        urllib.error.URLError,
-        urllib.error.HTTPError,
-        TimeoutError,
-        json.JSONDecodeError,
-    ) as exc:
+        data = call_responses_api(
+            model=model,
+            input_payload=request_payload["input"],
+            api_key=api_key,
+            max_output_tokens=max_completion_tokens,
+            timeout_seconds=60,
+            store=False,
+        )
+    except (OpenAIResponsesError, OpenAIResponsesHTTPError) as exc:
         return plan_markdown, {
             "used_llm": False,
             "reason": f"llm_call_failed: {type(exc).__name__}",
         }
 
-    refined = _extract_response_text(data)
+    refined = extract_response_text(data)
     if not refined:
         return plan_markdown, {"used_llm": False, "reason": "llm_empty_response"}
 

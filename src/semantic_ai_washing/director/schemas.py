@@ -110,6 +110,103 @@ class ToolingPolicySpec(DeterministicModel):
     expected_repo_venv_home: str = ""
 
 
+class ApiAssistivePromptSpec(DeterministicModel):
+    schema_version: str = Field(default=ROADMAP_SCHEMA_VERSION)
+    label_set: list[str] = Field(default_factory=list)
+    confidence_bands: list[str] = Field(default_factory=list)
+    system_prompt: str
+    user_prompt_template: str
+    reference_rubric_path: str
+
+
+class ApiAssistiveSmokeSpec(DeterministicModel):
+    schema_version: str = Field(default=ROADMAP_SCHEMA_VERSION)
+    sample_input: str
+    report_path: str = ""
+    timeout_seconds: int = Field(default=60, ge=1)
+    store: bool = False
+    max_output_tokens: int = Field(default=200, ge=1)
+    min_tokens: int = Field(default=12, ge=1)
+    max_tokens: int = Field(default=120, ge=1)
+    require_fragment_score_max: float = Field(default=0.0, ge=0.0)
+
+
+class ApiAssistivePolicy(DeterministicModel):
+    schema_version: str = Field(default=ROADMAP_SCHEMA_VERSION)
+    mode: str
+    provider: str
+    transport: str
+    env_var: str
+    model: str
+    request: dict[str, Any] = Field(default_factory=dict)
+    budget: dict[str, Any] = Field(default_factory=dict)
+    prompt_spec: ApiAssistivePromptSpec
+    selection: ApiAssistiveSmokeSpec
+    telemetry: dict[str, Any] = Field(default_factory=dict)
+    usage_policy: dict[str, Any] = Field(default_factory=dict)
+    smoke_output: dict[str, Any] = Field(default_factory=dict)
+
+    @field_validator("mode")
+    @classmethod
+    def _validate_mode(cls, value: str) -> str:
+        if value != "assistive_only":
+            raise ValueError("ApiAssistivePolicy.mode must equal `assistive_only`")
+        return value
+
+    @field_validator("env_var")
+    @classmethod
+    def _validate_env_var(cls, value: str) -> str:
+        if value != "OPENAI_API_KEY":
+            raise ValueError("ApiAssistivePolicy.env_var must equal `OPENAI_API_KEY`")
+        return value
+
+    @field_validator("budget")
+    @classmethod
+    def _validate_budget(cls, value: dict[str, Any]) -> dict[str, Any]:
+        if int(value.get("max_live_requests_per_run", 0) or 0) != 1:
+            raise ValueError("ApiAssistivePolicy budget must cap live requests at exactly 1")
+        return value
+
+    @field_validator("telemetry")
+    @classmethod
+    def _validate_telemetry(cls, value: dict[str, Any]) -> dict[str, Any]:
+        if bool(value.get("cache_allowed", True)):
+            raise ValueError("ApiAssistivePolicy telemetry.cache_allowed must be false")
+        return value
+
+    @field_validator("request")
+    @classmethod
+    def _validate_request(cls, value: dict[str, Any]) -> dict[str, Any]:
+        if "max_output_tokens" not in value:
+            raise ValueError("ApiAssistivePolicy request.max_output_tokens is required")
+        if "timeout_seconds" not in value:
+            raise ValueError("ApiAssistivePolicy request.timeout_seconds is required")
+        if "store" not in value:
+            raise ValueError("ApiAssistivePolicy request.store is required")
+        return value
+
+    @field_validator("prompt_spec")
+    @classmethod
+    def _validate_prompt_spec(cls, value: ApiAssistivePromptSpec) -> ApiAssistivePromptSpec:
+        if value.label_set != ["Actionable", "Speculative", "Irrelevant"]:
+            raise ValueError(
+                "ApiAssistivePolicy prompt_spec.label_set must equal "
+                "[Actionable, Speculative, Irrelevant]"
+            )
+        if value.confidence_bands != ["high", "medium", "low"]:
+            raise ValueError(
+                "ApiAssistivePolicy prompt_spec.confidence_bands must equal [high, medium, low]"
+            )
+        return value
+
+    @field_validator("smoke_output")
+    @classmethod
+    def _validate_smoke_output(cls, value: dict[str, Any]) -> dict[str, Any]:
+        if not str(value.get("report_path", "")).strip():
+            raise ValueError("ApiAssistivePolicy smoke_output.report_path is required")
+        return value
+
+
 class TaskSpec(DeterministicModel):
     task_id: str
     title: str

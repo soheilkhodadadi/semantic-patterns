@@ -503,7 +503,136 @@ iterations:
           - reports/api/api_bootstrap_smoke_test.json
         source_window_id: active_2021_2024
         tags: [rubric, api_assistive]
-        tasks: []
+        tasks:
+          - task_id: iteration1.rubric.publish_rubric_v1
+            title: Publish rubric v1
+            description: Finalize the labeling protocol for the sentence-table pilot and assistive-only API usage.
+            iteration_id: "1"
+            phase_id: iteration1/rubric-and-api-bootstrap
+            kind: manual
+            depends_on: []
+            inputs:
+              - artifact_id: pilot_sentence_quality_report
+                path: reports/data/pilot_2024_sentence_quality.json
+                kind: json
+                required: true
+            outputs:
+              - artifact_id: labeling_protocol
+                path: docs/labeling_protocol.md
+                kind: markdown
+                required: true
+            preconditions:
+              - condition_id: pilot_sentence_quality_exists
+                kind: artifact_exists
+                target: reports/data/pilot_2024_sentence_quality.json
+                operator: "=="
+                expected: true
+                on_fail: block
+                message: Sentence quality report missing.
+                reroute_to: []
+            quality_checks: []
+            commands: []
+            manual_handoff: true
+            risks: [R1]
+            estimated_effort: 3
+            risk_reduction: 6
+            automation_level: manual
+            on_fail: block
+            reroute_to: []
+            evidence_required: true
+            tags: [rubric_v1, api_assistive]
+            gate_class: manual
+          - task_id: iteration1.api.publish_assistive_policy
+            title: Publish assistive API policy
+            description: Add the bounded assistive-only API policy file for the bootstrap smoke test.
+            iteration_id: "1"
+            phase_id: iteration1/rubric-and-api-bootstrap
+            kind: manual
+            depends_on: []
+            inputs: []
+            outputs:
+              - artifact_id: assistive_api_policy
+                path: director/config/api_assistive_policy.yaml
+                kind: file
+                required: true
+            preconditions: []
+            quality_checks:
+              - condition_id: assistive_api_policy_hash_present
+                kind: file_hash_present
+                target: director/config/api_assistive_policy.yaml
+                operator: "=="
+                expected: true
+                on_fail: block
+                message: Assistive API policy file missing or unreadable.
+                reroute_to: []
+            commands: []
+            manual_handoff: true
+            risks: [R4, R7]
+            estimated_effort: 2
+            risk_reduction: 7
+            automation_level: manual
+            on_fail: block
+            reroute_to: []
+            evidence_required: true
+            tags: [api_assistive_policy]
+            gate_class: manual
+          - task_id: iteration1.api.run_smoke_test
+            title: Run assistive API smoke test
+            description: Execute one bounded live Responses API request and record usage and result metadata.
+            iteration_id: "1"
+            phase_id: iteration1/rubric-and-api-bootstrap
+            kind: validation
+            depends_on:
+              - iteration1.rubric.publish_rubric_v1
+              - iteration1.api.publish_assistive_policy
+            inputs:
+              - artifact_id: labeling_protocol
+                path: docs/labeling_protocol.md
+                kind: markdown
+                required: true
+              - artifact_id: assistive_api_policy
+                path: director/config/api_assistive_policy.yaml
+                kind: file
+                required: true
+              - artifact_id: sentence_review_export
+                path: data/processed/sentences/year=2024/ai_sentences_sample.csv
+                kind: csv
+                required: true
+            outputs:
+              - artifact_id: api_smoke_report
+                path: reports/api/api_bootstrap_smoke_test.json
+                kind: json
+                required: true
+            preconditions:
+              - condition_id: sentence_review_export_exists
+                kind: artifact_exists
+                target: data/processed/sentences/year=2024/ai_sentences_sample.csv
+                operator: "=="
+                expected: true
+                on_fail: block
+                message: Sentence review export missing for API smoke test.
+                reroute_to: []
+            quality_checks:
+              - condition_id: api_smoke_status_passed
+                kind: json_field_compare
+                target: reports/api/api_bootstrap_smoke_test.json::status
+                operator: "=="
+                expected: passed
+                on_fail: block
+                message: API smoke test did not pass.
+                reroute_to: []
+            commands:
+              - .venv/bin/python -m semantic_ai_washing.director.tasks.api_bootstrap --policy director/config/api_assistive_policy.yaml --mode live
+            manual_handoff: false
+            risks: [R4, R7]
+            estimated_effort: 3
+            risk_reduction: 8
+            automation_level: partial
+            on_fail: block
+            reroute_to: []
+            evidence_required: true
+            tags: [api_assistive, smoke_test]
+            gate_class: ops
       - phase_id: iteration1/label-ops-bootstrap
         title: Label Ops Bootstrap
         goal: Generate the first clean labeling batch from the bounded pilot after sentence-quality gating.

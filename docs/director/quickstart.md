@@ -67,6 +67,21 @@ Atlas must not run in the repo `.venv`.
 
 Use the configured isolated wrapper path recorded in `director/config/tooling_policy.yaml`. Director doctor validates that the wrapper exists and that `.venv` still matches the expected project interpreter metadata.
 
+## Assistive API Bootstrap
+```bash
+export OPENAI_API_KEY=...
+python -m semantic_ai_washing.director.tasks.api_bootstrap \
+  --policy director/config/api_assistive_policy.yaml \
+  --mode live
+```
+
+Dry-run without network access:
+```bash
+python -m semantic_ai_washing.director.tasks.api_bootstrap \
+  --policy director/config/api_assistive_policy.yaml \
+  --mode dry-run
+```
+
 ## Make Targets
 ```bash
 make director-doctor

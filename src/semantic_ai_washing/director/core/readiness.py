@@ -120,8 +120,9 @@ class ReadinessEvaluator:
         task: TaskSpec,
         states: dict[str, TaskStateSnapshot],
     ) -> TaskStateSnapshot:
+        dependency_ids = list(self.graph.upstream.get(task.task_id, task.depends_on))
         missing_dependencies = [
-            dep for dep in task.depends_on if dep in states and states[dep].status != "satisfied"
+            dep for dep in dependency_ids if dep not in states or states[dep].status != "satisfied"
         ]
         if self._task_deferred(task):
             return TaskStateSnapshot(
@@ -129,7 +130,7 @@ class ReadinessEvaluator:
                 phase_id=task.phase_id,
                 iteration_id=task.iteration_id,
                 status="deferred",
-                dependency_ids=list(task.depends_on),
+                dependency_ids=dependency_ids,
                 missing_dependencies=missing_dependencies,
             )
 
@@ -139,7 +140,7 @@ class ReadinessEvaluator:
                 phase_id=task.phase_id,
                 iteration_id=task.iteration_id,
                 status="waiting_on_deps",
-                dependency_ids=list(task.depends_on),
+                dependency_ids=dependency_ids,
                 missing_dependencies=missing_dependencies,
             )
 
@@ -150,7 +151,7 @@ class ReadinessEvaluator:
                 phase_id=task.phase_id,
                 iteration_id=task.iteration_id,
                 status="blocked_precondition",
-                dependency_ids=list(task.depends_on),
+                dependency_ids=dependency_ids,
                 blocked_policy_ids=policy_blocks,
             )
 
@@ -167,7 +168,7 @@ class ReadinessEvaluator:
                 phase_id=task.phase_id,
                 iteration_id=task.iteration_id,
                 status="blocked_precondition",
-                dependency_ids=list(task.depends_on),
+                dependency_ids=dependency_ids,
                 failed_preconditions=failed_preconditions,
                 context=precondition_context,
             )
@@ -187,7 +188,7 @@ class ReadinessEvaluator:
                 phase_id=task.phase_id,
                 iteration_id=task.iteration_id,
                 status="satisfied",
-                dependency_ids=list(task.depends_on),
+                dependency_ids=dependency_ids,
                 context={**precondition_context, **quality_context},
             )
 
@@ -197,7 +198,7 @@ class ReadinessEvaluator:
                 phase_id=task.phase_id,
                 iteration_id=task.iteration_id,
                 status="blocked_quality",
-                dependency_ids=list(task.depends_on),
+                dependency_ids=dependency_ids,
                 failed_quality_checks=failed_quality_checks,
                 missing_outputs=missing_outputs,
                 context={**precondition_context, **quality_context},
@@ -209,7 +210,7 @@ class ReadinessEvaluator:
                 phase_id=task.phase_id,
                 iteration_id=task.iteration_id,
                 status="blocked_manual",
-                dependency_ids=list(task.depends_on),
+                dependency_ids=dependency_ids,
                 missing_outputs=missing_outputs,
                 context=precondition_context,
             )
@@ -219,7 +220,7 @@ class ReadinessEvaluator:
             phase_id=task.phase_id,
             iteration_id=task.iteration_id,
             status="ready",
-            dependency_ids=list(task.depends_on),
+            dependency_ids=dependency_ids,
             missing_outputs=missing_outputs,
             context=precondition_context,
         )

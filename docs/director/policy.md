@@ -23,6 +23,9 @@
 - Assistive usage may support triage, rubric checks, bounded dry-runs, or optional prelabels.
 - API outputs must not become canonical labels by default.
 - Cost and usage telemetry are required when API support is enabled.
+- A bounded live smoke test is allowed for `iteration1/rubric-and-api-bootstrap` and must issue exactly one real request.
+- A failed live smoke test blocks the phase.
+- A successful smoke test does not authorize batch assistive prelabeling or canonical label promotion.
 
 ## Tooling Policy
 - Atlas must run in an isolated environment outside the repo `.venv`.

@@ -1,0 +1,60 @@
+schema_version: "1.0.0"
+mode: assistive_only
+provider: openai
+transport: responses_api
+env_var: OPENAI_API_KEY
+model: gpt-5-mini
+
+request:
+  store: false
+  timeout_seconds: 60
+  max_output_tokens: 200
+
+budget:
+  max_live_requests_per_run: 1
+  max_prompt_tokens_per_call: 1200
+  max_output_tokens_per_call: 200
+  max_estimated_cost_usd_per_run: 0.10
+
+selection:
+  sample_input: data/processed/sentences/year=2024/ai_sentences_sample.csv
+  min_tokens: 12
+  max_tokens: 120
+  require_fragment_score_max: 0.0
+
+telemetry:
+  usage_file: director/runs/cost_usage.jsonl
+  component: api_assistive_smoke_test
+  cache_allowed: false
+
+usage_policy:
+  canonical: false
+  allowed_use_cases:
+    - rubric_check
+    - bounded_smoke_test
+    - future_optional_prelabelling
+  prohibited_use_cases:
+    - canonical_training_labels
+    - irr_substitute
+    - held_out_training_use
+
+prompt_spec:
+  reference_rubric_path: docs/labeling_protocol.md
+  label_set:
+    - Actionable
+    - Speculative
+    - Irrelevant
+  confidence_bands:
+    - high
+    - medium
+    - low
+  system_prompt: >
+    You are assisting a research labeling workflow. Your output is assistive only
+    and must not be treated as canonical. Classify one filing sentence into exactly
+    one label from Actionable, Speculative, Irrelevant. Return JSON only.
+  user_prompt_template: >
+    Label this sentence using the project rubric. Return JSON with keys:
+    label, confidence, rationale, assistive_only.
+
+smoke_output:
+  report_path: reports/api/api_bootstrap_smoke_test.json

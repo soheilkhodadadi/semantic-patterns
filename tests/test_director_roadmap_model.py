@@ -12,6 +12,7 @@ from semantic_ai_washing.director.core.config import (
 )
 from semantic_ai_washing.director.core.optimizer import DirectorOptimizer
 from semantic_ai_washing.director.core.planner import PlannerEngine
+from semantic_ai_washing.director.core.readiness import ReadinessEvaluator
 from semantic_ai_washing.director.core.render import (
     is_rendered_roadmap_fresh,
     render_roadmap_markdown,
@@ -20,6 +21,7 @@ from semantic_ai_washing.director.core.roadmap_model import (
     load_remediation_library,
     load_roadmap_model,
 )
+from semantic_ai_washing.director.core.task_graph import build_task_graph
 from semantic_ai_washing.director.core.utils import sha256_file
 
 
@@ -466,3 +468,151 @@ def test_load_remediation_library_validates(tmp_path):
     _write_yaml(library_path, _minimal_library())
     library = load_remediation_library(library_path)
     assert "common.remediate_fragmented_sentences" in library
+
+
+def test_phase_dependencies_flow_into_task_readiness(tmp_path):
+    model_payload = {
+        "schema_version": "1.2.0",
+        "project": {"name": "semantic-patterns", "description": "test"},
+        "settings": {"defaults": {"phase_execution_mode": "phase_first"}},
+        "policies": [],
+        "data_layers": [],
+        "source_windows": [],
+        "tooling_policies": [],
+        "iterations": [
+            {
+                "iteration_id": "1",
+                "title": "Foundation",
+                "goal": "goal",
+                "phases": [
+                    {
+                        "phase_id": "iteration1/phase-a",
+                        "title": "Phase A",
+                        "goal": "goal",
+                        "depends_on": [],
+                        "tasks": [
+                            {
+                                "task_id": "iteration1.phase_a.blocked",
+                                "title": "Blocked",
+                                "description": "blocked output",
+                                "iteration_id": "1",
+                                "phase_id": "iteration1/phase-a",
+                                "kind": "validation",
+                                "depends_on": [],
+                                "inputs": [],
+                                "outputs": [
+                                    {
+                                        "artifact_id": "missing",
+                                        "path": "reports/missing.json",
+                                        "kind": "json",
+                                        "required": True,
+                                    }
+                                ],
+                                "preconditions": [],
+                                "quality_checks": [
+                                    {
+                                        "condition_id": "missing_status",
+                                        "kind": "json_field_compare",
+                                        "target": "reports/missing.json::status",
+                                        "operator": "==",
+                                        "expected": "passed",
+                                        "on_fail": "block",
+                                        "message": "blocked",
+                                        "reroute_to": [],
+                                    }
+                                ],
+                                "commands": [],
+                                "manual_handoff": False,
+                                "risks": [],
+                                "estimated_effort": 1,
+                                "risk_reduction": 1,
+                                "automation_level": "partial",
+                                "on_fail": "block",
+                                "reroute_to": [],
+                                "evidence_required": True,
+                                "tags": [],
+                                "gate_class": "ops",
+                            }
+                        ],
+                    },
+                    {
+                        "phase_id": "iteration1/phase-b",
+                        "title": "Phase B",
+                        "goal": "goal",
+                        "depends_on": ["iteration1/phase-a"],
+                        "tasks": [
+                            {
+                                "task_id": "iteration1.phase_b.ready_without_phase_dep_fix",
+                                "title": "Downstream",
+                                "description": "should inherit phase deps",
+                                "iteration_id": "1",
+                                "phase_id": "iteration1/phase-b",
+                                "kind": "build",
+                                "depends_on": ["iteration1.shared.other_task"],
+                                "inputs": [],
+                                "outputs": [
+                                    {
+                                        "artifact_id": "later",
+                                        "path": "reports/later.json",
+                                        "kind": "json",
+                                        "required": True,
+                                    }
+                                ],
+                                "preconditions": [],
+                                "quality_checks": [],
+                                "commands": [],
+                                "manual_handoff": False,
+                                "risks": [],
+                                "estimated_effort": 1,
+                                "risk_reduction": 1,
+                                "automation_level": "partial",
+                                "on_fail": "block",
+                                "reroute_to": [],
+                                "evidence_required": True,
+                                "tags": [],
+                                "gate_class": "ops",
+                            },
+                            {
+                                "task_id": "iteration1.shared.other_task",
+                                "title": "Other",
+                                "description": "supporting dep",
+                                "iteration_id": "1",
+                                "phase_id": "iteration1/phase-b",
+                                "kind": "build",
+                                "depends_on": [],
+                                "inputs": [],
+                                "outputs": [],
+                                "preconditions": [],
+                                "quality_checks": [],
+                                "commands": [],
+                                "manual_handoff": False,
+                                "risks": [],
+                                "estimated_effort": 1,
+                                "risk_reduction": 1,
+                                "automation_level": "partial",
+                                "on_fail": "block",
+                                "reroute_to": [],
+                                "evidence_required": True,
+                                "tags": [],
+                                "gate_class": "ops",
+                            },
+                        ],
+                    },
+                ],
+            }
+        ],
+    }
+
+    model_path = tmp_path / "director" / "model" / "roadmap_model.yaml"
+    _write_yaml(model_path, model_payload)
+    model = load_roadmap_model(model_path)
+    graph = build_task_graph(model)
+    evaluator = ReadinessEvaluator(repo_root=str(tmp_path), graph=graph, model=model)
+    task_states, _ = evaluator.evaluate_all()
+    state_map = {item.task_id: item for item in task_states}
+
+    assert state_map["iteration1.phase_b.ready_without_phase_dep_fix"].status == "waiting_on_deps"
+    assert (
+        "iteration1.phase_a.blocked"
+        in state_map["iteration1.phase_b.ready_without_phase_dep_fix"].missing_dependencies
+    )

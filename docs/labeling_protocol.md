@@ -75,3 +75,28 @@ Rows with labels outside this set fail QA.
 - IRR gate policy:
   - infrastructure-mode Phase 2 can complete with `pending_rater2` or `pending_adjudication`
   - strict κ gate (`kappa >= 0.6`) must pass before centroid retraining
+
+## Assistive API Bootstrap (Iteration 1)
+
+- OpenAI API output is assistive-only and is never canonical by default.
+- API output is not IRR and must not replace the second-rater workflow.
+- `data/validation/held_out_sentences.csv` remains frozen evaluation-only and must not be reused for assistive prompt training or canonical label generation.
+- Human raters remain the source of truth for labels, adjudication, and rubric refinement.
+- The assistive prompt must return exactly one of `Actionable|Speculative|Irrelevant`.
+- Returned rationale is short and review-oriented.
+- Returned confidence is informational only and must not override the rubric.
+- The smoke test uses one deterministic clean sentence from `data/processed/sentences/year=2024/ai_sentences_sample.csv`.
+- The API key must be injected through `OPENAI_API_KEY`. Do not store it in tracked files or paste it back into chat.
+- No downstream outcomes, patents, returns, or later panel variables may appear in the prompt or adjudication reasoning.
+
+### Assistive Prompt Rubric Summary
+
+- `Actionable`: explicit current deployment, operational use, implementation details, or realized AI execution.
+- `Speculative`: future-looking plans, intentions, risks, expected benefits, or exploratory AI statements without concrete execution evidence.
+- `Irrelevant`: generic, boilerplate, list-like, or non-substantive AI mentions that do not indicate meaningful firm action.
+
+### Disallowed API Uses
+
+- Generating canonical labels for the training set.
+- Replacing the blinded human second-rater workflow.
+- Reusing held-out sentences as training or assistive prompt examples.

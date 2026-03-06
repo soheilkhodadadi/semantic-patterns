@@ -1,7 +1,7 @@
 {
   "source_path": "docs/iteration_log.md",
-  "source_sha256": "5576d61e7f13e09cbb5a1f23461fc2aec336c8f110bae71ae2502ed6ff78b5f9",
-  "ingested_at": "2026-03-06T05:05:27.053283+00:00",
+  "source_sha256": "1090c8e081cfccc7c1f349ecd3b48b373c626439b4a5553eab9791dc5abebe11",
+  "ingested_at": "2026-03-06T16:51:14.006716+00:00",
   "iteration_count": 2,
   "iterations": [
     {
@@ -27,7 +27,14 @@
         "label-expansion-recovery",
         "irr-validation",
         "irr-validation",
-        "algorithmic-roadmap-control-loop"
+        "algorithmic-roadmap-control-loop",
+        "roadmap-model-v2",
+        "roadmap-model-v2",
+        "baseline-asset-freeze",
+        "repo-hygiene-and-script-canon",
+        "source-index-contract",
+        "sentence-table-pilot-2024",
+        "rubric-and-api-bootstrap"
       ]
     }
   ],
@@ -267,6 +274,116 @@
         "Commits:",
         "CI status:"
       ]
+    },
+    {
+      "name": "roadmap-model-v2",
+      "status_label": "start",
+      "details": [
+        "Date: 2026-03-05",
+        "Branch: `director/roadmap-model-v2`",
+        "Baseline checkpoint commit: `8b35bbfeb98002ceae437d36cfddde7dd4cb1201`",
+        "Goal: Expand the director roadmap model from Iteration 1-only task optimization to all-iteration continuous planning with policy-safe data architecture and Atlas tooling isolation.",
+        "Scope:"
+      ]
+    },
+    {
+      "name": "roadmap-model-v2",
+      "status_label": "execution update",
+      "details": [
+        "Date: 2026-03-05",
+        "Branch: `director/roadmap-model-v2`",
+        "Deliverables implemented:",
+        "Roadmap-model changes:",
+        "Atlas/tooling isolation:",
+        "Validation run:",
+        "Current optimizer signal:",
+        "Risks/issues encountered:",
+        "Mitigation/resolution:",
+        "Commits:",
+        "CI status:"
+      ]
+    },
+    {
+      "name": "baseline-asset-freeze",
+      "status_label": "execution update",
+      "details": [
+        "Date: 2026-03-05",
+        "Branch: `director/roadmap-model-v2`",
+        "Selection basis:",
+        "Deliverables implemented:",
+        "Phase artifact generated:",
+        "Registry outcomes:",
+        "Validation run:",
+        "Risks/issues encountered:",
+        "Mitigation/resolution:",
+        "Next optimizer output after phase completion:",
+        "Commits:"
+      ]
+    },
+    {
+      "name": "repo-hygiene-and-script-canon",
+      "status_label": "execution update",
+      "details": [
+        "Date: 2026-03-05",
+        "Branch: `director/roadmap-model-v2`",
+        "Selection basis:",
+        "Deliverables implemented:",
+        "Inventory outcomes:",
+        "Validation run:",
+        "Risks/issues encountered:",
+        "Mitigation/resolution:",
+        "Next optimizer output after phase completion:",
+        "Commits:"
+      ]
+    },
+    {
+      "name": "source-index-contract",
+      "status_label": "execution update",
+      "details": [
+        "Date: 2026-03-05",
+        "Branch: `director/roadmap-model-v2`",
+        "Selection basis:",
+        "Deliverables implemented:",
+        "Source-index outcomes:",
+        "Validation run:",
+        "Risks/issues encountered:",
+        "Mitigation/resolution:",
+        "Next optimizer output after phase completion:",
+        "Commits:"
+      ]
+    },
+    {
+      "name": "sentence-table-pilot-2024",
+      "status_label": "execution update",
+      "details": [
+        "Date: 2026-03-05",
+        "Branch: `director/roadmap-model-v2`",
+        "Selection basis:",
+        "Deliverables implemented:",
+        "Generated phase artifacts:",
+        "Pilot outcomes:",
+        "Validation run:",
+        "Risks/issues encountered:",
+        "Mitigation/resolution:",
+        "Next optimizer output after phase completion:",
+        "Commits:"
+      ]
+    },
+    {
+      "name": "rubric-and-api-bootstrap",
+      "status_label": "execution update",
+      "details": [
+        "Date: 2026-03-06",
+        "Branch: `director/roadmap-model-v2`",
+        "Selection basis:",
+        "Deliverables implemented:",
+        "Generated phase artifacts:",
+        "Security and execution prerequisites observed:",
+        "Validation run:",
+        "Risks/issues encountered:",
+        "Mitigation/resolution:",
+        "Outcome:"
+      ]
     }
   ],
   "global_gates": [
@@ -292,5 +409,5 @@
     "R7 scope control maintained (no retraining/calibration introduced).",
     "R2 class-balance and sample-size gate remains failed."
   ],
-  "last_successful_gate": "infrastructure mode emitted explicit deferred IRR status artifacts and did not falsely mark strict \u03ba pass."
+  "last_successful_gate": "status: `passed` (`steps_passed=13`, `step_count=13`)"
 }

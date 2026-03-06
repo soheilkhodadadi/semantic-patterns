@@ -1,6 +1,6 @@
 {
   "source_path": "director/model/roadmap_model.yaml",
-  "source_sha256": "8732eb4e1df2c551897bd5583b936c699575c14c2ee8f624732a43a35d62e58f",
+  "source_sha256": "0331d6bd0a9736a42c574773c796e4f3b7c52338c84df4f8e1f221b026ee837f",
   "generated_from": "roadmap_model",
   "schema_version": "1.2.0",
   "project": {
@@ -378,7 +378,9 @@
                 }
               ],
               "quality_checks": [],
-              "commands": [],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.director.tasks.validation_assets --output reports/validation/validation_asset_registry.json"
+              ],
               "manual_handoff": false,
               "risks": [
                 "R3",
@@ -442,7 +444,9 @@
               ],
               "preconditions": [],
               "quality_checks": [],
-              "commands": [],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.director.tasks.script_inventory --mode inventory --output-inventory director/snapshots/script_inventory.json"
+              ],
               "manual_handoff": false,
               "risks": [
                 "R7"
@@ -507,7 +511,9 @@
                 }
               ],
               "quality_checks": [],
-              "commands": [],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.director.tasks.script_inventory --mode publish --input-inventory director/snapshots/script_inventory.json --output-registry docs/director/script_registry.md"
+              ],
               "manual_handoff": false,
               "risks": [
                 "R7"
@@ -664,7 +670,9 @@
               ],
               "preconditions": [],
               "quality_checks": [],
-              "commands": [],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.data.index_sec_filings --output-csv data/metadata/available_filings_index.csv --output-source-windows data/metadata/source_windows.json --output-summary reports/data/source_index_summary.json"
+              ],
               "manual_handoff": false,
               "risks": [
                 "R5"
@@ -736,6 +744,16 @@
                   "fingerprint_required": false,
                   "produced_by": [],
                   "consumed_by": []
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "pilot_manifest_summary",
+                  "path": "reports/data/pilot_2024_manifest_summary.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
                 }
               ],
               "preconditions": [
@@ -752,7 +770,9 @@
                 }
               ],
               "quality_checks": [],
-              "commands": [],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.data.build_filing_manifest --index data/metadata/available_filings_index.csv --year 2024 --form 10-K --target-size 240 --quarter-quota 60 --controls data/interim/controls/controls_by_firm_year.csv --crosswalk data/externals/crosswalks/cik_gvkey.csv --manifest-id pilot_2024_10k_v1 --seed 20260305 --output data/manifests/filings/pilot_2024_10k_v1.csv --report reports/data/pilot_2024_manifest_summary.json"
+              ],
               "manual_handoff": false,
               "risks": [
                 "R5"
@@ -837,7 +857,9 @@
                 }
               ],
               "quality_checks": [],
-              "commands": [],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.data.extract_sentence_table --manifest data/manifests/filings/pilot_2024_10k_v1.csv --output data/processed/sentences/year=2024/ai_sentences.parquet --sample-output data/processed/sentences/year=2024/ai_sentences_sample.csv --report reports/data/pilot_2024_sentence_quality.json --min-tokens 6 --sample-size 200"
+              ],
               "manual_handoff": false,
               "risks": [
                 "R5",
@@ -877,7 +899,227 @@
             "director/config/api_assistive_policy.yaml",
             "reports/api/api_bootstrap_smoke_test.json"
           ],
-          "tasks": [],
+          "tasks": [
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.rubric.publish_rubric_v1",
+              "title": "Publish rubric v1",
+              "description": "Finalize the labeling protocol for the sentence-table pilot and assistive-only API usage.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/rubric-and-api-bootstrap",
+              "kind": "manual",
+              "depends_on": [],
+              "inputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "pilot_sentence_quality_report",
+                  "path": "reports/data/pilot_2024_sentence_quality.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "labeling_protocol",
+                  "path": "docs/labeling_protocol.md",
+                  "kind": "markdown",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "preconditions": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "pilot_sentence_quality_exists",
+                  "kind": "artifact_exists",
+                  "target": "reports/data/pilot_2024_sentence_quality.json",
+                  "operator": "==",
+                  "expected": true,
+                  "on_fail": "block",
+                  "message": "Sentence quality report missing.",
+                  "reroute_to": []
+                }
+              ],
+              "quality_checks": [],
+              "commands": [],
+              "manual_handoff": true,
+              "risks": [
+                "R1"
+              ],
+              "estimated_effort": 3,
+              "risk_reduction": 6,
+              "automation_level": "manual",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true,
+              "tags": [
+                "rubric_v1",
+                "api_assistive"
+              ],
+              "gate_class": "manual"
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.api.publish_assistive_policy",
+              "title": "Publish assistive API policy",
+              "description": "Add the bounded assistive-only API policy file for the bootstrap smoke test.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/rubric-and-api-bootstrap",
+              "kind": "manual",
+              "depends_on": [],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "assistive_api_policy",
+                  "path": "director/config/api_assistive_policy.yaml",
+                  "kind": "file",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "preconditions": [],
+              "quality_checks": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "assistive_api_policy_hash_present",
+                  "kind": "file_hash_present",
+                  "target": "director/config/api_assistive_policy.yaml",
+                  "operator": "==",
+                  "expected": true,
+                  "on_fail": "block",
+                  "message": "Assistive API policy file missing or unreadable.",
+                  "reroute_to": []
+                }
+              ],
+              "commands": [],
+              "manual_handoff": true,
+              "risks": [
+                "R4",
+                "R7"
+              ],
+              "estimated_effort": 2,
+              "risk_reduction": 7,
+              "automation_level": "manual",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true,
+              "tags": [
+                "api_assistive_policy"
+              ],
+              "gate_class": "manual"
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.api.run_smoke_test",
+              "title": "Run assistive API smoke test",
+              "description": "Execute one bounded live Responses API request and record usage and result metadata.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/rubric-and-api-bootstrap",
+              "kind": "validation",
+              "depends_on": [
+                "iteration1.rubric.publish_rubric_v1",
+                "iteration1.api.publish_assistive_policy"
+              ],
+              "inputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "labeling_protocol",
+                  "path": "docs/labeling_protocol.md",
+                  "kind": "markdown",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "assistive_api_policy",
+                  "path": "director/config/api_assistive_policy.yaml",
+                  "kind": "file",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "sentence_review_export",
+                  "path": "data/processed/sentences/year=2024/ai_sentences_sample.csv",
+                  "kind": "csv",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "api_smoke_report",
+                  "path": "reports/api/api_bootstrap_smoke_test.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": []
+                }
+              ],
+              "preconditions": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "sentence_review_export_exists",
+                  "kind": "artifact_exists",
+                  "target": "data/processed/sentences/year=2024/ai_sentences_sample.csv",
+                  "operator": "==",
+                  "expected": true,
+                  "on_fail": "block",
+                  "message": "Sentence review export missing for API smoke test.",
+                  "reroute_to": []
+                }
+              ],
+              "quality_checks": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "api_smoke_status_passed",
+                  "kind": "json_field_compare",
+                  "target": "reports/api/api_bootstrap_smoke_test.json::status",
+                  "operator": "==",
+                  "expected": "passed",
+                  "on_fail": "block",
+                  "message": "API smoke test did not pass.",
+                  "reroute_to": []
+                }
+              ],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.director.tasks.api_bootstrap --policy director/config/api_assistive_policy.yaml --mode live"
+              ],
+              "manual_handoff": false,
+              "risks": [
+                "R4",
+                "R7"
+              ],
+              "estimated_effort": 3,
+              "risk_reduction": 8,
+              "automation_level": "partial",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true,
+              "tags": [
+                "api_assistive",
+                "smoke_test"
+              ],
+              "gate_class": "ops"
+            }
+          ],
           "lifecycle_state": "planned",
           "source_window_id": "active_2021_2024",
           "tags": [
@@ -1884,7 +2126,7 @@
       "phase_id": "iteration1/rubric-and-api-bootstrap",
       "title": "Rubric and API Bootstrap",
       "goal": "Prepare rubric v1 and bounded assistive API usage without promoting API output to canonical labels.",
-      "task_count": 0,
+      "task_count": 3,
       "depends_on": [
         "iteration1/sentence-table-pilot-2024"
       ],
@@ -2275,7 +2517,9 @@
         }
       ],
       "quality_checks": [],
-      "commands": [],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.director.tasks.validation_assets --output reports/validation/validation_asset_registry.json"
+      ],
       "manual_handoff": false,
       "risks": [
         "R3",
@@ -2317,7 +2561,9 @@
       ],
       "preconditions": [],
       "quality_checks": [],
-      "commands": [],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.director.tasks.script_inventory --mode inventory --output-inventory director/snapshots/script_inventory.json"
+      ],
       "manual_handoff": false,
       "risks": [
         "R7"
@@ -2382,7 +2628,9 @@
         }
       ],
       "quality_checks": [],
-      "commands": [],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.director.tasks.script_inventory --mode publish --input-inventory director/snapshots/script_inventory.json --output-registry docs/director/script_registry.md"
+      ],
       "manual_handoff": false,
       "risks": [
         "R7"
@@ -2494,7 +2742,9 @@
       ],
       "preconditions": [],
       "quality_checks": [],
-      "commands": [],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.data.index_sec_filings --output-csv data/metadata/available_filings_index.csv --output-source-windows data/metadata/source_windows.json --output-summary reports/data/source_index_summary.json"
+      ],
       "manual_handoff": false,
       "risks": [
         "R5"
@@ -2542,6 +2792,16 @@
           "fingerprint_required": false,
           "produced_by": [],
           "consumed_by": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "pilot_manifest_summary",
+          "path": "reports/data/pilot_2024_manifest_summary.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
         }
       ],
       "preconditions": [
@@ -2558,7 +2818,9 @@
         }
       ],
       "quality_checks": [],
-      "commands": [],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.data.build_filing_manifest --index data/metadata/available_filings_index.csv --year 2024 --form 10-K --target-size 240 --quarter-quota 60 --controls data/interim/controls/controls_by_firm_year.csv --crosswalk data/externals/crosswalks/cik_gvkey.csv --manifest-id pilot_2024_10k_v1 --seed 20260305 --output data/manifests/filings/pilot_2024_10k_v1.csv --report reports/data/pilot_2024_manifest_summary.json"
+      ],
       "manual_handoff": false,
       "risks": [
         "R5"
@@ -2643,7 +2905,9 @@
         }
       ],
       "quality_checks": [],
-      "commands": [],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.data.extract_sentence_table --manifest data/manifests/filings/pilot_2024_10k_v1.csv --output data/processed/sentences/year=2024/ai_sentences.parquet --sample-output data/processed/sentences/year=2024/ai_sentences_sample.csv --report reports/data/pilot_2024_sentence_quality.json --min-tokens 6 --sample-size 200"
+      ],
       "manual_handoff": false,
       "risks": [
         "R5",
@@ -2660,6 +2924,225 @@
         "fragment_audit"
       ],
       "gate_class": "data"
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.rubric.publish_rubric_v1",
+      "title": "Publish rubric v1",
+      "description": "Finalize the labeling protocol for the sentence-table pilot and assistive-only API usage.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/rubric-and-api-bootstrap",
+      "kind": "manual",
+      "depends_on": [],
+      "inputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "pilot_sentence_quality_report",
+          "path": "reports/data/pilot_2024_sentence_quality.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "labeling_protocol",
+          "path": "docs/labeling_protocol.md",
+          "kind": "markdown",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "preconditions": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "pilot_sentence_quality_exists",
+          "kind": "artifact_exists",
+          "target": "reports/data/pilot_2024_sentence_quality.json",
+          "operator": "==",
+          "expected": true,
+          "on_fail": "block",
+          "message": "Sentence quality report missing.",
+          "reroute_to": []
+        }
+      ],
+      "quality_checks": [],
+      "commands": [],
+      "manual_handoff": true,
+      "risks": [
+        "R1"
+      ],
+      "estimated_effort": 3,
+      "risk_reduction": 6,
+      "automation_level": "manual",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true,
+      "tags": [
+        "rubric_v1",
+        "api_assistive"
+      ],
+      "gate_class": "manual"
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.api.publish_assistive_policy",
+      "title": "Publish assistive API policy",
+      "description": "Add the bounded assistive-only API policy file for the bootstrap smoke test.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/rubric-and-api-bootstrap",
+      "kind": "manual",
+      "depends_on": [],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "assistive_api_policy",
+          "path": "director/config/api_assistive_policy.yaml",
+          "kind": "file",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "preconditions": [],
+      "quality_checks": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "assistive_api_policy_hash_present",
+          "kind": "file_hash_present",
+          "target": "director/config/api_assistive_policy.yaml",
+          "operator": "==",
+          "expected": true,
+          "on_fail": "block",
+          "message": "Assistive API policy file missing or unreadable.",
+          "reroute_to": []
+        }
+      ],
+      "commands": [],
+      "manual_handoff": true,
+      "risks": [
+        "R4",
+        "R7"
+      ],
+      "estimated_effort": 2,
+      "risk_reduction": 7,
+      "automation_level": "manual",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true,
+      "tags": [
+        "api_assistive_policy"
+      ],
+      "gate_class": "manual"
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.api.run_smoke_test",
+      "title": "Run assistive API smoke test",
+      "description": "Execute one bounded live Responses API request and record usage and result metadata.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/rubric-and-api-bootstrap",
+      "kind": "validation",
+      "depends_on": [
+        "iteration1.rubric.publish_rubric_v1",
+        "iteration1.api.publish_assistive_policy"
+      ],
+      "inputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "labeling_protocol",
+          "path": "docs/labeling_protocol.md",
+          "kind": "markdown",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "assistive_api_policy",
+          "path": "director/config/api_assistive_policy.yaml",
+          "kind": "file",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "sentence_review_export",
+          "path": "data/processed/sentences/year=2024/ai_sentences_sample.csv",
+          "kind": "csv",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "api_smoke_report",
+          "path": "reports/api/api_bootstrap_smoke_test.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": []
+        }
+      ],
+      "preconditions": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "sentence_review_export_exists",
+          "kind": "artifact_exists",
+          "target": "data/processed/sentences/year=2024/ai_sentences_sample.csv",
+          "operator": "==",
+          "expected": true,
+          "on_fail": "block",
+          "message": "Sentence review export missing for API smoke test.",
+          "reroute_to": []
+        }
+      ],
+      "quality_checks": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "api_smoke_status_passed",
+          "kind": "json_field_compare",
+          "target": "reports/api/api_bootstrap_smoke_test.json::status",
+          "operator": "==",
+          "expected": "passed",
+          "on_fail": "block",
+          "message": "API smoke test did not pass.",
+          "reroute_to": []
+        }
+      ],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.director.tasks.api_bootstrap --policy director/config/api_assistive_policy.yaml --mode live"
+      ],
+      "manual_handoff": false,
+      "risks": [
+        "R4",
+        "R7"
+      ],
+      "estimated_effort": 3,
+      "risk_reduction": 8,
+      "automation_level": "partial",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true,
+      "tags": [
+        "api_assistive",
+        "smoke_test"
+      ],
+      "gate_class": "ops"
     },
     {
       "schema_version": "1.0.0",
@@ -3177,6 +3660,16 @@
       "type": "phase"
     },
     {
+      "from": "iteration1.rubric.publish_rubric_v1",
+      "to": "iteration1.api.run_smoke_test",
+      "type": "task"
+    },
+    {
+      "from": "iteration1.api.publish_assistive_policy",
+      "to": "iteration1.api.run_smoke_test",
+      "type": "task"
+    },
+    {
       "from": "iteration1/rubric-and-api-bootstrap",
       "to": "iteration1/label-ops-bootstrap",
       "type": "phase"
@@ -3272,7 +3765,7 @@
       "type": "phase"
     }
   ],
-  "manual_task_count": 2,
-  "quality_check_count": 2,
-  "risk_links": 24
+  "manual_task_count": 4,
+  "quality_check_count": 4,
+  "risk_links": 29
 }

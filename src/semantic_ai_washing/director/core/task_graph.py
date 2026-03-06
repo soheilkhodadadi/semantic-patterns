@@ -136,7 +136,7 @@ def build_task_graph(model: RoadmapModel) -> TaskGraph:
         task_ids = [task.task_id for task in phase.tasks]
         for task in phase.tasks:
             deps = list(task.depends_on)
-            if phase.depends_on and not deps:
+            if phase.depends_on:
                 for dep_phase in phase.depends_on:
                     dep_task_ids = phase_task_ids.get(dep_phase, [])
                     deps.extend(dep_task_ids)

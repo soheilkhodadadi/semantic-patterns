@@ -1176,3 +1176,83 @@ Rules:
   - next recommended implementation phase: `iteration1/rubric-and-api-bootstrap`
 - Commits:
   - sentence-table-pilot-2024 implementation: `0d7bba53ac27e31a998c5da0dd1e90c5c9dd0994`
+
+### Phase: rubric-and-api-bootstrap (execution update)
+- Date: 2026-03-06
+- Branch: `director/roadmap-model-v2`
+- Selection basis:
+  - optimizer recommendation before execution: `director/optimization/recommendation_9d516339-3a3a3230.json`
+  - selected canonical next phase: `iteration1/rubric-and-api-bootstrap`
+- Deliverables implemented:
+  - shared assistive API transport:
+    - `src/semantic_ai_washing/director/core/openai_responses.py`
+    - `src/semantic_ai_washing/director/core/llm.py` refactored to reuse it
+  - assistive policy loading and validation:
+    - `src/semantic_ai_washing/director/core/api_assistive.py`
+    - `director/config/api_assistive_policy.yaml`
+    - `src/semantic_ai_washing/director/schemas.py`
+  - bounded smoke-test task:
+    - `src/semantic_ai_washing/director/tasks/api_bootstrap.py`
+  - rubric and director docs updated:
+    - `docs/labeling_protocol.md`
+    - `docs/director/policy.md`
+    - `docs/director/quickstart.md`
+    - `docs/director/roadmap_master.md`
+  - roadmap task model updated:
+    - `director/model/roadmap_model.yaml`
+  - regression coverage:
+    - `tests/test_api_assistive_bootstrap.py`
+    - `tests/test_director_roadmap_model.py`
+  - readiness fix applied so downstream phases inherit compiled upstream task dependencies:
+    - `src/semantic_ai_washing/director/core/readiness.py`
+    - `src/semantic_ai_washing/director/core/task_graph.py`
+- Generated phase artifacts:
+  - assistive policy:
+    - `director/config/api_assistive_policy.yaml`
+  - smoke-test report:
+    - `reports/api/api_bootstrap_smoke_test.json`
+      - current status: `missing_key`
+- Security and execution prerequisites observed:
+  - `OPENAI_API_KEY` was absent in the execution shell before the live smoke step.
+  - the previously pasted OpenAI key was treated as compromised and was not reused for live validation.
+  - phase implementation requires a fresh key via environment variable only.
+- Validation run:
+  - core validation:
+    - `make bootstrap` -> pass
+    - `make doctor` -> pass
+    - `make format` -> pass
+    - `make lint` -> pass
+    - `.venv/bin/pytest -q` -> `75 passed`
+  - targeted regression:
+    - `.venv/bin/pytest -q tests/test_api_assistive_bootstrap.py tests/test_director_roadmap_model.py` -> `13 passed`
+  - direct smoke task:
+    - `.venv/bin/python -m semantic_ai_washing.director.tasks.api_bootstrap --policy director/config/api_assistive_policy.yaml --mode dry-run` -> pass
+    - `.venv/bin/python -m semantic_ai_washing.director.tasks.api_bootstrap --policy director/config/api_assistive_policy.yaml --mode live` -> blocked as designed
+      - report: `reports/api/api_bootstrap_smoke_test.json`
+      - status: `missing_key`
+  - phase planning:
+    - `.venv/bin/python -m semantic_ai_washing.director.cli plan --iteration 1 --phase rubric-and-api-bootstrap` -> pass
+      - runbook: `director/plans/runbook_b4f0258f4a638cd9.yaml`
+      - plan: `director/plans/plan_b4f0258f4a638cd9.md`
+      - decision scaffold: `director/decisions/decision_b4f0258f4a638cd9.json`
+  - phase execution:
+    - `.venv/bin/python -m semantic_ai_washing.director.cli run --runbook director/plans/runbook_b4f0258f4a638cd9.yaml --mode autonomous` -> blocked
+      - execution state: `director/runs/execution_state_b4f0258f4a638cd9.json`
+      - blocker/decision file: `director/decisions/decision_06cb2152bc53ab00.json`
+      - blocker step: `step-014`
+      - blocker reason: live smoke test exited `1` because `OPENAI_API_KEY` was not set
+  - post-fix optimization:
+    - `.venv/bin/python -m semantic_ai_washing.director.cli optimize` -> pass
+      - recommendation: `director/optimization/recommendation_0331d6bd-3a3a3230.json`
+- Risks/issues encountered:
+  - the phase cannot pass fully without a fresh `OPENAI_API_KEY` exported into the current shell.
+  - old exposed credentials cannot be treated as safe test fixtures.
+  - readiness originally under-propagated phase dependencies to downstream task states, which let `label-ops-bootstrap` appear ready prematurely.
+- Mitigation/resolution:
+  - kept the smoke test bounded to exactly one live request with `store=false` and truthful failure artifacts.
+  - fixed readiness to evaluate compiled upstream dependencies rather than only each task’s inline `depends_on` list.
+  - reran optimization after the readiness fix; downstream label-ops tasks now remain `waiting_on_deps` while the API smoke task is blocked.
+- Outcome:
+  - implementation status: complete
+  - phase status: `blocked` pending fresh `OPENAI_API_KEY`
+  - this is an intentional and truthful block, not a silent pass or stall

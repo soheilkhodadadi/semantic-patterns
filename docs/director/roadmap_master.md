@@ -1,7 +1,7 @@
 <!-- generated_file: true -->
 <!-- source_model: /Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/model/roadmap_model.yaml -->
-<!-- source_sha256: 9d5163391171ba7929d8488c25621f0df5a6602f9f8054cc3a82acae6e5ebba9 -->
-<!-- rendered_at: 2026-03-06T07:45:13.665063+00:00 -->
+<!-- source_sha256: 0331d6bd0a9736a42c574773c796e4f3b7c52338c84df4f8e1f221b026ee837f -->
+<!-- rendered_at: 2026-03-06T16:51:14.009886+00:00 -->
 
 # Roadmap Master
 
@@ -153,7 +153,27 @@ Goal: Establish canonical contracts, clean the execution surface, and build a bo
 - Tags: rubric, api_assistive
 
 #### Tasks
-- phase-level only in this roadmap version
+- `iteration1.rubric.publish_rubric_v1` Publish rubric v1
+  - kind: `manual` gate_class: `manual` automation: `manual`
+  - depends_on: none
+  - inputs: reports/data/pilot_2024_sentence_quality.json
+  - outputs: docs/labeling_protocol.md
+  - tags: rubric_v1, api_assistive
+  - risks: R1
+- `iteration1.api.publish_assistive_policy` Publish assistive API policy
+  - kind: `manual` gate_class: `manual` automation: `manual`
+  - depends_on: none
+  - inputs: none
+  - outputs: director/config/api_assistive_policy.yaml
+  - tags: api_assistive_policy
+  - risks: R4, R7
+- `iteration1.api.run_smoke_test` Run assistive API smoke test
+  - kind: `validation` gate_class: `ops` automation: `partial`
+  - depends_on: iteration1.rubric.publish_rubric_v1, iteration1.api.publish_assistive_policy
+  - inputs: docs/labeling_protocol.md, director/config/api_assistive_policy.yaml, data/processed/sentences/year=2024/ai_sentences_sample.csv
+  - outputs: reports/api/api_bootstrap_smoke_test.json
+  - tags: api_assistive, smoke_test
+  - risks: R4, R7
 
 ### iteration1/label-ops-bootstrap
 - Title: Label Ops Bootstrap
