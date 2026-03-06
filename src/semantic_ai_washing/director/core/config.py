@@ -16,8 +16,10 @@ class DirectorPaths:
     repo_root: Path
     director_root: Path
     config_dir: Path
+    model_dir: Path
     snapshots_dir: Path
     plans_dir: Path
+    optimization_dir: Path
     runs_dir: Path
     decisions_dir: Path
     cache_dir: Path
@@ -27,6 +29,8 @@ DEFAULT_CONFIG = {
     "project_profile": {
         "project_name": "semantic-patterns",
         "iteration_log": "docs/iteration_log.md",
+        "roadmap_model_path": "director/model/roadmap_model.yaml",
+        "remediation_library_path": "director/model/remediation_library.yaml",
         "canonical_validation_commands": [
             "make bootstrap",
             "make doctor",
@@ -34,6 +38,19 @@ DEFAULT_CONFIG = {
             "make lint",
             ".venv/bin/pytest -q",
         ],
+        "optimization_weights": {
+            "unblock_value": 5,
+            "critical_path_depth": 4,
+            "risk_reduction": 3,
+            "automation_bonus": 2,
+            "manual_effort_penalty": 2,
+            "precondition_gap_penalty": 4,
+            "quality_failure_penalty": 5,
+        },
+        "feature_flags": {
+            "use_task_graph_planner": True,
+            "emit_roadmap_patch": True,
+        },
         "phase_command_map": {},
     },
     "autonomy_policy": {
@@ -62,8 +79,10 @@ def get_director_paths(repo_root: str = ".") -> DirectorPaths:
         repo_root=root,
         director_root=director_root,
         config_dir=director_root / "config",
+        model_dir=director_root / "model",
         snapshots_dir=director_root / "snapshots",
         plans_dir=director_root / "plans",
+        optimization_dir=director_root / "optimization",
         runs_dir=director_root / "runs",
         decisions_dir=director_root / "decisions",
         cache_dir=director_root / "cache",
@@ -73,8 +92,10 @@ def get_director_paths(repo_root: str = ".") -> DirectorPaths:
 def ensure_director_dirs(paths: DirectorPaths) -> None:
     ensure_dir(paths.director_root)
     ensure_dir(paths.config_dir)
+    ensure_dir(paths.model_dir)
     ensure_dir(paths.snapshots_dir)
     ensure_dir(paths.plans_dir)
+    ensure_dir(paths.optimization_dir)
     ensure_dir(paths.runs_dir)
     ensure_dir(paths.decisions_dir)
     ensure_dir(paths.cache_dir)
@@ -106,6 +127,40 @@ def ensure_default_configs(paths: DirectorPaths) -> None:
         if not file_path.exists():
             _yaml_dump(file_path, DEFAULT_CONFIG[key])
 
+    roadmap_model = paths.model_dir / "roadmap_model.yaml"
+    if not roadmap_model.exists():
+        _yaml_dump(
+            roadmap_model,
+            {
+                "schema_version": "1.1.0",
+                "project": {
+                    "name": "semantic-patterns",
+                    "description": "Canonical machine-readable roadmap model.",
+                },
+                "settings": {
+                    "active_horizon_iterations": ["1"],
+                    "optimizer_weights": DEFAULT_CONFIG["project_profile"]["optimization_weights"],
+                    "defaults": {
+                        "phase_execution_mode": "phase_first",
+                        "proposal_only": True,
+                        "allow_cross_iteration_rewrite": True,
+                        "fragment_rate_threshold": 0.15,
+                    },
+                },
+                "iterations": [],
+            },
+        )
+
+    remediation_library = paths.model_dir / "remediation_library.yaml"
+    if not remediation_library.exists():
+        _yaml_dump(
+            remediation_library,
+            {
+                "schema_version": "1.1.0",
+                "tasks": [],
+            },
+        )
+
 
 def load_configs(paths: DirectorPaths) -> dict[str, Any]:
     ensure_director_dirs(paths)
@@ -129,4 +184,6 @@ def required_file_paths(paths: DirectorPaths) -> list[Path]:
         paths.snapshots_dir / "protocol_summary.json",
         paths.snapshots_dir / "roadmap_summary.json",
         paths.snapshots_dir / "iteration_state.json",
+        paths.model_dir / "roadmap_model.yaml",
+        paths.model_dir / "remediation_library.yaml",
     ]

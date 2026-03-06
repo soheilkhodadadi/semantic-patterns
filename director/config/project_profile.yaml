@@ -1,6 +1,8 @@
 project_name: semantic-patterns
 project_description: AI-washing research-to-production transformation repository.
 iteration_log: docs/iteration_log.md
+roadmap_model_path: director/model/roadmap_model.yaml
+remediation_library_path: director/model/remediation_library.yaml
 canonical_validation_commands:
   - make bootstrap
   - make doctor
@@ -11,79 +13,60 @@ step_timeout_overrides:
   snapshot_seconds: 300
   validation_seconds: 1800
   phase_seconds: 1200
+optimization_weights:
+  unblock_value: 5
+  critical_path_depth: 4
+  risk_reduction: 3
+  automation_bonus: 2
+  manual_effort_penalty: 2
+  precondition_gap_penalty: 4
+  quality_failure_penalty: 5
+feature_flags:
+  use_task_graph_planner: true
+  emit_roadmap_patch: true
 phase_command_map:
-  iteration1/diagnostics-nlp:
-    - .venv/bin/python -m semantic_ai_washing.diagnostics.phase0_baseline --years 2024 --limit 20 --force --two-stage --rule-boosts --tau 0.07 --eps-irr 0.03 --min-tokens 6 --output-dir reports/iteration1/phase0
-  iteration1/label-expansion:
-    - .venv/bin/python -m semantic_ai_washing.labeling.build_labeling_sample --target-total 400 --held-out data/validation/held_out_sentences.csv --base-labeled data/validation/hand_labeled_ai_sentences_labeled_cleaned_revised.csv --input-dir data/processed/sec --controls data/interim/controls/controls_by_firm_year.csv --crosswalk data/externals/crosswalks/cik_gvkey.csv --output-dir data/labels/iteration1 --report-dir reports/iteration1/phase1 --seed 20260227
-    - .venv/bin/python -m semantic_ai_washing.labeling.dedupe_labeled_sentences --base data/labels/iteration1/base_labeled_nonleaky.csv --new data/labels/iteration1/labeling_sheet_completed.csv --held-out data/validation/held_out_sentences.csv --near-threshold 0.95 --output data/labels/iteration1/expanded_labeled_sentences_preqa.csv --uncertain-output data/labels/iteration1/uncertain_rows.csv --conflicts-output data/labels/iteration1/label_conflicts.csv --report reports/iteration1/phase1/dedupe_report.json
-    - .venv/bin/python -m semantic_ai_washing.labeling.qa_labeled_dataset --input data/labels/iteration1/expanded_labeled_sentences_preqa.csv --held-out data/validation/held_out_sentences.csv --min-tokens 6 --min-class-count 60 --target-size 400 --output data/labels/iteration1/expanded_labeled_sentences.csv --report reports/iteration1/phase1/qa_report.json --leakage-report reports/iteration1/phase1/leakage_overlap_report.csv
   iteration1/label-expansion-recovery:
-    - .venv/bin/python -m semantic_ai_washing.labeling.build_labeling_sample --target-total 220 --held-out data/validation/held_out_sentences.csv --base-labeled data/validation/hand_labeled_ai_sentences_labeled_cleaned_revised.csv --input-dir data/processed/sec --years 2023,2024 --max-ai-files 120 --controls data/interim/controls/controls_by_firm_year.csv --crosswalk data/externals/crosswalks/cik_gvkey.csv --output-dir data/labels/iteration1/recovery --report-dir reports/iteration1/phase1_recovery --seed 20260227 --min-tokens 6 --min-class-target 25
-    - .venv/bin/python -m semantic_ai_washing.labeling.dedupe_labeled_sentences --base data/labels/iteration1/recovery/base_labeled_nonleaky.csv --new data/labels/iteration1/recovery/labeling_sheet_completed.csv --held-out data/validation/held_out_sentences.csv --near-threshold 0.95 --output data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv --uncertain-output data/labels/iteration1/recovery/uncertain_rows.csv --conflicts-output data/labels/iteration1/recovery/label_conflicts.csv --report reports/iteration1/phase1_recovery/dedupe_report.json
-    - .venv/bin/python -m semantic_ai_washing.labeling.qa_labeled_dataset --input data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv --held-out data/validation/held_out_sentences.csv --min-tokens 6 --min-class-count 25 --target-size 220 --output data/labels/iteration1/recovery/expanded_labeled_sentences.csv --report reports/iteration1/phase1_recovery/qa_report.json --leakage-report reports/iteration1/phase1_recovery/leakage_overlap_report.csv
-  iteration1/irr-validation:
-    - .venv/bin/python -m semantic_ai_washing.labeling.prepare_irr_subset --input data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv --output-dir data/labels/iteration1/irr --report-dir reports/iteration1/phase2_irr --subset-fraction 0.30 --min-per-class 10 --seed 20260303 --blind-mode text_only
-    - .venv/bin/python -m semantic_ai_washing.labeling.compute_irr_metrics --master data/labels/iteration1/irr/irr_subset_master.csv --rater2 data/labels/iteration1/irr/irr_subset_rater2_completed.csv --output-report reports/iteration1/phase2_irr/irr_kappa_report.json --output-confusion reports/iteration1/phase2_irr/irr_confusion_matrix.csv --output-transitions reports/iteration1/phase2_irr/irr_transition_counts.csv --output-status reports/iteration1/phase2_irr/irr_status.json --min-kappa 0.60 --gate-mode infrastructure
-    - .venv/bin/python -m semantic_ai_washing.labeling.adjudicate_irr_labels --master data/labels/iteration1/irr/irr_subset_master.csv --rater2 data/labels/iteration1/irr/irr_subset_rater2_completed.csv --output-disagreements data/labels/iteration1/irr/irr_disagreements.csv --output-adjudication data/labels/iteration1/irr/irr_adjudication_sheet.csv --source-dataset data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv --final-output data/labels/iteration1/irr/final_labeled_sentences_recovery_adjudicated.csv --output-status reports/iteration1/phase2_irr/adjudication_status.json --allow-pending
+    - >-
+      .venv/bin/python -m semantic_ai_washing.labeling.build_labeling_sample
+      --target-total 220
+      --held-out data/validation/held_out_sentences.csv
+      --base-labeled data/validation/hand_labeled_ai_sentences_labeled_cleaned_revised.csv
+      --input-dir data/processed/sec
+      --years 2023,2024
+      --max-ai-files 120
+      --controls data/interim/controls/controls_by_firm_year.csv
+      --crosswalk data/externals/crosswalks/cik_gvkey.csv
+      --output-dir data/labels/iteration1/recovery
+      --report-dir reports/iteration1/phase1_recovery
+      --seed 20260227
+      --min-tokens 6
+      --min-class-target 25
+    - >-
+      .venv/bin/python -m semantic_ai_washing.labeling.dedupe_labeled_sentences
+      --base data/labels/iteration1/recovery/base_labeled_nonleaky.csv
+      --new data/labels/iteration1/recovery/labeling_sheet_completed.csv
+      --held-out data/validation/held_out_sentences.csv
+      --near-threshold 0.95
+      --output data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv
+      --uncertain-output data/labels/iteration1/recovery/uncertain_rows.csv
+      --conflicts-output data/labels/iteration1/recovery/label_conflicts.csv
+      --report reports/iteration1/phase1_recovery/dedupe_report.json
+    - >-
+      .venv/bin/python -m semantic_ai_washing.labeling.qa_labeled_dataset
+      --input data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv
+      --held-out data/validation/held_out_sentences.csv
+      --min-tokens 6
+      --min-class-count 25
+      --target-size 220
+      --output data/labels/iteration1/recovery/expanded_labeled_sentences.csv
+      --report reports/iteration1/phase1_recovery/qa_report.json
+      --leakage-report reports/iteration1/phase1_recovery/leakage_overlap_report.csv
 phase_artifact_map:
-  iteration1/diagnostics-nlp:
-    - reports/iteration1/phase0/baseline_eval_metrics.json
-    - reports/iteration1/phase0/baseline_eval_confusion_matrix.csv
-    - reports/iteration1/phase0/run_metadata.json
-    - reports/iteration1/phase0/baseline_report.md
-  iteration1/label-expansion:
-    - reports/iteration1/phase1/sampling_summary.json
-    - reports/iteration1/phase1/dedupe_report.json
-    - reports/iteration1/phase1/qa_report.json
-    - reports/iteration1/phase1/leakage_overlap_report.csv
   iteration1/label-expansion-recovery:
     - reports/iteration1/phase1_recovery/sampling_summary.json
     - reports/iteration1/phase1_recovery/dedupe_report.json
     - reports/iteration1/phase1_recovery/qa_report.json
     - reports/iteration1/phase1_recovery/leakage_overlap_report.csv
-  iteration1/irr-validation:
-    - data/labels/iteration1/irr/irr_subset_master.csv
-    - data/labels/iteration1/irr/irr_subset_rater2_blinded.csv
-    - reports/iteration1/phase2_irr/irr_kappa_report.json
-    - reports/iteration1/phase2_irr/irr_status.json
-    - data/labels/iteration1/irr/irr_adjudication_sheet.csv
-    - reports/iteration1/phase2_irr/adjudication_status.json
-roadmap_model:
-  iterations:
-    - iteration_id: "0"
-      title: Stabilise extraction and packaging
-      phases:
-        - name: observability
-        - name: error-handling
-        - name: testing-qa
-        - name: documentation
-    - iteration_id: "1"
-      title: Expand training data and retrain centroids
-      phases:
-        - name: diagnostics-nlp
-        - name: label-expansion
-        - name: irr-validation
-        - name: centroid-retraining
-        - name: classifier-calibration
-        - name: batch-classification-2021-2024
-    - iteration_id: "2"
-      title: Scale classification and integrate cross-walks
-      phases:
-        - name: full-sample-extraction
-        - name: full-sample-classification
-        - name: aggregation-and-crosswalks
-    - iteration_id: "3"
-      title: Evaluate OpenAI API strategy
-      phases:
-        - name: llm-pilot
-        - name: hybrid-routing-decision
-    - iteration_id: "4"
-      title: Final integration and production hardening
-      phases:
-        - name: panel-assembly
-        - name: robustness-analysis
-        - name: release-packaging
 data_architecture_target:
   mode: hybrid-canonical
   source_index_layer:

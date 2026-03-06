@@ -17,8 +17,18 @@ from semantic_ai_washing.director.core.config import (
 )
 from semantic_ai_washing.director.core.cost import CostController
 from semantic_ai_washing.director.core.decision import DecisionEngine
+from semantic_ai_washing.director.core.optimizer import DirectorOptimizer
 from semantic_ai_washing.director.core.executor import RunbookExecutor
 from semantic_ai_washing.director.core.planner import PlannerEngine, write_plan_manifest
+from semantic_ai_washing.director.core.render import (
+    is_rendered_roadmap_fresh,
+    render_roadmap_markdown,
+)
+from semantic_ai_washing.director.core.roadmap_model import (
+    load_remediation_library,
+    load_roadmap_model,
+    resolve_model_path,
+)
 from semantic_ai_washing.director.core.security import (
     ensure_openai_key_if_enabled,
     scan_repo_for_secrets,
@@ -30,6 +40,7 @@ from semantic_ai_washing.director.core.utils import (
     git_info,
     now_utc_iso,
     repository_root,
+    sha256_file,
 )
 
 
@@ -76,10 +87,14 @@ def _ingest_command(args: argparse.Namespace) -> int:
     ensure_director_dirs(paths)
     ensure_default_configs(paths)
 
+    if not args.roadmap and not args.roadmap_model:
+        raise ValueError("Provide --roadmap-model or --roadmap.")
+
     ingestor = SnapshotIngestor(paths.snapshots_dir)
     manifest = ingestor.ingest(
         protocol_path=args.protocol,
-        roadmap_path=args.roadmap,
+        roadmap_path=args.roadmap or "",
+        roadmap_model_path=args.roadmap_model or "",
         iteration_log_path=args.iteration_log,
         atlas_search=args.atlas_search or "",
         atlas_limit=args.atlas_limit,
@@ -99,6 +114,60 @@ def _ingest_command(args: argparse.Namespace) -> int:
             {"manifest": manifest, "compiled_state": compiled["last_gate_status"]}, indent=2
         )
     )
+    return 0
+
+
+def _render_roadmap_command(args: argparse.Namespace) -> int:
+    repo_root = repository_root(args.repo_root)
+    paths = get_director_paths(repo_root)
+    config = load_configs(paths)
+    profile = config.get("project_profile", {})
+    model_path = resolve_model_path(
+        repo_root, args.roadmap_model or profile.get("roadmap_model_path", "")
+    )
+    model = load_roadmap_model(model_path)
+    output_path = Path(
+        args.output or (Path(repo_root) / "docs" / "director" / "roadmap_master.md")
+    )
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    markdown = render_roadmap_markdown(
+        model=model,
+        source_model=str(model_path),
+        source_sha256=sha256_file(model_path),
+    )
+    output_path.write_text(markdown, encoding="utf-8")
+    print(f"[director] roadmap rendered: {output_path}")
+    return 0
+
+
+def _optimize_command(args: argparse.Namespace) -> int:
+    repo_root = repository_root(args.repo_root)
+    paths = get_director_paths(repo_root)
+    config = load_configs(paths)
+    profile = config.get("project_profile", {})
+    compiler = StateCompiler(repo_root=repo_root)
+    compiler.compile(
+        iteration_state_path=str(paths.snapshots_dir / "iteration_state.json"),
+        output_path=str(paths.snapshots_dir / "iteration_state_compiled.json"),
+    )
+    optimizer = DirectorOptimizer(
+        repo_root=repo_root,
+        roadmap_model_path=str(
+            resolve_model_path(repo_root, profile.get("roadmap_model_path", ""))
+        ),
+        remediation_library_path=str(
+            resolve_model_path(repo_root, profile.get("remediation_library_path", ""))
+        ),
+        optimization_dir=str(paths.optimization_dir),
+        decisions_dir=str(paths.decisions_dir),
+        weights=profile.get("optimization_weights", {}),
+        emit_patch=bool(profile.get("feature_flags", {}).get("emit_roadmap_patch", True)),
+    )
+    result = optimizer.optimize(
+        focus_iteration=str(args.iteration or ""),
+        focus_phase=str(args.phase or ""),
+    )
+    print(json.dumps(result.as_deterministic_dict(), indent=2))
     return 0
 
 
@@ -202,6 +271,12 @@ def _status_command(args: argparse.Namespace) -> int:
     deferred_records = sorted(
         paths.decisions_dir.glob("deferred_*.json"), key=lambda p: p.stat().st_mtime
     )
+    recommendations = sorted(
+        paths.optimization_dir.glob("recommendation_*.json"), key=lambda p: p.stat().st_mtime
+    )
+    latest_recommendation_id = ""
+    if recommendations:
+        latest_recommendation_id = recommendations[-1].stem.replace("recommendation_", "")
     active_deferred: list[dict[str, Any]] = []
     for record in deferred_records:
         payload = json.loads(record.read_text(encoding="utf-8"))
@@ -226,6 +301,8 @@ def _status_command(args: argparse.Namespace) -> int:
         },
         "latest_runbook": str(runbooks[-1]) if runbooks else "",
         "latest_execution_state": str(states[-1]) if states else "",
+        "latest_recommendation_id": latest_recommendation_id,
+        "latest_recommendation": str(recommendations[-1]) if recommendations else "",
         "active_deferred_blockers": active_deferred,
     }
     print(json.dumps(payload, indent=2))
@@ -343,6 +420,54 @@ def _doctor_command(args: argparse.Namespace) -> int:
     key_ok, key_detail = ensure_openai_key_if_enabled(llm_enabled)
     checks.append({"name": "openai_key", "ok": key_ok, "detail": key_detail})
 
+    profile = config.get("project_profile", {})
+    model_path = resolve_model_path(repo_root, profile.get("roadmap_model_path", ""))
+    remediation_path = resolve_model_path(repo_root, profile.get("remediation_library_path", ""))
+    roadmap_doc = Path(repo_root) / "docs" / "director" / "roadmap_master.md"
+
+    try:
+        load_roadmap_model(model_path)
+        checks.append(
+            {
+                "name": "roadmap_model_schema",
+                "ok": True,
+                "detail": str(model_path),
+            }
+        )
+    except Exception as exc:
+        checks.append(
+            {
+                "name": "roadmap_model_schema",
+                "ok": False,
+                "detail": str(exc),
+            }
+        )
+
+    try:
+        load_remediation_library(remediation_path)
+        checks.append(
+            {
+                "name": "remediation_library_schema",
+                "ok": True,
+                "detail": str(remediation_path),
+            }
+        )
+    except Exception as exc:
+        checks.append(
+            {
+                "name": "remediation_library_schema",
+                "ok": False,
+                "detail": str(exc),
+            }
+        )
+    checks.append(
+        {
+            "name": "roadmap_render_fresh",
+            "ok": is_rendered_roadmap_fresh(model_path, roadmap_doc),
+            "detail": str(roadmap_doc),
+        }
+    )
+
     ok = all(item["ok"] for item in checks)
     payload = {
         "checked_at": now_utc_iso(),
@@ -371,7 +496,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     ingest_cmd = subparsers.add_parser("ingest", help="Ingest snapshots from canonical docs")
     ingest_cmd.add_argument("--protocol", required=True)
-    ingest_cmd.add_argument("--roadmap", required=True)
+    ingest_cmd.add_argument("--roadmap")
+    ingest_cmd.add_argument("--roadmap-model")
     ingest_cmd.add_argument("--iteration-log", required=True)
     ingest_cmd.add_argument("--atlas-search", default="")
     ingest_cmd.add_argument("--atlas-limit", type=int, default=20)
@@ -382,6 +508,20 @@ def build_parser() -> argparse.ArgumentParser:
     plan_cmd.add_argument("--iteration", required=True)
     plan_cmd.add_argument("--phase", required=True)
     plan_cmd.set_defaults(func=_plan_command)
+
+    render_cmd = subparsers.add_parser(
+        "render-roadmap", help="Render roadmap Markdown from the canonical YAML model"
+    )
+    render_cmd.add_argument("--roadmap-model")
+    render_cmd.add_argument("--output")
+    render_cmd.set_defaults(func=_render_roadmap_command)
+
+    optimize_cmd = subparsers.add_parser(
+        "optimize", help="Compile task readiness and next-work recommendations"
+    )
+    optimize_cmd.add_argument("--iteration")
+    optimize_cmd.add_argument("--phase")
+    optimize_cmd.set_defaults(func=_optimize_command)
 
     decide_cmd = subparsers.add_parser("decide", help="Rank recovery options for a blocker")
     decide_cmd.add_argument("--blocker-file")

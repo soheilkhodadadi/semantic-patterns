@@ -91,6 +91,7 @@ def test_runbook_generator_outputs_valid_yaml(tmp_path):
     )
 
     config = load_configs(paths)
+    config["project_profile"]["phase_command_map"]["iteration1/phase-x"] = ["echo phase-x"]
     planner = PlannerEngine(
         repo_root=str(tmp_path),
         config=config,
@@ -106,6 +107,45 @@ def test_runbook_generator_outputs_valid_yaml(tmp_path):
     assert runbook_payload["runbook_id"] == result["runbook_id"]
     assert runbook_payload["phase_name"] == "phase-x"
     assert isinstance(runbook_payload["steps"], list)
+    phase_steps = [
+        step for step in runbook_payload["steps"] if step["title"].startswith("Phase command")
+    ]
+    assert phase_steps
+
+
+def test_unmigrated_phase_without_fallback_commands_fails_loudly(tmp_path):
+    paths = get_director_paths(str(tmp_path))
+    ensure_default_configs(paths)
+
+    _write(paths.snapshots_dir / "protocol_summary.json", json.dumps({"source_sha256": "a"}))
+    _write(paths.snapshots_dir / "roadmap_summary.json", json.dumps({"source_sha256": "b"}))
+    _write(
+        paths.snapshots_dir / "iteration_state.json",
+        json.dumps({"source_sha256": "c", "last_successful_gate": "unknown"}),
+    )
+
+    config = load_configs(paths)
+    config["project_profile"]["phase_command_map"]["iteration1/label-expansion"] = [
+        "echo label-expansion"
+    ]
+    planner = PlannerEngine(
+        repo_root=str(tmp_path),
+        config=config,
+        snapshots_dir=str(paths.snapshots_dir),
+        plans_dir=str(paths.plans_dir),
+        decisions_dir=str(paths.decisions_dir),
+        runs_dir=str(paths.runs_dir),
+        cache_dir=str(paths.cache_dir),
+    )
+
+    try:
+        planner.generate(iteration_id="1", phase_name="phase-without-fallback")
+    except ValueError as exc:
+        assert "No modeled tasks or fallback commands configured" in str(exc)
+    else:
+        raise AssertionError(
+            "expected planner.generate to fail for an unmigrated phase without fallback"
+        )
 
 
 def test_planner_timeout_overrides_and_recovery_phase_selection(tmp_path):
@@ -258,6 +298,58 @@ def test_executor_resumes_from_checkpoint(tmp_path):
 
     result = executor.run(str(runbook_path), resume=True)
     assert result["status"] == "passed"
+
+
+def test_executor_manual_handoff_blocks_when_output_missing(tmp_path):
+    runbook_path = tmp_path / "runbook.yaml"
+    runbook_payload = {
+        "schema_version": "1.0.0",
+        "runbook_id": "rbmanual",
+        "title": "manual test",
+        "summary": "test",
+        "iteration_id": "1",
+        "phase_name": "manual-phase",
+        "autonomy_mode": "autonomous",
+        "dependencies": [],
+        "gates": [],
+        "risks": [],
+        "steps": [
+            {
+                "schema_version": "1.0.0",
+                "step_id": "step-001",
+                "title": "Manual handoff: labeling",
+                "description": "await artifact",
+                "command": None,
+                "cwd": ".",
+                "timeout_seconds": 60,
+                "retry_limit": 0,
+                "required_outputs": ["data/manual.csv"],
+                "conditions": [],
+                "gate_ids": [],
+                "escalation_required": False,
+                "manual_handoff": True,
+                "task_id": "t.manual",
+                "status": "pending",
+            }
+        ],
+        "context": {},
+        "provenance": {},
+        "llm_refined": False,
+    }
+    runbook_path.write_text(yaml.safe_dump(runbook_payload, sort_keys=False), encoding="utf-8")
+
+    executor = RunbookExecutor(
+        repo_root=str(tmp_path),
+        runs_dir=str(tmp_path / "runs"),
+        decisions_dir=str(tmp_path / "decisions"),
+        autonomy_policy={"require_explicit_recovery_selection": True},
+    )
+    result = executor.run(str(runbook_path))
+    state = json.loads((tmp_path / "runs" / "execution_state_rbmanual.json").read_text())
+
+    assert result["status"] == "blocked"
+    assert state["blocker"]["blocker_type"] == "manual"
+    assert state["step_results"]["step-001"]["status"] == "waiting_manual"
 
 
 def test_gate_001_fails_without_validation_steps(tmp_path):
@@ -437,6 +529,9 @@ def test_end_to_end_ingest_plan_run_with_blocker_escalation(tmp_path):
     )
 
     config = load_configs(paths)
+    config["project_profile"]["phase_command_map"]["iteration1/label-expansion"] = [
+        "echo label-expansion"
+    ]
     planner = PlannerEngine(
         repo_root=str(tmp_path),
         config=config,

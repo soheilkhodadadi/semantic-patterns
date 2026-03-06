@@ -1,7 +1,7 @@
 # Director Quickstart
 
 ## Purpose
-`semantic_ai_washing.director` builds executable, gate-aware runbooks from roadmap + protocol + iteration history snapshots.
+`semantic_ai_washing.director` builds executable, gate-aware runbooks from canonical roadmap YAML + protocol + iteration history snapshots.
 
 ## Initialize
 ```bash
@@ -12,8 +12,13 @@ python -m semantic_ai_washing.director.cli init
 ```bash
 python -m semantic_ai_washing.director.cli ingest \
   --protocol docs/director/implementation_protocol_master.md \
-  --roadmap docs/director/roadmap_master.md \
+  --roadmap-model director/model/roadmap_model.yaml \
   --iteration-log docs/iteration_log.md
+```
+
+## Render Canonical Roadmap Markdown
+```bash
+python -m semantic_ai_washing.director.cli render-roadmap
 ```
 
 ## Generate Plan + Runbook
@@ -22,6 +27,8 @@ python -m semantic_ai_washing.director.cli plan --iteration 1 --phase label-expa
 ```
 
 Generated outputs are placed under `director/plans/` and `director/decisions/`.
+
+For phases modeled in `director/model/roadmap_model.yaml`, the runbook is compiled from task groups rather than flat phase command maps.
 
 ## Execute Runbook
 ```bash
@@ -95,6 +102,12 @@ python -m semantic_ai_washing.labeling.compute_irr_metrics \
 make director-doctor
 make director-plan ITER=1 PHASE=label-expansion
 make director-status
+```
+
+## Continuous Optimization
+```bash
+python -m semantic_ai_washing.director.cli optimize
+python -m semantic_ai_washing.director.cli optimize --iteration 1 --phase irr-validation
 ```
 
 ## Cost and Status

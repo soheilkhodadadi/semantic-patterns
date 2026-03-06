@@ -6,7 +6,10 @@ from pathlib import Path
 from typing import Any
 
 from semantic_ai_washing.director.adapters.atlas import fetch_atlas_metadata
-from semantic_ai_washing.director.adapters.documents import summarize_document
+from semantic_ai_washing.director.adapters.documents import (
+    summarize_document,
+    summarize_roadmap_model,
+)
 from semantic_ai_washing.director.adapters.iteration_log import parse_iteration_log
 from semantic_ai_washing.director.core.utils import dump_json, now_utc_iso
 
@@ -19,14 +22,20 @@ class SnapshotIngestor:
     def ingest(
         self,
         protocol_path: str,
-        roadmap_path: str,
         iteration_log_path: str,
+        roadmap_path: str = "",
+        roadmap_model_path: str = "",
         atlas_search: str = "",
         atlas_limit: int = 20,
         enable_atlas: bool = False,
     ) -> dict[str, Any]:
         protocol_summary = summarize_document(protocol_path)
-        roadmap_summary = summarize_document(roadmap_path)
+        if roadmap_model_path:
+            roadmap_summary = summarize_roadmap_model(roadmap_model_path)
+        elif roadmap_path:
+            roadmap_summary = summarize_document(roadmap_path)
+        else:
+            raise ValueError("Provide roadmap_path or roadmap_model_path.")
         iteration_summary = parse_iteration_log(iteration_log_path)
 
         protocol_out = self.snapshots_dir / "protocol_summary.json"

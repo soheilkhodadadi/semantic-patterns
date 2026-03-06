@@ -8,6 +8,7 @@ from typing import Any, Literal, Optional
 from pydantic import BaseModel, Field, field_validator
 
 SCHEMA_VERSION = "1.0.0"
+ROADMAP_SCHEMA_VERSION = "1.1.0"
 
 
 class DeterministicModel(BaseModel):
@@ -20,6 +21,155 @@ class DeterministicModel(BaseModel):
 
     def as_deterministic_json(self) -> str:
         return json.dumps(self.as_deterministic_dict(), sort_keys=True, separators=(",", ":"))
+
+
+class ArtifactSpec(DeterministicModel):
+    artifact_id: str
+    path: str
+    kind: Literal["file", "directory", "json", "csv", "markdown", "report", "dataset", "model"]
+    required: bool = True
+    fingerprint_required: bool = False
+    produced_by: list[str] = Field(default_factory=list)
+    consumed_by: list[str] = Field(default_factory=list)
+
+
+class ConditionSpec(DeterministicModel):
+    condition_id: str
+    kind: Literal[
+        "artifact_exists",
+        "csv_row_count_gte",
+        "json_field_compare",
+        "file_hash_present",
+        "manual_artifact_present",
+        "sentence_fragment_rate_lte",
+    ]
+    target: str
+    operator: Literal["==", "!=", ">=", "<=", ">", "<", "in", "not_in"] = "=="
+    expected: Any
+    on_fail: Literal["block", "warn", "reroute"] = "block"
+    message: str = ""
+    reroute_to: list[str] = Field(default_factory=list)
+
+
+class TaskSpec(DeterministicModel):
+    task_id: str
+    title: str
+    description: str
+    iteration_id: str
+    phase_id: str
+    kind: Literal[
+        "diagnostic",
+        "build",
+        "validation",
+        "manual",
+        "decision",
+        "analysis",
+        "reporting",
+        "remediation",
+    ]
+    depends_on: list[str] = Field(default_factory=list)
+    inputs: list[ArtifactSpec] = Field(default_factory=list)
+    outputs: list[ArtifactSpec] = Field(default_factory=list)
+    preconditions: list[ConditionSpec] = Field(default_factory=list)
+    quality_checks: list[ConditionSpec] = Field(default_factory=list)
+    commands: list[str] = Field(default_factory=list)
+    manual_handoff: bool = False
+    risks: list[str] = Field(default_factory=list)
+    estimated_effort: int = Field(default=3, ge=1, le=10)
+    risk_reduction: int = Field(default=3, ge=1, le=10)
+    automation_level: Literal["full", "partial", "manual"] = "partial"
+    on_fail: Literal["block", "warn", "reroute"] = "block"
+    reroute_to: list[str] = Field(default_factory=list)
+    evidence_required: bool = True
+
+
+class PhaseSpec(DeterministicModel):
+    phase_id: str
+    title: str
+    goal: str
+    depends_on: list[str] = Field(default_factory=list)
+    canonical: bool = True
+    required_artifacts: list[str] = Field(default_factory=list)
+    tasks: list[TaskSpec] = Field(default_factory=list)
+
+
+class IterationSpec(DeterministicModel):
+    iteration_id: str
+    title: str
+    goal: str
+    phases: list[PhaseSpec] = Field(default_factory=list)
+
+
+class OptimizationWeights(DeterministicModel):
+    schema_version: str = Field(default=ROADMAP_SCHEMA_VERSION)
+    unblock_value: int = Field(default=5, ge=0)
+    critical_path_depth: int = Field(default=4, ge=0)
+    risk_reduction: int = Field(default=3, ge=0)
+    automation_bonus: int = Field(default=2, ge=0)
+    manual_effort_penalty: int = Field(default=2, ge=0)
+    precondition_gap_penalty: int = Field(default=4, ge=0)
+    quality_failure_penalty: int = Field(default=5, ge=0)
+
+
+class RoadmapModel(DeterministicModel):
+    schema_version: str = Field(default=ROADMAP_SCHEMA_VERSION)
+    project: dict[str, Any] = Field(default_factory=dict)
+    settings: dict[str, Any] = Field(default_factory=dict)
+    iterations: list[IterationSpec] = Field(default_factory=list)
+
+
+class TaskStateSnapshot(DeterministicModel):
+    task_id: str
+    phase_id: str
+    iteration_id: str
+    status: Literal[
+        "satisfied",
+        "ready",
+        "waiting_on_deps",
+        "blocked_precondition",
+        "blocked_quality",
+        "blocked_manual",
+        "deferred",
+    ]
+    dependency_ids: list[str] = Field(default_factory=list)
+    missing_dependencies: list[str] = Field(default_factory=list)
+    failed_preconditions: list[str] = Field(default_factory=list)
+    failed_quality_checks: list[str] = Field(default_factory=list)
+    missing_outputs: list[str] = Field(default_factory=list)
+    score: float = 0.0
+    context: dict[str, Any] = Field(default_factory=dict)
+
+
+class OptimizationRecommendation(DeterministicModel):
+    recommendation_id: str
+    focus_iteration: str = ""
+    focus_phase: str = ""
+    recommended_task_ids: list[str] = Field(default_factory=list)
+    blocked_task_ids: list[str] = Field(default_factory=list)
+    rationale: list[str] = Field(default_factory=list)
+    proposal_only: bool = True
+    patch_file: str = ""
+
+
+class RoadmapPatchProposal(DeterministicModel):
+    proposal_id: str
+    source_roadmap_sha256: str
+    focus_iteration: str = ""
+    focus_phase: str = ""
+    operations: list[dict[str, Any]] = Field(default_factory=list)
+    rationale: list[str] = Field(default_factory=list)
+
+
+class OptimizationReport(DeterministicModel):
+    report_id: str
+    source_roadmap_sha256: str
+    graph_file: str
+    readiness_file: str
+    recommendation_file: str
+    recommendation_markdown: str
+    patch_file: str = ""
+    task_states: list[TaskStateSnapshot] = Field(default_factory=list)
+    recommendation: OptimizationRecommendation
 
 
 class ProjectIntent(DeterministicModel):
@@ -73,9 +223,20 @@ class ExecutionStep(DeterministicModel):
     timeout_seconds: int = Field(default=1800, ge=1)
     retry_limit: int = Field(default=0, ge=0)
     required_outputs: list[str] = Field(default_factory=list)
+    conditions: list[ConditionSpec] = Field(default_factory=list)
     gate_ids: list[str] = Field(default_factory=list)
     escalation_required: bool = False
-    status: Literal["pending", "running", "passed", "failed", "blocked", "skipped"] = "pending"
+    manual_handoff: bool = False
+    task_id: Optional[str] = None
+    status: Literal[
+        "pending",
+        "running",
+        "passed",
+        "failed",
+        "blocked",
+        "skipped",
+        "waiting_manual",
+    ] = "pending"
 
 
 class Runbook(DeterministicModel):
@@ -105,6 +266,7 @@ class BlockerEvent(DeterministicModel):
         "runtime",
         "security",
         "cost",
+        "manual",
     ]
     severity: Literal["low", "medium", "high", "critical"] = "medium"
     message: str

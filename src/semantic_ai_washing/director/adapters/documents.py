@@ -8,6 +8,10 @@ from zipfile import ZipFile
 
 import xml.etree.ElementTree as ET
 
+from semantic_ai_washing.director.core.roadmap_model import (
+    load_roadmap_model,
+    roadmap_summary_dict,
+)
 from semantic_ai_washing.director.core.utils import now_utc_iso, sha256_file
 
 _WORD_NAMESPACE = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
@@ -117,3 +121,8 @@ def summarize_document(path: str, max_points: int = 200) -> dict:
         "risks": risks[:max_points],
         "iterations": iterations,
     }
+
+
+def summarize_roadmap_model(path: str) -> dict:
+    model = load_roadmap_model(path)
+    return roadmap_summary_dict(model=model, source_path=path, source_sha256=sha256_file(path))

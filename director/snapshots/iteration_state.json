@@ -1,7 +1,7 @@
 {
   "source_path": "docs/iteration_log.md",
-  "source_sha256": "7a52ab8c802220a402ba45581f7dc185bcb96d1402c76dc31f8fd92a91c4344f",
-  "ingested_at": "2026-03-03T02:45:50.207446+00:00",
+  "source_sha256": "eadf506f451326124f3d71dc2ce6ba671ac005ca0d890c9b320f954324fa2889",
+  "ingested_at": "2026-03-05T22:53:21.770950+00:00",
   "iteration_count": 2,
   "iterations": [
     {
@@ -21,7 +21,12 @@
         "director-foundation",
         "director-foundation",
         "stabilization-main-director-i1",
-        "stabilization-main-director-i1"
+        "stabilization-main-director-i1",
+        "stabilization-main-director-i1",
+        "label-expansion-recovery",
+        "label-expansion-recovery",
+        "irr-validation",
+        "irr-validation"
       ]
     }
   ],
@@ -165,6 +170,86 @@
         "Commits:",
         "CI status:"
       ]
+    },
+    {
+      "name": "stabilization-main-director-i1",
+      "status_label": "closeout",
+      "details": [
+        "Date: 2026-03-03",
+        "Branch: `main`",
+        "Goal: Complete stabilization merge and publish a clean main baseline with truthful deferred blocker handling.",
+        "Deliverables:",
+        "Validation run:",
+        "Risks/issues encountered:",
+        "Mitigation/resolution:",
+        "Deferred blockers (if any):",
+        "Commits:",
+        "CI status:"
+      ]
+    },
+    {
+      "name": "label-expansion-recovery",
+      "status_label": "start",
+      "details": [
+        "Date: 2026-03-03",
+        "Branch: `main`",
+        "Goal: Generate and execute a bounded non-stalling recovery runbook for Iteration 1 Phase 1 while preserving canonical strict-gate semantics.",
+        "Deliverables (planned):",
+        "Validation run (planned):",
+        "Risks/issues encountered:",
+        "Mitigation/resolution:",
+        "Deferred blockers (if any):",
+        "Commits:",
+        "CI status:"
+      ]
+    },
+    {
+      "name": "label-expansion-recovery",
+      "status_label": "execution update",
+      "details": [
+        "Date: 2026-03-03",
+        "Branch: `main`",
+        "Goal: Execute bounded recovery runbook and verify non-stalling behavior with explicit blocker/defer path.",
+        "Deliverables implemented:",
+        "Validation run:",
+        "Risks/issues encountered:",
+        "Mitigation/resolution:",
+        "Deferred blockers (if any):",
+        "Commits:",
+        "CI status:"
+      ]
+    },
+    {
+      "name": "irr-validation",
+      "status_label": "start",
+      "details": [
+        "Date: 2026-03-03",
+        "Branch: `iteration1/irr-validation`",
+        "Goal: Implement Phase 2 IRR gate workflow (subset prep, second-rater template, \u03ba computation, adjudication scaffolding) with director-gated infrastructure-mode execution.",
+        "Deliverables (planned):",
+        "Validation run (planned):",
+        "Risks/issues encountered:",
+        "Mitigation/resolution:",
+        "Deferred blockers (if any):",
+        "Commits:",
+        "CI status:"
+      ]
+    },
+    {
+      "name": "irr-validation",
+      "status_label": "execution update",
+      "details": [
+        "Date: 2026-03-03",
+        "Branch: `iteration1/irr-validation`",
+        "Outcome:",
+        "Validation run:",
+        "Artifacts generated:",
+        "Risks/issues encountered:",
+        "Mitigation/resolution:",
+        "Deferred blockers (if any):",
+        "Commits:",
+        "CI status:"
+      ]
     }
   ],
   "global_gates": [
@@ -190,5 +275,5 @@
     "R7 scope control maintained (no retraining/calibration introduced).",
     "R2 class-balance and sample-size gate remains failed."
   ],
-  "last_successful_gate": "unresolved Phase 1 dataset size/class-balance gate remains deferred; not marked pass."
+  "last_successful_gate": "infrastructure mode emitted explicit deferred IRR status artifacts and did not falsely mark strict \u03ba pass."
 }

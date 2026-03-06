@@ -12,6 +12,12 @@ import yaml
 from semantic_ai_washing.director.core.audit import default_provenance, write_audit_record
 from semantic_ai_washing.director.core.cost import CostController
 from semantic_ai_washing.director.core.llm import refine_plan_markdown
+from semantic_ai_washing.director.core.roadmap_model import (
+    find_phase,
+    load_roadmap_model,
+    resolve_model_path,
+)
+from semantic_ai_washing.director.core.task_graph import build_task_graph
 from semantic_ai_washing.director.core.utils import (
     dump_json,
     ensure_dir,
@@ -21,8 +27,8 @@ from semantic_ai_washing.director.core.utils import (
 )
 from semantic_ai_washing.director.policies import DEFAULT_RISK_REGISTER
 from semantic_ai_washing.director.schemas import (
-    DecisionRecord,
     ExecutionStep,
+    DecisionRecord,
     PhaseGate,
     RiskRegisterEntry,
     Runbook,
@@ -78,6 +84,9 @@ class PlannerEngine:
         artifact_map = profile.get("phase_artifact_map", {})
         phase_key = f"iteration{iteration_id}/{phase_name}"
         required_outputs = [str(path) for path in artifact_map.get(phase_key, [])]
+
+        if self._phase_spec(iteration_id, phase_name) is not None:
+            required_outputs = list(self._phase_spec(iteration_id, phase_name).required_artifacts)
         return [
             PhaseGate(
                 gate_id=f"{phase_name}-gate-001",
@@ -134,6 +143,117 @@ class PlannerEngine:
 
         return []
 
+    def _roadmap_model(self):
+        profile = self.config.get("project_profile", {})
+        flags = profile.get("feature_flags", {})
+        if not flags.get("use_task_graph_planner", True):
+            return None
+        configured_path = profile.get("roadmap_model_path", "")
+        if not configured_path:
+            return None
+        resolved = resolve_model_path(self.repo_root, configured_path)
+        if not resolved.exists():
+            return None
+        return load_roadmap_model(resolved)
+
+    def _phase_spec(self, iteration_id: str, phase_name: str):
+        model = self._roadmap_model()
+        if model is None:
+            return None
+        return find_phase(model, iteration_id=iteration_id, phase_name=phase_name)
+
+    def _build_task_steps(
+        self,
+        iteration_id: str,
+        phase_name: str,
+        phase_timeout: int,
+    ) -> list[ExecutionStep]:
+        model = self._roadmap_model()
+        phase_spec = self._phase_spec(iteration_id, phase_name)
+        if model is None or phase_spec is None:
+            return []
+
+        graph = build_task_graph(model)
+        ordered_task_ids = graph.topological_order(
+            task_ids=[task.task_id for task in phase_spec.tasks]
+        )
+        steps: list[ExecutionStep] = []
+        step_counter = 0
+
+        for task_id in ordered_task_ids:
+            task = graph.tasks_by_id[task_id]
+            output_paths = [artifact.path for artifact in task.outputs if artifact.required]
+
+            step_counter += 1
+            steps.append(
+                ExecutionStep(
+                    step_id=f"step-{step_counter:03d}",
+                    title=f"Task precondition: {task.title}",
+                    description=f"Evaluate task preconditions for {task.task_id}",
+                    command=None,
+                    timeout_seconds=phase_timeout,
+                    conditions=task.preconditions,
+                    task_id=task.task_id,
+                    escalation_required=True,
+                )
+            )
+
+            if task.manual_handoff:
+                step_counter += 1
+                steps.append(
+                    ExecutionStep(
+                        step_id=f"step-{step_counter:03d}",
+                        title=f"Manual handoff: {task.title}",
+                        description=f"Await manual deliverables for {task.task_id}",
+                        command=None,
+                        timeout_seconds=phase_timeout,
+                        required_outputs=output_paths,
+                        manual_handoff=True,
+                        task_id=task.task_id,
+                    )
+                )
+            elif task.commands:
+                for command in task.commands:
+                    step_counter += 1
+                    steps.append(
+                        ExecutionStep(
+                            step_id=f"step-{step_counter:03d}",
+                            title=f"Task command: {task.title}",
+                            description=f"Execute task command for {task.task_id}",
+                            command=command,
+                            timeout_seconds=phase_timeout,
+                            task_id=task.task_id,
+                        )
+                    )
+            else:
+                step_counter += 1
+                steps.append(
+                    ExecutionStep(
+                        step_id=f"step-{step_counter:03d}",
+                        title=f"Task command: {task.title}",
+                        description=f"No-op task stage for {task.task_id}",
+                        command=None,
+                        timeout_seconds=phase_timeout,
+                        task_id=task.task_id,
+                    )
+                )
+
+            step_counter += 1
+            steps.append(
+                ExecutionStep(
+                    step_id=f"step-{step_counter:03d}",
+                    title=f"Task verify: {task.title}",
+                    description=f"Verify outputs and quality checks for {task.task_id}",
+                    command=None,
+                    timeout_seconds=phase_timeout,
+                    required_outputs=output_paths,
+                    conditions=task.quality_checks,
+                    task_id=task.task_id,
+                )
+            )
+
+        return steps
+
     def _build_steps(
         self, iteration_id: str, phase_name: str, snapshots: dict[str, Any]
     ) -> list[ExecutionStep]:
@@ -145,7 +265,6 @@ class PlannerEngine:
         validation_commands = [
             str(item) for item in profile.get("canonical_validation_commands", [])
         ]
-        commands = self._phase_commands(iteration_id, phase_name, snapshots)
         steps: list[ExecutionStep] = []
 
         # Add a deterministic snapshot sanity step first.
@@ -180,19 +299,32 @@ class PlannerEngine:
                 )
             )
 
-        for idx, command in enumerate(commands, start=1):
-            step_id = f"step-{step_counter:03d}"
-            step_counter += 1
-            steps.append(
-                ExecutionStep(
-                    step_id=step_id,
-                    title=f"Phase command {idx}",
-                    description=f"Execute: {command}",
-                    command=command,
-                    timeout_seconds=phase_timeout,
-                    escalation_required=False,
+        task_steps = self._build_task_steps(iteration_id, phase_name, phase_timeout)
+        if task_steps:
+            for step in task_steps:
+                step.step_id = f"step-{step_counter:03d}"
+                step_counter += 1
+                steps.append(step)
+        else:
+            commands = self._phase_commands(iteration_id, phase_name, snapshots)
+            if not commands:
+                raise ValueError(
+                    "No modeled tasks or fallback commands configured for "
+                    f"iteration{iteration_id}/{phase_name}."
                 )
-            )
+            for idx, command in enumerate(commands, start=1):
+                step_id = f"step-{step_counter:03d}"
+                step_counter += 1
+                steps.append(
+                    ExecutionStep(
+                        step_id=step_id,
+                        title=f"Phase command {idx}",
+                        description=f"Execute: {command}",
+                        command=command,
+                        timeout_seconds=phase_timeout,
+                        escalation_required=False,
+                    )
+                )
 
         steps.append(
             ExecutionStep(

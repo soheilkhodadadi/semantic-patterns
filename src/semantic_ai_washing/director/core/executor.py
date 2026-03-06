@@ -11,6 +11,7 @@ import yaml
 from semantic_ai_washing.director.core.audit import write_audit_record
 from semantic_ai_washing.director.core.decision import DecisionEngine
 from semantic_ai_washing.director.core.gates import GateEvaluator
+from semantic_ai_washing.director.core.sensors import evaluate_condition
 from semantic_ai_washing.director.core.utils import dump_json, git_info, now_utc_iso, run_command
 from semantic_ai_washing.director.schemas import BlockerEvent, Runbook
 
@@ -165,17 +166,50 @@ class RunbookExecutor:
                     self._save_state(state)
                     return self._block_and_decide(state, blocker)
 
+            condition_results = []
+            failed_conditions = []
+            for condition in step.conditions:
+                result = evaluate_condition(condition, repo_root=self.repo_root)
+                condition_results.append(result)
+                if not result["passed"] and condition.on_fail != "warn":
+                    failed_conditions.append(result)
+            if condition_results:
+                state["step_results"][step.step_id]["condition_results"] = condition_results
+
+            if failed_conditions:
+                blocker_type = "manual" if step.manual_handoff else "gate"
+                message = (
+                    failed_conditions[0].get("message") or f"Step conditions failed: {step.title}"
+                )
+                state["step_results"][step.step_id]["status"] = (
+                    "waiting_manual" if step.manual_handoff else "failed"
+                )
+                self._save_state(state)
+                return self._block_and_decide(
+                    state,
+                    BlockerEvent(
+                        blocker_id=f"{runbook.runbook_id}-{step.step_id}-condition",
+                        blocker_type=blocker_type,
+                        severity="high",
+                        message=message,
+                        step_id=step.step_id,
+                        context={"failed_conditions": failed_conditions, "task_id": step.task_id},
+                    ),
+                )
+
             missing_outputs = [path for path in step.required_outputs if not Path(path).exists()]
             if missing_outputs:
                 blocker = BlockerEvent(
                     blocker_id=f"{runbook.runbook_id}-{step.step_id}-data",
-                    blocker_type="data",
+                    blocker_type="manual" if step.manual_handoff else "data",
                     severity="high",
                     message=f"Required outputs missing for {step.step_id}",
                     step_id=step.step_id,
                     context={"missing_outputs": missing_outputs},
                 )
-                state["step_results"][step.step_id]["status"] = "failed"
+                state["step_results"][step.step_id]["status"] = (
+                    "waiting_manual" if step.manual_handoff else "failed"
+                )
                 state["step_results"][step.step_id]["missing_outputs"] = missing_outputs
                 self._save_state(state)
                 return self._block_and_decide(state, blocker)

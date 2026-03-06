@@ -1,136 +1,4148 @@
 {
-  "source_path": "docs/director/roadmap_master.md",
-  "source_sha256": "06df4040ebe98b62e625ca0692d932a7e23aa660b3813f26b4e799a10b269ec0",
-  "ingested_at": "2026-03-03T02:45:50.205989+00:00",
-  "paragraph_count": 43,
-  "key_points": [
-    "# Roadmap Master",
-    "This document is the canonical in-repo roadmap source for director ingestion.",
-    "## Iteration 0 - Stabilise the Extraction and Packaging",
-    "Goal: Establish a reliable packaged baseline that can run end-to-end on a sample year.",
-    "- Fix sentence/page fragment reconstruction in extraction.",
-    "- Package under `src/semantic_ai_washing` with canonical module execution.",
-    "- Add logging and minimal CI + pytest baseline.",
-    "- Document run flow and known limitations.",
-    "Outcome: Baseline pipeline runs on sample data with reproducible outputs.",
-    "## Iteration 1 - Expand Labels and Retrain Centroids",
-    "Goal: Improve classifier reliability and readiness while preserving science gates.",
-    "- Expand labeled dataset, dedupe, and enforce leakage-safe splits.",
-    "- Run IRR gate (`kappa >= 0.6`) before retraining.",
-    "- Re-embed labels and recompute centroids.",
-    "- Validate held-out accuracy (`>= 0.80`) on canonical evaluator.",
-    "- Add observability for A/S/I distributions and batch integrity checks.",
-    "Outcome: Retrained classifier with reproducibility metadata and explicit gate evidence.",
-    "## Iteration 2 - Scale Classification and Integrate Cross-walks",
-    "Goal: Produce full-sample sentence and firm-year outputs for downstream analysis.",
-    "- Run extraction/classification for broader year scope.",
-    "- Aggregate sentence outputs to firm-year metrics.",
-    "- Refresh cross-walk merges and patent/control integrations.",
-    "- Add schema validation and integration checks for merged tables.",
-    "Outcome: Stable firm-year panel inputs with validated data lineage.",
-    "## Iteration 3 - Evaluate OpenAI API Strategy",
-    "Goal: Decide whether and where LLM classification should augment existing pipeline.",
-    "- Run stratified pilot comparing MPNet vs LLM labels.",
-    "- Evaluate cost/time/quality trade-offs.",
-    "- Consider hybrid routing for borderline or ambiguous cases.",
-    "- Preserve deterministic MPNet path as baseline fallback.",
-    "Outcome: Explicit decision record for MPNet-only vs hybrid LLM strategy.",
-    "## Iteration 4 - Final Integration and Hardening",
-    "Goal: Deliver reproducible, auditable, publication-ready system.",
-    "- Assemble final panel and run regression/robustness workflows.",
-    "- Finalize docs, packaging, release artifacts, and changelog.",
-    "- Harden operations (failure handling, metrics, reproducibility checks).",
-    "Outcome: Production-ready research package with full audit trail.",
-    "## Global Gates",
-    "- IRR gate must pass before retraining.",
-    "- Held-out accuracy gate must pass before scaling claims.",
-    "- Leakage gate must hold across train/validation/test.",
-    "- Artifacts must include hashes, configs, and commit provenance.",
-    "- Deferred blockers must include expiry (`until_iteration`, `until_phase`) and re-check criteria."
-  ],
-  "gates": [
-    "- Run IRR gate (`kappa >= 0.6`) before retraining.",
-    "Outcome: Retrained classifier with reproducibility metadata and explicit gate evidence.",
-    "- IRR gate must pass before retraining.",
-    "- Held-out accuracy gate must pass before scaling claims.",
-    "- Leakage gate must hold across train/validation/test."
-  ],
-  "risks": [],
+  "source_path": "director/model/roadmap_model.yaml",
+  "source_sha256": "d3700831d2786fcb36dac789a95a75529209cf4dc8e56eee74afa538818a1765",
+  "generated_from": "roadmap_model",
   "iterations": [
     {
-      "iteration_id": "0",
-      "title": "Stabilise the Extraction and Packaging",
-      "goal": "Establish a reliable packaged baseline that can run end-to-end on a sample year.",
-      "areas": [
-        "Fix sentence/page fragment reconstruction in extraction.",
-        "Package under `src/semantic_ai_washing` with canonical module execution.",
-        "Add logging and minimal CI + pytest baseline.",
-        "Document run flow and known limitations."
-      ],
-      "outcomes": [
-        "Baseline pipeline runs on sample data with reproducible outputs."
+      "schema_version": "1.0.0",
+      "iteration_id": "1",
+      "title": "Expand labels and retrain centroids",
+      "goal": "Improve classifier reliability and scientific readiness while preserving truthful gate semantics.",
+      "phases": [
+        {
+          "schema_version": "1.0.0",
+          "phase_id": "iteration1/diagnostics-nlp",
+          "title": "Diagnostics Baseline and Failure Taxonomy",
+          "goal": "Establish a factual baseline and artifact fingerprints before changing the science pipeline.",
+          "depends_on": [],
+          "canonical": true,
+          "required_artifacts": [
+            "reports/iteration1/phase0/baseline_eval_metrics.json",
+            "reports/iteration1/phase0/baseline_eval_confusion_matrix.csv",
+            "reports/iteration1/phase0/run_metadata.json",
+            "reports/iteration1/phase0/baseline_report.md"
+          ],
+          "tasks": [
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.diagnostics.pipeline_map_confirmation",
+              "title": "Pipeline map confirmation",
+              "description": "Confirm the canonical extraction, classification, aggregation, and evaluation entry points.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/diagnostics-nlp",
+              "kind": "diagnostic",
+              "depends_on": [],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "pipeline_map",
+                  "path": "docs/pipeline_map.md",
+                  "kind": "markdown",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.diagnostics.pipeline_map_confirmation"
+                  ],
+                  "consumed_by": [
+                    "iteration1.diagnostics.baseline_report_assembly"
+                  ]
+                }
+              ],
+              "preconditions": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration1.diagnostics.pipeline_map.exists",
+                  "kind": "artifact_exists",
+                  "target": "docs/pipeline_map.md",
+                  "operator": "==",
+                  "expected": true,
+                  "on_fail": "block",
+                  "message": "Pipeline map must exist for diagnostics baseline.",
+                  "reroute_to": []
+                }
+              ],
+              "quality_checks": [],
+              "commands": [],
+              "manual_handoff": false,
+              "risks": [
+                "R5",
+                "R6"
+              ],
+              "estimated_effort": 1,
+              "risk_reduction": 4,
+              "automation_level": "partial",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.diagnostics.heldout_baseline_evaluation",
+              "title": "Held-out baseline evaluation",
+              "description": "Run the canonical held-out evaluator and persist detailed metrics.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/diagnostics-nlp",
+              "kind": "validation",
+              "depends_on": [
+                "iteration1.diagnostics.pipeline_map_confirmation"
+              ],
+              "inputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "held_out",
+                  "path": "data/validation/held_out_sentences.csv",
+                  "kind": "dataset",
+                  "required": true,
+                  "fingerprint_required": true,
+                  "produced_by": [],
+                  "consumed_by": [
+                    "iteration1.diagnostics.heldout_baseline_evaluation"
+                  ]
+                }
+              ],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "eval_metrics",
+                  "path": "reports/iteration1/phase0/baseline_eval_metrics.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.diagnostics.heldout_baseline_evaluation"
+                  ],
+                  "consumed_by": [
+                    "iteration1.diagnostics.baseline_report_assembly"
+                  ]
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "eval_confusion",
+                  "path": "reports/iteration1/phase0/baseline_eval_confusion_matrix.csv",
+                  "kind": "csv",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.diagnostics.heldout_baseline_evaluation"
+                  ],
+                  "consumed_by": [
+                    "iteration1.diagnostics.failure_taxonomy_generation"
+                  ]
+                }
+              ],
+              "preconditions": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration1.diagnostics.heldout.exists",
+                  "kind": "artifact_exists",
+                  "target": "data/validation/held_out_sentences.csv",
+                  "operator": "==",
+                  "expected": true,
+                  "on_fail": "block",
+                  "message": "Held-out dataset missing.",
+                  "reroute_to": []
+                }
+              ],
+              "quality_checks": [],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.tests.evaluate_classifier_on_held_out --output-dir reports/iteration1/phase0"
+              ],
+              "manual_handoff": false,
+              "risks": [
+                "R5",
+                "R6"
+              ],
+              "estimated_effort": 2,
+              "risk_reduction": 7,
+              "automation_level": "full",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.diagnostics.tiny_batch_sanity_classification",
+              "title": "Tiny batch sanity classification",
+              "description": "Run the baseline diagnostics sample classification flow on a bounded 2024 subset.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/diagnostics-nlp",
+              "kind": "build",
+              "depends_on": [
+                "iteration1.diagnostics.heldout_baseline_evaluation"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "batch_distribution",
+                  "path": "reports/iteration1/phase0/baseline_batch_distribution.csv",
+                  "kind": "csv",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.diagnostics.tiny_batch_sanity_classification"
+                  ],
+                  "consumed_by": [
+                    "iteration1.diagnostics.baseline_report_assembly"
+                  ]
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "run_metadata",
+                  "path": "reports/iteration1/phase0/run_metadata.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": true,
+                  "produced_by": [
+                    "iteration1.diagnostics.tiny_batch_sanity_classification"
+                  ],
+                  "consumed_by": [
+                    "iteration1.diagnostics.batch_coverage_check"
+                  ]
+                }
+              ],
+              "preconditions": [],
+              "quality_checks": [],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.diagnostics.phase0_baseline --years 2024 --limit 20 --force --two-stage --rule-boosts --tau 0.07 --eps-irr 0.03 --min-tokens 6 --output-dir reports/iteration1/phase0"
+              ],
+              "manual_handoff": false,
+              "risks": [
+                "R5",
+                "R6"
+              ],
+              "estimated_effort": 3,
+              "risk_reduction": 8,
+              "automation_level": "full",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.diagnostics.batch_coverage_check",
+              "title": "Batch coverage check",
+              "description": "Verify that extracted and classified sample counts align and that no silent skips occurred.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/diagnostics-nlp",
+              "kind": "validation",
+              "depends_on": [
+                "iteration1.diagnostics.tiny_batch_sanity_classification"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "run_metadata",
+                  "path": "reports/iteration1/phase0/run_metadata.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": true,
+                  "produced_by": [
+                    "iteration1.diagnostics.tiny_batch_sanity_classification"
+                  ],
+                  "consumed_by": []
+                }
+              ],
+              "preconditions": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration1.diagnostics.coverage.explicit",
+                  "kind": "json_field_compare",
+                  "target": "reports/iteration1/phase0/run_metadata.json::coverage.mismatch_count",
+                  "operator": "==",
+                  "expected": 0,
+                  "on_fail": "block",
+                  "message": "Silent skip or coverage mismatch detected in diagnostics baseline.",
+                  "reroute_to": []
+                }
+              ],
+              "quality_checks": [],
+              "commands": [],
+              "manual_handoff": false,
+              "risks": [
+                "R5"
+              ],
+              "estimated_effort": 1,
+              "risk_reduction": 8,
+              "automation_level": "partial",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.diagnostics.failure_taxonomy_generation",
+              "title": "Failure taxonomy generation",
+              "description": "Persist held-out error transitions for later comparison.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/diagnostics-nlp",
+              "kind": "analysis",
+              "depends_on": [
+                "iteration1.diagnostics.heldout_baseline_evaluation"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "failure_taxonomy",
+                  "path": "reports/iteration1/phase0/baseline_failure_taxonomy.csv",
+                  "kind": "csv",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.diagnostics.failure_taxonomy_generation"
+                  ],
+                  "consumed_by": [
+                    "iteration1.diagnostics.baseline_report_assembly"
+                  ]
+                }
+              ],
+              "preconditions": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration1.diagnostics.failure_taxonomy.exists",
+                  "kind": "artifact_exists",
+                  "target": "reports/iteration1/phase0/baseline_failure_taxonomy.csv",
+                  "operator": "==",
+                  "expected": true,
+                  "on_fail": "block",
+                  "message": "Failure taxonomy output missing.",
+                  "reroute_to": []
+                }
+              ],
+              "quality_checks": [],
+              "commands": [],
+              "manual_handoff": false,
+              "risks": [
+                "R6"
+              ],
+              "estimated_effort": 1,
+              "risk_reduction": 5,
+              "automation_level": "partial",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.diagnostics.baseline_report_assembly",
+              "title": "Baseline report assembly",
+              "description": "Collect metrics, coverage, and taxonomy evidence in a human-readable report.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/diagnostics-nlp",
+              "kind": "reporting",
+              "depends_on": [
+                "iteration1.diagnostics.batch_coverage_check",
+                "iteration1.diagnostics.failure_taxonomy_generation"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "baseline_report",
+                  "path": "reports/iteration1/phase0/baseline_report.md",
+                  "kind": "markdown",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.diagnostics.baseline_report_assembly"
+                  ],
+                  "consumed_by": []
+                }
+              ],
+              "preconditions": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration1.diagnostics.baseline_report.exists",
+                  "kind": "artifact_exists",
+                  "target": "reports/iteration1/phase0/baseline_report.md",
+                  "operator": "==",
+                  "expected": true,
+                  "on_fail": "block",
+                  "message": "Baseline report missing.",
+                  "reroute_to": []
+                }
+              ],
+              "quality_checks": [],
+              "commands": [],
+              "manual_handoff": false,
+              "risks": [
+                "R5",
+                "R6"
+              ],
+              "estimated_effort": 1,
+              "risk_reduction": 4,
+              "automation_level": "partial",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true
+            }
+          ]
+        },
+        {
+          "schema_version": "1.0.0",
+          "phase_id": "iteration1/label-expansion",
+          "title": "Label Expansion and Dataset Hygiene",
+          "goal": "Expand the labeled dataset with leakage-safe sampling and QA, without falsely passing the strict canonical science gate.",
+          "depends_on": [
+            "iteration1/diagnostics-nlp"
+          ],
+          "canonical": true,
+          "required_artifacts": [
+            "reports/iteration1/phase1/sampling_summary.json",
+            "reports/iteration1/phase1/dedupe_report.json",
+            "reports/iteration1/phase1/qa_report.json",
+            "reports/iteration1/phase1/leakage_overlap_report.csv"
+          ],
+          "tasks": [
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.label_expansion.audit_source_labeled_dataset",
+              "title": "Audit source labeled dataset",
+              "description": "Verify the base labeled dataset exists and has non-trivial size.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/label-expansion",
+              "kind": "diagnostic",
+              "depends_on": [],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "base_labeled_source",
+                  "path": "data/validation/hand_labeled_ai_sentences_labeled_cleaned_revised.csv",
+                  "kind": "dataset",
+                  "required": true,
+                  "fingerprint_required": true,
+                  "produced_by": [],
+                  "consumed_by": [
+                    "iteration1.label_expansion.build_labeling_sample"
+                  ]
+                }
+              ],
+              "preconditions": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration1.label_expansion.base_source.exists",
+                  "kind": "artifact_exists",
+                  "target": "data/validation/hand_labeled_ai_sentences_labeled_cleaned_revised.csv",
+                  "operator": "==",
+                  "expected": true,
+                  "on_fail": "block",
+                  "message": "Base labeled dataset missing.",
+                  "reroute_to": []
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration1.label_expansion.base_source.rows",
+                  "kind": "csv_row_count_gte",
+                  "target": "data/validation/hand_labeled_ai_sentences_labeled_cleaned_revised.csv",
+                  "operator": ">=",
+                  "expected": 100,
+                  "on_fail": "block",
+                  "message": "Base labeled dataset is too small for Iteration 1 expansion.",
+                  "reroute_to": []
+                }
+              ],
+              "quality_checks": [],
+              "commands": [],
+              "manual_handoff": false,
+              "risks": [
+                "R1",
+                "R3"
+              ],
+              "estimated_effort": 1,
+              "risk_reduction": 6,
+              "automation_level": "partial",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.label_expansion.audit_candidate_sentence_integrity",
+              "title": "Audit candidate sentence integrity",
+              "description": "Evaluate whether the candidate labeled dataset is clean enough for manual extension and future IRR work.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/label-expansion",
+              "kind": "diagnostic",
+              "depends_on": [
+                "iteration1.label_expansion.audit_source_labeled_dataset"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "recovery_preqa",
+                  "path": "data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv",
+                  "kind": "dataset",
+                  "required": false,
+                  "fingerprint_required": false,
+                  "produced_by": [],
+                  "consumed_by": [
+                    "iteration1.shared.audit_sentence_integrity"
+                  ]
+                }
+              ],
+              "preconditions": [],
+              "quality_checks": [],
+              "commands": [],
+              "manual_handoff": false,
+              "risks": [
+                "R1",
+                "R5"
+              ],
+              "estimated_effort": 1,
+              "risk_reduction": 5,
+              "automation_level": "partial",
+              "on_fail": "warn",
+              "reroute_to": [],
+              "evidence_required": false
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.label_expansion.build_labeling_sample",
+              "title": "Build labeling sample",
+              "description": "Generate the strict canonical Phase 1 sample and metadata.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/label-expansion",
+              "kind": "build",
+              "depends_on": [
+                "iteration1.label_expansion.audit_source_labeled_dataset"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "sampling_summary",
+                  "path": "reports/iteration1/phase1/sampling_summary.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.label_expansion.build_labeling_sample"
+                  ],
+                  "consumed_by": [
+                    "iteration1.label_expansion.manual_labeling_handoff"
+                  ]
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "labeling_sheet",
+                  "path": "data/labels/iteration1/labeling_sheet_for_manual.csv",
+                  "kind": "csv",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.label_expansion.build_labeling_sample"
+                  ],
+                  "consumed_by": [
+                    "iteration1.label_expansion.manual_labeling_handoff"
+                  ]
+                }
+              ],
+              "preconditions": [],
+              "quality_checks": [],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.labeling.build_labeling_sample --target-total 400 --held-out data/validation/held_out_sentences.csv --base-labeled data/validation/hand_labeled_ai_sentences_labeled_cleaned_revised.csv --input-dir data/processed/sec --controls data/interim/controls/controls_by_firm_year.csv --crosswalk data/externals/crosswalks/cik_gvkey.csv --output-dir data/labels/iteration1 --report-dir reports/iteration1/phase1 --seed 20260227"
+              ],
+              "manual_handoff": false,
+              "risks": [
+                "R2",
+                "R3",
+                "R5"
+              ],
+              "estimated_effort": 4,
+              "risk_reduction": 8,
+              "automation_level": "full",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.label_expansion.manual_labeling_handoff",
+              "title": "Manual labeling handoff",
+              "description": "Human labeling of the generated sample sheet.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/label-expansion",
+              "kind": "manual",
+              "depends_on": [
+                "iteration1.label_expansion.build_labeling_sample"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "labeling_sheet_completed",
+                  "path": "data/labels/iteration1/labeling_sheet_completed.csv",
+                  "kind": "csv",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.label_expansion.manual_labeling_handoff"
+                  ],
+                  "consumed_by": [
+                    "iteration1.label_expansion.dedupe_merge"
+                  ]
+                }
+              ],
+              "preconditions": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration1.label_expansion.label_sheet.exists",
+                  "kind": "artifact_exists",
+                  "target": "data/labels/iteration1/labeling_sheet_for_manual.csv",
+                  "operator": "==",
+                  "expected": true,
+                  "on_fail": "block",
+                  "message": "Labeling sheet must exist before manual labeling.",
+                  "reroute_to": []
+                }
+              ],
+              "quality_checks": [],
+              "commands": [],
+              "manual_handoff": true,
+              "risks": [
+                "R1",
+                "R2"
+              ],
+              "estimated_effort": 8,
+              "risk_reduction": 7,
+              "automation_level": "manual",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.label_expansion.dedupe_merge",
+              "title": "Dedupe merge",
+              "description": "Merge base and newly labeled rows while excluding leakage and conflicts.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/label-expansion",
+              "kind": "build",
+              "depends_on": [
+                "iteration1.label_expansion.manual_labeling_handoff"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "dedupe_report",
+                  "path": "reports/iteration1/phase1/dedupe_report.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.label_expansion.dedupe_merge"
+                  ],
+                  "consumed_by": [
+                    "iteration1.label_expansion.dataset_qa"
+                  ]
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "preqa_dataset",
+                  "path": "data/labels/iteration1/expanded_labeled_sentences_preqa.csv",
+                  "kind": "dataset",
+                  "required": true,
+                  "fingerprint_required": true,
+                  "produced_by": [
+                    "iteration1.label_expansion.dedupe_merge"
+                  ],
+                  "consumed_by": [
+                    "iteration1.label_expansion.dataset_qa"
+                  ]
+                }
+              ],
+              "preconditions": [],
+              "quality_checks": [],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.labeling.dedupe_labeled_sentences --base data/labels/iteration1/base_labeled_nonleaky.csv --new data/labels/iteration1/labeling_sheet_completed.csv --held-out data/validation/held_out_sentences.csv --near-threshold 0.95 --output data/labels/iteration1/expanded_labeled_sentences_preqa.csv --uncertain-output data/labels/iteration1/uncertain_rows.csv --conflicts-output data/labels/iteration1/label_conflicts.csv --report reports/iteration1/phase1/dedupe_report.json"
+              ],
+              "manual_handoff": false,
+              "risks": [
+                "R1",
+                "R3",
+                "R6"
+              ],
+              "estimated_effort": 3,
+              "risk_reduction": 8,
+              "automation_level": "full",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.label_expansion.dataset_qa",
+              "title": "Dataset QA",
+              "description": "Enforce canonical size, class floor, and leakage checks for the strict Phase 1 dataset.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/label-expansion",
+              "kind": "validation",
+              "depends_on": [
+                "iteration1.label_expansion.dedupe_merge"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "qa_report",
+                  "path": "reports/iteration1/phase1/qa_report.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.label_expansion.dataset_qa"
+                  ],
+                  "consumed_by": [
+                    "iteration1.label_expansion.metadata_report_generation"
+                  ]
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "leakage_report",
+                  "path": "reports/iteration1/phase1/leakage_overlap_report.csv",
+                  "kind": "csv",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.label_expansion.dataset_qa"
+                  ],
+                  "consumed_by": []
+                }
+              ],
+              "preconditions": [],
+              "quality_checks": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration1.label_expansion.qa.pass",
+                  "kind": "json_field_compare",
+                  "target": "reports/iteration1/phase1/qa_report.json::summary.status",
+                  "operator": "==",
+                  "expected": "pass",
+                  "on_fail": "block",
+                  "message": "Strict label-expansion QA gate failed.",
+                  "reroute_to": []
+                }
+              ],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.labeling.qa_labeled_dataset --input data/labels/iteration1/expanded_labeled_sentences_preqa.csv --held-out data/validation/held_out_sentences.csv --min-tokens 6 --min-class-count 60 --target-size 400 --output data/labels/iteration1/expanded_labeled_sentences.csv --report reports/iteration1/phase1/qa_report.json --leakage-report reports/iteration1/phase1/leakage_overlap_report.csv"
+              ],
+              "manual_handoff": false,
+              "risks": [
+                "R2",
+                "R3",
+                "R6"
+              ],
+              "estimated_effort": 3,
+              "risk_reduction": 9,
+              "automation_level": "full",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.label_expansion.metadata_report_generation",
+              "title": "Metadata and report generation",
+              "description": "Ensure strict Phase 1 metadata and reports exist for downstream traceability.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/label-expansion",
+              "kind": "reporting",
+              "depends_on": [
+                "iteration1.label_expansion.dataset_qa"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "qa_report",
+                  "path": "reports/iteration1/phase1/qa_report.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.label_expansion.dataset_qa"
+                  ],
+                  "consumed_by": []
+                }
+              ],
+              "preconditions": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration1.label_expansion.qa_report.exists",
+                  "kind": "artifact_exists",
+                  "target": "reports/iteration1/phase1/qa_report.json",
+                  "operator": "==",
+                  "expected": true,
+                  "on_fail": "block",
+                  "message": "Phase 1 QA report missing.",
+                  "reroute_to": []
+                }
+              ],
+              "quality_checks": [],
+              "commands": [],
+              "manual_handoff": false,
+              "risks": [
+                "R6"
+              ],
+              "estimated_effort": 1,
+              "risk_reduction": 4,
+              "automation_level": "partial",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true
+            }
+          ]
+        },
+        {
+          "schema_version": "1.0.0",
+          "phase_id": "iteration1/irr-validation",
+          "title": "IRR Gate",
+          "goal": "Establish IRR infrastructure and prevent IRR execution from proceeding when source sentence quality is inadequate.",
+          "depends_on": [
+            "iteration1/label-expansion"
+          ],
+          "canonical": true,
+          "required_artifacts": [
+            "data/labels/iteration1/irr/irr_subset_master.csv",
+            "data/labels/iteration1/irr/irr_subset_rater2_blinded.csv",
+            "reports/iteration1/phase2_irr/irr_kappa_report.json",
+            "reports/iteration1/phase2_irr/irr_status.json",
+            "data/labels/iteration1/irr/irr_adjudication_sheet.csv",
+            "reports/iteration1/phase2_irr/adjudication_status.json"
+          ],
+          "tasks": [
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.shared.audit_sentence_integrity",
+              "title": "Audit IRR source sentence integrity",
+              "description": "Check whether the IRR source dataset is labelable enough to justify manual IRR work.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/irr-validation",
+              "kind": "diagnostic",
+              "depends_on": [],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "irr_source_dataset",
+                  "path": "data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv",
+                  "kind": "dataset",
+                  "required": true,
+                  "fingerprint_required": true,
+                  "produced_by": [],
+                  "consumed_by": [
+                    "iteration1.irr.prepare_subset"
+                  ]
+                }
+              ],
+              "preconditions": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration1.irr.source.exists",
+                  "kind": "artifact_exists",
+                  "target": "data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv",
+                  "operator": "==",
+                  "expected": true,
+                  "on_fail": "block",
+                  "message": "IRR source dataset missing.",
+                  "reroute_to": []
+                }
+              ],
+              "quality_checks": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration1.irr.source.fragment_rate",
+                  "kind": "sentence_fragment_rate_lte",
+                  "target": "data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv",
+                  "operator": "<=",
+                  "expected": 0.15,
+                  "on_fail": "reroute",
+                  "message": "IRR source fragmentation exceeds threshold.",
+                  "reroute_to": [
+                    "common.remediate_fragmented_sentences",
+                    "common.resample_from_clean_sentence_pool"
+                  ]
+                }
+              ],
+              "commands": [],
+              "manual_handoff": false,
+              "risks": [
+                "R1",
+                "R5"
+              ],
+              "estimated_effort": 2,
+              "risk_reduction": 9,
+              "automation_level": "partial",
+              "on_fail": "reroute",
+              "reroute_to": [
+                "common.remediate_fragmented_sentences",
+                "common.resample_from_clean_sentence_pool"
+              ],
+              "evidence_required": true
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.irr.prepare_subset",
+              "title": "Prepare IRR subset",
+              "description": "Create the stratified IRR master sheet and blinded rater 2 template.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/irr-validation",
+              "kind": "build",
+              "depends_on": [
+                "iteration1.shared.audit_sentence_integrity"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "irr_subset_master",
+                  "path": "data/labels/iteration1/irr/irr_subset_master.csv",
+                  "kind": "csv",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.irr.prepare_subset"
+                  ],
+                  "consumed_by": [
+                    "iteration1.irr.manual_rater2_handoff",
+                    "iteration1.irr.compute_infrastructure_metrics"
+                  ]
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "irr_subset_blinded",
+                  "path": "data/labels/iteration1/irr/irr_subset_rater2_blinded.csv",
+                  "kind": "csv",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.irr.prepare_subset"
+                  ],
+                  "consumed_by": [
+                    "iteration1.irr.manual_rater2_handoff"
+                  ]
+                }
+              ],
+              "preconditions": [],
+              "quality_checks": [],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.labeling.prepare_irr_subset --input data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv --output-dir data/labels/iteration1/irr --report-dir reports/iteration1/phase2_irr --subset-fraction 0.30 --min-per-class 10 --seed 20260303 --blind-mode text_only"
+              ],
+              "manual_handoff": false,
+              "risks": [
+                "R1",
+                "R2"
+              ],
+              "estimated_effort": 3,
+              "risk_reduction": 8,
+              "automation_level": "full",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.irr.manual_rater2_handoff",
+              "title": "Manual second-rater handoff",
+              "description": "Collect blinded labels from a second human rater.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/irr-validation",
+              "kind": "manual",
+              "depends_on": [
+                "iteration1.irr.prepare_subset"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "irr_rater2_completed",
+                  "path": "data/labels/iteration1/irr/irr_subset_rater2_completed.csv",
+                  "kind": "csv",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.irr.manual_rater2_handoff"
+                  ],
+                  "consumed_by": [
+                    "iteration1.irr.compute_infrastructure_metrics",
+                    "iteration1.irr.build_adjudication_sheet",
+                    "iteration1.irr.strict_kappa_recheck"
+                  ]
+                }
+              ],
+              "preconditions": [],
+              "quality_checks": [],
+              "commands": [],
+              "manual_handoff": true,
+              "risks": [
+                "R1"
+              ],
+              "estimated_effort": 8,
+              "risk_reduction": 8,
+              "automation_level": "manual",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.irr.compute_infrastructure_metrics",
+              "title": "Compute infrastructure IRR metrics",
+              "description": "Write pending/pass/fail status artifacts in infrastructure mode without falsely clearing the strict science gate.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/irr-validation",
+              "kind": "validation",
+              "depends_on": [
+                "iteration1.irr.prepare_subset"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "irr_kappa_report",
+                  "path": "reports/iteration1/phase2_irr/irr_kappa_report.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.irr.compute_infrastructure_metrics"
+                  ],
+                  "consumed_by": [
+                    "iteration1.irr.strict_kappa_recheck"
+                  ]
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "irr_status",
+                  "path": "reports/iteration1/phase2_irr/irr_status.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.irr.compute_infrastructure_metrics"
+                  ],
+                  "consumed_by": []
+                }
+              ],
+              "preconditions": [],
+              "quality_checks": [],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.labeling.compute_irr_metrics --master data/labels/iteration1/irr/irr_subset_master.csv --rater2 data/labels/iteration1/irr/irr_subset_rater2_completed.csv --output-report reports/iteration1/phase2_irr/irr_kappa_report.json --output-confusion reports/iteration1/phase2_irr/irr_confusion_matrix.csv --output-transitions reports/iteration1/phase2_irr/irr_transition_counts.csv --output-status reports/iteration1/phase2_irr/irr_status.json --min-kappa 0.60 --gate-mode infrastructure"
+              ],
+              "manual_handoff": false,
+              "risks": [
+                "R1"
+              ],
+              "estimated_effort": 2,
+              "risk_reduction": 7,
+              "automation_level": "full",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.irr.build_adjudication_sheet",
+              "title": "Build adjudication sheet",
+              "description": "Create disagreements and adjudication scaffold, even when rater 2 is still pending.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/irr-validation",
+              "kind": "build",
+              "depends_on": [
+                "iteration1.irr.prepare_subset"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "irr_adjudication_sheet",
+                  "path": "data/labels/iteration1/irr/irr_adjudication_sheet.csv",
+                  "kind": "csv",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.irr.build_adjudication_sheet"
+                  ],
+                  "consumed_by": [
+                    "iteration1.irr.final_adjudicated_merge"
+                  ]
+                },
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "adjudication_status",
+                  "path": "reports/iteration1/phase2_irr/adjudication_status.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.irr.build_adjudication_sheet"
+                  ],
+                  "consumed_by": []
+                }
+              ],
+              "preconditions": [],
+              "quality_checks": [],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.labeling.adjudicate_irr_labels --master data/labels/iteration1/irr/irr_subset_master.csv --rater2 data/labels/iteration1/irr/irr_subset_rater2_completed.csv --output-disagreements data/labels/iteration1/irr/irr_disagreements.csv --output-adjudication data/labels/iteration1/irr/irr_adjudication_sheet.csv --source-dataset data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv --final-output data/labels/iteration1/irr/final_labeled_sentences_recovery_adjudicated.csv --output-status reports/iteration1/phase2_irr/adjudication_status.json --allow-pending"
+              ],
+              "manual_handoff": false,
+              "risks": [
+                "R1"
+              ],
+              "estimated_effort": 2,
+              "risk_reduction": 6,
+              "automation_level": "full",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.irr.strict_kappa_recheck",
+              "title": "Strict kappa recheck",
+              "description": "Run the strict \u03ba gate after rater 2 completion.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/irr-validation",
+              "kind": "validation",
+              "depends_on": [
+                "iteration1.irr.manual_rater2_handoff"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "irr_status_strict",
+                  "path": "reports/iteration1/phase2_irr/irr_status_strict.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.irr.strict_kappa_recheck"
+                  ],
+                  "consumed_by": [
+                    "iteration1.centroid.freeze_adjudicated_dataset"
+                  ]
+                }
+              ],
+              "preconditions": [],
+              "quality_checks": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration1.irr.strict_kappa.pass",
+                  "kind": "json_field_compare",
+                  "target": "reports/iteration1/phase2_irr/irr_status_strict.json::gate_result",
+                  "operator": "==",
+                  "expected": "pass",
+                  "on_fail": "block",
+                  "message": "Strict IRR gate has not passed.",
+                  "reroute_to": []
+                }
+              ],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.labeling.compute_irr_metrics --master data/labels/iteration1/irr/irr_subset_master.csv --rater2 data/labels/iteration1/irr/irr_subset_rater2_completed.csv --output-report reports/iteration1/phase2_irr/irr_kappa_report_strict.json --output-confusion reports/iteration1/phase2_irr/irr_confusion_matrix_strict.csv --output-transitions reports/iteration1/phase2_irr/irr_transition_counts_strict.csv --output-status reports/iteration1/phase2_irr/irr_status_strict.json --min-kappa 0.60 --gate-mode strict"
+              ],
+              "manual_handoff": false,
+              "risks": [
+                "R1"
+              ],
+              "estimated_effort": 2,
+              "risk_reduction": 10,
+              "automation_level": "full",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.irr.final_adjudicated_merge",
+              "title": "Final adjudicated merge",
+              "description": "Merge final adjudicated labels back into the recovery dataset once adjudication is complete.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/irr-validation",
+              "kind": "build",
+              "depends_on": [
+                "iteration1.irr.build_adjudication_sheet",
+                "iteration1.irr.manual_rater2_handoff"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "final_adjudicated_dataset",
+                  "path": "data/labels/iteration1/irr/final_labeled_sentences_recovery_adjudicated.csv",
+                  "kind": "dataset",
+                  "required": true,
+                  "fingerprint_required": true,
+                  "produced_by": [
+                    "iteration1.irr.final_adjudicated_merge"
+                  ],
+                  "consumed_by": [
+                    "iteration1.centroid.freeze_adjudicated_dataset"
+                  ]
+                }
+              ],
+              "preconditions": [],
+              "quality_checks": [],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.labeling.adjudicate_irr_labels --master data/labels/iteration1/irr/irr_subset_master.csv --rater2 data/labels/iteration1/irr/irr_subset_rater2_completed.csv --output-disagreements data/labels/iteration1/irr/irr_disagreements.csv --output-adjudication data/labels/iteration1/irr/irr_adjudication_sheet.csv --source-dataset data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv --final-output data/labels/iteration1/irr/final_labeled_sentences_recovery_adjudicated.csv --output-status reports/iteration1/phase2_irr/adjudication_status.json"
+              ],
+              "manual_handoff": false,
+              "risks": [
+                "R1",
+                "R6"
+              ],
+              "estimated_effort": 2,
+              "risk_reduction": 8,
+              "automation_level": "full",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true
+            }
+          ]
+        },
+        {
+          "schema_version": "1.0.0",
+          "phase_id": "iteration1/centroid-retraining",
+          "title": "Centroid Retraining",
+          "goal": "Retrain centroid artifacts only after adjudicated labels and strict IRR gates are available.",
+          "depends_on": [
+            "iteration1/irr-validation"
+          ],
+          "canonical": true,
+          "required_artifacts": [
+            "data/validation/hand_labeled_ai_sentences_with_embeddings_mpnet.csv",
+            "data/validation/centroids_mpnet.json"
+          ],
+          "tasks": [
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.centroid.freeze_adjudicated_dataset",
+              "title": "Freeze adjudicated training dataset",
+              "description": "Confirm the adjudicated dataset exists before retraining centroids.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/centroid-retraining",
+              "kind": "validation",
+              "depends_on": [
+                "iteration1.irr.strict_kappa_recheck",
+                "iteration1.irr.final_adjudicated_merge"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "adjudicated_training_dataset",
+                  "path": "data/labels/iteration1/irr/final_labeled_sentences_recovery_adjudicated.csv",
+                  "kind": "dataset",
+                  "required": true,
+                  "fingerprint_required": true,
+                  "produced_by": [
+                    "iteration1.irr.final_adjudicated_merge"
+                  ],
+                  "consumed_by": [
+                    "iteration1.centroid.embed_labeled_sentences"
+                  ]
+                }
+              ],
+              "preconditions": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration1.centroid.strict_irr.pass",
+                  "kind": "json_field_compare",
+                  "target": "reports/iteration1/phase2_irr/irr_status_strict.json::gate_result",
+                  "operator": "==",
+                  "expected": "pass",
+                  "on_fail": "block",
+                  "message": "Strict IRR gate must pass before retraining.",
+                  "reroute_to": []
+                }
+              ],
+              "quality_checks": [],
+              "commands": [],
+              "manual_handoff": false,
+              "risks": [
+                "R1",
+                "R3"
+              ],
+              "estimated_effort": 1,
+              "risk_reduction": 10,
+              "automation_level": "partial",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.centroid.embed_labeled_sentences",
+              "title": "Embed labeled sentences",
+              "description": "Generate MPNet embeddings for the current labeled training dataset.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/centroid-retraining",
+              "kind": "build",
+              "depends_on": [
+                "iteration1.centroid.freeze_adjudicated_dataset"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "embeddings_mpnet",
+                  "path": "data/validation/hand_labeled_ai_sentences_with_embeddings_mpnet.csv",
+                  "kind": "dataset",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.centroid.embed_labeled_sentences"
+                  ],
+                  "consumed_by": [
+                    "iteration1.centroid.compute_centroids"
+                  ]
+                }
+              ],
+              "preconditions": [],
+              "quality_checks": [],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.classification.embed_labeled_sentences_mpnet"
+              ],
+              "manual_handoff": false,
+              "risks": [
+                "R4"
+              ],
+              "estimated_effort": 4,
+              "risk_reduction": 6,
+              "automation_level": "full",
+              "on_fail": "block",
+              "reroute_to": [
+                "common.recompute_artifact_manifest"
+              ],
+              "evidence_required": true
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.centroid.compute_centroids",
+              "title": "Compute centroids",
+              "description": "Compute label centroids from MPNet embeddings.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/centroid-retraining",
+              "kind": "build",
+              "depends_on": [
+                "iteration1.centroid.embed_labeled_sentences"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "centroids_mpnet",
+                  "path": "data/validation/centroids_mpnet.json",
+                  "kind": "model",
+                  "required": true,
+                  "fingerprint_required": true,
+                  "produced_by": [
+                    "iteration1.centroid.compute_centroids"
+                  ],
+                  "consumed_by": [
+                    "iteration1.centroid.verify_label_mapping",
+                    "iteration1.calibration.heldout_evaluation"
+                  ]
+                }
+              ],
+              "preconditions": [],
+              "quality_checks": [],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.classification.compute_centroids_mpnet"
+              ],
+              "manual_handoff": false,
+              "risks": [
+                "R4",
+                "R6"
+              ],
+              "estimated_effort": 3,
+              "risk_reduction": 7,
+              "automation_level": "full",
+              "on_fail": "block",
+              "reroute_to": [
+                "common.recompute_artifact_manifest"
+              ],
+              "evidence_required": true
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.centroid.fingerprint_centroid_metadata",
+              "title": "Fingerprint centroid metadata",
+              "description": "Record centroid hashes and metadata for reproducibility.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/centroid-retraining",
+              "kind": "reporting",
+              "depends_on": [
+                "iteration1.centroid.compute_centroids"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "centroid_manifest",
+                  "path": "reports/iteration1/phase3/centroid_manifest.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.centroid.fingerprint_centroid_metadata"
+                  ],
+                  "consumed_by": []
+                }
+              ],
+              "preconditions": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration1.centroid.centroids.exist",
+                  "kind": "artifact_exists",
+                  "target": "data/validation/centroids_mpnet.json",
+                  "operator": "==",
+                  "expected": true,
+                  "on_fail": "block",
+                  "message": "Centroids must exist before metadata fingerprinting.",
+                  "reroute_to": [
+                    "common.recompute_artifact_manifest"
+                  ]
+                }
+              ],
+              "quality_checks": [],
+              "commands": [],
+              "manual_handoff": true,
+              "risks": [
+                "R4",
+                "R6"
+              ],
+              "estimated_effort": 2,
+              "risk_reduction": 5,
+              "automation_level": "manual",
+              "on_fail": "block",
+              "reroute_to": [
+                "common.recompute_artifact_manifest"
+              ],
+              "evidence_required": true
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.centroid.verify_label_mapping",
+              "title": "Verify label mapping compatibility",
+              "description": "Confirm centroid label ordering and metadata align with classifier expectations.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/centroid-retraining",
+              "kind": "validation",
+              "depends_on": [
+                "iteration1.centroid.compute_centroids"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "centroid_manifest",
+                  "path": "reports/iteration1/phase3/centroid_manifest.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.centroid.fingerprint_centroid_metadata"
+                  ],
+                  "consumed_by": []
+                }
+              ],
+              "preconditions": [],
+              "quality_checks": [],
+              "commands": [],
+              "manual_handoff": false,
+              "risks": [
+                "R6"
+              ],
+              "estimated_effort": 1,
+              "risk_reduction": 6,
+              "automation_level": "partial",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true
+            }
+          ]
+        },
+        {
+          "schema_version": "1.0.0",
+          "phase_id": "iteration1/classifier-calibration",
+          "title": "Classifier Calibration",
+          "goal": "Tune and validate classification behavior without leakage.",
+          "depends_on": [
+            "iteration1/centroid-retraining"
+          ],
+          "canonical": true,
+          "required_artifacts": [
+            "reports/iteration1/phase4/calibration_report.json"
+          ],
+          "tasks": [
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.calibration.verify_split_registry",
+              "title": "Verify split registry",
+              "description": "Ensure frozen split registry exists before any tuning.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/classifier-calibration",
+              "kind": "validation",
+              "depends_on": [
+                "iteration1.centroid.verify_label_mapping"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "split_registry",
+                  "path": "data/validation/split_registry.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": true,
+                  "produced_by": [],
+                  "consumed_by": [
+                    "iteration1.calibration.threshold_pass"
+                  ]
+                }
+              ],
+              "preconditions": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration1.calibration.split_registry.exists",
+                  "kind": "artifact_exists",
+                  "target": "data/validation/split_registry.json",
+                  "operator": "==",
+                  "expected": true,
+                  "on_fail": "reroute",
+                  "message": "Split registry missing; leakage-safe calibration cannot proceed.",
+                  "reroute_to": [
+                    "common.rebuild_split_registry"
+                  ]
+                }
+              ],
+              "quality_checks": [],
+              "commands": [],
+              "manual_handoff": false,
+              "risks": [
+                "R3",
+                "R6"
+              ],
+              "estimated_effort": 1,
+              "risk_reduction": 8,
+              "automation_level": "partial",
+              "on_fail": "reroute",
+              "reroute_to": [
+                "common.rebuild_split_registry"
+              ],
+              "evidence_required": true
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.calibration.threshold_pass",
+              "title": "Run threshold pass on validation only",
+              "description": "Run leakage-safe threshold tuning on validation artifacts only.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/classifier-calibration",
+              "kind": "analysis",
+              "depends_on": [
+                "iteration1.calibration.verify_split_registry"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "calibration_report",
+                  "path": "reports/iteration1/phase4/calibration_report.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.calibration.threshold_pass"
+                  ],
+                  "consumed_by": [
+                    "iteration1.calibration.calibration_decision_report"
+                  ]
+                }
+              ],
+              "preconditions": [],
+              "quality_checks": [],
+              "commands": [],
+              "manual_handoff": true,
+              "risks": [
+                "R3",
+                "R4"
+              ],
+              "estimated_effort": 4,
+              "risk_reduction": 7,
+              "automation_level": "manual",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.calibration.heldout_evaluation",
+              "title": "Run held-out evaluation",
+              "description": "Evaluate the calibrated classifier on the held-out set.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/classifier-calibration",
+              "kind": "validation",
+              "depends_on": [
+                "iteration1.calibration.threshold_pass"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "eval_metrics_post_calibration",
+                  "path": "reports/iteration1/phase4/heldout_eval_metrics.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.calibration.heldout_evaluation"
+                  ],
+                  "consumed_by": [
+                    "iteration1.calibration.calibration_decision_report"
+                  ]
+                }
+              ],
+              "preconditions": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration1.calibration.centroids.exists",
+                  "kind": "artifact_exists",
+                  "target": "data/validation/centroids_mpnet.json",
+                  "operator": "==",
+                  "expected": true,
+                  "on_fail": "block",
+                  "message": "Centroids missing for held-out evaluation.",
+                  "reroute_to": []
+                }
+              ],
+              "quality_checks": [],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.tests.evaluate_classifier_on_held_out --output-dir reports/iteration1/phase4"
+              ],
+              "manual_handoff": false,
+              "risks": [
+                "R4",
+                "R6"
+              ],
+              "estimated_effort": 2,
+              "risk_reduction": 7,
+              "automation_level": "full",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.calibration.calibration_decision_report",
+              "title": "Generate calibration decision report",
+              "description": "Summarize tuning choices, held-out performance, and release readiness.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/classifier-calibration",
+              "kind": "decision",
+              "depends_on": [
+                "iteration1.calibration.heldout_evaluation"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "calibration_report",
+                  "path": "reports/iteration1/phase4/calibration_report.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.calibration.threshold_pass"
+                  ],
+                  "consumed_by": []
+                }
+              ],
+              "preconditions": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration1.calibration.heldout.exists",
+                  "kind": "artifact_exists",
+                  "target": "reports/iteration1/phase4/heldout_eval_metrics.json",
+                  "operator": "==",
+                  "expected": true,
+                  "on_fail": "block",
+                  "message": "Held-out evaluation must exist before decision reporting.",
+                  "reroute_to": []
+                }
+              ],
+              "quality_checks": [],
+              "commands": [],
+              "manual_handoff": false,
+              "risks": [
+                "R3",
+                "R4"
+              ],
+              "estimated_effort": 1,
+              "risk_reduction": 4,
+              "automation_level": "partial",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true
+            }
+          ]
+        },
+        {
+          "schema_version": "1.0.0",
+          "phase_id": "iteration1/batch-classification-2021-2024",
+          "title": "Batch Classification 2021-2024",
+          "goal": "Run bounded multi-year classification with explicit coverage and aggregation checks.",
+          "depends_on": [
+            "iteration1/classifier-calibration"
+          ],
+          "canonical": true,
+          "required_artifacts": [
+            "reports/iteration1/phase5/batch_summary_report.md"
+          ],
+          "tasks": [
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.batch.build_year_file_manifest",
+              "title": "Build year/file manifest",
+              "description": "Freeze the list of candidate AI sentence files for the batch run.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/batch-classification-2021-2024",
+              "kind": "diagnostic",
+              "depends_on": [
+                "iteration1.calibration.calibration_decision_report"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "batch_manifest",
+                  "path": "reports/iteration1/phase5/batch_manifest.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.batch.build_year_file_manifest"
+                  ],
+                  "consumed_by": [
+                    "iteration1.batch.classify_yearly_batches"
+                  ]
+                }
+              ],
+              "preconditions": [],
+              "quality_checks": [],
+              "commands": [],
+              "manual_handoff": true,
+              "risks": [
+                "R5"
+              ],
+              "estimated_effort": 2,
+              "risk_reduction": 5,
+              "automation_level": "manual",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.batch.classify_yearly_batches",
+              "title": "Classify yearly batches",
+              "description": "Run multi-year classification over 2021-2024 AI sentence files.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/batch-classification-2021-2024",
+              "kind": "build",
+              "depends_on": [
+                "iteration1.batch.build_year_file_manifest"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "batch_summary",
+                  "path": "reports/iteration1/phase5/batch_summary_report.md",
+                  "kind": "markdown",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.batch.batch_summary_report"
+                  ],
+                  "consumed_by": []
+                }
+              ],
+              "preconditions": [
+                {
+                  "schema_version": "1.0.0",
+                  "condition_id": "iteration1.batch.centroids.exists",
+                  "kind": "artifact_exists",
+                  "target": "data/validation/centroids_mpnet.json",
+                  "operator": "==",
+                  "expected": true,
+                  "on_fail": "block",
+                  "message": "Centroids missing for batch classification.",
+                  "reroute_to": []
+                }
+              ],
+              "quality_checks": [],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.classification.classify_all_ai_sentences --years 2021 2022 2023 2024 --two-stage --rule-boosts --tau 0.07 --eps-irr 0.03 --min-tokens 6"
+              ],
+              "manual_handoff": false,
+              "risks": [
+                "R5",
+                "R6"
+              ],
+              "estimated_effort": 6,
+              "risk_reduction": 8,
+              "automation_level": "full",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.batch.coverage_and_skip_audit",
+              "title": "Coverage and skip audit",
+              "description": "Confirm expected years/files were processed without silent skips.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/batch-classification-2021-2024",
+              "kind": "validation",
+              "depends_on": [
+                "iteration1.batch.classify_yearly_batches"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "batch_coverage_report",
+                  "path": "reports/iteration1/phase5/batch_coverage_report.json",
+                  "kind": "json",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.batch.coverage_and_skip_audit"
+                  ],
+                  "consumed_by": [
+                    "iteration1.batch.batch_summary_report"
+                  ]
+                }
+              ],
+              "preconditions": [],
+              "quality_checks": [],
+              "commands": [],
+              "manual_handoff": true,
+              "risks": [
+                "R5"
+              ],
+              "estimated_effort": 3,
+              "risk_reduction": 8,
+              "automation_level": "manual",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.batch.aggregation_sanity_check",
+              "title": "Aggregation sanity check",
+              "description": "Aggregate classified outputs and confirm counts are coherent.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/batch-classification-2021-2024",
+              "kind": "validation",
+              "depends_on": [
+                "iteration1.batch.classify_yearly_batches"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "firm_year_counts",
+                  "path": "data/final/ai_frequencies_by_firm_year.csv",
+                  "kind": "dataset",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.batch.aggregation_sanity_check"
+                  ],
+                  "consumed_by": [
+                    "iteration1.batch.batch_summary_report"
+                  ]
+                }
+              ],
+              "preconditions": [],
+              "quality_checks": [],
+              "commands": [
+                ".venv/bin/python -m semantic_ai_washing.aggregation.aggregate_classification_counts"
+              ],
+              "manual_handoff": false,
+              "risks": [
+                "R5",
+                "R6"
+              ],
+              "estimated_effort": 3,
+              "risk_reduction": 7,
+              "automation_level": "full",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true
+            },
+            {
+              "schema_version": "1.0.0",
+              "task_id": "iteration1.batch.batch_summary_report",
+              "title": "Batch summary report",
+              "description": "Summarize yearly processing, coverage, and aggregation evidence.",
+              "iteration_id": "1",
+              "phase_id": "iteration1/batch-classification-2021-2024",
+              "kind": "reporting",
+              "depends_on": [
+                "iteration1.batch.coverage_and_skip_audit",
+                "iteration1.batch.aggregation_sanity_check"
+              ],
+              "inputs": [],
+              "outputs": [
+                {
+                  "schema_version": "1.0.0",
+                  "artifact_id": "batch_summary_report",
+                  "path": "reports/iteration1/phase5/batch_summary_report.md",
+                  "kind": "markdown",
+                  "required": true,
+                  "fingerprint_required": false,
+                  "produced_by": [
+                    "iteration1.batch.batch_summary_report"
+                  ],
+                  "consumed_by": []
+                }
+              ],
+              "preconditions": [],
+              "quality_checks": [],
+              "commands": [],
+              "manual_handoff": true,
+              "risks": [
+                "R5",
+                "R6"
+              ],
+              "estimated_effort": 2,
+              "risk_reduction": 4,
+              "automation_level": "manual",
+              "on_fail": "block",
+              "reroute_to": [],
+              "evidence_required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "schema_version": "1.0.0",
+      "iteration_id": "2",
+      "title": "Scale classification and integrate cross-walks",
+      "goal": "Produce full-sample sentence and firm-year outputs for downstream analysis.",
+      "phases": [
+        {
+          "schema_version": "1.0.0",
+          "phase_id": "iteration2/full-sample-extraction",
+          "title": "Full-sample extraction",
+          "goal": "Scale extraction with validated lineage.",
+          "depends_on": [],
+          "canonical": false,
+          "required_artifacts": [],
+          "tasks": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "phase_id": "iteration2/full-sample-classification",
+          "title": "Full-sample classification",
+          "goal": "Scale classification with coverage controls.",
+          "depends_on": [
+            "iteration2/full-sample-extraction"
+          ],
+          "canonical": false,
+          "required_artifacts": [],
+          "tasks": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "phase_id": "iteration2/aggregation-and-crosswalks",
+          "title": "Aggregation and cross-walk integration",
+          "goal": "Build firm-year measures with validated joins.",
+          "depends_on": [
+            "iteration2/full-sample-classification"
+          ],
+          "canonical": false,
+          "required_artifacts": [],
+          "tasks": []
+        }
+      ]
+    },
+    {
+      "schema_version": "1.0.0",
+      "iteration_id": "3",
+      "title": "Evaluate OpenAI API strategy",
+      "goal": "Decide whether LLM classification should augment the deterministic baseline.",
+      "phases": [
+        {
+          "schema_version": "1.0.0",
+          "phase_id": "iteration3/llm-pilot",
+          "title": "LLM pilot",
+          "goal": "Run a bounded comparison pilot.",
+          "depends_on": [],
+          "canonical": false,
+          "required_artifacts": [],
+          "tasks": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "phase_id": "iteration3/hybrid-routing-decision",
+          "title": "Hybrid routing decision",
+          "goal": "Record the production decision on LLM usage.",
+          "depends_on": [
+            "iteration3/llm-pilot"
+          ],
+          "canonical": false,
+          "required_artifacts": [],
+          "tasks": []
+        }
+      ]
+    },
+    {
+      "schema_version": "1.0.0",
+      "iteration_id": "4",
+      "title": "Final integration and production hardening",
+      "goal": "Deliver a reproducible, auditable, publication-ready package.",
+      "phases": [
+        {
+          "schema_version": "1.0.0",
+          "phase_id": "iteration4/panel-assembly",
+          "title": "Panel assembly",
+          "goal": "Build the final panel and downstream datasets.",
+          "depends_on": [],
+          "canonical": false,
+          "required_artifacts": [],
+          "tasks": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "phase_id": "iteration4/robustness-analysis",
+          "title": "Robustness analysis",
+          "goal": "Run final empirical and robustness workflows.",
+          "depends_on": [
+            "iteration4/panel-assembly"
+          ],
+          "canonical": false,
+          "required_artifacts": [],
+          "tasks": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "phase_id": "iteration4/release-packaging",
+          "title": "Release packaging",
+          "goal": "Package the repo, outputs, and audit trail for release.",
+          "depends_on": [
+            "iteration4/robustness-analysis"
+          ],
+          "canonical": false,
+          "required_artifacts": [],
+          "tasks": []
+        }
+      ]
+    }
+  ],
+  "phases": [
+    {
+      "iteration_id": "1",
+      "phase_id": "iteration1/diagnostics-nlp",
+      "title": "Diagnostics Baseline and Failure Taxonomy",
+      "task_count": 6,
+      "depends_on": []
+    },
+    {
+      "iteration_id": "1",
+      "phase_id": "iteration1/label-expansion",
+      "title": "Label Expansion and Dataset Hygiene",
+      "task_count": 7,
+      "depends_on": [
+        "iteration1/diagnostics-nlp"
       ]
     },
     {
       "iteration_id": "1",
-      "title": "Expand Labels and Retrain Centroids",
-      "goal": "Improve classifier reliability and readiness while preserving science gates.",
-      "areas": [
-        "Expand labeled dataset, dedupe, and enforce leakage-safe splits.",
-        "Run IRR gate (`kappa >= 0.6`) before retraining.",
-        "Re-embed labels and recompute centroids.",
-        "Validate held-out accuracy (`>= 0.80`) on canonical evaluator.",
-        "Add observability for A/S/I distributions and batch integrity checks."
-      ],
-      "outcomes": [
-        "Retrained classifier with reproducibility metadata and explicit gate evidence."
+      "phase_id": "iteration1/irr-validation",
+      "title": "IRR Gate",
+      "task_count": 7,
+      "depends_on": [
+        "iteration1/label-expansion"
+      ]
+    },
+    {
+      "iteration_id": "1",
+      "phase_id": "iteration1/centroid-retraining",
+      "title": "Centroid Retraining",
+      "task_count": 5,
+      "depends_on": [
+        "iteration1/irr-validation"
+      ]
+    },
+    {
+      "iteration_id": "1",
+      "phase_id": "iteration1/classifier-calibration",
+      "title": "Classifier Calibration",
+      "task_count": 4,
+      "depends_on": [
+        "iteration1/centroid-retraining"
+      ]
+    },
+    {
+      "iteration_id": "1",
+      "phase_id": "iteration1/batch-classification-2021-2024",
+      "title": "Batch Classification 2021-2024",
+      "task_count": 5,
+      "depends_on": [
+        "iteration1/classifier-calibration"
       ]
     },
     {
       "iteration_id": "2",
-      "title": "Scale Classification and Integrate Cross-walks",
-      "goal": "Produce full-sample sentence and firm-year outputs for downstream analysis.",
-      "areas": [
-        "Run extraction/classification for broader year scope.",
-        "Aggregate sentence outputs to firm-year metrics.",
-        "Refresh cross-walk merges and patent/control integrations.",
-        "Add schema validation and integration checks for merged tables."
-      ],
-      "outcomes": [
-        "Stable firm-year panel inputs with validated data lineage."
+      "phase_id": "iteration2/full-sample-extraction",
+      "title": "Full-sample extraction",
+      "task_count": 0,
+      "depends_on": []
+    },
+    {
+      "iteration_id": "2",
+      "phase_id": "iteration2/full-sample-classification",
+      "title": "Full-sample classification",
+      "task_count": 0,
+      "depends_on": [
+        "iteration2/full-sample-extraction"
+      ]
+    },
+    {
+      "iteration_id": "2",
+      "phase_id": "iteration2/aggregation-and-crosswalks",
+      "title": "Aggregation and cross-walk integration",
+      "task_count": 0,
+      "depends_on": [
+        "iteration2/full-sample-classification"
       ]
     },
     {
       "iteration_id": "3",
-      "title": "Evaluate OpenAI API Strategy",
-      "goal": "Decide whether and where LLM classification should augment existing pipeline.",
-      "areas": [
-        "Run stratified pilot comparing MPNet vs LLM labels.",
-        "Evaluate cost/time/quality trade-offs.",
-        "Consider hybrid routing for borderline or ambiguous cases.",
-        "Preserve deterministic MPNet path as baseline fallback."
-      ],
-      "outcomes": [
-        "Explicit decision record for MPNet-only vs hybrid LLM strategy."
+      "phase_id": "iteration3/llm-pilot",
+      "title": "LLM pilot",
+      "task_count": 0,
+      "depends_on": []
+    },
+    {
+      "iteration_id": "3",
+      "phase_id": "iteration3/hybrid-routing-decision",
+      "title": "Hybrid routing decision",
+      "task_count": 0,
+      "depends_on": [
+        "iteration3/llm-pilot"
       ]
     },
     {
       "iteration_id": "4",
-      "title": "Final Integration and Hardening",
-      "goal": "Deliver reproducible, auditable, publication-ready system.",
-      "areas": [
-        "Assemble final panel and run regression/robustness workflows.",
-        "Finalize docs, packaging, release artifacts, and changelog.",
-        "Harden operations (failure handling, metrics, reproducibility checks).",
-        "IRR gate must pass before retraining.",
-        "Held-out accuracy gate must pass before scaling claims.",
-        "Leakage gate must hold across train/validation/test.",
-        "Artifacts must include hashes, configs, and commit provenance.",
-        "Deferred blockers must include expiry (`until_iteration`, `until_phase`) and re-check criteria."
-      ],
-      "outcomes": [
-        "Production-ready research package with full audit trail."
+      "phase_id": "iteration4/panel-assembly",
+      "title": "Panel assembly",
+      "task_count": 0,
+      "depends_on": []
+    },
+    {
+      "iteration_id": "4",
+      "phase_id": "iteration4/robustness-analysis",
+      "title": "Robustness analysis",
+      "task_count": 0,
+      "depends_on": [
+        "iteration4/panel-assembly"
+      ]
+    },
+    {
+      "iteration_id": "4",
+      "phase_id": "iteration4/release-packaging",
+      "title": "Release packaging",
+      "task_count": 0,
+      "depends_on": [
+        "iteration4/robustness-analysis"
       ]
     }
-  ]
+  ],
+  "tasks": [
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.diagnostics.pipeline_map_confirmation",
+      "title": "Pipeline map confirmation",
+      "description": "Confirm the canonical extraction, classification, aggregation, and evaluation entry points.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/diagnostics-nlp",
+      "kind": "diagnostic",
+      "depends_on": [],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "pipeline_map",
+          "path": "docs/pipeline_map.md",
+          "kind": "markdown",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.diagnostics.pipeline_map_confirmation"
+          ],
+          "consumed_by": [
+            "iteration1.diagnostics.baseline_report_assembly"
+          ]
+        }
+      ],
+      "preconditions": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration1.diagnostics.pipeline_map.exists",
+          "kind": "artifact_exists",
+          "target": "docs/pipeline_map.md",
+          "operator": "==",
+          "expected": true,
+          "on_fail": "block",
+          "message": "Pipeline map must exist for diagnostics baseline.",
+          "reroute_to": []
+        }
+      ],
+      "quality_checks": [],
+      "commands": [],
+      "manual_handoff": false,
+      "risks": [
+        "R5",
+        "R6"
+      ],
+      "estimated_effort": 1,
+      "risk_reduction": 4,
+      "automation_level": "partial",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.diagnostics.heldout_baseline_evaluation",
+      "title": "Held-out baseline evaluation",
+      "description": "Run the canonical held-out evaluator and persist detailed metrics.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/diagnostics-nlp",
+      "kind": "validation",
+      "depends_on": [
+        "iteration1.diagnostics.pipeline_map_confirmation"
+      ],
+      "inputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "held_out",
+          "path": "data/validation/held_out_sentences.csv",
+          "kind": "dataset",
+          "required": true,
+          "fingerprint_required": true,
+          "produced_by": [],
+          "consumed_by": [
+            "iteration1.diagnostics.heldout_baseline_evaluation"
+          ]
+        }
+      ],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "eval_metrics",
+          "path": "reports/iteration1/phase0/baseline_eval_metrics.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.diagnostics.heldout_baseline_evaluation"
+          ],
+          "consumed_by": [
+            "iteration1.diagnostics.baseline_report_assembly"
+          ]
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "eval_confusion",
+          "path": "reports/iteration1/phase0/baseline_eval_confusion_matrix.csv",
+          "kind": "csv",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.diagnostics.heldout_baseline_evaluation"
+          ],
+          "consumed_by": [
+            "iteration1.diagnostics.failure_taxonomy_generation"
+          ]
+        }
+      ],
+      "preconditions": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration1.diagnostics.heldout.exists",
+          "kind": "artifact_exists",
+          "target": "data/validation/held_out_sentences.csv",
+          "operator": "==",
+          "expected": true,
+          "on_fail": "block",
+          "message": "Held-out dataset missing.",
+          "reroute_to": []
+        }
+      ],
+      "quality_checks": [],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.tests.evaluate_classifier_on_held_out --output-dir reports/iteration1/phase0"
+      ],
+      "manual_handoff": false,
+      "risks": [
+        "R5",
+        "R6"
+      ],
+      "estimated_effort": 2,
+      "risk_reduction": 7,
+      "automation_level": "full",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.diagnostics.tiny_batch_sanity_classification",
+      "title": "Tiny batch sanity classification",
+      "description": "Run the baseline diagnostics sample classification flow on a bounded 2024 subset.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/diagnostics-nlp",
+      "kind": "build",
+      "depends_on": [
+        "iteration1.diagnostics.heldout_baseline_evaluation"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "batch_distribution",
+          "path": "reports/iteration1/phase0/baseline_batch_distribution.csv",
+          "kind": "csv",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.diagnostics.tiny_batch_sanity_classification"
+          ],
+          "consumed_by": [
+            "iteration1.diagnostics.baseline_report_assembly"
+          ]
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "run_metadata",
+          "path": "reports/iteration1/phase0/run_metadata.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": true,
+          "produced_by": [
+            "iteration1.diagnostics.tiny_batch_sanity_classification"
+          ],
+          "consumed_by": [
+            "iteration1.diagnostics.batch_coverage_check"
+          ]
+        }
+      ],
+      "preconditions": [],
+      "quality_checks": [],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.diagnostics.phase0_baseline --years 2024 --limit 20 --force --two-stage --rule-boosts --tau 0.07 --eps-irr 0.03 --min-tokens 6 --output-dir reports/iteration1/phase0"
+      ],
+      "manual_handoff": false,
+      "risks": [
+        "R5",
+        "R6"
+      ],
+      "estimated_effort": 3,
+      "risk_reduction": 8,
+      "automation_level": "full",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.diagnostics.batch_coverage_check",
+      "title": "Batch coverage check",
+      "description": "Verify that extracted and classified sample counts align and that no silent skips occurred.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/diagnostics-nlp",
+      "kind": "validation",
+      "depends_on": [
+        "iteration1.diagnostics.tiny_batch_sanity_classification"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "run_metadata",
+          "path": "reports/iteration1/phase0/run_metadata.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": true,
+          "produced_by": [
+            "iteration1.diagnostics.tiny_batch_sanity_classification"
+          ],
+          "consumed_by": []
+        }
+      ],
+      "preconditions": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration1.diagnostics.coverage.explicit",
+          "kind": "json_field_compare",
+          "target": "reports/iteration1/phase0/run_metadata.json::coverage.mismatch_count",
+          "operator": "==",
+          "expected": 0,
+          "on_fail": "block",
+          "message": "Silent skip or coverage mismatch detected in diagnostics baseline.",
+          "reroute_to": []
+        }
+      ],
+      "quality_checks": [],
+      "commands": [],
+      "manual_handoff": false,
+      "risks": [
+        "R5"
+      ],
+      "estimated_effort": 1,
+      "risk_reduction": 8,
+      "automation_level": "partial",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.diagnostics.failure_taxonomy_generation",
+      "title": "Failure taxonomy generation",
+      "description": "Persist held-out error transitions for later comparison.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/diagnostics-nlp",
+      "kind": "analysis",
+      "depends_on": [
+        "iteration1.diagnostics.heldout_baseline_evaluation"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "failure_taxonomy",
+          "path": "reports/iteration1/phase0/baseline_failure_taxonomy.csv",
+          "kind": "csv",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.diagnostics.failure_taxonomy_generation"
+          ],
+          "consumed_by": [
+            "iteration1.diagnostics.baseline_report_assembly"
+          ]
+        }
+      ],
+      "preconditions": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration1.diagnostics.failure_taxonomy.exists",
+          "kind": "artifact_exists",
+          "target": "reports/iteration1/phase0/baseline_failure_taxonomy.csv",
+          "operator": "==",
+          "expected": true,
+          "on_fail": "block",
+          "message": "Failure taxonomy output missing.",
+          "reroute_to": []
+        }
+      ],
+      "quality_checks": [],
+      "commands": [],
+      "manual_handoff": false,
+      "risks": [
+        "R6"
+      ],
+      "estimated_effort": 1,
+      "risk_reduction": 5,
+      "automation_level": "partial",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.diagnostics.baseline_report_assembly",
+      "title": "Baseline report assembly",
+      "description": "Collect metrics, coverage, and taxonomy evidence in a human-readable report.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/diagnostics-nlp",
+      "kind": "reporting",
+      "depends_on": [
+        "iteration1.diagnostics.batch_coverage_check",
+        "iteration1.diagnostics.failure_taxonomy_generation"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "baseline_report",
+          "path": "reports/iteration1/phase0/baseline_report.md",
+          "kind": "markdown",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.diagnostics.baseline_report_assembly"
+          ],
+          "consumed_by": []
+        }
+      ],
+      "preconditions": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration1.diagnostics.baseline_report.exists",
+          "kind": "artifact_exists",
+          "target": "reports/iteration1/phase0/baseline_report.md",
+          "operator": "==",
+          "expected": true,
+          "on_fail": "block",
+          "message": "Baseline report missing.",
+          "reroute_to": []
+        }
+      ],
+      "quality_checks": [],
+      "commands": [],
+      "manual_handoff": false,
+      "risks": [
+        "R5",
+        "R6"
+      ],
+      "estimated_effort": 1,
+      "risk_reduction": 4,
+      "automation_level": "partial",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.label_expansion.audit_source_labeled_dataset",
+      "title": "Audit source labeled dataset",
+      "description": "Verify the base labeled dataset exists and has non-trivial size.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/label-expansion",
+      "kind": "diagnostic",
+      "depends_on": [],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "base_labeled_source",
+          "path": "data/validation/hand_labeled_ai_sentences_labeled_cleaned_revised.csv",
+          "kind": "dataset",
+          "required": true,
+          "fingerprint_required": true,
+          "produced_by": [],
+          "consumed_by": [
+            "iteration1.label_expansion.build_labeling_sample"
+          ]
+        }
+      ],
+      "preconditions": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration1.label_expansion.base_source.exists",
+          "kind": "artifact_exists",
+          "target": "data/validation/hand_labeled_ai_sentences_labeled_cleaned_revised.csv",
+          "operator": "==",
+          "expected": true,
+          "on_fail": "block",
+          "message": "Base labeled dataset missing.",
+          "reroute_to": []
+        },
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration1.label_expansion.base_source.rows",
+          "kind": "csv_row_count_gte",
+          "target": "data/validation/hand_labeled_ai_sentences_labeled_cleaned_revised.csv",
+          "operator": ">=",
+          "expected": 100,
+          "on_fail": "block",
+          "message": "Base labeled dataset is too small for Iteration 1 expansion.",
+          "reroute_to": []
+        }
+      ],
+      "quality_checks": [],
+      "commands": [],
+      "manual_handoff": false,
+      "risks": [
+        "R1",
+        "R3"
+      ],
+      "estimated_effort": 1,
+      "risk_reduction": 6,
+      "automation_level": "partial",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.label_expansion.audit_candidate_sentence_integrity",
+      "title": "Audit candidate sentence integrity",
+      "description": "Evaluate whether the candidate labeled dataset is clean enough for manual extension and future IRR work.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/label-expansion",
+      "kind": "diagnostic",
+      "depends_on": [
+        "iteration1.label_expansion.audit_source_labeled_dataset"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "recovery_preqa",
+          "path": "data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv",
+          "kind": "dataset",
+          "required": false,
+          "fingerprint_required": false,
+          "produced_by": [],
+          "consumed_by": [
+            "iteration1.shared.audit_sentence_integrity"
+          ]
+        }
+      ],
+      "preconditions": [],
+      "quality_checks": [],
+      "commands": [],
+      "manual_handoff": false,
+      "risks": [
+        "R1",
+        "R5"
+      ],
+      "estimated_effort": 1,
+      "risk_reduction": 5,
+      "automation_level": "partial",
+      "on_fail": "warn",
+      "reroute_to": [],
+      "evidence_required": false
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.label_expansion.build_labeling_sample",
+      "title": "Build labeling sample",
+      "description": "Generate the strict canonical Phase 1 sample and metadata.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/label-expansion",
+      "kind": "build",
+      "depends_on": [
+        "iteration1.label_expansion.audit_source_labeled_dataset"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "sampling_summary",
+          "path": "reports/iteration1/phase1/sampling_summary.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.label_expansion.build_labeling_sample"
+          ],
+          "consumed_by": [
+            "iteration1.label_expansion.manual_labeling_handoff"
+          ]
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "labeling_sheet",
+          "path": "data/labels/iteration1/labeling_sheet_for_manual.csv",
+          "kind": "csv",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.label_expansion.build_labeling_sample"
+          ],
+          "consumed_by": [
+            "iteration1.label_expansion.manual_labeling_handoff"
+          ]
+        }
+      ],
+      "preconditions": [],
+      "quality_checks": [],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.labeling.build_labeling_sample --target-total 400 --held-out data/validation/held_out_sentences.csv --base-labeled data/validation/hand_labeled_ai_sentences_labeled_cleaned_revised.csv --input-dir data/processed/sec --controls data/interim/controls/controls_by_firm_year.csv --crosswalk data/externals/crosswalks/cik_gvkey.csv --output-dir data/labels/iteration1 --report-dir reports/iteration1/phase1 --seed 20260227"
+      ],
+      "manual_handoff": false,
+      "risks": [
+        "R2",
+        "R3",
+        "R5"
+      ],
+      "estimated_effort": 4,
+      "risk_reduction": 8,
+      "automation_level": "full",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.label_expansion.manual_labeling_handoff",
+      "title": "Manual labeling handoff",
+      "description": "Human labeling of the generated sample sheet.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/label-expansion",
+      "kind": "manual",
+      "depends_on": [
+        "iteration1.label_expansion.build_labeling_sample"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "labeling_sheet_completed",
+          "path": "data/labels/iteration1/labeling_sheet_completed.csv",
+          "kind": "csv",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.label_expansion.manual_labeling_handoff"
+          ],
+          "consumed_by": [
+            "iteration1.label_expansion.dedupe_merge"
+          ]
+        }
+      ],
+      "preconditions": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration1.label_expansion.label_sheet.exists",
+          "kind": "artifact_exists",
+          "target": "data/labels/iteration1/labeling_sheet_for_manual.csv",
+          "operator": "==",
+          "expected": true,
+          "on_fail": "block",
+          "message": "Labeling sheet must exist before manual labeling.",
+          "reroute_to": []
+        }
+      ],
+      "quality_checks": [],
+      "commands": [],
+      "manual_handoff": true,
+      "risks": [
+        "R1",
+        "R2"
+      ],
+      "estimated_effort": 8,
+      "risk_reduction": 7,
+      "automation_level": "manual",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.label_expansion.dedupe_merge",
+      "title": "Dedupe merge",
+      "description": "Merge base and newly labeled rows while excluding leakage and conflicts.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/label-expansion",
+      "kind": "build",
+      "depends_on": [
+        "iteration1.label_expansion.manual_labeling_handoff"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "dedupe_report",
+          "path": "reports/iteration1/phase1/dedupe_report.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.label_expansion.dedupe_merge"
+          ],
+          "consumed_by": [
+            "iteration1.label_expansion.dataset_qa"
+          ]
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "preqa_dataset",
+          "path": "data/labels/iteration1/expanded_labeled_sentences_preqa.csv",
+          "kind": "dataset",
+          "required": true,
+          "fingerprint_required": true,
+          "produced_by": [
+            "iteration1.label_expansion.dedupe_merge"
+          ],
+          "consumed_by": [
+            "iteration1.label_expansion.dataset_qa"
+          ]
+        }
+      ],
+      "preconditions": [],
+      "quality_checks": [],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.labeling.dedupe_labeled_sentences --base data/labels/iteration1/base_labeled_nonleaky.csv --new data/labels/iteration1/labeling_sheet_completed.csv --held-out data/validation/held_out_sentences.csv --near-threshold 0.95 --output data/labels/iteration1/expanded_labeled_sentences_preqa.csv --uncertain-output data/labels/iteration1/uncertain_rows.csv --conflicts-output data/labels/iteration1/label_conflicts.csv --report reports/iteration1/phase1/dedupe_report.json"
+      ],
+      "manual_handoff": false,
+      "risks": [
+        "R1",
+        "R3",
+        "R6"
+      ],
+      "estimated_effort": 3,
+      "risk_reduction": 8,
+      "automation_level": "full",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.label_expansion.dataset_qa",
+      "title": "Dataset QA",
+      "description": "Enforce canonical size, class floor, and leakage checks for the strict Phase 1 dataset.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/label-expansion",
+      "kind": "validation",
+      "depends_on": [
+        "iteration1.label_expansion.dedupe_merge"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "qa_report",
+          "path": "reports/iteration1/phase1/qa_report.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.label_expansion.dataset_qa"
+          ],
+          "consumed_by": [
+            "iteration1.label_expansion.metadata_report_generation"
+          ]
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "leakage_report",
+          "path": "reports/iteration1/phase1/leakage_overlap_report.csv",
+          "kind": "csv",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.label_expansion.dataset_qa"
+          ],
+          "consumed_by": []
+        }
+      ],
+      "preconditions": [],
+      "quality_checks": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration1.label_expansion.qa.pass",
+          "kind": "json_field_compare",
+          "target": "reports/iteration1/phase1/qa_report.json::summary.status",
+          "operator": "==",
+          "expected": "pass",
+          "on_fail": "block",
+          "message": "Strict label-expansion QA gate failed.",
+          "reroute_to": []
+        }
+      ],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.labeling.qa_labeled_dataset --input data/labels/iteration1/expanded_labeled_sentences_preqa.csv --held-out data/validation/held_out_sentences.csv --min-tokens 6 --min-class-count 60 --target-size 400 --output data/labels/iteration1/expanded_labeled_sentences.csv --report reports/iteration1/phase1/qa_report.json --leakage-report reports/iteration1/phase1/leakage_overlap_report.csv"
+      ],
+      "manual_handoff": false,
+      "risks": [
+        "R2",
+        "R3",
+        "R6"
+      ],
+      "estimated_effort": 3,
+      "risk_reduction": 9,
+      "automation_level": "full",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.label_expansion.metadata_report_generation",
+      "title": "Metadata and report generation",
+      "description": "Ensure strict Phase 1 metadata and reports exist for downstream traceability.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/label-expansion",
+      "kind": "reporting",
+      "depends_on": [
+        "iteration1.label_expansion.dataset_qa"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "qa_report",
+          "path": "reports/iteration1/phase1/qa_report.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.label_expansion.dataset_qa"
+          ],
+          "consumed_by": []
+        }
+      ],
+      "preconditions": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration1.label_expansion.qa_report.exists",
+          "kind": "artifact_exists",
+          "target": "reports/iteration1/phase1/qa_report.json",
+          "operator": "==",
+          "expected": true,
+          "on_fail": "block",
+          "message": "Phase 1 QA report missing.",
+          "reroute_to": []
+        }
+      ],
+      "quality_checks": [],
+      "commands": [],
+      "manual_handoff": false,
+      "risks": [
+        "R6"
+      ],
+      "estimated_effort": 1,
+      "risk_reduction": 4,
+      "automation_level": "partial",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.shared.audit_sentence_integrity",
+      "title": "Audit IRR source sentence integrity",
+      "description": "Check whether the IRR source dataset is labelable enough to justify manual IRR work.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/irr-validation",
+      "kind": "diagnostic",
+      "depends_on": [],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "irr_source_dataset",
+          "path": "data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv",
+          "kind": "dataset",
+          "required": true,
+          "fingerprint_required": true,
+          "produced_by": [],
+          "consumed_by": [
+            "iteration1.irr.prepare_subset"
+          ]
+        }
+      ],
+      "preconditions": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration1.irr.source.exists",
+          "kind": "artifact_exists",
+          "target": "data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv",
+          "operator": "==",
+          "expected": true,
+          "on_fail": "block",
+          "message": "IRR source dataset missing.",
+          "reroute_to": []
+        }
+      ],
+      "quality_checks": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration1.irr.source.fragment_rate",
+          "kind": "sentence_fragment_rate_lte",
+          "target": "data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv",
+          "operator": "<=",
+          "expected": 0.15,
+          "on_fail": "reroute",
+          "message": "IRR source fragmentation exceeds threshold.",
+          "reroute_to": [
+            "common.remediate_fragmented_sentences",
+            "common.resample_from_clean_sentence_pool"
+          ]
+        }
+      ],
+      "commands": [],
+      "manual_handoff": false,
+      "risks": [
+        "R1",
+        "R5"
+      ],
+      "estimated_effort": 2,
+      "risk_reduction": 9,
+      "automation_level": "partial",
+      "on_fail": "reroute",
+      "reroute_to": [
+        "common.remediate_fragmented_sentences",
+        "common.resample_from_clean_sentence_pool"
+      ],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.irr.prepare_subset",
+      "title": "Prepare IRR subset",
+      "description": "Create the stratified IRR master sheet and blinded rater 2 template.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/irr-validation",
+      "kind": "build",
+      "depends_on": [
+        "iteration1.shared.audit_sentence_integrity"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "irr_subset_master",
+          "path": "data/labels/iteration1/irr/irr_subset_master.csv",
+          "kind": "csv",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.irr.prepare_subset"
+          ],
+          "consumed_by": [
+            "iteration1.irr.manual_rater2_handoff",
+            "iteration1.irr.compute_infrastructure_metrics"
+          ]
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "irr_subset_blinded",
+          "path": "data/labels/iteration1/irr/irr_subset_rater2_blinded.csv",
+          "kind": "csv",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.irr.prepare_subset"
+          ],
+          "consumed_by": [
+            "iteration1.irr.manual_rater2_handoff"
+          ]
+        }
+      ],
+      "preconditions": [],
+      "quality_checks": [],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.labeling.prepare_irr_subset --input data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv --output-dir data/labels/iteration1/irr --report-dir reports/iteration1/phase2_irr --subset-fraction 0.30 --min-per-class 10 --seed 20260303 --blind-mode text_only"
+      ],
+      "manual_handoff": false,
+      "risks": [
+        "R1",
+        "R2"
+      ],
+      "estimated_effort": 3,
+      "risk_reduction": 8,
+      "automation_level": "full",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.irr.manual_rater2_handoff",
+      "title": "Manual second-rater handoff",
+      "description": "Collect blinded labels from a second human rater.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/irr-validation",
+      "kind": "manual",
+      "depends_on": [
+        "iteration1.irr.prepare_subset"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "irr_rater2_completed",
+          "path": "data/labels/iteration1/irr/irr_subset_rater2_completed.csv",
+          "kind": "csv",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.irr.manual_rater2_handoff"
+          ],
+          "consumed_by": [
+            "iteration1.irr.compute_infrastructure_metrics",
+            "iteration1.irr.build_adjudication_sheet",
+            "iteration1.irr.strict_kappa_recheck"
+          ]
+        }
+      ],
+      "preconditions": [],
+      "quality_checks": [],
+      "commands": [],
+      "manual_handoff": true,
+      "risks": [
+        "R1"
+      ],
+      "estimated_effort": 8,
+      "risk_reduction": 8,
+      "automation_level": "manual",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.irr.compute_infrastructure_metrics",
+      "title": "Compute infrastructure IRR metrics",
+      "description": "Write pending/pass/fail status artifacts in infrastructure mode without falsely clearing the strict science gate.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/irr-validation",
+      "kind": "validation",
+      "depends_on": [
+        "iteration1.irr.prepare_subset"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "irr_kappa_report",
+          "path": "reports/iteration1/phase2_irr/irr_kappa_report.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.irr.compute_infrastructure_metrics"
+          ],
+          "consumed_by": [
+            "iteration1.irr.strict_kappa_recheck"
+          ]
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "irr_status",
+          "path": "reports/iteration1/phase2_irr/irr_status.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.irr.compute_infrastructure_metrics"
+          ],
+          "consumed_by": []
+        }
+      ],
+      "preconditions": [],
+      "quality_checks": [],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.labeling.compute_irr_metrics --master data/labels/iteration1/irr/irr_subset_master.csv --rater2 data/labels/iteration1/irr/irr_subset_rater2_completed.csv --output-report reports/iteration1/phase2_irr/irr_kappa_report.json --output-confusion reports/iteration1/phase2_irr/irr_confusion_matrix.csv --output-transitions reports/iteration1/phase2_irr/irr_transition_counts.csv --output-status reports/iteration1/phase2_irr/irr_status.json --min-kappa 0.60 --gate-mode infrastructure"
+      ],
+      "manual_handoff": false,
+      "risks": [
+        "R1"
+      ],
+      "estimated_effort": 2,
+      "risk_reduction": 7,
+      "automation_level": "full",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.irr.build_adjudication_sheet",
+      "title": "Build adjudication sheet",
+      "description": "Create disagreements and adjudication scaffold, even when rater 2 is still pending.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/irr-validation",
+      "kind": "build",
+      "depends_on": [
+        "iteration1.irr.prepare_subset"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "irr_adjudication_sheet",
+          "path": "data/labels/iteration1/irr/irr_adjudication_sheet.csv",
+          "kind": "csv",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.irr.build_adjudication_sheet"
+          ],
+          "consumed_by": [
+            "iteration1.irr.final_adjudicated_merge"
+          ]
+        },
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "adjudication_status",
+          "path": "reports/iteration1/phase2_irr/adjudication_status.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.irr.build_adjudication_sheet"
+          ],
+          "consumed_by": []
+        }
+      ],
+      "preconditions": [],
+      "quality_checks": [],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.labeling.adjudicate_irr_labels --master data/labels/iteration1/irr/irr_subset_master.csv --rater2 data/labels/iteration1/irr/irr_subset_rater2_completed.csv --output-disagreements data/labels/iteration1/irr/irr_disagreements.csv --output-adjudication data/labels/iteration1/irr/irr_adjudication_sheet.csv --source-dataset data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv --final-output data/labels/iteration1/irr/final_labeled_sentences_recovery_adjudicated.csv --output-status reports/iteration1/phase2_irr/adjudication_status.json --allow-pending"
+      ],
+      "manual_handoff": false,
+      "risks": [
+        "R1"
+      ],
+      "estimated_effort": 2,
+      "risk_reduction": 6,
+      "automation_level": "full",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.irr.strict_kappa_recheck",
+      "title": "Strict kappa recheck",
+      "description": "Run the strict \u03ba gate after rater 2 completion.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/irr-validation",
+      "kind": "validation",
+      "depends_on": [
+        "iteration1.irr.manual_rater2_handoff"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "irr_status_strict",
+          "path": "reports/iteration1/phase2_irr/irr_status_strict.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.irr.strict_kappa_recheck"
+          ],
+          "consumed_by": [
+            "iteration1.centroid.freeze_adjudicated_dataset"
+          ]
+        }
+      ],
+      "preconditions": [],
+      "quality_checks": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration1.irr.strict_kappa.pass",
+          "kind": "json_field_compare",
+          "target": "reports/iteration1/phase2_irr/irr_status_strict.json::gate_result",
+          "operator": "==",
+          "expected": "pass",
+          "on_fail": "block",
+          "message": "Strict IRR gate has not passed.",
+          "reroute_to": []
+        }
+      ],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.labeling.compute_irr_metrics --master data/labels/iteration1/irr/irr_subset_master.csv --rater2 data/labels/iteration1/irr/irr_subset_rater2_completed.csv --output-report reports/iteration1/phase2_irr/irr_kappa_report_strict.json --output-confusion reports/iteration1/phase2_irr/irr_confusion_matrix_strict.csv --output-transitions reports/iteration1/phase2_irr/irr_transition_counts_strict.csv --output-status reports/iteration1/phase2_irr/irr_status_strict.json --min-kappa 0.60 --gate-mode strict"
+      ],
+      "manual_handoff": false,
+      "risks": [
+        "R1"
+      ],
+      "estimated_effort": 2,
+      "risk_reduction": 10,
+      "automation_level": "full",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.irr.final_adjudicated_merge",
+      "title": "Final adjudicated merge",
+      "description": "Merge final adjudicated labels back into the recovery dataset once adjudication is complete.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/irr-validation",
+      "kind": "build",
+      "depends_on": [
+        "iteration1.irr.build_adjudication_sheet",
+        "iteration1.irr.manual_rater2_handoff"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "final_adjudicated_dataset",
+          "path": "data/labels/iteration1/irr/final_labeled_sentences_recovery_adjudicated.csv",
+          "kind": "dataset",
+          "required": true,
+          "fingerprint_required": true,
+          "produced_by": [
+            "iteration1.irr.final_adjudicated_merge"
+          ],
+          "consumed_by": [
+            "iteration1.centroid.freeze_adjudicated_dataset"
+          ]
+        }
+      ],
+      "preconditions": [],
+      "quality_checks": [],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.labeling.adjudicate_irr_labels --master data/labels/iteration1/irr/irr_subset_master.csv --rater2 data/labels/iteration1/irr/irr_subset_rater2_completed.csv --output-disagreements data/labels/iteration1/irr/irr_disagreements.csv --output-adjudication data/labels/iteration1/irr/irr_adjudication_sheet.csv --source-dataset data/labels/iteration1/recovery/expanded_labeled_sentences_preqa.csv --final-output data/labels/iteration1/irr/final_labeled_sentences_recovery_adjudicated.csv --output-status reports/iteration1/phase2_irr/adjudication_status.json"
+      ],
+      "manual_handoff": false,
+      "risks": [
+        "R1",
+        "R6"
+      ],
+      "estimated_effort": 2,
+      "risk_reduction": 8,
+      "automation_level": "full",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.centroid.freeze_adjudicated_dataset",
+      "title": "Freeze adjudicated training dataset",
+      "description": "Confirm the adjudicated dataset exists before retraining centroids.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/centroid-retraining",
+      "kind": "validation",
+      "depends_on": [
+        "iteration1.irr.strict_kappa_recheck",
+        "iteration1.irr.final_adjudicated_merge"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "adjudicated_training_dataset",
+          "path": "data/labels/iteration1/irr/final_labeled_sentences_recovery_adjudicated.csv",
+          "kind": "dataset",
+          "required": true,
+          "fingerprint_required": true,
+          "produced_by": [
+            "iteration1.irr.final_adjudicated_merge"
+          ],
+          "consumed_by": [
+            "iteration1.centroid.embed_labeled_sentences"
+          ]
+        }
+      ],
+      "preconditions": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration1.centroid.strict_irr.pass",
+          "kind": "json_field_compare",
+          "target": "reports/iteration1/phase2_irr/irr_status_strict.json::gate_result",
+          "operator": "==",
+          "expected": "pass",
+          "on_fail": "block",
+          "message": "Strict IRR gate must pass before retraining.",
+          "reroute_to": []
+        }
+      ],
+      "quality_checks": [],
+      "commands": [],
+      "manual_handoff": false,
+      "risks": [
+        "R1",
+        "R3"
+      ],
+      "estimated_effort": 1,
+      "risk_reduction": 10,
+      "automation_level": "partial",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.centroid.embed_labeled_sentences",
+      "title": "Embed labeled sentences",
+      "description": "Generate MPNet embeddings for the current labeled training dataset.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/centroid-retraining",
+      "kind": "build",
+      "depends_on": [
+        "iteration1.centroid.freeze_adjudicated_dataset"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "embeddings_mpnet",
+          "path": "data/validation/hand_labeled_ai_sentences_with_embeddings_mpnet.csv",
+          "kind": "dataset",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.centroid.embed_labeled_sentences"
+          ],
+          "consumed_by": [
+            "iteration1.centroid.compute_centroids"
+          ]
+        }
+      ],
+      "preconditions": [],
+      "quality_checks": [],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.classification.embed_labeled_sentences_mpnet"
+      ],
+      "manual_handoff": false,
+      "risks": [
+        "R4"
+      ],
+      "estimated_effort": 4,
+      "risk_reduction": 6,
+      "automation_level": "full",
+      "on_fail": "block",
+      "reroute_to": [
+        "common.recompute_artifact_manifest"
+      ],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.centroid.compute_centroids",
+      "title": "Compute centroids",
+      "description": "Compute label centroids from MPNet embeddings.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/centroid-retraining",
+      "kind": "build",
+      "depends_on": [
+        "iteration1.centroid.embed_labeled_sentences"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "centroids_mpnet",
+          "path": "data/validation/centroids_mpnet.json",
+          "kind": "model",
+          "required": true,
+          "fingerprint_required": true,
+          "produced_by": [
+            "iteration1.centroid.compute_centroids"
+          ],
+          "consumed_by": [
+            "iteration1.centroid.verify_label_mapping",
+            "iteration1.calibration.heldout_evaluation"
+          ]
+        }
+      ],
+      "preconditions": [],
+      "quality_checks": [],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.classification.compute_centroids_mpnet"
+      ],
+      "manual_handoff": false,
+      "risks": [
+        "R4",
+        "R6"
+      ],
+      "estimated_effort": 3,
+      "risk_reduction": 7,
+      "automation_level": "full",
+      "on_fail": "block",
+      "reroute_to": [
+        "common.recompute_artifact_manifest"
+      ],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.centroid.fingerprint_centroid_metadata",
+      "title": "Fingerprint centroid metadata",
+      "description": "Record centroid hashes and metadata for reproducibility.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/centroid-retraining",
+      "kind": "reporting",
+      "depends_on": [
+        "iteration1.centroid.compute_centroids"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "centroid_manifest",
+          "path": "reports/iteration1/phase3/centroid_manifest.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.centroid.fingerprint_centroid_metadata"
+          ],
+          "consumed_by": []
+        }
+      ],
+      "preconditions": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration1.centroid.centroids.exist",
+          "kind": "artifact_exists",
+          "target": "data/validation/centroids_mpnet.json",
+          "operator": "==",
+          "expected": true,
+          "on_fail": "block",
+          "message": "Centroids must exist before metadata fingerprinting.",
+          "reroute_to": [
+            "common.recompute_artifact_manifest"
+          ]
+        }
+      ],
+      "quality_checks": [],
+      "commands": [],
+      "manual_handoff": true,
+      "risks": [
+        "R4",
+        "R6"
+      ],
+      "estimated_effort": 2,
+      "risk_reduction": 5,
+      "automation_level": "manual",
+      "on_fail": "block",
+      "reroute_to": [
+        "common.recompute_artifact_manifest"
+      ],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.centroid.verify_label_mapping",
+      "title": "Verify label mapping compatibility",
+      "description": "Confirm centroid label ordering and metadata align with classifier expectations.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/centroid-retraining",
+      "kind": "validation",
+      "depends_on": [
+        "iteration1.centroid.compute_centroids"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "centroid_manifest",
+          "path": "reports/iteration1/phase3/centroid_manifest.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.centroid.fingerprint_centroid_metadata"
+          ],
+          "consumed_by": []
+        }
+      ],
+      "preconditions": [],
+      "quality_checks": [],
+      "commands": [],
+      "manual_handoff": false,
+      "risks": [
+        "R6"
+      ],
+      "estimated_effort": 1,
+      "risk_reduction": 6,
+      "automation_level": "partial",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.calibration.verify_split_registry",
+      "title": "Verify split registry",
+      "description": "Ensure frozen split registry exists before any tuning.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/classifier-calibration",
+      "kind": "validation",
+      "depends_on": [
+        "iteration1.centroid.verify_label_mapping"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "split_registry",
+          "path": "data/validation/split_registry.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": true,
+          "produced_by": [],
+          "consumed_by": [
+            "iteration1.calibration.threshold_pass"
+          ]
+        }
+      ],
+      "preconditions": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration1.calibration.split_registry.exists",
+          "kind": "artifact_exists",
+          "target": "data/validation/split_registry.json",
+          "operator": "==",
+          "expected": true,
+          "on_fail": "reroute",
+          "message": "Split registry missing; leakage-safe calibration cannot proceed.",
+          "reroute_to": [
+            "common.rebuild_split_registry"
+          ]
+        }
+      ],
+      "quality_checks": [],
+      "commands": [],
+      "manual_handoff": false,
+      "risks": [
+        "R3",
+        "R6"
+      ],
+      "estimated_effort": 1,
+      "risk_reduction": 8,
+      "automation_level": "partial",
+      "on_fail": "reroute",
+      "reroute_to": [
+        "common.rebuild_split_registry"
+      ],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.calibration.threshold_pass",
+      "title": "Run threshold pass on validation only",
+      "description": "Run leakage-safe threshold tuning on validation artifacts only.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/classifier-calibration",
+      "kind": "analysis",
+      "depends_on": [
+        "iteration1.calibration.verify_split_registry"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "calibration_report",
+          "path": "reports/iteration1/phase4/calibration_report.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.calibration.threshold_pass"
+          ],
+          "consumed_by": [
+            "iteration1.calibration.calibration_decision_report"
+          ]
+        }
+      ],
+      "preconditions": [],
+      "quality_checks": [],
+      "commands": [],
+      "manual_handoff": true,
+      "risks": [
+        "R3",
+        "R4"
+      ],
+      "estimated_effort": 4,
+      "risk_reduction": 7,
+      "automation_level": "manual",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.calibration.heldout_evaluation",
+      "title": "Run held-out evaluation",
+      "description": "Evaluate the calibrated classifier on the held-out set.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/classifier-calibration",
+      "kind": "validation",
+      "depends_on": [
+        "iteration1.calibration.threshold_pass"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "eval_metrics_post_calibration",
+          "path": "reports/iteration1/phase4/heldout_eval_metrics.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.calibration.heldout_evaluation"
+          ],
+          "consumed_by": [
+            "iteration1.calibration.calibration_decision_report"
+          ]
+        }
+      ],
+      "preconditions": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration1.calibration.centroids.exists",
+          "kind": "artifact_exists",
+          "target": "data/validation/centroids_mpnet.json",
+          "operator": "==",
+          "expected": true,
+          "on_fail": "block",
+          "message": "Centroids missing for held-out evaluation.",
+          "reroute_to": []
+        }
+      ],
+      "quality_checks": [],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.tests.evaluate_classifier_on_held_out --output-dir reports/iteration1/phase4"
+      ],
+      "manual_handoff": false,
+      "risks": [
+        "R4",
+        "R6"
+      ],
+      "estimated_effort": 2,
+      "risk_reduction": 7,
+      "automation_level": "full",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.calibration.calibration_decision_report",
+      "title": "Generate calibration decision report",
+      "description": "Summarize tuning choices, held-out performance, and release readiness.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/classifier-calibration",
+      "kind": "decision",
+      "depends_on": [
+        "iteration1.calibration.heldout_evaluation"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "calibration_report",
+          "path": "reports/iteration1/phase4/calibration_report.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.calibration.threshold_pass"
+          ],
+          "consumed_by": []
+        }
+      ],
+      "preconditions": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration1.calibration.heldout.exists",
+          "kind": "artifact_exists",
+          "target": "reports/iteration1/phase4/heldout_eval_metrics.json",
+          "operator": "==",
+          "expected": true,
+          "on_fail": "block",
+          "message": "Held-out evaluation must exist before decision reporting.",
+          "reroute_to": []
+        }
+      ],
+      "quality_checks": [],
+      "commands": [],
+      "manual_handoff": false,
+      "risks": [
+        "R3",
+        "R4"
+      ],
+      "estimated_effort": 1,
+      "risk_reduction": 4,
+      "automation_level": "partial",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.batch.build_year_file_manifest",
+      "title": "Build year/file manifest",
+      "description": "Freeze the list of candidate AI sentence files for the batch run.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/batch-classification-2021-2024",
+      "kind": "diagnostic",
+      "depends_on": [
+        "iteration1.calibration.calibration_decision_report"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "batch_manifest",
+          "path": "reports/iteration1/phase5/batch_manifest.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.batch.build_year_file_manifest"
+          ],
+          "consumed_by": [
+            "iteration1.batch.classify_yearly_batches"
+          ]
+        }
+      ],
+      "preconditions": [],
+      "quality_checks": [],
+      "commands": [],
+      "manual_handoff": true,
+      "risks": [
+        "R5"
+      ],
+      "estimated_effort": 2,
+      "risk_reduction": 5,
+      "automation_level": "manual",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.batch.classify_yearly_batches",
+      "title": "Classify yearly batches",
+      "description": "Run multi-year classification over 2021-2024 AI sentence files.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/batch-classification-2021-2024",
+      "kind": "build",
+      "depends_on": [
+        "iteration1.batch.build_year_file_manifest"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "batch_summary",
+          "path": "reports/iteration1/phase5/batch_summary_report.md",
+          "kind": "markdown",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.batch.batch_summary_report"
+          ],
+          "consumed_by": []
+        }
+      ],
+      "preconditions": [
+        {
+          "schema_version": "1.0.0",
+          "condition_id": "iteration1.batch.centroids.exists",
+          "kind": "artifact_exists",
+          "target": "data/validation/centroids_mpnet.json",
+          "operator": "==",
+          "expected": true,
+          "on_fail": "block",
+          "message": "Centroids missing for batch classification.",
+          "reroute_to": []
+        }
+      ],
+      "quality_checks": [],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.classification.classify_all_ai_sentences --years 2021 2022 2023 2024 --two-stage --rule-boosts --tau 0.07 --eps-irr 0.03 --min-tokens 6"
+      ],
+      "manual_handoff": false,
+      "risks": [
+        "R5",
+        "R6"
+      ],
+      "estimated_effort": 6,
+      "risk_reduction": 8,
+      "automation_level": "full",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.batch.coverage_and_skip_audit",
+      "title": "Coverage and skip audit",
+      "description": "Confirm expected years/files were processed without silent skips.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/batch-classification-2021-2024",
+      "kind": "validation",
+      "depends_on": [
+        "iteration1.batch.classify_yearly_batches"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "batch_coverage_report",
+          "path": "reports/iteration1/phase5/batch_coverage_report.json",
+          "kind": "json",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.batch.coverage_and_skip_audit"
+          ],
+          "consumed_by": [
+            "iteration1.batch.batch_summary_report"
+          ]
+        }
+      ],
+      "preconditions": [],
+      "quality_checks": [],
+      "commands": [],
+      "manual_handoff": true,
+      "risks": [
+        "R5"
+      ],
+      "estimated_effort": 3,
+      "risk_reduction": 8,
+      "automation_level": "manual",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.batch.aggregation_sanity_check",
+      "title": "Aggregation sanity check",
+      "description": "Aggregate classified outputs and confirm counts are coherent.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/batch-classification-2021-2024",
+      "kind": "validation",
+      "depends_on": [
+        "iteration1.batch.classify_yearly_batches"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "firm_year_counts",
+          "path": "data/final/ai_frequencies_by_firm_year.csv",
+          "kind": "dataset",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.batch.aggregation_sanity_check"
+          ],
+          "consumed_by": [
+            "iteration1.batch.batch_summary_report"
+          ]
+        }
+      ],
+      "preconditions": [],
+      "quality_checks": [],
+      "commands": [
+        ".venv/bin/python -m semantic_ai_washing.aggregation.aggregate_classification_counts"
+      ],
+      "manual_handoff": false,
+      "risks": [
+        "R5",
+        "R6"
+      ],
+      "estimated_effort": 3,
+      "risk_reduction": 7,
+      "automation_level": "full",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true
+    },
+    {
+      "schema_version": "1.0.0",
+      "task_id": "iteration1.batch.batch_summary_report",
+      "title": "Batch summary report",
+      "description": "Summarize yearly processing, coverage, and aggregation evidence.",
+      "iteration_id": "1",
+      "phase_id": "iteration1/batch-classification-2021-2024",
+      "kind": "reporting",
+      "depends_on": [
+        "iteration1.batch.coverage_and_skip_audit",
+        "iteration1.batch.aggregation_sanity_check"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "schema_version": "1.0.0",
+          "artifact_id": "batch_summary_report",
+          "path": "reports/iteration1/phase5/batch_summary_report.md",
+          "kind": "markdown",
+          "required": true,
+          "fingerprint_required": false,
+          "produced_by": [
+            "iteration1.batch.batch_summary_report"
+          ],
+          "consumed_by": []
+        }
+      ],
+      "preconditions": [],
+      "quality_checks": [],
+      "commands": [],
+      "manual_handoff": true,
+      "risks": [
+        "R5",
+        "R6"
+      ],
+      "estimated_effort": 2,
+      "risk_reduction": 4,
+      "automation_level": "manual",
+      "on_fail": "block",
+      "reroute_to": [],
+      "evidence_required": true
+    }
+  ],
+  "dependency_edges": [
+    {
+      "from": "iteration1.diagnostics.pipeline_map_confirmation",
+      "to": "iteration1.diagnostics.heldout_baseline_evaluation"
+    },
+    {
+      "from": "iteration1.diagnostics.heldout_baseline_evaluation",
+      "to": "iteration1.diagnostics.tiny_batch_sanity_classification"
+    },
+    {
+      "from": "iteration1.diagnostics.tiny_batch_sanity_classification",
+      "to": "iteration1.diagnostics.batch_coverage_check"
+    },
+    {
+      "from": "iteration1.diagnostics.heldout_baseline_evaluation",
+      "to": "iteration1.diagnostics.failure_taxonomy_generation"
+    },
+    {
+      "from": "iteration1.diagnostics.batch_coverage_check",
+      "to": "iteration1.diagnostics.baseline_report_assembly"
+    },
+    {
+      "from": "iteration1.diagnostics.failure_taxonomy_generation",
+      "to": "iteration1.diagnostics.baseline_report_assembly"
+    },
+    {
+      "from": "iteration1.label_expansion.audit_source_labeled_dataset",
+      "to": "iteration1.label_expansion.audit_candidate_sentence_integrity"
+    },
+    {
+      "from": "iteration1.label_expansion.audit_source_labeled_dataset",
+      "to": "iteration1.label_expansion.build_labeling_sample"
+    },
+    {
+      "from": "iteration1.label_expansion.build_labeling_sample",
+      "to": "iteration1.label_expansion.manual_labeling_handoff"
+    },
+    {
+      "from": "iteration1.label_expansion.manual_labeling_handoff",
+      "to": "iteration1.label_expansion.dedupe_merge"
+    },
+    {
+      "from": "iteration1.label_expansion.dedupe_merge",
+      "to": "iteration1.label_expansion.dataset_qa"
+    },
+    {
+      "from": "iteration1.label_expansion.dataset_qa",
+      "to": "iteration1.label_expansion.metadata_report_generation"
+    },
+    {
+      "from": "iteration1.shared.audit_sentence_integrity",
+      "to": "iteration1.irr.prepare_subset"
+    },
+    {
+      "from": "iteration1.irr.prepare_subset",
+      "to": "iteration1.irr.manual_rater2_handoff"
+    },
+    {
+      "from": "iteration1.irr.prepare_subset",
+      "to": "iteration1.irr.compute_infrastructure_metrics"
+    },
+    {
+      "from": "iteration1.irr.prepare_subset",
+      "to": "iteration1.irr.build_adjudication_sheet"
+    },
+    {
+      "from": "iteration1.irr.manual_rater2_handoff",
+      "to": "iteration1.irr.strict_kappa_recheck"
+    },
+    {
+      "from": "iteration1.irr.build_adjudication_sheet",
+      "to": "iteration1.irr.final_adjudicated_merge"
+    },
+    {
+      "from": "iteration1.irr.manual_rater2_handoff",
+      "to": "iteration1.irr.final_adjudicated_merge"
+    },
+    {
+      "from": "iteration1.irr.strict_kappa_recheck",
+      "to": "iteration1.centroid.freeze_adjudicated_dataset"
+    },
+    {
+      "from": "iteration1.irr.final_adjudicated_merge",
+      "to": "iteration1.centroid.freeze_adjudicated_dataset"
+    },
+    {
+      "from": "iteration1.centroid.freeze_adjudicated_dataset",
+      "to": "iteration1.centroid.embed_labeled_sentences"
+    },
+    {
+      "from": "iteration1.centroid.embed_labeled_sentences",
+      "to": "iteration1.centroid.compute_centroids"
+    },
+    {
+      "from": "iteration1.centroid.compute_centroids",
+      "to": "iteration1.centroid.fingerprint_centroid_metadata"
+    },
+    {
+      "from": "iteration1.centroid.compute_centroids",
+      "to": "iteration1.centroid.verify_label_mapping"
+    },
+    {
+      "from": "iteration1.centroid.verify_label_mapping",
+      "to": "iteration1.calibration.verify_split_registry"
+    },
+    {
+      "from": "iteration1.calibration.verify_split_registry",
+      "to": "iteration1.calibration.threshold_pass"
+    },
+    {
+      "from": "iteration1.calibration.threshold_pass",
+      "to": "iteration1.calibration.heldout_evaluation"
+    },
+    {
+      "from": "iteration1.calibration.heldout_evaluation",
+      "to": "iteration1.calibration.calibration_decision_report"
+    },
+    {
+      "from": "iteration1.calibration.calibration_decision_report",
+      "to": "iteration1.batch.build_year_file_manifest"
+    },
+    {
+      "from": "iteration1.batch.build_year_file_manifest",
+      "to": "iteration1.batch.classify_yearly_batches"
+    },
+    {
+      "from": "iteration1.batch.classify_yearly_batches",
+      "to": "iteration1.batch.coverage_and_skip_audit"
+    },
+    {
+      "from": "iteration1.batch.classify_yearly_batches",
+      "to": "iteration1.batch.aggregation_sanity_check"
+    },
+    {
+      "from": "iteration1.batch.coverage_and_skip_audit",
+      "to": "iteration1.batch.batch_summary_report"
+    },
+    {
+      "from": "iteration1.batch.aggregation_sanity_check",
+      "to": "iteration1.batch.batch_summary_report"
+    }
+  ],
+  "manual_task_count": 7,
+  "quality_check_count": 3,
+  "risk_links": 60
 }

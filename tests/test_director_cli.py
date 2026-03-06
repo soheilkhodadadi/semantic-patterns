@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import yaml
+
 from semantic_ai_washing.director.cli import main
 
 
@@ -44,11 +46,153 @@ def test_cli_ingest_and_plan(tmp_path, monkeypatch):
     )
     assert ingest_code == 0
 
+    profile_path = tmp_path / "director" / "config" / "project_profile.yaml"
+    profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
+    profile["phase_command_map"]["iteration1/p1"] = ["echo p1"]
+    profile_path.write_text(yaml.safe_dump(profile, sort_keys=False), encoding="utf-8")
+
     plan_code = main_with_args(["plan", "--iteration", "1", "--phase", "p1"])
     assert plan_code == 0
 
     plans = list((tmp_path / "director" / "plans").glob("runbook_*.yaml"))
     assert plans
+
+
+def test_cli_ingest_with_roadmap_model_and_optimize(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    main_with_args(["init"])
+
+    protocol = tmp_path / "protocol.md"
+    model = tmp_path / "director" / "model" / "roadmap_model.yaml"
+    iteration_log = tmp_path / "docs" / "iteration_log.md"
+    dataset = tmp_path / "data" / "recovery.csv"
+
+    _write(protocol, "Protocol text")
+    _write(
+        model,
+        """
+schema_version: "1.1.0"
+project:
+  name: semantic-patterns
+  description: test
+settings:
+  active_horizon_iterations: ["1"]
+  optimizer_weights:
+    unblock_value: 5
+    critical_path_depth: 4
+    risk_reduction: 3
+    automation_bonus: 2
+    manual_effort_penalty: 2
+    precondition_gap_penalty: 4
+    quality_failure_penalty: 5
+  defaults:
+    phase_execution_mode: phase_first
+    proposal_only: true
+    allow_cross_iteration_rewrite: true
+    fragment_rate_threshold: 0.15
+iterations:
+  - iteration_id: "1"
+    title: test
+    goal: test
+    phases:
+      - phase_id: iteration1/irr-validation
+        title: IRR
+        goal: goal
+        depends_on: []
+        canonical: true
+        required_artifacts: []
+        tasks:
+          - task_id: iteration1.shared.audit_sentence_integrity
+            title: Audit
+            description: quality
+            iteration_id: "1"
+            phase_id: iteration1/irr-validation
+            kind: diagnostic
+            depends_on: []
+            inputs: []
+            outputs: []
+            preconditions:
+              - condition_id: audit.exists
+                kind: artifact_exists
+                target: data/recovery.csv
+                operator: "=="
+                expected: true
+                on_fail: block
+                message: missing
+                reroute_to: []
+            quality_checks:
+              - condition_id: audit.fragment_rate
+                kind: sentence_fragment_rate_lte
+                target: data/recovery.csv
+                operator: "<="
+                expected: 0.15
+                on_fail: reroute
+                message: fragmented
+                reroute_to:
+                  - common.remediate_fragmented_sentences
+            commands: []
+            manual_handoff: false
+            risks: [R1]
+            estimated_effort: 2
+            risk_reduction: 9
+            automation_level: partial
+            on_fail: reroute
+            reroute_to:
+              - common.remediate_fragmented_sentences
+            evidence_required: true
+""".strip(),
+    )
+    _write(
+        tmp_path / "director" / "model" / "remediation_library.yaml",
+        """
+schema_version: "1.1.0"
+tasks:
+  - task_id: common.remediate_fragmented_sentences
+    title: Fix fragments
+    description: manual
+    iteration_id: common
+    phase_id: common/remediation
+    kind: remediation
+    depends_on: []
+    inputs: []
+    outputs: []
+    preconditions: []
+    quality_checks: []
+    commands: []
+    manual_handoff: true
+    risks: [R5]
+    estimated_effort: 5
+    risk_reduction: 8
+    automation_level: manual
+    on_fail: block
+    reroute_to: []
+    evidence_required: true
+""".strip(),
+    )
+    _write(iteration_log, "## Iteration 1\n### Phase: p1 (start)")
+    _write(dataset, "sentence\nbroken fragment\nanother fragment\n")
+
+    ingest_code = main_with_args(
+        [
+            "ingest",
+            "--protocol",
+            str(protocol),
+            "--roadmap-model",
+            str(model),
+            "--iteration-log",
+            str(iteration_log),
+        ]
+    )
+    assert ingest_code == 0
+
+    render_code = main_with_args(["render-roadmap"])
+    assert render_code == 0
+
+    optimize_code = main_with_args(["optimize", "--iteration", "1", "--phase", "irr-validation"])
+    assert optimize_code == 0
+
+    recommendations = list((tmp_path / "director" / "optimization").glob("recommendation_*.json"))
+    assert recommendations
 
 
 def test_cli_decide_from_blocker(tmp_path, monkeypatch):

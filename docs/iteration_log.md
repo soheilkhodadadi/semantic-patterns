@@ -706,3 +706,90 @@ Rules:
 - CI status:
   - local validation pass (`make bootstrap`, `make doctor`, `make format`, `make lint`, `.venv/bin/pytest -q`)
   - branch pushed: `origin/iteration1/irr-validation`
+
+## Director Extension (In Progress)
+
+### Phase: algorithmic-roadmap-control-loop (execution update)
+- Date: 2026-03-05
+- Branch: `iteration1/irr-validation`
+- Goal: Convert director planning from prose-driven phase maps to a canonical YAML task model with deterministic readiness analysis, optimization, and proposal-only resequencing.
+- Deliverables implemented:
+  - canonical planning sources:
+    - `director/model/roadmap_model.yaml`
+    - `director/model/remediation_library.yaml`
+  - generated roadmap/doc outputs:
+    - `docs/director/roadmap_master.md` (generated from canonical YAML)
+    - `docs/director/roadmap_model_spec.md`
+    - `docs/director/continuous_planning.md`
+  - new director core modules:
+    - `src/semantic_ai_washing/director/core/roadmap_model.py`
+    - `src/semantic_ai_washing/director/core/task_graph.py`
+    - `src/semantic_ai_washing/director/core/sensors.py`
+    - `src/semantic_ai_washing/director/core/readiness.py`
+    - `src/semantic_ai_washing/director/core/optimizer.py`
+    - `src/semantic_ai_washing/director/core/render.py`
+  - schema and planner/executor extensions:
+    - `RoadmapModel`, `IterationSpec`, `PhaseSpec`, `TaskSpec`, `ArtifactSpec`, `ConditionSpec`
+    - task-graph planning for modeled phases
+    - `manual` blocker type + `waiting_manual` step state
+    - explicit planner failure for unmigrated phases that have neither modeled tasks nor fallback commands
+  - CLI/extensions:
+    - `python -m semantic_ai_washing.director.cli render-roadmap`
+    - `python -m semantic_ai_washing.director.cli optimize`
+    - `ingest --roadmap-model ...`
+  - Iteration 1 modeled at task level in canonical YAML:
+    - `diagnostics-nlp`
+    - `label-expansion`
+    - `irr-validation`
+    - `centroid-retraining`
+    - `classifier-calibration`
+    - `batch-classification-2021-2024`
+  - fallback compatibility retained for unmigrated recovery phase:
+    - `director/config/project_profile.yaml` preserves `iteration1/label-expansion-recovery` command/artifact maps
+- Validation run:
+  - `.venv/bin/python -m semantic_ai_washing.director.cli render-roadmap` -> pass
+    - output: `docs/director/roadmap_master.md`
+  - `.venv/bin/python -m semantic_ai_washing.director.cli ingest --protocol docs/director/implementation_protocol_master.md --roadmap-model director/model/roadmap_model.yaml --iteration-log docs/iteration_log.md` -> pass
+    - snapshots refreshed:
+      - `director/snapshots/protocol_summary.json`
+      - `director/snapshots/roadmap_summary.json`
+      - `director/snapshots/iteration_state.json`
+  - `.venv/bin/python -m semantic_ai_washing.director.cli optimize --iteration 1 --phase irr-validation` -> pass
+    - optimization report id: `d3700831-313a6972`
+    - outputs:
+      - `director/optimization/graph_d3700831-313a6972.json`
+      - `director/optimization/readiness_d3700831-313a6972.json`
+      - `director/optimization/recommendation_d3700831-313a6972.json`
+      - `director/optimization/recommendation_d3700831-313a6972.md`
+      - `director/optimization/proposed_roadmap_patch_d3700831-313a6972.yaml`
+  - `.venv/bin/python -m semantic_ai_washing.director.cli plan --iteration 1 --phase irr-validation` -> pass
+    - runbook: `director/plans/runbook_bfa7a63ec1affa51.yaml`
+  - `.venv/bin/python -m semantic_ai_washing.director.cli plan --iteration 1 --phase label-expansion-recovery` -> pass
+    - runbook: `director/plans/runbook_db6d75490b63bd50.yaml`
+  - `make doctor` -> pass (with expected conda base warning)
+  - `make format` -> pass
+  - `make lint` -> pass
+  - `.venv/bin/pytest -q` -> `53 passed`
+- Risks/issues encountered:
+  - initial YAML migration regression removed fallback phase commands for unmigrated phases, allowing validation-only runbooks to be generated for `label-expansion-recovery`.
+  - optimizer surfaced a real upstream blocker for IRR source quality rather than manual-rating readiness.
+- Mitigation/resolution:
+  - restored fallback command/artifact maps for `iteration1/label-expansion-recovery`.
+  - changed planner behavior to fail loudly when a phase has neither modeled tasks nor fallback commands.
+  - added regression coverage for both the loud-fail behavior and fallback recovery planning.
+  - optimizer now truthfully reroutes away from IRR when quality preconditions fail.
+- Deferred blockers (if any):
+  - `iteration1.shared.audit_sentence_integrity` is `blocked_quality` for `iteration1/irr-validation`.
+  - current evidence from `director/optimization/readiness_d3700831-313a6972.json`:
+    - `sentence_fragment_rate_lte` actual = `1.0`
+    - `rows = 121`
+    - `fragment_rows = 121`
+  - recommended remediation tasks:
+    - `common.remediate_fragmented_sentences`
+    - `common.resample_from_clean_sentence_pool`
+  - strict IRR progression should not resume until sentence-quality remediation is addressed or formally deferred with updated policy.
+- Commits:
+  - pending local commit (implementation validated in working tree; commit SHA to be recorded after commit)
+- CI status:
+  - local validation pass (`render-roadmap`, `ingest --roadmap-model`, `optimize`, `plan`, `make doctor`, `make format`, `make lint`, `.venv/bin/pytest -q`)
+  - remote CI pending commit/push
