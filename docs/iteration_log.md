@@ -1256,3 +1256,5 @@ Rules:
   - implementation status: complete
   - phase status: `blocked` pending fresh `OPENAI_API_KEY`
   - this is an intentional and truthful block, not a silent pass or stall
+- Commits:
+  - rubric-and-api-bootstrap implementation: `4ab72b812489d3f060d12f5b27462acb2d4061c3`
