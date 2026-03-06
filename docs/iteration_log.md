@@ -1084,3 +1084,95 @@ Rules:
   - next implementation focus shifts to `iteration1/sentence-table-pilot-2024`
 - Commits:
   - source-index-contract implementation: `f6f00933414c375769c59efe72572b8344cc635b`
+
+### Phase: sentence-table-pilot-2024 (execution update)
+- Date: 2026-03-05
+- Branch: `director/roadmap-model-v2`
+- Selection basis:
+  - pushed checkpoint before implementation:
+    - `f6f00933414c375769c59efe72572b8344cc635b`
+    - `6d41f6e5313abecf472c4ce6047b53a35c9f8dad`
+  - optimizer recommendation before execution: `director/optimization/recommendation_b2f116c5-3a3a3230.json`
+  - selected canonical next phase: `iteration1/sentence-table-pilot-2024`
+- Deliverables implemented:
+  - new canonical data CLIs:
+    - `src/semantic_ai_washing/data/build_filing_manifest.py`
+    - `src/semantic_ai_washing/data/extract_sentence_table.py`
+  - public sentence integrity helpers:
+    - `src/semantic_ai_washing/core/sentence_filter.py`
+      - `normalize_sentence_text`
+      - `get_sentence_integrity_flags`
+  - dependency and health-check updates:
+    - `setup.cfg` (`pyarrow`)
+    - `Makefile` (`make doctor` verifies `pyarrow`)
+  - roadmap and script registry updates:
+    - `director/model/roadmap_model.yaml`
+    - `docs/director/roadmap_master.md`
+    - `director/snapshots/script_inventory.json`
+    - `docs/director/script_registry.md`
+  - regression coverage:
+    - `tests/test_sentence_table_pilot.py`
+- Generated phase artifacts:
+  - versioned evidence:
+    - `reports/data/pilot_2024_manifest_summary.json`
+    - `reports/data/pilot_2024_sentence_quality.json`
+  - local phase outputs (gitignored by repo policy):
+    - `data/manifests/filings/pilot_2024_10k_v1.csv`
+    - `data/processed/sentences/year=2024/ai_sentences.parquet`
+    - `data/processed/sentences/year=2024/ai_sentences_sample.csv`
+- Pilot outcomes:
+  - bounded pilot manifest:
+    - total rows: `240`
+    - quarter counts: `Q1=60`, `Q2=60`, `Q3=60`, `Q4=60`
+    - industry metadata coverage in selected pilot:
+      - `controls_by_firm_year`: `43`
+      - `cik_gvkey`: `5`
+      - `unknown`: `192`
+  - sentence table:
+    - retained AI sentences: `1134`
+    - average AI sentences per filing: `4.725`
+    - fragment rate: `0.004409`
+    - read errors: `0`
+- Validation run:
+  - environment and package:
+    - `git push origin director/roadmap-model-v2` -> pass
+    - `make bootstrap` -> pass
+    - `make doctor` -> pass
+    - `make format` -> pass
+    - `make lint` -> pass
+    - `.venv/bin/pytest -q` -> `68 passed`
+  - targeted regression:
+    - `.venv/bin/pytest -q tests/test_sentence_table_pilot.py tests/test_source_index_contract.py tests/test_director_roadmap_model.py` -> `13 passed`
+  - direct phase commands:
+    - `.venv/bin/python -m semantic_ai_washing.data.build_filing_manifest ...` -> pass
+    - `.venv/bin/python -m semantic_ai_washing.data.extract_sentence_table ...` -> pass
+  - phase planning:
+    - `.venv/bin/python -m semantic_ai_washing.director.cli plan --iteration 1 --phase sentence-table-pilot-2024` -> pass
+      - runbook: `director/plans/runbook_1a84f9c9937bc0d3.yaml`
+      - plan: `director/plans/plan_1a84f9c9937bc0d3.md`
+      - decision scaffold: `director/decisions/decision_1a84f9c9937bc0d3.json`
+  - phase execution:
+    - `.venv/bin/python -m semantic_ai_washing.director.cli run --runbook director/plans/runbook_1a84f9c9937bc0d3.yaml --mode autonomous` -> pass
+      - execution state: `director/runs/execution_state_1a84f9c9937bc0d3.json`
+      - execution result: `director/runs/execution_result_1a84f9c9937bc0d3.json`
+      - status: `passed` (`steps_passed=13`, `step_count=13`)
+  - post-phase optimization:
+    - `.venv/bin/python -m semantic_ai_washing.director.cli optimize` -> pass
+      - recommendation: `director/optimization/recommendation_9d516339-3a3a3230.json`
+- Risks/issues encountered:
+  - FF12 balancing remained best-effort because current 2024 SIC coverage is sparse (`48/240` selected filings with known metadata).
+  - first full extraction pass is CPU-heavy on this machine (roughly 3-4 minutes for 240 filings), but remained below the current director phase timeout.
+  - canonical pilot data outputs under `data/` remain gitignored by repository policy, so versioned evidence is split between tracked reports and local runtime artifacts.
+- Mitigation/resolution:
+  - kept strict quarter balance while allowing best-effort FF12 spread where metadata exists.
+  - kept Parquet canonical by promoting `pyarrow` to a required dependency and checking it in `make doctor`.
+  - recorded phase quality in versioned JSON reports so downstream readiness can evaluate fragmentation without forcing raw data artifacts into git.
+- Next optimizer output after phase completion:
+  - recommendation: `director/optimization/recommendation_9d516339-3a3a3230.json`
+  - top ready tasks:
+    - `iteration1.labels.prepare_labeling_batch`
+    - `common.remediate_fragmented_sentences`
+    - `common.resample_from_clean_sentence_pool`
+  - next recommended implementation phase: `iteration1/rubric-and-api-bootstrap`
+- Commits:
+  - sentence-table-pilot-2024 implementation: `0d7bba53ac27e31a998c5da0dd1e90c5c9dd0994`
