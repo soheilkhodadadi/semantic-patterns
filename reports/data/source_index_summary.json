@@ -1,0 +1,99 @@
+{
+  "generated_at": "2026-03-06T07:11:50.423826+00:00",
+  "source_root_ref": "env:SEC_SOURCE_DIR",
+  "source_root_name": "10-X_C_2021-2124",
+  "output_csv": "data/metadata/available_filings_index.csv",
+  "scanned_file_count": 113342,
+  "indexed_row_count": 113234,
+  "unmatched_file_count": 108,
+  "sample_unmatched_files": [
+    "2021/QTR1/20210120_10-KT_edgar_data_1418115_0001477932-21-000333.txt",
+    "2021/QTR1/20210216_10-KT_edgar_data_1439288_0001439288-21-000016.txt",
+    "2021/QTR1/20210302_10-KT_edgar_data_836564_0001683168-21-000754.txt",
+    "2021/QTR1/20210316_10-KT_edgar_data_1575659_0001393905-21-000119.txt",
+    "2021/QTR1/20210316_10-KT_edgar_data_899923_0000899923-21-000021.txt",
+    "2021/QTR1/20210329_10-QT_edgar_data_1556753_0001493152-21-007095.txt",
+    "2021/QTR1/20210331_10-KT_edgar_data_1460702_0001493152-21-007476.txt",
+    "2021/QTR1/20210331_10-KT_edgar_data_1519177_0001654954-21-003630.txt",
+    "2021/QTR1/20210331_10-KT_edgar_data_1755953_0001213900-21-019124.txt",
+    "2021/QTR2/20210401_10-KT_edgar_data_1407583_0001493152-21-007614.txt",
+    "2021/QTR2/20210423_10-KT_edgar_data_895464_0001640334-21-001022.txt",
+    "2021/QTR2/20210428_10-KT_edgar_data_1458023_0001213900-21-023219.txt",
+    "2021/QTR2/20210510_10-QT_edgar_data_1078207_0001078207-21-000097.txt",
+    "2021/QTR2/20210511_10-KT_edgar_data_1819663_0001683168-21-001891.txt",
+    "2021/QTR2/20210517_10-KT_edgar_data_1678746_0001140361-21-017722.txt",
+    "2021/QTR2/20210609_10-KT_edgar_data_1442999_0001663577-21-000283.txt",
+    "2021/QTR2/20210609_10-KT_edgar_data_1760683_0001213900-21-031720.txt",
+    "2021/QTR2/20210610_10-KT-A_edgar_data_1442999_0001663577-21-000285.txt",
+    "2021/QTR2/20210610_10-KT_edgar_data_1644488_0001493152-21-014056.txt",
+    "2021/QTR2/20210624_10-KT_edgar_data_1715768_0001715768-21-000088.txt",
+    "2021/QTR3/20210809_10-QT_edgar_data_12659_0001838862-21-000036.txt",
+    "2021/QTR3/20210927_10-KT_edgar_data_1828805_0001213900-21-050076.txt",
+    "2021/QTR4/20211015_10-KT_edgar_data_1539778_0001493152-21-025516.txt",
+    "2021/QTR4/20211108_10-KT_edgar_data_1689490_0001493152-21-027444.txt",
+    "2021/QTR4/20211115_10-KT_edgar_data_924396_0001185185-21-001669.txt"
+  ],
+  "year_counts": {
+    "2021": 29293,
+    "2022": 30114,
+    "2023": 27834,
+    "2024": 25993
+  },
+  "form_counts": {
+    "10-K": 29217,
+    "10-K-A": 3713,
+    "10-Q": 78024,
+    "10-Q-A": 2280
+  },
+  "quarter_counts": {
+    "2021:Q1": 6922,
+    "2021:Q2": 7669,
+    "2021:Q3": 7330,
+    "2021:Q4": 7372,
+    "2022:Q1": 7668,
+    "2022:Q2": 8098,
+    "2022:Q3": 7179,
+    "2022:Q4": 7169,
+    "2023:Q1": 7134,
+    "2023:Q2": 7555,
+    "2023:Q3": 6581,
+    "2023:Q4": 6564,
+    "2024:Q1": 6329,
+    "2024:Q2": 7244,
+    "2024:Q3": 6242,
+    "2024:Q4": 6178
+  },
+  "source_windows": [
+    {
+      "source_window_id": "active_2021_2024",
+      "roadmap_status": "active",
+      "expected_years": [
+        "2021",
+        "2022",
+        "2023",
+        "2024"
+      ],
+      "indexed_years": [
+        "2021",
+        "2022",
+        "2023",
+        "2024"
+      ],
+      "missing_years": [],
+      "availability_status": "complete",
+      "filing_count": 113234
+    },
+    {
+      "source_window_id": "historical_2000_2020",
+      "roadmap_status": "deferred",
+      "expected_years": [
+        "2000-2020"
+      ],
+      "indexed_years": [],
+      "missing_years": [],
+      "availability_status": "not_available",
+      "filing_count": 0,
+      "note": "Historical backfill remains deferred until older years are intentionally made available under SEC_SOURCE_DIR."
+    }
+  ]
+}

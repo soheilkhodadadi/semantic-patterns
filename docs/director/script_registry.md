@@ -1,7 +1,7 @@
 <!-- generated_file: true -->
 <!-- source_inventory: director/snapshots/script_inventory.json -->
-<!-- source_sha256: 1a3df0e63c3486c43f7254566ab0975da2080666dbe84a217286ba222e52b950 -->
-<!-- rendered_at: 2026-03-06T05:55:41.861229+00:00 -->
+<!-- source_sha256: 7b03b408d97c2441cd79d7404b3c28cd142fbce91d5cc0d00ae71e4cbf90afe3 -->
+<!-- rendered_at: 2026-03-06T07:12:12.898425+00:00 -->
 
 # Script Registry
 
@@ -35,7 +35,7 @@ This document is generated from the repo script inventory snapshot.
 | `semantic_ai_washing.data.download_compustat` | `python -m semantic_ai_washing.data.download_compustat` | primary implementation namespace under semantic_ai_washing |
 | `semantic_ai_washing.data.download_crsp` | `python -m semantic_ai_washing.data.download_crsp` | primary implementation namespace under semantic_ai_washing |
 | `semantic_ai_washing.data.download_sec` | `python -m semantic_ai_washing.data.download_sec` | primary implementation namespace under semantic_ai_washing |
-| `semantic_ai_washing.data.index_sec_filings` | `python -m semantic_ai_washing.data.index_sec_filings` | primary implementation namespace under semantic_ai_washing |
+| `semantic_ai_washing.data.index_sec_filings` | `python -m semantic_ai_washing.data.index_sec_filings` | Index the external SEC corpus and emit source-window metadata. |
 | `semantic_ai_washing.data.pull_compustat_controls` | `python -m semantic_ai_washing.data.pull_compustat_controls` | Pull Compustat controls from WRDS, build a CIK↔GVKEY crosswalk for your 50 firms, |
 | `semantic_ai_washing.diagnostics.phase0_baseline` | `python -m semantic_ai_washing.diagnostics.phase0_baseline` | Phase 0 diagnostics baseline runner for Iteration 1. |
 | `semantic_ai_washing.director.__main__` | `python -m semantic_ai_washing.director.__main__` | primary implementation namespace under semantic_ai_washing |

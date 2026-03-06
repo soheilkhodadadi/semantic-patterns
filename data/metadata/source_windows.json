@@ -1,0 +1,44 @@
+{
+  "generated_at": "2026-03-06T07:11:50.342579+00:00",
+  "source_root_ref": "env:SEC_SOURCE_DIR",
+  "source_root_name": "10-X_C_2021-2124",
+  "all_indexed_years": [
+    "2021",
+    "2022",
+    "2023",
+    "2024"
+  ],
+  "windows": [
+    {
+      "source_window_id": "active_2021_2024",
+      "roadmap_status": "active",
+      "expected_years": [
+        "2021",
+        "2022",
+        "2023",
+        "2024"
+      ],
+      "indexed_years": [
+        "2021",
+        "2022",
+        "2023",
+        "2024"
+      ],
+      "missing_years": [],
+      "availability_status": "complete",
+      "filing_count": 113234
+    },
+    {
+      "source_window_id": "historical_2000_2020",
+      "roadmap_status": "deferred",
+      "expected_years": [
+        "2000-2020"
+      ],
+      "indexed_years": [],
+      "missing_years": [],
+      "availability_status": "not_available",
+      "filing_count": 0,
+      "note": "Historical backfill remains deferred until older years are intentionally made available under SEC_SOURCE_DIR."
+    }
+  ]
+}

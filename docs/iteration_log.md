@@ -1000,3 +1000,87 @@ Rules:
   - next recommended implementation phase: `iteration1/source-index-contract`
 - Commits:
   - repo-hygiene-and-script-canon task implementation: `3a522197fdec0914d8f9ed864f81837de967cb42`
+
+### Phase: source-index-contract (execution update)
+- Date: 2026-03-05
+- Branch: `director/roadmap-model-v2`
+- Selection basis:
+  - optimizer recommendation before execution: `director/optimization/recommendation_e08e31e6-3a3a3230.json`
+  - selected canonical next phase: `iteration1/source-index-contract`
+- Deliverables implemented:
+  - upgraded canonical indexer:
+    - `src/semantic_ai_washing/data/index_sec_filings.py`
+  - compatibility doc update:
+    - `src/semantic_ai_washing/data/build_company_list.py`
+  - roadmap task wiring:
+    - `director/model/roadmap_model.yaml`
+    - `docs/director/roadmap_master.md`
+  - regression coverage:
+    - `tests/test_source_index_contract.py`
+  - generated phase artifacts:
+    - `data/metadata/available_filings_index.csv`
+    - `data/metadata/source_windows.json`
+    - `reports/data/source_index_summary.json`
+- Source-index outcomes:
+  - index schema expanded to include `quarter`, `source_root`, `index_timestamp`, and `source_window_id`
+  - `path` is now source-root-relative rather than an absolute machine path
+  - active source window contract recorded as `active_2021_2024`
+  - historical source window remains deferred as `historical_2000_2020`
+  - current indexed results:
+    - files scanned: `113342`
+    - indexed rows: `113234`
+    - unmatched files: `108`
+    - year counts:
+      - `2021`: `29293`
+      - `2022`: `30114`
+      - `2023`: `27834`
+      - `2024`: `25993`
+    - form counts:
+      - `10-K`: `29217`
+      - `10-K-A`: `3713`
+      - `10-Q`: `78024`
+      - `10-Q-A`: `2280`
+- Validation run:
+  - targeted validation:
+    - `.venv/bin/pytest -q tests/test_source_index_contract.py tests/test_director_roadmap_model.py` -> `9 passed`
+  - phase planning:
+    - `.venv/bin/python -m semantic_ai_washing.director.cli render-roadmap` -> pass
+    - `.venv/bin/python -m semantic_ai_washing.director.cli plan --iteration 1 --phase source-index-contract` -> pass
+      - runbook: `director/plans/runbook_0a62e7356305be6f.yaml`
+      - plan: `director/plans/plan_0a62e7356305be6f.md`
+      - decision scaffold: `director/decisions/decision_0a62e7356305be6f.json`
+  - first autonomous execution attempt:
+    - `.venv/bin/python -m semantic_ai_washing.director.cli run --runbook director/plans/runbook_0a62e7356305be6f.yaml --mode autonomous` -> blocked
+      - blocker: missing local SEC source configuration (`SEC_SOURCE_DIR` / `data/metadata/sec_source_dir.txt`)
+      - execution state: `director/runs/execution_state_0a62e7356305be6f.json`
+      - decision record preserved: `director/decisions/decision_e3806cba991adcd1.json`
+  - blocker resolution:
+    - created local ignored config file `data/metadata/sec_source_dir.txt` pointing to `/Users/soheilkhodadadi/DataWork/10-X_C_2021-2124`
+    - verified direct command:
+      - `.venv/bin/python -m semantic_ai_washing.data.index_sec_filings --output-csv data/metadata/available_filings_index.csv --output-source-windows data/metadata/source_windows.json --output-summary reports/data/source_index_summary.json` -> pass
+  - second autonomous execution attempt:
+    - `.venv/bin/python -m semantic_ai_washing.director.cli run --runbook director/plans/runbook_0a62e7356305be6f.yaml --mode autonomous` -> pass
+      - execution state: `director/runs/execution_state_0a62e7356305be6f.json`
+      - execution result: `director/runs/execution_result_0a62e7356305be6f.json`
+      - status: `passed` (`steps_passed=10`, `step_count=10`)
+    - canonical validation preamble executed inside runbook:
+      - `make bootstrap` -> pass
+      - `make doctor` -> pass
+      - `make format` -> pass
+      - `make lint` -> pass
+      - `.venv/bin/pytest -q` -> `64 passed`
+- Risks/issues encountered:
+  - the first autonomous run exposed that director-invoked data phases do not inherit a configured SEC source path unless the local shell exports `SEC_SOURCE_DIR` or the ignored hint file exists
+  - overwriting `data/metadata/available_filings_index.csv` changes a tracked large artifact and should be treated as intentional source-contract drift, not incidental noise
+- Mitigation/resolution:
+  - kept the source root configuration local and ignored via `data/metadata/sec_source_dir.txt`
+  - preserved the blocked attempt in a decision record before rerunning to a passed state
+- Next optimizer output after phase completion:
+  - recommendation: `director/optimization/recommendation_b2f116c5-3a3a3230.json`
+  - top ready tasks:
+    - `iteration1.pilot.generate_2024_manifest`
+    - `common.remediate_fragmented_sentences`
+    - `common.resample_from_clean_sentence_pool`
+  - next implementation focus shifts to `iteration1/sentence-table-pilot-2024`
+- Commits:
+  - pending local commit for source-index-contract implementation

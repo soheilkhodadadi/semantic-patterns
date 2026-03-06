@@ -372,7 +372,8 @@ iterations:
                 required: true
             preconditions: []
             quality_checks: []
-            commands: []
+            commands:
+              - .venv/bin/python -m semantic_ai_washing.data.index_sec_filings --output-csv data/metadata/available_filings_index.csv --output-source-windows data/metadata/source_windows.json --output-summary reports/data/source_index_summary.json
             manual_handoff: false
             risks: [R5]
             estimated_effort: 3

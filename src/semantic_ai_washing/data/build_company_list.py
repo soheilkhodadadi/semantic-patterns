@@ -5,7 +5,7 @@ Also write out the exact 200 filing rows (50 firms × 4 years) for downstream co
 
 Inputs
 ------
-- data/metadata/available_filings_index.csv   # columns: cik, year, form, filename, path
+- data/metadata/available_filings_index.csv   # minimum columns: cik, year, form, filename, path
 - data/external/cik_ticker_list.csv           # CIK↔ticker↔name mapping (your existing table)
 
 Outputs
