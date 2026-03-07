@@ -1419,3 +1419,88 @@ Rules:
   - kickoff blocking is expected until work is moved onto a clean `iteration2/integration` branch
   - unsupported roadmap patch operations remain proposal-only and are surfaced in review artifacts instead of being silently dropped
   - API key was re-exposed in chat during prior live smoke validation and should be rotated again; no secret was written to tracked files
+
+## 2026-03-06 - Iteration 2 Kickoff Passed / Dataset Expansion Manual Boundary
+
+- Preflight checkpoint:
+  - working branch: `iteration2/integration`
+  - kickoff evidence already present:
+    - `director/reviews/iteration_2_kickoff.json`
+  - labeling batch inputs available:
+    - `data/labels/v1/labeling_batch_v1.csv`
+    - `data/labels/v1/labeling_batch_v1.parquet`
+    - `reports/labels/labeling_batch_v1_summary.json`
+- Director execution:
+  - planned next phase:
+    - `iteration2/dataset-expansion-2024`
+  - generated plan artifacts:
+    - `director/plans/runbook_3b6121efd7cc0b05.yaml`
+    - `director/plans/plan_3b6121efd7cc0b05.md`
+    - `director/decisions/decision_3b6121efd7cc0b05.json`
+  - execution state:
+    - `director/runs/execution_state_3b6121efd7cc0b05.json`
+    - status: `blocked`
+    - blocker type: `manual`
+    - blocker id: `3b6121efd7cc0b05-step-008-data`
+  - optimizer refresh:
+    - `director/optimization/recommendation_70d7604f-323a6461.json`
+    - `director/optimization/recommendation_70d7604f-323a6461.md`
+- Validation run:
+  - `make bootstrap` -> pass
+  - `make doctor` -> pass
+  - `make format` -> pass
+  - `make lint` -> pass
+  - `.venv/bin/pytest -q` -> `79 passed`
+- Outcome:
+  - kickoff status: `ready`
+  - dataset expansion status: `blocked_manual`
+  - missing manual outputs:
+    - `data/labels/v1/labels_master.parquet`
+    - `reports/labels/label_expansion_summary.json`
+- Next required handoff:
+  - complete bounded human labeling from `data/labels/v1/labeling_batch_v1.csv`
+  - materialize the canonical label outputs above before resuming Iteration 2 automation
+
+## 2026-03-07 - Stakeholder Alignment Patch (Kuntara Expectations)
+
+- Source of truth for this patch:
+  - exported stakeholder email thread: `/Users/soheilkhodadadi/Library/CloudStorage/GoogleDrive-soheil9904@gmail.com/My Drive/Downloads/Re_ AI washing.eml`
+- Canonical stakeholder artifact added:
+  - `docs/director/stakeholder_expectations.md`
+- Roadmap/model alignment changes:
+  - added top-level stakeholder alignment model to `director/model/roadmap_model.yaml`
+  - fully rewrote Iteration 2 to include:
+    - `iteration2/sentence-pool-expansion-2024`
+    - `iteration2/dataset-expansion-2024`
+    - `iteration2/irr-and-adjudication`
+    - `iteration2/split-registry-freeze`
+    - `iteration2/label-sufficiency-gate`
+    - `iteration2/review-and-replan`
+  - encoded explicit stakeholder-driven gates:
+    - candidate pool target: `500 firms`, `1-2k` clean AI sentences
+    - retraining gate: `>=500` adjudicated labels and `>=80` per class
+    - IRR gate: true human-human IRR with `kappa > 0.7` on `>=100` reviewed items
+    - merge-integrity gate includes explicit `ai_total` requirement before panel/regression work
+  - patched later iterations at the phase-goal level to include:
+    - held-out evaluation and merge integrity in Iteration 3
+    - job-postings robustness and publication-scope expansion in Iteration 4
+    - lagged regressions, industry FE / SIC robustness, patent mismatch x A/S ratio, literature differentiation, before/after examples, and paper package assembly in Iteration 5
+- Director/review changes:
+  - review artifacts now include stakeholder alignment summary, unmet/deferred stakeholder requirements, and publication-readiness blockers
+  - rendered roadmap now includes a stakeholder-alignment section and approved-review appendix stakeholder summaries
+- Validation run:
+  - `make format` -> pass
+  - `make lint` -> pass
+  - `make doctor` -> pass
+  - `.venv/bin/pytest -q` -> `79 passed`
+  - `.venv/bin/pytest -q tests/test_director_roadmap_model.py tests/test_director_review.py tests/test_director_cli.py` -> `16 passed`
+  - `.venv/bin/python -m semantic_ai_washing.director.cli review --iteration 1` -> pass
+  - `.venv/bin/python -m semantic_ai_washing.director.cli approve-review --review-file director/reviews/iteration_1_review.json --decision approve --accept-patch none` -> pass
+- Evidence/artifacts refreshed:
+  - `director/reviews/iteration_1_review.json`
+  - `director/reviews/iteration_1_review.md`
+  - `director/reviews/iteration_1_approval.json`
+  - `docs/director/roadmap_master.md`
+- Residual notes:
+  - Iteration 2 execution should remain paused until the stakeholder-aligned roadmap and review artifacts are the accepted baseline for the next chat/session
+  - publication significance remains a final-output expectation, not an upstream optimization target

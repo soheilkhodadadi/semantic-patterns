@@ -1,7 +1,7 @@
 {
-  "source_path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/docs/iteration_log.md",
-  "source_sha256": "90cff315bb0e64af2770fe54234f228565b9b81248b1eee3b93ffa9bd2cbdcf4",
-  "ingested_at": "2026-03-06T22:35:35.298148+00:00",
+  "source_path": "docs/iteration_log.md",
+  "source_sha256": "95de4e864cf532c2f9cdba93629cbe9bd80d6bcd49a11183b0c14c3f85735745",
+  "ingested_at": "2026-03-07T21:09:41.848040+00:00",
   "iteration_count": 2,
   "iterations": [
     {
@@ -395,7 +395,27 @@
         "Generated artifacts:",
         "Validation run:",
         "Outcome:",
-        "Residual risks:"
+        "Residual risks:",
+        "Preflight checkpoint:",
+        "Scope implemented:",
+        "Key code/config/docs added or updated:",
+        "Review artifacts generated:",
+        "Review/approval results:",
+        "Roadmap/control changes introduced:",
+        "Validation run:",
+        "Residual notes:",
+        "Preflight checkpoint:",
+        "Director execution:",
+        "Validation run:",
+        "Outcome:",
+        "Next required handoff:",
+        "Source of truth for this patch:",
+        "Canonical stakeholder artifact added:",
+        "Roadmap/model alignment changes:",
+        "Director/review changes:",
+        "Validation run:",
+        "Evidence/artifacts refreshed:",
+        "Residual notes:"
       ]
     }
   ],

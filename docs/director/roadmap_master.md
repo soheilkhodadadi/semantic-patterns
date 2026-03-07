@@ -1,7 +1,7 @@
 <!-- generated_file: true -->
 <!-- source_model: /Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/model/roadmap_model.yaml -->
-<!-- source_sha256: 70d7604f7bf5fd6ea06ba46db493c33a510819ba585441267507d82d3180594a -->
-<!-- rendered_at: 2026-03-06T22:35:35.102697+00:00 -->
+<!-- source_sha256: 4aadd088017126c5d37221f0ecc2049a136497cd463d9f75e6b002dece872e75 -->
+<!-- rendered_at: 2026-03-07T21:09:40.588858+00:00 -->
 
 # Roadmap Master
 
@@ -23,6 +23,106 @@ Optimization proposals may recommend resequencing tasks or phases beyond the can
 - Iterations 2-5 start with `kickoff-and-preflight`.
 - Approved reviews authorize the next iteration and main-merge closeout.
 
+## Stakeholder Alignment
+- source artifact: `docs/director/stakeholder_expectations.md`
+- active development scope: `2021-2024 public-filing development window`
+- publication target scope: `all publicly traded firms`
+- desired horizon: `20-year horizon when source availability permits`
+
+### Methodology Hard Gates
+- Validate the A/S/I methodology before committing to scaled downstream analysis.
+- IRR must be true human-human IRR on a blinded 100+ sentence subset.
+- IRR threshold must exceed 0.7 before centroid retraining.
+- held_out_sentences.csv remains frozen evaluation-only.
+- API outputs remain assistive-only and must not become canonical labels.
+
+### Data Hard Gates
+- Iteration 2 sentence-pool expansion must target 500 firms.
+- Iteration 2 sentence-pool expansion must target 1-2k clean AI sentences.
+- Centroid retraining requires at least 500 adjudicated labels.
+- Centroid retraining requires at least 80 adjudicated labels per class.
+- ai_total merge integrity must be checked before panel and regression work.
+
+### Publication Hard Gates
+- Publication package must include a literature differentiation table.
+- Publication package must include before/after classification examples.
+- Publication package must include robustness using patent mismatch x A/S ratio, job postings, lagged regressions, and industry FE/SIC buckets.
+- Release packaging must produce a paper/results package, not only pipeline artifacts.
+
+### Stakeholder Requirements
+- `validate_methodology_before_scale` priority=`non-negotiable` stakeholder=`Kuntara`
+  - summary: Validate the new A/S/I classification approach before deeper investment in scaled execution.
+  - target iteration: `2`
+  - source refs: email thread 2025-07-26
+  - mapped phases: iteration1/rubric-and-api-bootstrap, iteration2/irr-and-adjudication, iteration2/label-sufficiency-gate
+  - mapped gates: assistive_api_bootstrap_passed, human_human_irr_gt_0_7, label_sufficiency_before_retraining
+- `true_human_irr_multi_rater` priority=`non-negotiable` stakeholder=`Kuntara`
+  - summary: Use multiple human raters and true IRR rather than model-vs-label agreement.
+  - target iteration: `2`
+  - source refs: email thread 2025-07-26, email thread 2025-08-27
+  - mapped phases: iteration2/irr-and-adjudication, iteration2/label-sufficiency-gate
+  - mapped gates: human_human_irr_only, human_human_irr_gt_0_7
+- `scale_candidate_pool_to_500_firms` priority=`publication-critical` stakeholder=`Kuntara`
+  - summary: Expand beyond the bootstrap pilot to a 500-firm candidate pool with roughly 1-2k clean AI sentences.
+  - target iteration: `2`
+  - source refs: email thread 2025-08-27, email thread 2025-09-08
+  - mapped phases: iteration2/sentence-pool-expansion-2024, iteration2/dataset-expansion-2024
+  - mapped gates: candidate_pool_500_firms, candidate_pool_clean_sentences_gte_1000
+- `label_set_sufficiency_before_retraining` priority=`publication-critical` stakeholder=`Kuntara`
+  - summary: Reach a publication-grade adjudicated label set before retraining, not just a small pilot.
+  - target iteration: `2`
+  - source refs: email thread 2025-08-27, email thread 2025-09-08
+  - mapped phases: iteration2/dataset-expansion-2024, iteration2/irr-and-adjudication, iteration2/label-sufficiency-gate
+  - mapped gates: adjudicated_labels_gte_500, per_class_labels_gte_80
+- `ai_total_merge_integrity` priority=`non-negotiable` stakeholder=`Kuntara`
+  - summary: Fix and verify merge integrity, especially ai_total, before panel and regression work.
+  - target iteration: `3`
+  - source refs: email thread 2025-08-27
+  - mapped phases: iteration3/classification-merge-integrity, iteration4/panel-assembly-2021-2024
+  - mapped gates: ai_total_merge_integrity
+- `job_postings_robustness` priority=`publication-critical` stakeholder=`Kuntara`
+  - summary: Include job postings as a robustness path in the publication pipeline.
+  - target iteration: `4`
+  - source refs: email thread 2025-09-08, email thread 2025-10-13
+  - mapped phases: iteration4/job-postings-robustness-integration, iteration5/robustness-and-sensitivity
+  - mapped gates: job_postings_robustness_available
+- `lagged_and_industry_robustness` priority=`publication-critical` stakeholder=`Kuntara`
+  - summary: Run lagged regressions and industry FE or SIC-bucket robustness before publication packaging.
+  - target iteration: `5`
+  - source refs: email thread 2025-10-13
+  - mapped phases: iteration5/regression-specification, iteration5/robustness-and-sensitivity
+  - mapped gates: lagged_regressions_included, industry_fe_or_sic_robustness_included
+- `patent_mismatch_washing_proxy` priority=`publication-critical` stakeholder=`Kuntara`
+  - summary: Include the patent-mismatch times A/S ratio washing proxy in the robustness package.
+  - target iteration: `5`
+  - source refs: email thread 2025-09-08, email thread 2025-10-13
+  - mapped phases: iteration5/robustness-and-sensitivity
+  - mapped gates: patent_mismatch_as_ratio_robustness
+- `literature_differentiation` priority=`publication-critical` stakeholder=`Kuntara`
+  - summary: Document differentiation from nearby papers with a literature comparison table.
+  - target iteration: `5`
+  - source refs: email thread 2025-07-26
+  - mapped phases: iteration5/literature-differentiation-and-examples, iteration5/release-packaging
+  - mapped gates: literature_differentiation_table_present
+- `before_after_examples` priority=`publication-critical` stakeholder=`Kuntara`
+  - summary: Provide before/after classification examples to make the method legible and defensible.
+  - target iteration: `5`
+  - source refs: email thread 2025-07-26
+  - mapped phases: iteration5/literature-differentiation-and-examples, iteration5/release-packaging
+  - mapped gates: before_after_examples_present
+- `publication_scope_all_public_firms` priority=`preferred` stakeholder=`Kuntara`
+  - summary: Move toward all-public-firm and longer-horizon coverage as the publication target once source availability permits.
+  - target iteration: `4`
+  - source refs: email thread 2025-10-13
+  - mapped phases: iteration4/historical-window-expansion-readiness, iteration5/results-generation
+  - mapped gates: publication_scope_plan_recorded
+- `results_and_paper_package` priority=`non-negotiable` stakeholder=`Kuntara`
+  - summary: Deliver a paper/results package, not only pipeline completion.
+  - target iteration: `5`
+  - source refs: email thread 2025-11-01, email thread 2025-11-18
+  - mapped phases: iteration5/release-packaging
+  - mapped gates: results_package_present
+
 ## Policies
 - `heldout_frozen` `dataset_freeze` enforcement=`hard` value=`True`
 - `human_human_irr_only` `methodology` enforcement=`hard` value=`True`
@@ -32,6 +132,10 @@ Optimization proposals may recommend resequencing tasks or phases beyond the can
 - `split_registry_required_before_retraining` `data_governance` enforcement=`hard` value=`True`
 - `sentence_quality_gate_before_labeling` `data_governance` enforcement=`hard` value=`True`
 - `sentence_quality_gate_before_irr` `data_governance` enforcement=`hard` value=`True`
+- `human_human_irr_gt_0_7` `methodology` enforcement=`hard` value=`{'kappa_min': 0.7, 'irr_subset_min': 100}`
+- `label_sufficiency_before_retraining` `data_governance` enforcement=`hard` value=`{'adjudicated_labels_min': 500, 'per_class_min': 80}`
+- `merge_integrity_before_panel` `data_governance` enforcement=`hard` value=`ai_total_required`
+- `publication_package_required` `analysis_governance` enforcement=`hard` value=`True`
 
 ## Data Layers
 - `source_index` path=`data/metadata/available_filings_index.csv` format=`csv`
@@ -290,10 +394,10 @@ Exit criteria: Foundation phases passed through label-ops-bootstrap., Iteration 
 - phase-level only in this roadmap version
 
 
-## Iteration 2 - Label Expansion, Human IRR, and Frozen Training Set
-Goal: Build the first canonical human-labeled dataset, validate the rubric with true IRR, and freeze the split registry.
-Entry criteria: Iteration 1 review approved., Iteration 2 kickoff completed on iteration2/integration., Use availability-aware quarter redistribution when leakage-safe filtering makes strict equal quarter quotas infeasible.
-Exit criteria: Canonical labels, IRR/adjudication, split registry, and modeling readiness gate are complete., Iteration 2 review approved.
+## Iteration 2 - Scaled Label Expansion, Human IRR, and Modeling Readiness
+Goal: Expand the 2024 development window to stakeholder scale, build a publication-grade adjudicated label set, validate the rubric with true human-human IRR, and gate retraining on explicit sufficiency criteria.
+Entry criteria: Iteration 1 review approved., Iteration 2 kickoff completed on iteration2/integration., Iteration 2 expansion uses the external DataWork filing corpus, not legacy in-repo sentence exports.
+Exit criteria: Sentence-pool expansion reaches 500 firms and at least 1,000 clean AI sentences in the 2024 candidate pool., At least 500 adjudicated labels with at least 80 labels per class are available before retraining., Human-human IRR exceeds 0.7 on a blinded 100+ sentence subset., Split registry is frozen with zero held-out leakage and the modeling readiness report is published., Iteration 2 review approved.
 
 ### iteration2/kickoff-and-preflight
 - Title: Kickoff and Preflight
@@ -313,27 +417,52 @@ Exit criteria: Canonical labels, IRR/adjudication, split registry, and modeling 
   - tags: kickoff
   - risks: R4, R7
 
-### iteration2/dataset-expansion-2024
-- Title: Dataset Expansion 2024
-- Goal: Expand labeled coverage on clean pilot-derived sentences while keeping API use assistive only.
+### iteration2/sentence-pool-expansion-2024
+- Title: Sentence Pool Expansion 2024
+- Goal: Expand beyond the 240-row bootstrap batch to a 500-firm, 1-2k clean AI sentence candidate pool using the external 2024 filing window.
 - Lifecycle: `planned`
 - Depends on: iteration2/kickoff-and-preflight
 - Source window: `active_2021_2024`
-- Required artifacts: data/labels/v1/labels_master.parquet, reports/labels/label_expansion_summary.json
+- Required artifacts: data/manifests/filings/expansion_2024_500_firms_v1.csv, data/processed/sentences/year=2024/expanded_ai_sentences.parquet, reports/labels/sentence_pool_expansion_2024_summary.json
+- Tags: sentence_pool, scale, stakeholder_alignment
+
+#### Tasks
+- `iteration2.pool.expand_candidate_pool` Expand candidate pool to stakeholder scale
+  - kind: `manual` gate_class: `manual` automation: `manual`
+  - depends_on: none
+  - inputs: data/metadata/available_filings_index.csv, data/processed/sentences/year=2024/ai_sentences.parquet
+  - outputs: data/manifests/filings/expansion_2024_500_firms_v1.csv, data/processed/sentences/year=2024/expanded_ai_sentences.parquet, reports/labels/sentence_pool_expansion_2024_summary.json
+  - tags: sentence_pool, scale
+  - risks: R2, R5
+- `iteration2.pool.verify_candidate_pool_targets` Verify sentence-pool targets
+  - kind: `validation` gate_class: `data` automation: `partial`
+  - depends_on: iteration2.pool.expand_candidate_pool
+  - inputs: reports/labels/sentence_pool_expansion_2024_summary.json
+  - outputs: none
+  - tags: sentence_pool_gate
+  - risks: R2
+
+### iteration2/dataset-expansion-2024
+- Title: Dataset Expansion 2024
+- Goal: Produce the expanded human-labeled dataset from the scaled 2024 sentence pool while keeping API use assistive only.
+- Lifecycle: `planned`
+- Depends on: iteration2/sentence-pool-expansion-2024
+- Source window: `active_2021_2024`
+- Required artifacts: data/labels/v1/labels_master.parquet, data/labels/v1/labels_master_review.csv, reports/labels/label_expansion_summary.json
 - Tags: label_expansion, assistive_api
 
 #### Tasks
 - `iteration2.labels.expand_dataset` Expand canonical labels
   - kind: `manual` gate_class: `manual` automation: `manual`
   - depends_on: none
-  - inputs: data/labels/v1/labeling_batch_v1.csv
-  - outputs: data/labels/v1/labels_master.parquet, reports/labels/label_expansion_summary.json
+  - inputs: reports/labels/sentence_pool_expansion_2024_summary.json, data/processed/sentences/year=2024/expanded_ai_sentences.parquet, data/manifests/filings/expansion_2024_500_firms_v1.csv
+  - outputs: data/labels/v1/labels_master.parquet, data/labels/v1/labels_master_review.csv, reports/labels/label_expansion_summary.json
   - tags: human_labeling
   - risks: R1, R2, R3
 
 ### iteration2/irr-and-adjudication
 - Title: IRR and Adjudication
-- Goal: Run true human-human IRR on a blinded subset and adjudicate disagreements.
+- Goal: Run true human-human IRR on a blinded 100+ sentence subset, adjudicate disagreements, and record rubric refinements.
 - Lifecycle: `planned`
 - Depends on: iteration2/dataset-expansion-2024
 - Source window: `active_2021_2024`
@@ -358,7 +487,7 @@ Exit criteria: Canonical labels, IRR/adjudication, split registry, and modeling 
 
 ### iteration2/split-registry-freeze
 - Title: Split Registry Freeze
-- Goal: Freeze train and validation sentence assignments after adjudication while keeping held-out separate.
+- Goal: Freeze train and validation sentence assignments after adjudication while keeping held-out separate and leakage-safe.
 - Lifecycle: `planned`
 - Depends on: iteration2/irr-and-adjudication
 - Source window: `active_2021_2024`
@@ -374,23 +503,36 @@ Exit criteria: Canonical labels, IRR/adjudication, split registry, and modeling 
   - tags: split_registry
   - risks: R3, R6
 
-### iteration2/modeling-readiness-gate
-- Title: Modeling Readiness Gate
-- Goal: Gate retraining on class balance, sentence quality, adjudication completion, and split integrity.
+### iteration2/label-sufficiency-gate
+- Title: Label Sufficiency Gate
+- Goal: Publish and verify the modeling readiness report before centroid retraining begins.
 - Lifecycle: `planned`
 - Depends on: iteration2/split-registry-freeze
 - Source window: `active_2021_2024`
 - Required artifacts: reports/models/modeling_readiness_gate.json
-- Tags: modeling_gate
+- Tags: modeling_gate, stakeholder_alignment
 
 #### Tasks
-- phase-level only in this roadmap version
+- `iteration2.labels.publish_modeling_readiness_report` Publish modeling readiness report
+  - kind: `manual` gate_class: `manual` automation: `manual`
+  - depends_on: none
+  - inputs: data/labels/v1/labels_master.parquet, reports/labels/irr_report.json, data/metadata/splits/split_registry_v1.csv
+  - outputs: reports/models/modeling_readiness_gate.json
+  - tags: modeling_gate
+  - risks: R1, R3
+- `iteration2.labels.verify_label_sufficiency` Verify label sufficiency
+  - kind: `validation` gate_class: `science` automation: `partial`
+  - depends_on: iteration2.labels.publish_modeling_readiness_report
+  - inputs: reports/models/modeling_readiness_gate.json
+  - outputs: none
+  - tags: modeling_gate
+  - risks: R1, R3
 
 ### iteration2/review-and-replan
 - Title: Review and Replan
 - Goal: Synthesize iteration evidence, approve closeout, and prepare the next iteration handoff.
 - Lifecycle: `planned`
-- Depends on: iteration2/modeling-readiness-gate
+- Depends on: iteration2/label-sufficiency-gate
 - Source window: `none`
 - Required artifacts: director/reviews/iteration_2_review.json, director/reviews/iteration_2_review.md, director/reviews/iteration_2_patch_proposal.yaml, director/reviews/iteration_2_branch_plan.md, director/reviews/iteration_2_starter_prompt.md, director/reviews/iteration_2_approval.json
 - Tags: review, closeout
@@ -412,10 +554,10 @@ Exit criteria: Canonical labels, IRR/adjudication, split registry, and modeling 
   - risks: R4
 
 
-## Iteration 3 - Retraining, Calibration, and Classification of 2021–2024
-Goal: Retrain the local model on adjudicated labels, calibrate on validation only, and classify the current active window.
-Entry criteria: Iteration 2 review approved., Iteration 3 kickoff completed on iteration3/integration.
-Exit criteria: Retraining, calibration, active-window classification, and aggregation sanity are complete., Iteration 3 review approved.
+## Iteration 3 - Retraining, Evaluation, and Active-Window Classification
+Goal: Retrain on the expanded adjudicated label set, benchmark whether fine-tuning is warranted, evaluate on held-out, and classify the active development window with explicit merge-integrity QA.
+Entry criteria: Iteration 2 review approved., Iteration 3 kickoff completed on iteration3/integration., Label sufficiency gate passed with at least 500 adjudicated labels, at least 80 labels per class, and human-human IRR > 0.7.
+Exit criteria: Retraining, held-out evaluation, active-window classification, and ai_total merge-integrity QA are complete., Held-out evaluation remains at or above the 0.80 project baseline before publication-scale rollout., Iteration 3 review approved.
 
 ### iteration3/kickoff-and-preflight
 - Title: Kickoff and Preflight
@@ -437,7 +579,7 @@ Exit criteria: Retraining, calibration, active-window classification, and aggreg
 
 ### iteration3/centroid-retraining
 - Title: Centroid Retraining
-- Goal: Embed the adjudicated training set, compute centroids, and fingerprint metadata.
+- Goal: Embed the adjudicated training set, compute centroids, and fingerprint the baseline publication candidate model.
 - Lifecycle: `planned`
 - Depends on: iteration3/kickoff-and-preflight
 - Source window: `active_2021_2024`
@@ -447,11 +589,23 @@ Exit criteria: Retraining, calibration, active-window classification, and aggreg
 #### Tasks
 - phase-level only in this roadmap version
 
-### iteration3/classifier-calibration
-- Title: Classifier Calibration
-- Goal: Calibrate thresholds on validation only and evaluate on the frozen held-out set.
+### iteration3/mpnet-finetuning-benchmark
+- Title: MPNet Fine-Tuning Benchmark
+- Goal: Benchmark whether fine-tuning MPNet on the expanded adjudicated dataset materially improves publication-grade classifier performance.
 - Lifecycle: `planned`
 - Depends on: iteration3/centroid-retraining
+- Source window: `active_2021_2024`
+- Required artifacts: reports/evaluation/mpnet_finetuning_benchmark_v1.json
+- Tags: model_benchmark, fine_tuning
+
+#### Tasks
+- phase-level only in this roadmap version
+
+### iteration3/classifier-calibration-and-heldout-eval
+- Title: Classifier Calibration and Held-Out Eval
+- Goal: Calibrate thresholds on validation only and evaluate the publication candidate classifier on the frozen held-out set.
+- Lifecycle: `planned`
+- Depends on: iteration3/mpnet-finetuning-benchmark
 - Source window: `active_2021_2024`
 - Required artifacts: reports/evaluation/calibration_v1.json, reports/evaluation/heldout_eval_v1.json
 - Tags: calibration, evaluation
@@ -463,7 +617,7 @@ Exit criteria: Retraining, calibration, active-window classification, and aggreg
 - Title: Active Window Batch Classification
 - Goal: Classify the active 2021–2024 source window with coverage and skip auditing.
 - Lifecycle: `planned`
-- Depends on: iteration3/classifier-calibration
+- Depends on: iteration3/classifier-calibration-and-heldout-eval
 - Source window: `active_2021_2024`
 - Required artifacts: data/processed/classifications/year=2021/model=mpnet_v1/classified_sentences.parquet, data/processed/classifications/year=2022/model=mpnet_v1/classified_sentences.parquet, data/processed/classifications/year=2023/model=mpnet_v1/classified_sentences.parquet, data/processed/classifications/year=2024/model=mpnet_v1/classified_sentences.parquet, reports/classification/active_window_coverage_v1.json
 - Tags: batch_classification
@@ -471,14 +625,14 @@ Exit criteria: Retraining, calibration, active-window classification, and aggreg
 #### Tasks
 - phase-level only in this roadmap version
 
-### iteration3/aggregation-sanity
-- Title: Aggregation Sanity
-- Goal: Aggregate sentence-level classifications to firm-year outputs and QA the active window snapshot.
+### iteration3/classification-merge-integrity
+- Title: Classification Merge Integrity
+- Goal: Aggregate sentence-level classifications, verify ai_total integrity, and QA the active-window firm-year snapshot before panel work.
 - Lifecycle: `planned`
 - Depends on: iteration3/active-window-batch-classification
 - Source window: `active_2021_2024`
-- Required artifacts: data/processed/aggregates/firm_year_ai_metrics_v1.parquet, reports/classification/aggregation_qa_v1.json
-- Tags: aggregation
+- Required artifacts: data/processed/aggregates/firm_year_ai_metrics_v1.parquet, reports/classification/aggregation_qa_v1.json, reports/classification/merge_integrity_v1.json
+- Tags: aggregation, merge_integrity
 
 #### Tasks
 - phase-level only in this roadmap version
@@ -487,7 +641,7 @@ Exit criteria: Retraining, calibration, active-window classification, and aggreg
 - Title: Review and Replan
 - Goal: Synthesize iteration evidence, approve closeout, and prepare the next iteration handoff.
 - Lifecycle: `planned`
-- Depends on: iteration3/aggregation-sanity
+- Depends on: iteration3/classification-merge-integrity
 - Source window: `none`
 - Required artifacts: director/reviews/iteration_3_review.json, director/reviews/iteration_3_review.md, director/reviews/iteration_3_patch_proposal.yaml, director/reviews/iteration_3_branch_plan.md, director/reviews/iteration_3_starter_prompt.md, director/reviews/iteration_3_approval.json
 - Tags: review, closeout
@@ -509,10 +663,10 @@ Exit criteria: Retraining, calibration, active-window classification, and aggreg
   - risks: R4
 
 
-## Iteration 4 - Panel Construction and Conditional Historical Backfill
-Goal: Build the active-window panel and cleanly separate that from any deferred historical source expansion.
+## Iteration 4 - Panel Construction, Robustness Inputs, and Publication Scope Expansion
+Goal: Build the active-window panel, add stakeholder-requested robustness inputs, and prepare or execute broader publication-scope expansion as source availability permits.
 Entry criteria: Iteration 3 review approved., Iteration 4 kickoff completed on iteration4/integration.
-Exit criteria: Active-window panel is assembled and QA-frozen., Iteration 4 review approved.
+Exit criteria: Active-window panel is assembled and QA-frozen., Job-postings robustness inputs are integrated., Publication-scope expansion readiness is recorded for all-public-firm / longer-horizon coverage., Iteration 4 review approved.
 
 ### iteration4/kickoff-and-preflight
 - Title: Kickoff and Preflight
@@ -534,7 +688,7 @@ Exit criteria: Active-window panel is assembled and QA-frozen., Iteration 4 revi
 
 ### iteration4/patents-and-controls-ingestion
 - Title: Patents and Controls Ingestion
-- Goal: Refresh patents, controls, and crosswalk inputs required for the active-window panel.
+- Goal: Refresh patents, controls, crosswalks, and ai_total-safe merge inputs required for panel construction and publication robustness.
 - Lifecycle: `planned`
 - Depends on: iteration4/kickoff-and-preflight
 - Source window: `active_2021_2024`
@@ -546,7 +700,7 @@ Exit criteria: Active-window panel is assembled and QA-frozen., Iteration 4 revi
 
 ### iteration4/panel-assembly-2021-2024
 - Title: Panel Assembly 2021-2024
-- Goal: Merge active-window AI metrics with patents and controls into the canonical panel.
+- Goal: Merge active-window AI metrics with patents and controls into the canonical panel while preserving merge integrity for publication analysis.
 - Lifecycle: `planned`
 - Depends on: iteration4/patents-and-controls-ingestion
 - Source window: `active_2021_2024`
@@ -558,7 +712,7 @@ Exit criteria: Active-window panel is assembled and QA-frozen., Iteration 4 revi
 
 ### iteration4/panel-qa-and-freeze
 - Title: Panel QA and Freeze
-- Goal: Validate panel schema, missingness, and transformation rules before freezing panel v1.
+- Goal: Validate panel schema, missingness, transformations, and publication-grade QA checks before freezing panel v1.
 - Lifecycle: `planned`
 - Depends on: iteration4/panel-assembly-2021-2024
 - Source window: `active_2021_2024`
@@ -568,14 +722,26 @@ Exit criteria: Active-window panel is assembled and QA-frozen., Iteration 4 revi
 #### Tasks
 - phase-level only in this roadmap version
 
+### iteration4/job-postings-robustness-integration
+- Title: Job Postings Robustness Integration
+- Goal: Integrate job postings as a stakeholder-requested robustness input for publication analysis.
+- Lifecycle: `planned`
+- Depends on: iteration4/panel-qa-and-freeze
+- Source window: `active_2021_2024`
+- Required artifacts: data/interim/job_postings/job_postings_v1.parquet, reports/panels/job_postings_robustness_qa.json
+- Tags: robustness, job_postings
+
+#### Tasks
+- phase-level only in this roadmap version
+
 ### iteration4/historical-window-expansion-readiness
-- Title: Historical Window Expansion Readiness
-- Goal: Determine whether pre-2021 source availability permits historical backfill work.
+- Title: Historical and All-Public-Firm Expansion Readiness
+- Goal: Determine whether longer-horizon and all-public-firm source availability permits publication-scope expansion beyond the active development window.
 - Lifecycle: `deferred`
 - Depends on: iteration4/panel-qa-and-freeze
 - Source window: `historical_2000_2020`
-- Required artifacts: reports/data/historical_backfill_readiness.json
-- Tags: historical_backfill
+- Required artifacts: reports/data/publication_scope_expansion_readiness.json
+- Tags: historical_backfill, publication_scope
 
 #### Tasks
 - phase-level only in this roadmap version
@@ -584,7 +750,7 @@ Exit criteria: Active-window panel is assembled and QA-frozen., Iteration 4 revi
 - Title: Review and Replan
 - Goal: Synthesize iteration evidence, approve closeout, and prepare the next iteration handoff.
 - Lifecycle: `planned`
-- Depends on: iteration4/panel-qa-and-freeze
+- Depends on: iteration4/job-postings-robustness-integration
 - Source window: `none`
 - Required artifacts: director/reviews/iteration_4_review.json, director/reviews/iteration_4_review.md, director/reviews/iteration_4_patch_proposal.yaml, director/reviews/iteration_4_branch_plan.md, director/reviews/iteration_4_starter_prompt.md, director/reviews/iteration_4_approval.json
 - Tags: review, closeout
@@ -606,10 +772,10 @@ Exit criteria: Active-window panel is assembled and QA-frozen., Iteration 4 revi
   - risks: R4
 
 
-## Iteration 5 - Analysis Outputs and Research Release Packaging
-Goal: Produce analysis outputs and a release package without making statistical significance an optimization target.
+## Iteration 5 - Publication Outputs, Robustness, and Paper Package
+Goal: Produce publication-oriented analysis outputs, stakeholder-requested robustness, and a paper/results package without turning significance into an optimization target.
 Entry criteria: Iteration 4 review approved., Iteration 5 kickoff completed on iteration5/integration.
-Exit criteria: Analysis outputs and release artifacts are complete., Iteration 5 review approved.
+Exit criteria: Publication regressions, robustness outputs, differentiation artifacts, and paper/results package are complete., Iteration 5 review approved.
 
 ### iteration5/kickoff-and-preflight
 - Title: Kickoff and Preflight
@@ -631,7 +797,7 @@ Exit criteria: Analysis outputs and release artifacts are complete., Iteration 5
 
 ### iteration5/regression-specification
 - Title: Regression Specification
-- Goal: Freeze regression inputs and define baseline and robustness specifications.
+- Goal: Freeze regression inputs and define baseline, lagged, and industry-control robustness specifications for publication.
 - Lifecycle: `planned`
 - Depends on: iteration5/kickoff-and-preflight
 - Source window: `active_2021_2024`
@@ -643,7 +809,7 @@ Exit criteria: Analysis outputs and release artifacts are complete., Iteration 5
 
 ### iteration5/results-generation
 - Title: Results Generation
-- Goal: Run baseline models and generate tables and figures with provenance.
+- Goal: Run baseline models and generate the initial tables, figures, and short-intro-ready result package with provenance.
 - Lifecycle: `planned`
 - Depends on: iteration5/regression-specification
 - Source window: `active_2021_2024`
@@ -655,7 +821,7 @@ Exit criteria: Analysis outputs and release artifacts are complete., Iteration 5
 
 ### iteration5/robustness-and-sensitivity
 - Title: Robustness and Sensitivity
-- Goal: Run alternative specifications and summarize directional stability.
+- Goal: Run patent mismatch x A/S ratio, job postings, lagged t+1/t+2, and industry FE/SIC-bucket robustness checks.
 - Lifecycle: `planned`
 - Depends on: iteration5/results-generation
 - Source window: `active_2021_2024`
@@ -665,11 +831,23 @@ Exit criteria: Analysis outputs and release artifacts are complete., Iteration 5
 #### Tasks
 - phase-level only in this roadmap version
 
-### iteration5/release-packaging
-- Title: Release Packaging
-- Goal: Package artifacts, docs, and reproducibility notes for research release.
+### iteration5/literature-differentiation-and-examples
+- Title: Literature Differentiation and Examples
+- Goal: Publish the literature differentiation table and before/after classification examples required for the paper package.
 - Lifecycle: `planned`
 - Depends on: iteration5/robustness-and-sensitivity
+- Source window: `active_2021_2024`
+- Required artifacts: reports/analysis/literature_differentiation_v1.md, reports/analysis/classification_examples_v1.md
+- Tags: publication_package, differentiation
+
+#### Tasks
+- phase-level only in this roadmap version
+
+### iteration5/release-packaging
+- Title: Release Packaging
+- Goal: Package the paper/results set, supporting artifacts, and reproducibility notes for research release.
+- Lifecycle: `planned`
+- Depends on: iteration5/literature-differentiation-and-examples
 - Source window: `active_2021_2024`
 - Required artifacts: reports/release/release_manifest_v1.json
 - Tags: release
@@ -704,9 +882,12 @@ Exit criteria: Analysis outputs and release artifacts are complete., Iteration 5
 
 
 ## Approved Review Appendix
-### 181987a7-313a3a32
+### 4aadd088-313a3a32
 - Scope: `iteration 1`
-- Accepted changes: optimizer-proposed_roadmap_patch_8732eb4e-3a3a3230-1, optimizer-proposed_roadmap_patch_8732eb4e-3a3a3230-2, optimizer-proposed_roadmap_patch_9d516339-3a3a3230-1, optimizer-proposed_roadmap_patch_9d516339-3a3a3230-2, optimizer-proposed_roadmap_patch_b2f116c5-3a3a3230-1, optimizer-proposed_roadmap_patch_b2f116c5-3a3a3230-2, optimizer-proposed_roadmap_patch_d3700831-313a6972-1, optimizer-proposed_roadmap_patch_d3700831-313a6972-2, optimizer-proposed_roadmap_patch_e08e31e6-3a3a3230-1, optimizer-proposed_roadmap_patch_e08e31e6-3a3a3230-2, optimizer-proposed_roadmap_patch_fb55837d-3a3a3230-1, optimizer-proposed_roadmap_patch_fb55837d-3a3a3230-2, review-availability-aware-quartering
-- Deferred changes: none
+- Accepted changes: none
+- Deferred changes: optimizer-proposed_roadmap_patch_8732eb4e-3a3a3230-1, optimizer-proposed_roadmap_patch_8732eb4e-3a3a3230-2, optimizer-proposed_roadmap_patch_9d516339-3a3a3230-1, optimizer-proposed_roadmap_patch_9d516339-3a3a3230-2, optimizer-proposed_roadmap_patch_b2f116c5-3a3a3230-1, optimizer-proposed_roadmap_patch_b2f116c5-3a3a3230-2, optimizer-proposed_roadmap_patch_d3700831-313a6972-1, optimizer-proposed_roadmap_patch_d3700831-313a6972-2, optimizer-proposed_roadmap_patch_e08e31e6-3a3a3230-1, optimizer-proposed_roadmap_patch_e08e31e6-3a3a3230-2, optimizer-proposed_roadmap_patch_fb55837d-3a3a3230-1, optimizer-proposed_roadmap_patch_fb55837d-3a3a3230-2, review-availability-aware-quartering
 - Next iteration: `2`
-- Entry criteria: Iteration 1 review approved., Iteration 2 kickoff completed on iteration2/integration.
+- Entry criteria: Iteration 1 review approved., Iteration 2 kickoff completed on iteration2/integration., Iteration 2 expansion uses the external DataWork filing corpus, not legacy in-repo sentence exports.
+- Stakeholder summary: active_development_scope=2021-2024 public-filing development window; counts_by_priority{non-negotiable=4, preferred=1, publication-critical=7}; counts_by_status{in_progress=1, open=11}; desired_horizon=20-year horizon when source availability permits; due_unsatisfied_count=0; publication_target_scope=all publicly traded firms; requirement_statuses=[{'requirement_id': 'validate_methodology_before_scale', 'priority': 'non-negotiable', 'target_iteration': '2', 'status': 'in_progress', 'mapped_phases': ['iteration1/rubric-and-api-bootstrap', 'iteration2/irr-and-adjudication', 'iteration2/label-sufficiency-gate'], 'mapped_statuses': ['satisfied', 'waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'true_human_irr_multi_rater', 'priority': 'non-negotiable', 'target_iteration': '2', 'status': 'open', 'mapped_phases': ['iteration2/irr-and-adjudication', 'iteration2/label-sufficiency-gate'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'scale_candidate_pool_to_500_firms', 'priority': 'publication-critical', 'target_iteration': '2', 'status': 'open', 'mapped_phases': ['iteration2/sentence-pool-expansion-2024', 'iteration2/dataset-expansion-2024'], 'mapped_statuses': ['blocked_manual', 'waiting_on_deps']}, {'requirement_id': 'label_set_sufficiency_before_retraining', 'priority': 'publication-critical', 'target_iteration': '2', 'status': 'open', 'mapped_phases': ['iteration2/dataset-expansion-2024', 'iteration2/irr-and-adjudication', 'iteration2/label-sufficiency-gate'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'ai_total_merge_integrity', 'priority': 'non-negotiable', 'target_iteration': '3', 'status': 'open', 'mapped_phases': ['iteration3/classification-merge-integrity', 'iteration4/panel-assembly-2021-2024'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'job_postings_robustness', 'priority': 'publication-critical', 'target_iteration': '4', 'status': 'open', 'mapped_phases': ['iteration4/job-postings-robustness-integration', 'iteration5/robustness-and-sensitivity'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'lagged_and_industry_robustness', 'priority': 'publication-critical', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/regression-specification', 'iteration5/robustness-and-sensitivity'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'patent_mismatch_washing_proxy', 'priority': 'publication-critical', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/robustness-and-sensitivity'], 'mapped_statuses': ['waiting_on_deps']}, {'requirement_id': 'literature_differentiation', 'priority': 'publication-critical', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/literature-differentiation-and-examples', 'iteration5/release-packaging'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'before_after_examples', 'priority': 'publication-critical', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/literature-differentiation-and-examples', 'iteration5/release-packaging'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'publication_scope_all_public_firms', 'priority': 'preferred', 'target_iteration': '4', 'status': 'open', 'mapped_phases': ['iteration4/historical-window-expansion-readiness', 'iteration5/results-generation'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'results_and_paper_package', 'priority': 'non-negotiable', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/release-packaging'], 'mapped_statuses': ['waiting_on_deps']}]; source_artifact=docs/director/stakeholder_expectations.md
+- Unmet stakeholder requirements: none
+- Publication blockers: none

@@ -151,7 +151,7 @@ def ensure_default_configs(paths: DirectorPaths) -> None:
         _yaml_dump(
             roadmap_model,
             {
-                "schema_version": "1.2.0",
+                "schema_version": "1.3.0",
                 "project": {
                     "name": "semantic-patterns",
                     "description": "Canonical machine-readable roadmap model.",
@@ -186,6 +186,17 @@ def ensure_default_configs(paths: DirectorPaths) -> None:
                         "make lint",
                         ".venv/bin/pytest -q",
                     ],
+                },
+                "stakeholder_alignment": {
+                    "schema_version": "1.3.0",
+                    "source_artifact": "docs/director/stakeholder_expectations.md",
+                    "active_development_scope": "2021-2024",
+                    "publication_target_scope": "all publicly traded firms",
+                    "desired_horizon": "20-year horizon when source availability permits",
+                    "methodology_hard_gates": [],
+                    "data_hard_gates": [],
+                    "publication_hard_gates": [],
+                    "requirements": [],
                 },
                 "policies": [],
                 "data_layers": [],

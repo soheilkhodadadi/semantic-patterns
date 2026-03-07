@@ -1,4 +1,4 @@
-schema_version: 1.2.0
+schema_version: 1.3.0
 project:
   name: semantic-patterns
   description: Policy-gated roadmap for AI-washing pipeline transformation.
@@ -38,6 +38,186 @@ branching_policy:
   - make format
   - make lint
   - .venv/bin/pytest -q
+stakeholder_alignment:
+  schema_version: 1.3.0
+  source_artifact: docs/director/stakeholder_expectations.md
+  active_development_scope: 2021-2024 public-filing development window
+  publication_target_scope: all publicly traded firms
+  desired_horizon: 20-year horizon when source availability permits
+  methodology_hard_gates:
+  - Validate the A/S/I methodology before committing to scaled downstream analysis.
+  - IRR must be true human-human IRR on a blinded 100+ sentence subset.
+  - IRR threshold must exceed 0.7 before centroid retraining.
+  - held_out_sentences.csv remains frozen evaluation-only.
+  - API outputs remain assistive-only and must not become canonical labels.
+  data_hard_gates:
+  - Iteration 2 sentence-pool expansion must target 500 firms.
+  - Iteration 2 sentence-pool expansion must target 1-2k clean AI sentences.
+  - Centroid retraining requires at least 500 adjudicated labels.
+  - Centroid retraining requires at least 80 adjudicated labels per class.
+  - ai_total merge integrity must be checked before panel and regression work.
+  publication_hard_gates:
+  - Publication package must include a literature differentiation table.
+  - Publication package must include before/after classification examples.
+  - Publication package must include robustness using patent mismatch x A/S ratio, job postings, lagged regressions, and industry FE/SIC buckets.
+  - Release packaging must produce a paper/results package, not only pipeline artifacts.
+  requirements:
+  - requirement_id: validate_methodology_before_scale
+    stakeholder: Kuntara
+    priority: non-negotiable
+    summary: Validate the new A/S/I classification approach before deeper investment in scaled execution.
+    target_iteration: '2'
+    source_refs:
+    - email thread 2025-07-26
+    mapped_phases:
+    - iteration1/rubric-and-api-bootstrap
+    - iteration2/irr-and-adjudication
+    - iteration2/label-sufficiency-gate
+    mapped_gates:
+    - assistive_api_bootstrap_passed
+    - human_human_irr_gt_0_7
+    - label_sufficiency_before_retraining
+  - requirement_id: true_human_irr_multi_rater
+    stakeholder: Kuntara
+    priority: non-negotiable
+    summary: Use multiple human raters and true IRR rather than model-vs-label agreement.
+    target_iteration: '2'
+    source_refs:
+    - email thread 2025-07-26
+    - email thread 2025-08-27
+    mapped_phases:
+    - iteration2/irr-and-adjudication
+    - iteration2/label-sufficiency-gate
+    mapped_gates:
+    - human_human_irr_only
+    - human_human_irr_gt_0_7
+  - requirement_id: scale_candidate_pool_to_500_firms
+    stakeholder: Kuntara
+    priority: publication-critical
+    summary: Expand beyond the bootstrap pilot to a 500-firm candidate pool with roughly 1-2k clean AI sentences.
+    target_iteration: '2'
+    source_refs:
+    - email thread 2025-08-27
+    - email thread 2025-09-08
+    mapped_phases:
+    - iteration2/sentence-pool-expansion-2024
+    - iteration2/dataset-expansion-2024
+    mapped_gates:
+    - candidate_pool_500_firms
+    - candidate_pool_clean_sentences_gte_1000
+  - requirement_id: label_set_sufficiency_before_retraining
+    stakeholder: Kuntara
+    priority: publication-critical
+    summary: Reach a publication-grade adjudicated label set before retraining, not just a small pilot.
+    target_iteration: '2'
+    source_refs:
+    - email thread 2025-08-27
+    - email thread 2025-09-08
+    mapped_phases:
+    - iteration2/dataset-expansion-2024
+    - iteration2/irr-and-adjudication
+    - iteration2/label-sufficiency-gate
+    mapped_gates:
+    - adjudicated_labels_gte_500
+    - per_class_labels_gte_80
+  - requirement_id: ai_total_merge_integrity
+    stakeholder: Kuntara
+    priority: non-negotiable
+    summary: Fix and verify merge integrity, especially ai_total, before panel and regression work.
+    target_iteration: '3'
+    source_refs:
+    - email thread 2025-08-27
+    mapped_phases:
+    - iteration3/classification-merge-integrity
+    - iteration4/panel-assembly-2021-2024
+    mapped_gates:
+    - ai_total_merge_integrity
+  - requirement_id: job_postings_robustness
+    stakeholder: Kuntara
+    priority: publication-critical
+    summary: Include job postings as a robustness path in the publication pipeline.
+    target_iteration: '4'
+    source_refs:
+    - email thread 2025-09-08
+    - email thread 2025-10-13
+    mapped_phases:
+    - iteration4/job-postings-robustness-integration
+    - iteration5/robustness-and-sensitivity
+    mapped_gates:
+    - job_postings_robustness_available
+  - requirement_id: lagged_and_industry_robustness
+    stakeholder: Kuntara
+    priority: publication-critical
+    summary: Run lagged regressions and industry FE or SIC-bucket robustness before publication packaging.
+    target_iteration: '5'
+    source_refs:
+    - email thread 2025-10-13
+    mapped_phases:
+    - iteration5/regression-specification
+    - iteration5/robustness-and-sensitivity
+    mapped_gates:
+    - lagged_regressions_included
+    - industry_fe_or_sic_robustness_included
+  - requirement_id: patent_mismatch_washing_proxy
+    stakeholder: Kuntara
+    priority: publication-critical
+    summary: Include the patent-mismatch times A/S ratio washing proxy in the robustness package.
+    target_iteration: '5'
+    source_refs:
+    - email thread 2025-09-08
+    - email thread 2025-10-13
+    mapped_phases:
+    - iteration5/robustness-and-sensitivity
+    mapped_gates:
+    - patent_mismatch_as_ratio_robustness
+  - requirement_id: literature_differentiation
+    stakeholder: Kuntara
+    priority: publication-critical
+    summary: Document differentiation from nearby papers with a literature comparison table.
+    target_iteration: '5'
+    source_refs:
+    - email thread 2025-07-26
+    mapped_phases:
+    - iteration5/literature-differentiation-and-examples
+    - iteration5/release-packaging
+    mapped_gates:
+    - literature_differentiation_table_present
+  - requirement_id: before_after_examples
+    stakeholder: Kuntara
+    priority: publication-critical
+    summary: Provide before/after classification examples to make the method legible and defensible.
+    target_iteration: '5'
+    source_refs:
+    - email thread 2025-07-26
+    mapped_phases:
+    - iteration5/literature-differentiation-and-examples
+    - iteration5/release-packaging
+    mapped_gates:
+    - before_after_examples_present
+  - requirement_id: publication_scope_all_public_firms
+    stakeholder: Kuntara
+    priority: preferred
+    summary: Move toward all-public-firm and longer-horizon coverage as the publication target once source availability permits.
+    target_iteration: '4'
+    source_refs:
+    - email thread 2025-10-13
+    mapped_phases:
+    - iteration4/historical-window-expansion-readiness
+    - iteration5/results-generation
+    mapped_gates:
+    - publication_scope_plan_recorded
+  - requirement_id: results_and_paper_package
+    stakeholder: Kuntara
+    priority: non-negotiable
+    summary: Deliver a paper/results package, not only pipeline completion.
+    target_iteration: '5'
+    source_refs:
+    - email thread 2025-11-01
+    - email thread 2025-11-18
+    mapped_phases:
+    - iteration5/release-packaging
+    mapped_gates:
+    - results_package_present
 policies:
 - policy_id: heldout_frozen
   kind: dataset_freeze
@@ -99,6 +279,43 @@ policies:
   enforcement: hard
   targets:
   - iteration2/irr-and-adjudication
+  value: true
+- policy_id: human_human_irr_gt_0_7
+  kind: methodology
+  description: Canonical IRR must exceed 0.7 on a blinded 100+ sentence subset before retraining.
+  enforcement: hard
+  targets:
+  - iteration2/irr-and-adjudication
+  - iteration2/label-sufficiency-gate
+  value:
+    kappa_min: 0.7
+    irr_subset_min: 100
+- policy_id: label_sufficiency_before_retraining
+  kind: data_governance
+  description: Retraining requires a sufficiently large adjudicated label set with class balance.
+  enforcement: hard
+  targets:
+  - iteration2/label-sufficiency-gate
+  - iteration3/centroid-retraining
+  value:
+    adjudicated_labels_min: 500
+    per_class_min: 80
+- policy_id: merge_integrity_before_panel
+  kind: data_governance
+  description: ai_total and related merge keys must be verified before panel and regression work.
+  enforcement: hard
+  targets:
+  - iteration3/classification-merge-integrity
+  - iteration4/panel-assembly-2021-2024
+  - iteration5/results-generation
+  value: ai_total_required
+- policy_id: publication_package_required
+  kind: analysis_governance
+  description: Publication release requires differentiation, examples, and the requested robustness suite.
+  enforcement: hard
+  targets:
+  - iteration5/literature-differentiation-and-examples
+  - iteration5/release-packaging
   value: true
 data_layers:
 - layer_id: source_index
@@ -837,7 +1054,7 @@ iterations:
       - condition_id: sentence_fragment_threshold
         kind: sentence_fragment_rate_lte
         target: data/processed/sentences/year=2024/ai_sentences_sample.csv
-        operator: <=
+        operator: "<="
         expected: 0.15
         on_fail: reroute
         message: Pilot sentence fragmentation exceeds threshold.
@@ -1108,17 +1325,23 @@ iterations:
     - superseded
     tasks: []
 - iteration_id: '2'
-  title: Label Expansion, Human IRR, and Frozen Training Set
-  goal: Build the first canonical human-labeled dataset, validate the rubric with
-    true IRR, and freeze the split registry.
+  title: Scaled Label Expansion, Human IRR, and Modeling Readiness
+  goal: Expand the 2024 development window to stakeholder scale, build a publication-grade
+    adjudicated label set, validate the rubric with true human-human IRR, and gate
+    retraining on explicit sufficiency criteria.
   entry_criteria:
   - Iteration 1 review approved.
   - Iteration 2 kickoff completed on iteration2/integration.
-  - Use availability-aware quarter redistribution when leakage-safe filtering makes
-    strict equal quarter quotas infeasible.
+  - Iteration 2 expansion uses the external DataWork filing corpus, not legacy in-repo
+    sentence exports.
   exit_criteria:
-  - Canonical labels, IRR/adjudication, split registry, and modeling readiness gate
-    are complete.
+  - Sentence-pool expansion reaches 500 firms and at least 1,000 clean AI sentences
+    in the 2024 candidate pool.
+  - At least 500 adjudicated labels with at least 80 labels per class are available
+    before retraining.
+  - Human-human IRR exceeds 0.7 on a blinded 100+ sentence subset.
+  - Split registry is frozen with zero held-out leakage and the modeling readiness
+    report is published.
   - Iteration 2 review approved.
   phases:
   - phase_id: iteration2/kickoff-and-preflight
@@ -1178,16 +1401,142 @@ iterations:
       tags:
       - kickoff
       gate_class: ops
-  - phase_id: iteration2/dataset-expansion-2024
-    title: Dataset Expansion 2024
-    goal: Expand labeled coverage on clean pilot-derived sentences while keeping API
-      use assistive only.
+  - phase_id: iteration2/sentence-pool-expansion-2024
+    title: Sentence Pool Expansion 2024
+    goal: Expand beyond the 240-row bootstrap batch to a 500-firm, 1-2k clean AI
+      sentence candidate pool using the external 2024 filing window.
     lifecycle_state: planned
     canonical: true
     depends_on:
     - iteration2/kickoff-and-preflight
     required_artifacts:
+    - data/manifests/filings/expansion_2024_500_firms_v1.csv
+    - data/processed/sentences/year=2024/expanded_ai_sentences.parquet
+    - reports/labels/sentence_pool_expansion_2024_summary.json
+    source_window_id: active_2021_2024
+    tags:
+    - sentence_pool
+    - scale
+    - stakeholder_alignment
+    tasks:
+    - task_id: iteration2.pool.expand_candidate_pool
+      title: Expand candidate pool to stakeholder scale
+      description: Build the expanded 2024 filing manifest and clean AI sentence pool
+        from the external SEC corpus until the stakeholder scale target is met.
+      iteration_id: '2'
+      phase_id: iteration2/sentence-pool-expansion-2024
+      kind: manual
+      depends_on: []
+      inputs:
+      - artifact_id: source_index
+        path: data/metadata/available_filings_index.csv
+        kind: csv
+        required: true
+      - artifact_id: pilot_sentence_table
+        path: data/processed/sentences/year=2024/ai_sentences.parquet
+        kind: parquet
+        required: true
+      outputs:
+      - artifact_id: expansion_manifest
+        path: data/manifests/filings/expansion_2024_500_firms_v1.csv
+        kind: csv
+        required: true
+      - artifact_id: expanded_sentence_table
+        path: data/processed/sentences/year=2024/expanded_ai_sentences.parquet
+        kind: parquet
+        required: true
+      - artifact_id: expansion_summary
+        path: reports/labels/sentence_pool_expansion_2024_summary.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: source_index_exists
+        kind: artifact_exists
+        target: data/metadata/available_filings_index.csv
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Canonical filing index must exist before scaling the candidate pool.
+        reroute_to: []
+      quality_checks: []
+      commands: []
+      manual_handoff: true
+      risks:
+      - R2
+      - R5
+      estimated_effort: 8
+      risk_reduction: 10
+      automation_level: manual
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - sentence_pool
+      - scale
+      gate_class: manual
+    - task_id: iteration2.pool.verify_candidate_pool_targets
+      title: Verify sentence-pool targets
+      description: Confirm the expanded 2024 candidate pool reaches the firm and sentence targets required for stakeholder-aligned label expansion.
+      iteration_id: '2'
+      phase_id: iteration2/sentence-pool-expansion-2024
+      kind: validation
+      depends_on:
+      - iteration2.pool.expand_candidate_pool
+      inputs:
+      - artifact_id: expansion_summary
+        path: reports/labels/sentence_pool_expansion_2024_summary.json
+        kind: json
+        required: true
+      outputs: []
+      preconditions:
+      - condition_id: expansion_summary_exists
+        kind: artifact_exists
+        target: reports/labels/sentence_pool_expansion_2024_summary.json
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Sentence-pool expansion summary is required before target checks.
+        reroute_to: []
+      quality_checks:
+      - condition_id: candidate_pool_500_firms
+        kind: json_field_compare
+        target: reports/labels/sentence_pool_expansion_2024_summary.json::candidate_pool.firm_count
+        operator: ">="
+        expected: 500
+        on_fail: block
+        message: Expanded sentence pool must cover at least 500 firms.
+        reroute_to: []
+      - condition_id: candidate_pool_clean_sentences_gte_1000
+        kind: json_field_compare
+        target: reports/labels/sentence_pool_expansion_2024_summary.json::candidate_pool.clean_sentence_count
+        operator: ">="
+        expected: 1000
+        on_fail: block
+        message: Expanded sentence pool must contain at least 1,000 clean AI sentences.
+        reroute_to: []
+      commands: []
+      manual_handoff: false
+      risks:
+      - R2
+      estimated_effort: 2
+      risk_reduction: 9
+      automation_level: partial
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - sentence_pool_gate
+      gate_class: data
+  - phase_id: iteration2/dataset-expansion-2024
+    title: Dataset Expansion 2024
+    goal: Produce the expanded human-labeled dataset from the scaled 2024 sentence pool while keeping API use assistive only.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration2/sentence-pool-expansion-2024
+    required_artifacts:
     - data/labels/v1/labels_master.parquet
+    - data/labels/v1/labels_master_review.csv
     - reports/labels/label_expansion_summary.json
     source_window_id: active_2021_2024
     tags:
@@ -1196,14 +1545,22 @@ iterations:
     tasks:
     - task_id: iteration2.labels.expand_dataset
       title: Expand canonical labels
-      description: Run bounded human labeling workflow on clean pilot-derived sentences.
+      description: Run the bounded human labeling workflow on the scaled 2024 sentence pool and publish the canonical label table.
       iteration_id: '2'
       phase_id: iteration2/dataset-expansion-2024
       kind: manual
       depends_on: []
       inputs:
-      - artifact_id: labeling_batch_csv
-        path: data/labels/v1/labeling_batch_v1.csv
+      - artifact_id: sentence_pool_summary
+        path: reports/labels/sentence_pool_expansion_2024_summary.json
+        kind: json
+        required: true
+      - artifact_id: expanded_sentence_table
+        path: data/processed/sentences/year=2024/expanded_ai_sentences.parquet
+        kind: parquet
+        required: true
+      - artifact_id: expansion_manifest
+        path: data/manifests/filings/expansion_2024_500_firms_v1.csv
         kind: csv
         required: true
       outputs:
@@ -1211,18 +1568,22 @@ iterations:
         path: data/labels/v1/labels_master.parquet
         kind: parquet
         required: true
+      - artifact_id: labels_master_review
+        path: data/labels/v1/labels_master_review.csv
+        kind: csv
+        required: true
       - artifact_id: label_expansion_summary
         path: reports/labels/label_expansion_summary.json
         kind: json
         required: true
       preconditions:
-      - condition_id: labeling_batch_exists
+      - condition_id: expanded_sentence_pool_exists
         kind: artifact_exists
-        target: data/labels/v1/labeling_batch_v1.csv
+        target: data/processed/sentences/year=2024/expanded_ai_sentences.parquet
         operator: ==
         expected: true
         on_fail: block
-        message: Labeling batch is missing.
+        message: Expanded sentence pool is missing.
         reroute_to: []
       quality_checks: []
       commands: []
@@ -1242,7 +1603,7 @@ iterations:
       gate_class: manual
   - phase_id: iteration2/irr-and-adjudication
     title: IRR and Adjudication
-    goal: Run true human-human IRR on a blinded subset and adjudicate disagreements.
+    goal: Run true human-human IRR on a blinded 100+ sentence subset, adjudicate disagreements, and record rubric refinements.
     lifecycle_state: planned
     canonical: true
     depends_on:
@@ -1287,7 +1648,7 @@ iterations:
       - condition_id: irr_sentence_fragment_threshold
         kind: sentence_fragment_rate_lte
         target: data/labels/v1/labels_master_review.csv
-        operator: <=
+        operator: "<="
         expected: 0.15
         on_fail: reroute
         message: IRR source quality is too low for reliable human rating.
@@ -1312,7 +1673,7 @@ iterations:
       gate_class: data
     - task_id: iteration2.irr.prepare_and_collect
       title: Prepare and collect blinded IRR labels
-      description: Prepare blinded IRR subset and collect second-rater labels.
+      description: Prepare blinded IRR subset, collect second-rater labels, and publish adjudication outputs.
       iteration_id: '2'
       phase_id: iteration2/irr-and-adjudication
       kind: manual
@@ -1345,7 +1706,31 @@ iterations:
         on_fail: block
         message: Canonical labels must exist before IRR.
         reroute_to: []
-      quality_checks: []
+      quality_checks:
+      - condition_id: irr_reviewed_items_min
+        kind: json_field_compare
+        target: reports/labels/irr_report.json::summary.reviewed_items
+        operator: ">="
+        expected: 100
+        on_fail: block
+        message: IRR must evaluate at least 100 blinded sentences.
+        reroute_to: []
+      - condition_id: irr_kappa_threshold
+        kind: json_field_compare
+        target: reports/labels/irr_report.json::summary.kappa
+        operator: ">"
+        expected: 0.7
+        on_fail: block
+        message: Human-human IRR must exceed 0.7 before retraining.
+        reroute_to: []
+      - condition_id: irr_human_human_only
+        kind: json_field_compare
+        target: reports/labels/irr_report.json::summary.human_human_only
+        operator: ==
+        expected: true
+        on_fail: block
+        message: IRR report must confirm true human-human IRR.
+        reroute_to: []
       commands: []
       manual_handoff: true
       risks:
@@ -1362,8 +1747,7 @@ iterations:
       gate_class: manual
   - phase_id: iteration2/split-registry-freeze
     title: Split Registry Freeze
-    goal: Freeze train and validation sentence assignments after adjudication while
-      keeping held-out separate.
+    goal: Freeze train and validation sentence assignments after adjudication while keeping held-out separate and leakage-safe.
     lifecycle_state: planned
     canonical: true
     depends_on:
@@ -1423,10 +1807,9 @@ iterations:
       tags:
       - split_registry
       gate_class: data
-  - phase_id: iteration2/modeling-readiness-gate
-    title: Modeling Readiness Gate
-    goal: Gate retraining on class balance, sentence quality, adjudication completion,
-      and split integrity.
+  - phase_id: iteration2/label-sufficiency-gate
+    title: Label Sufficiency Gate
+    goal: Publish and verify the modeling readiness report before centroid retraining begins.
     lifecycle_state: planned
     canonical: true
     depends_on:
@@ -1436,7 +1819,143 @@ iterations:
     source_window_id: active_2021_2024
     tags:
     - modeling_gate
-    tasks: []
+    - stakeholder_alignment
+    tasks:
+    - task_id: iteration2.labels.publish_modeling_readiness_report
+      title: Publish modeling readiness report
+      description: Record the post-adjudication label sufficiency and leakage checks in the canonical readiness report.
+      iteration_id: '2'
+      phase_id: iteration2/label-sufficiency-gate
+      kind: manual
+      depends_on: []
+      inputs:
+      - artifact_id: labels_master
+        path: data/labels/v1/labels_master.parquet
+        kind: parquet
+        required: true
+      - artifact_id: irr_report
+        path: reports/labels/irr_report.json
+        kind: json
+        required: true
+      - artifact_id: split_registry_csv
+        path: data/metadata/splits/split_registry_v1.csv
+        kind: csv
+        required: true
+      outputs:
+      - artifact_id: modeling_readiness_report
+        path: reports/models/modeling_readiness_gate.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: split_registry_exists
+        kind: artifact_exists
+        target: data/metadata/splits/split_registry_v1.csv
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Split registry must exist before the readiness report can be published.
+        reroute_to: []
+      quality_checks: []
+      commands: []
+      manual_handoff: true
+      risks:
+      - R1
+      - R3
+      estimated_effort: 3
+      risk_reduction: 10
+      automation_level: manual
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - modeling_gate
+      gate_class: manual
+    - task_id: iteration2.labels.verify_label_sufficiency
+      title: Verify label sufficiency
+      description: Enforce the numerical stakeholder gates before retraining is authorized.
+      iteration_id: '2'
+      phase_id: iteration2/label-sufficiency-gate
+      kind: validation
+      depends_on:
+      - iteration2.labels.publish_modeling_readiness_report
+      inputs:
+      - artifact_id: modeling_readiness_report
+        path: reports/models/modeling_readiness_gate.json
+        kind: json
+        required: true
+      outputs: []
+      preconditions:
+      - condition_id: modeling_readiness_report_exists
+        kind: artifact_exists
+        target: reports/models/modeling_readiness_gate.json
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Modeling readiness report must exist before sufficiency checks.
+        reroute_to: []
+      quality_checks:
+      - condition_id: adjudicated_labels_gte_500
+        kind: json_field_compare
+        target: reports/models/modeling_readiness_gate.json::summary.total_adjudicated_labels
+        operator: ">="
+        expected: 500
+        on_fail: block
+        message: Retraining requires at least 500 adjudicated labels.
+        reroute_to: []
+      - condition_id: per_class_labels_gte_80
+        kind: json_field_compare
+        target: reports/models/modeling_readiness_gate.json::summary.min_class_count
+        operator: ">="
+        expected: 80
+        on_fail: block
+        message: Retraining requires at least 80 adjudicated labels in every class.
+        reroute_to: []
+      - condition_id: irr_kappa_gt_0_7
+        kind: json_field_compare
+        target: reports/models/modeling_readiness_gate.json::summary.irr_kappa
+        operator: ">"
+        expected: 0.7
+        on_fail: block
+        message: Human-human IRR must exceed 0.7 before retraining.
+        reroute_to: []
+      - condition_id: irr_subset_size_gte_100
+        kind: json_field_compare
+        target: reports/models/modeling_readiness_gate.json::summary.irr_reviewed_items
+        operator: ">="
+        expected: 100
+        on_fail: block
+        message: IRR subset must include at least 100 reviewed items.
+        reroute_to: []
+      - condition_id: no_heldout_overlap
+        kind: json_field_compare
+        target: reports/models/modeling_readiness_gate.json::summary.heldout_overlap_count
+        operator: ==
+        expected: 0
+        on_fail: block
+        message: Held-out overlap must be zero before retraining.
+        reroute_to: []
+      - condition_id: split_registry_frozen
+        kind: json_field_compare
+        target: reports/models/modeling_readiness_gate.json::summary.split_registry_frozen
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Split registry must be frozen before retraining.
+        reroute_to: []
+      commands: []
+      manual_handoff: false
+      risks:
+      - R1
+      - R3
+      estimated_effort: 2
+      risk_reduction: 10
+      automation_level: partial
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - modeling_gate
+      gate_class: science
   - phase_id: iteration2/review-and-replan
     title: Review and Replan
     goal: Synthesize iteration evidence, approve closeout, and prepare the next iteration
@@ -1444,7 +1963,7 @@ iterations:
     lifecycle_state: planned
     canonical: true
     depends_on:
-    - iteration2/modeling-readiness-gate
+    - iteration2/label-sufficiency-gate
     required_artifacts:
     - director/reviews/iteration_2_review.json
     - director/reviews/iteration_2_review.md
@@ -1566,15 +2085,20 @@ iterations:
       - review_approval
       gate_class: manual
 - iteration_id: '3'
-  title: "Retraining, Calibration, and Classification of 2021\u20132024"
-  goal: Retrain the local model on adjudicated labels, calibrate on validation only,
-    and classify the current active window.
+  title: "Retraining, Evaluation, and Active-Window Classification"
+  goal: Retrain on the expanded adjudicated label set, benchmark whether fine-tuning
+    is warranted, evaluate on held-out, and classify the active development window
+    with explicit merge-integrity QA.
   entry_criteria:
   - Iteration 2 review approved.
   - Iteration 3 kickoff completed on iteration3/integration.
+  - Label sufficiency gate passed with at least 500 adjudicated labels, at least 80
+    labels per class, and human-human IRR > 0.7.
   exit_criteria:
-  - Retraining, calibration, active-window classification, and aggregation sanity
-    are complete.
+  - Retraining, held-out evaluation, active-window classification, and ai_total merge-integrity
+    QA are complete.
+  - Held-out evaluation remains at or above the 0.80 project baseline before publication-scale
+    rollout.
   - Iteration 3 review approved.
   phases:
   - phase_id: iteration3/kickoff-and-preflight
@@ -1636,7 +2160,8 @@ iterations:
       gate_class: ops
   - phase_id: iteration3/centroid-retraining
     title: Centroid Retraining
-    goal: Embed the adjudicated training set, compute centroids, and fingerprint metadata.
+    goal: Embed the adjudicated training set, compute centroids, and fingerprint the
+      baseline publication candidate model.
     lifecycle_state: planned
     canonical: true
     depends_on:
@@ -1649,14 +2174,29 @@ iterations:
     tags:
     - retraining
     tasks: []
-  - phase_id: iteration3/classifier-calibration
-    title: Classifier Calibration
-    goal: Calibrate thresholds on validation only and evaluate on the frozen held-out
-      set.
+  - phase_id: iteration3/mpnet-finetuning-benchmark
+    title: MPNet Fine-Tuning Benchmark
+    goal: Benchmark whether fine-tuning MPNet on the expanded adjudicated dataset materially
+      improves publication-grade classifier performance.
     lifecycle_state: planned
     canonical: true
     depends_on:
     - iteration3/centroid-retraining
+    required_artifacts:
+    - reports/evaluation/mpnet_finetuning_benchmark_v1.json
+    source_window_id: active_2021_2024
+    tags:
+    - model_benchmark
+    - fine_tuning
+    tasks: []
+  - phase_id: iteration3/classifier-calibration-and-heldout-eval
+    title: Classifier Calibration and Held-Out Eval
+    goal: Calibrate thresholds on validation only and evaluate the publication candidate
+      classifier on the frozen held-out set.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration3/mpnet-finetuning-benchmark
     required_artifacts:
     - reports/evaluation/calibration_v1.json
     - reports/evaluation/heldout_eval_v1.json
@@ -1672,7 +2212,7 @@ iterations:
     lifecycle_state: planned
     canonical: true
     depends_on:
-    - iteration3/classifier-calibration
+    - iteration3/classifier-calibration-and-heldout-eval
     required_artifacts:
     - data/processed/classifications/year=2021/model=mpnet_v1/classified_sentences.parquet
     - data/processed/classifications/year=2022/model=mpnet_v1/classified_sentences.parquet
@@ -1683,10 +2223,10 @@ iterations:
     tags:
     - batch_classification
     tasks: []
-  - phase_id: iteration3/aggregation-sanity
-    title: Aggregation Sanity
-    goal: Aggregate sentence-level classifications to firm-year outputs and QA the
-      active window snapshot.
+  - phase_id: iteration3/classification-merge-integrity
+    title: Classification Merge Integrity
+    goal: Aggregate sentence-level classifications, verify ai_total integrity, and
+      QA the active-window firm-year snapshot before panel work.
     lifecycle_state: planned
     canonical: true
     depends_on:
@@ -1694,9 +2234,11 @@ iterations:
     required_artifacts:
     - data/processed/aggregates/firm_year_ai_metrics_v1.parquet
     - reports/classification/aggregation_qa_v1.json
+    - reports/classification/merge_integrity_v1.json
     source_window_id: active_2021_2024
     tags:
     - aggregation
+    - merge_integrity
     tasks: []
   - phase_id: iteration3/review-and-replan
     title: Review and Replan
@@ -1705,7 +2247,7 @@ iterations:
     lifecycle_state: planned
     canonical: true
     depends_on:
-    - iteration3/aggregation-sanity
+    - iteration3/classification-merge-integrity
     required_artifacts:
     - director/reviews/iteration_3_review.json
     - director/reviews/iteration_3_review.md
@@ -1827,14 +2369,16 @@ iterations:
       - review_approval
       gate_class: manual
 - iteration_id: '4'
-  title: Panel Construction and Conditional Historical Backfill
-  goal: Build the active-window panel and cleanly separate that from any deferred
-    historical source expansion.
+  title: Panel Construction, Robustness Inputs, and Publication Scope Expansion
+  goal: Build the active-window panel, add stakeholder-requested robustness inputs,
+    and prepare or execute broader publication-scope expansion as source availability permits.
   entry_criteria:
   - Iteration 3 review approved.
   - Iteration 4 kickoff completed on iteration4/integration.
   exit_criteria:
   - Active-window panel is assembled and QA-frozen.
+  - Job-postings robustness inputs are integrated.
+  - Publication-scope expansion readiness is recorded for all-public-firm / longer-horizon coverage.
   - Iteration 4 review approved.
   phases:
   - phase_id: iteration4/kickoff-and-preflight
@@ -1896,8 +2440,8 @@ iterations:
       gate_class: ops
   - phase_id: iteration4/patents-and-controls-ingestion
     title: Patents and Controls Ingestion
-    goal: Refresh patents, controls, and crosswalk inputs required for the active-window
-      panel.
+    goal: Refresh patents, controls, crosswalks, and ai_total-safe merge inputs required
+      for panel construction and publication robustness.
     lifecycle_state: planned
     canonical: true
     depends_on:
@@ -1912,7 +2456,7 @@ iterations:
   - phase_id: iteration4/panel-assembly-2021-2024
     title: Panel Assembly 2021-2024
     goal: Merge active-window AI metrics with patents and controls into the canonical
-      panel.
+      panel while preserving merge integrity for publication analysis.
     lifecycle_state: planned
     canonical: true
     depends_on:
@@ -1927,8 +2471,8 @@ iterations:
     tasks: []
   - phase_id: iteration4/panel-qa-and-freeze
     title: Panel QA and Freeze
-    goal: Validate panel schema, missingness, and transformation rules before freezing
-      panel v1.
+    goal: Validate panel schema, missingness, transformations, and publication-grade
+      QA checks before freezing panel v1.
     lifecycle_state: planned
     canonical: true
     depends_on:
@@ -1939,19 +2483,34 @@ iterations:
     tags:
     - panel_qa
     tasks: []
+  - phase_id: iteration4/job-postings-robustness-integration
+    title: Job Postings Robustness Integration
+    goal: Integrate job postings as a stakeholder-requested robustness input for publication analysis.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration4/panel-qa-and-freeze
+    required_artifacts:
+    - data/interim/job_postings/job_postings_v1.parquet
+    - reports/panels/job_postings_robustness_qa.json
+    source_window_id: active_2021_2024
+    tags:
+    - robustness
+    - job_postings
+    tasks: []
   - phase_id: iteration4/historical-window-expansion-readiness
-    title: Historical Window Expansion Readiness
-    goal: Determine whether pre-2021 source availability permits historical backfill
-      work.
+    title: Historical and All-Public-Firm Expansion Readiness
+    goal: Determine whether longer-horizon and all-public-firm source availability permits publication-scope expansion beyond the active development window.
     lifecycle_state: deferred
     canonical: true
     depends_on:
     - iteration4/panel-qa-and-freeze
     required_artifacts:
-    - reports/data/historical_backfill_readiness.json
+    - reports/data/publication_scope_expansion_readiness.json
     source_window_id: historical_2000_2020
     tags:
     - historical_backfill
+    - publication_scope
     tasks: []
   - phase_id: iteration4/review-and-replan
     title: Review and Replan
@@ -1960,7 +2519,7 @@ iterations:
     lifecycle_state: planned
     canonical: true
     depends_on:
-    - iteration4/panel-qa-and-freeze
+    - iteration4/job-postings-robustness-integration
     required_artifacts:
     - director/reviews/iteration_4_review.json
     - director/reviews/iteration_4_review.md
@@ -2082,14 +2641,15 @@ iterations:
       - review_approval
       gate_class: manual
 - iteration_id: '5'
-  title: Analysis Outputs and Research Release Packaging
-  goal: Produce analysis outputs and a release package without making statistical
-    significance an optimization target.
+  title: Publication Outputs, Robustness, and Paper Package
+  goal: Produce publication-oriented analysis outputs, stakeholder-requested robustness,
+    and a paper/results package without turning significance into an optimization target.
   entry_criteria:
   - Iteration 4 review approved.
   - Iteration 5 kickoff completed on iteration5/integration.
   exit_criteria:
-  - Analysis outputs and release artifacts are complete.
+  - Publication regressions, robustness outputs, differentiation artifacts, and paper/results
+    package are complete.
   - Iteration 5 review approved.
   phases:
   - phase_id: iteration5/kickoff-and-preflight
@@ -2151,7 +2711,7 @@ iterations:
       gate_class: ops
   - phase_id: iteration5/regression-specification
     title: Regression Specification
-    goal: Freeze regression inputs and define baseline and robustness specifications.
+    goal: Freeze regression inputs and define baseline, lagged, and industry-control robustness specifications for publication.
     lifecycle_state: planned
     canonical: true
     depends_on:
@@ -2164,7 +2724,7 @@ iterations:
     tasks: []
   - phase_id: iteration5/results-generation
     title: Results Generation
-    goal: Run baseline models and generate tables and figures with provenance.
+    goal: Run baseline models and generate the initial tables, figures, and short-intro-ready result package with provenance.
     lifecycle_state: planned
     canonical: true
     depends_on:
@@ -2177,7 +2737,7 @@ iterations:
     tasks: []
   - phase_id: iteration5/robustness-and-sensitivity
     title: Robustness and Sensitivity
-    goal: Run alternative specifications and summarize directional stability.
+    goal: Run patent mismatch x A/S ratio, job postings, lagged t+1/t+2, and industry FE/SIC-bucket robustness checks.
     lifecycle_state: planned
     canonical: true
     depends_on:
@@ -2188,13 +2748,28 @@ iterations:
     tags:
     - analysis
     tasks: []
-  - phase_id: iteration5/release-packaging
-    title: Release Packaging
-    goal: Package artifacts, docs, and reproducibility notes for research release.
+  - phase_id: iteration5/literature-differentiation-and-examples
+    title: Literature Differentiation and Examples
+    goal: Publish the literature differentiation table and before/after classification examples required for the paper package.
     lifecycle_state: planned
     canonical: true
     depends_on:
     - iteration5/robustness-and-sensitivity
+    required_artifacts:
+    - reports/analysis/literature_differentiation_v1.md
+    - reports/analysis/classification_examples_v1.md
+    source_window_id: active_2021_2024
+    tags:
+    - publication_package
+    - differentiation
+    tasks: []
+  - phase_id: iteration5/release-packaging
+    title: Release Packaging
+    goal: Package the paper/results set, supporting artifacts, and reproducibility notes for research release.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration5/literature-differentiation-and-examples
     required_artifacts:
     - reports/release/release_manifest_v1.json
     source_window_id: active_2021_2024

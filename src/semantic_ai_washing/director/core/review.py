@@ -397,6 +397,89 @@ class ReviewEngine:
                     )
         return {"reports": highlights}, findings
 
+    @staticmethod
+    def _phase_iteration_number(phase_id: str) -> int | None:
+        if not phase_id.startswith("iteration"):
+            return None
+        head = phase_id.split("/", 1)[0].replace("iteration", "")
+        return int(head) if head.isdigit() else None
+
+    def _stakeholder_alignment(
+        self, iteration_id: str
+    ) -> tuple[dict[str, Any], list[str], list[str], list[str]]:
+        model, _, evaluator = self._evaluator()
+        _, phase_states = evaluator.evaluate_all()
+        phase_statuses = {state.phase_id: state.status for state in phase_states}
+        current_iteration = int(iteration_id)
+        by_priority = Counter()
+        by_status = Counter()
+        due_unsatisfied = 0
+        requirement_rows: list[dict[str, Any]] = []
+        unmet_requirements: list[str] = []
+        deferred_requirements: list[str] = []
+        publication_blockers: list[str] = []
+
+        for requirement in model.stakeholder_alignment.requirements:
+            mapped_statuses = [
+                phase_statuses.get(phase_id, "unmapped") for phase_id in requirement.mapped_phases
+            ]
+            if mapped_statuses and all(
+                status in {"satisfied", "completed", "historical", "superseded"}
+                for status in mapped_statuses
+            ):
+                status = "satisfied"
+            elif mapped_statuses and all(status == "deferred" for status in mapped_statuses):
+                status = "deferred"
+            elif mapped_statuses and any(
+                status in {"satisfied", "completed", "historical", "superseded"}
+                for status in mapped_statuses
+            ):
+                status = "in_progress"
+            else:
+                status = "open"
+
+            target_iteration = (
+                int(requirement.target_iteration)
+                if str(requirement.target_iteration).isdigit()
+                else 0
+            )
+            due_now = target_iteration > 0 and target_iteration <= current_iteration
+
+            by_priority[requirement.priority] += 1
+            by_status[status] += 1
+            if status == "deferred":
+                deferred_requirements.append(requirement.requirement_id)
+            if due_now and status != "satisfied":
+                due_unsatisfied += 1
+                if requirement.priority in {"non-negotiable", "publication-critical"}:
+                    unmet_requirements.append(requirement.requirement_id)
+                    publication_blockers.append(
+                        f"{requirement.requirement_id}: {requirement.summary}"
+                    )
+
+            requirement_rows.append(
+                {
+                    "requirement_id": requirement.requirement_id,
+                    "priority": requirement.priority,
+                    "target_iteration": requirement.target_iteration,
+                    "status": status,
+                    "mapped_phases": list(requirement.mapped_phases),
+                    "mapped_statuses": mapped_statuses,
+                }
+            )
+
+        summary = {
+            "source_artifact": model.stakeholder_alignment.source_artifact,
+            "active_development_scope": model.stakeholder_alignment.active_development_scope,
+            "publication_target_scope": model.stakeholder_alignment.publication_target_scope,
+            "desired_horizon": model.stakeholder_alignment.desired_horizon,
+            "counts_by_priority": dict(by_priority),
+            "counts_by_status": dict(by_status),
+            "due_unsatisfied_count": due_unsatisfied,
+            "requirement_statuses": requirement_rows,
+        }
+        return summary, unmet_requirements, deferred_requirements, publication_blockers
+
     def _carryover_blockers(self, iteration_id: str) -> list[dict[str, Any]]:
         carryover: list[dict[str, Any]] = []
         for path in sorted(self.paths.decisions_dir.glob("deferred_*.json")):
@@ -562,6 +645,12 @@ class ReviewEngine:
         phase_summary = self._phase_status_map(iteration_id, phase_id=phase_id)
         blocker_summary, blocker_findings = self._blocker_summary(runs)
         quality_summary, quality_findings = self._quality_summary(iteration_id, phase_summary)
+        (
+            stakeholder_summary,
+            unmet_stakeholder_requirements,
+            deferred_stakeholder_requirements,
+            publication_readiness_blockers,
+        ) = self._stakeholder_alignment(iteration_id)
         starter = self._starter_prompt(iteration_id, phase_summary)
         roadmap_changes, patch = self._roadmap_changes(
             iteration_id, blocker_findings + quality_findings, focus_phase=phase_id
@@ -616,6 +705,10 @@ class ReviewEngine:
             timing_summary=self._timing_summary(runs),
             manual_summary=self._manual_summary(iteration_id, phase_id=phase_id),
             quality_summary=quality_summary,
+            stakeholder_alignment_summary=stakeholder_summary,
+            unmet_stakeholder_requirements=unmet_stakeholder_requirements,
+            deferred_stakeholder_requirements=deferred_stakeholder_requirements,
+            publication_readiness_blockers=publication_readiness_blockers,
             findings=blocker_findings + quality_findings,
             roadmap_changes=roadmap_changes,
             carryover_blockers=self._carryover_blockers(iteration_id),
@@ -885,6 +978,9 @@ def load_approved_review_summaries(reviews_dir: str | Path) -> list[dict[str, An
                 "accepted_change_ids": approval.get("accepted_change_ids", []),
                 "deferred_change_ids": approval.get("deferred_change_ids", []),
                 "next_iteration": review.get("next_iteration", {}),
+                "stakeholder_alignment_summary": review.get("stakeholder_alignment_summary", {}),
+                "unmet_stakeholder_requirements": review.get("unmet_stakeholder_requirements", []),
+                "publication_readiness_blockers": review.get("publication_readiness_blockers", []),
             }
         )
     return summaries

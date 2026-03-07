@@ -13,11 +13,38 @@
 - `schema_version`
 - `project`
 - `settings`
+- `branching_policy`
+- `stakeholder_alignment`
 - `policies`
 - `data_layers`
 - `source_windows`
 - `tooling_policies`
 - `iterations`
+
+## Stakeholder Alignment Model
+The roadmap model includes a first-class stakeholder-alignment section so future planning does not rely on chat memory.
+
+It defines:
+- `source_artifact`
+- `active_development_scope`
+- `publication_target_scope`
+- `desired_horizon`
+- `methodology_hard_gates`
+- `data_hard_gates`
+- `publication_hard_gates`
+- `requirements`
+
+Each stakeholder requirement defines:
+- `requirement_id`
+- `stakeholder`
+- `priority`
+- `summary`
+- `target_iteration`
+- `source_refs`
+- `mapped_phases`
+- `mapped_gates`
+
+Director review artifacts use this section to report stakeholder-alignment status, unmet requirements, deferred requirements, and publication-readiness blockers.
 
 ## Policy Model
 Each policy defines:
@@ -31,9 +58,12 @@ Each policy defines:
 Current hard policies include:
 - held-out freeze
 - human-human IRR only
+- human-human IRR > 0.7 on 100+ blinded items before retraining
 - assistive-only API use
 - no significance optimization
 - split registry required before retraining
+- label sufficiency required before retraining
+- ai_total merge integrity before panel and regression work
 - sentence-quality gates before labeling and IRR
 
 ## Data Layer Model

@@ -36,9 +36,34 @@ def _write_yaml(path: Path, payload: dict) -> None:
     path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
 
 
+def _minimal_stakeholder_alignment() -> dict:
+    return {
+        "schema_version": "1.3.0",
+        "source_artifact": "docs/director/stakeholder_expectations.md",
+        "active_development_scope": "2021-2024",
+        "publication_target_scope": "all publicly traded firms",
+        "desired_horizon": "20-year horizon",
+        "methodology_hard_gates": ["human-human IRR only"],
+        "data_hard_gates": ["500 firms", "1-2k clean AI sentences"],
+        "publication_hard_gates": ["paper package required"],
+        "requirements": [
+            {
+                "requirement_id": "stakeholder-scale",
+                "stakeholder": "Kuntara",
+                "priority": "publication-critical",
+                "summary": "Scale the dataset before retraining.",
+                "target_iteration": "2",
+                "source_refs": ["email thread 2025-08-27"],
+                "mapped_phases": ["iteration2/source-index-contract"],
+                "mapped_gates": ["candidate_pool_500_firms"],
+            }
+        ],
+    }
+
+
 def _minimal_model() -> dict:
     return {
-        "schema_version": "1.2.0",
+        "schema_version": "1.3.0",
         "project": {"name": "semantic-patterns", "description": "test"},
         "settings": {
             "active_horizon_iterations": ["1", "2"],
@@ -79,6 +104,7 @@ def _minimal_model() -> dict:
                 ".venv/bin/pytest -q",
             ],
         },
+        "stakeholder_alignment": _minimal_stakeholder_alignment(),
         "policies": [
             {
                 "policy_id": "heldout_frozen",
@@ -330,7 +356,7 @@ def _policy_block_model() -> dict:
 
 def _minimal_library() -> dict:
     return {
-        "schema_version": "1.2.0",
+        "schema_version": "1.3.0",
         "tasks": [
             {
                 "task_id": "common.remediate_fragmented_sentences",
@@ -377,6 +403,8 @@ def test_load_and_render_roadmap_model(tmp_path):
     assert "generated from the canonical roadmap YAML model" in body
     assert "## Policies" in body
     assert "## Data Layers" in body
+    assert "## Stakeholder Alignment" in body
+    assert "stakeholder-scale" in body
 
 
 def test_optimizer_emits_artifacts_and_patch(tmp_path):
@@ -496,7 +524,7 @@ def test_load_remediation_library_validates(tmp_path):
 
 def test_phase_dependencies_flow_into_task_readiness(tmp_path):
     model_payload = {
-        "schema_version": "1.2.0",
+        "schema_version": "1.3.0",
         "project": {"name": "semantic-patterns", "description": "test"},
         "settings": {"defaults": {"phase_execution_mode": "phase_first"}},
         "branching_policy": {
@@ -512,6 +540,7 @@ def test_phase_dependencies_flow_into_task_readiness(tmp_path):
             "tag_template": "iteration{iteration_id}-closeout",
             "closeout_validation_commands": [".venv/bin/pytest -q"],
         },
+        "stakeholder_alignment": _minimal_stakeholder_alignment(),
         "policies": [],
         "data_layers": [],
         "source_windows": [],

@@ -3,6 +3,7 @@
 ## Core Rules
 - `director/model/roadmap_model.yaml` is the canonical planning source.
 - `docs/director/roadmap_master.md` is generated from canonical YAML and must stay hash-synchronized.
+- `docs/director/stakeholder_expectations.md` is the canonical stakeholder-alignment source.
 - Canonical planning inputs are repo snapshots under `director/snapshots/`.
 - External documents and chats are ingested as structured summaries, not committed raw.
 - Blockers are escalated with ranked options; no silent continuation past failed gates.
@@ -12,14 +13,18 @@
 - Every iteration ends with an explicit `review-and-replan` phase.
 - Iterations 2-5 start with `kickoff-and-preflight`.
 - Next-iteration work is not authorized until the previous iteration review is approved.
+- Iteration reviews must report stakeholder-alignment status before closeout approval.
 
 ## Scientific Policies
 - `held_out_sentences.csv` is frozen evaluation-only.
 - IRR is human-human only. Model-vs-label agreement is not IRR.
+- Canonical IRR must exceed `0.7` on a blinded `100+` sentence subset before retraining.
 - Labeling and adjudication must not peek at downstream outcomes.
 - Retraining requires a frozen split registry.
+- Retraining requires at least `500` adjudicated labels and at least `80` adjudicated labels per class.
 - Sentence-quality gates must pass before manual labeling and IRR work.
 - Recovery or infrastructure phases do not silently satisfy canonical science gates.
+- ai_total merge integrity must be verified before panel or regression work.
 
 ## API Policy
 - OpenAI API output is assistive-only until a later benchmark gate explicitly promotes a new mode.
@@ -41,6 +46,7 @@
 - Gate outcomes and blocker decisions are persisted as JSON artifacts.
 - Deferred blockers are tracked in `director/decisions/deferred_*.json`.
 - Iteration reviews, approvals, kickoff checks, branch plans, and starter prompts are persisted under `director/reviews/`.
+- Stakeholder-derived roadmap patches must be traceable to the expectations document and review artifacts.
 
 ## Branch Lifecycle
 - Standard integration branch:
@@ -61,3 +67,13 @@
 - Canonical sentence, label, classification, and panel layers move to Parquet-backed tables.
 - CSV is retained for review/export and bounded manual workflows.
 - Transitional txt/csv flows remain supported only during migration.
+
+## Publication Package Expectations
+- Publication packaging must include:
+  - literature differentiation
+  - before/after classification examples
+  - patent mismatch x A/S ratio robustness
+  - job postings robustness
+  - lagged regressions
+  - industry FE or SIC-bucket robustness
+- Statistical significance remains an output expectation for publication, not an optimization objective during earlier science phases.

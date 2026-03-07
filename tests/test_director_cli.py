@@ -71,7 +71,7 @@ def test_cli_ingest_with_roadmap_model_and_optimize(tmp_path, monkeypatch):
     _write(
         model,
         """
-schema_version: "1.1.0"
+schema_version: "1.3.0"
 project:
   name: semantic-patterns
   description: test
@@ -103,6 +103,31 @@ branching_policy:
   tag_template: "iteration{iteration_id}-closeout"
   closeout_validation_commands:
     - .venv/bin/pytest -q
+stakeholder_alignment:
+  schema_version: "1.3.0"
+  source_artifact: docs/director/stakeholder_expectations.md
+  active_development_scope: 2021-2024
+  publication_target_scope: all publicly traded firms
+  desired_horizon: 20-year horizon
+  methodology_hard_gates:
+    - human-human IRR only
+  data_hard_gates:
+    - 500 firms
+    - 1-2k clean AI sentences
+  publication_hard_gates:
+    - paper package required
+  requirements:
+    - requirement_id: stakeholder-scale
+      stakeholder: Kuntara
+      priority: publication-critical
+      summary: Scale before retraining.
+      target_iteration: "2"
+      source_refs:
+        - email thread 2025-08-27
+      mapped_phases:
+        - iteration2/sentence-pool-expansion-2024
+      mapped_gates:
+        - candidate_pool_500_firms
 policies: []
 data_layers: []
 source_windows: []

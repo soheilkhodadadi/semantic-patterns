@@ -38,7 +38,7 @@ def _init_git_repo(tmp_path: Path) -> None:
 
 def _review_model() -> dict:
     return {
-        "schema_version": "1.2.0",
+        "schema_version": "1.3.0",
         "project": {"name": "semantic-patterns", "description": "test"},
         "settings": {
             "active_horizon_iterations": ["1", "2"],
@@ -72,6 +72,38 @@ def _review_model() -> dict:
             "starter_prompt_required": True,
             "tag_template": "iteration{iteration_id}-closeout",
             "closeout_validation_commands": [".venv/bin/pytest -q"],
+        },
+        "stakeholder_alignment": {
+            "schema_version": "1.3.0",
+            "source_artifact": "docs/director/stakeholder_expectations.md",
+            "active_development_scope": "2021-2024",
+            "publication_target_scope": "all publicly traded firms",
+            "desired_horizon": "20-year horizon when source availability permits",
+            "methodology_hard_gates": ["IRR must be human-human and > 0.7"],
+            "data_hard_gates": ["500 firms", ">=500 adjudicated labels", ">=80 per class"],
+            "publication_hard_gates": ["results package required"],
+            "requirements": [
+                {
+                    "requirement_id": "stakeholder-scale",
+                    "stakeholder": "Kuntara",
+                    "priority": "publication-critical",
+                    "summary": "Scale beyond pilot before retraining.",
+                    "target_iteration": "2",
+                    "source_refs": ["email thread 2025-08-27"],
+                    "mapped_phases": ["iteration2/sentence-pool-expansion-2024"],
+                    "mapped_gates": ["candidate_pool_500_firms"],
+                },
+                {
+                    "requirement_id": "stakeholder-validate-method",
+                    "stakeholder": "Kuntara",
+                    "priority": "non-negotiable",
+                    "summary": "Validate the classification method before scaling.",
+                    "target_iteration": "1",
+                    "source_refs": ["email thread 2025-07-26"],
+                    "mapped_phases": ["iteration1/rubric-and-api-bootstrap"],
+                    "mapped_gates": ["assistive_api_smoke_passed"],
+                },
+            ],
         },
         "policies": [],
         "data_layers": [],
@@ -315,6 +347,15 @@ def test_review_approval_patch_and_kickoff_flow(tmp_path, monkeypatch, capsys):
     assert review_payload["review_type"] == "iteration"
     assert review_payload["blocker_summary"]["blocker_count"] == 1
     assert review_payload["roadmap_changes"]
+    requirement_rows = review_payload["stakeholder_alignment_summary"]["requirement_statuses"]
+    validate_method = next(
+        row for row in requirement_rows if row["requirement_id"] == "stakeholder-validate-method"
+    )
+    scale_requirement = next(
+        row for row in requirement_rows if row["requirement_id"] == "stakeholder-scale"
+    )
+    assert validate_method["status"] == "satisfied"
+    assert scale_requirement["status"] == "open"
 
     phase_review_code = main_with_args(
         ["review", "--iteration", "1", "--phase", "rubric-and-api-bootstrap"]
@@ -330,6 +371,7 @@ def test_review_approval_patch_and_kickoff_flow(tmp_path, monkeypatch, capsys):
     )
     assert phase_review["review_type"] == "phase"
     assert phase_review["blocker_summary"]["blocker_count"] == 1
+    assert "requirement_statuses" in phase_review["stakeholder_alignment_summary"]
 
     _run(["git", "switch", "-c", "iteration2/integration"], tmp_path)
     kickoff_blocked = main_with_args(["kickoff", "--iteration", "2"])
@@ -377,6 +419,7 @@ def test_review_approval_patch_and_kickoff_flow(tmp_path, monkeypatch, capsys):
     )
     assert "## Branching Policy" in roadmap_body
     assert "## Review Workflow" in roadmap_body
+    assert "## Stakeholder Alignment" in roadmap_body
     assert "Approved Review Appendix" in roadmap_body
 
     capsys.readouterr()

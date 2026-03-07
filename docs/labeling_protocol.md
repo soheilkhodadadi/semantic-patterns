@@ -74,7 +74,8 @@ Rows with labels outside this set fail QA.
   - unresolved/blank `final_label` rows are considered pending adjudication
 - IRR gate policy:
   - infrastructure-mode Phase 2 can complete with `pending_rater2` or `pending_adjudication`
-  - strict κ gate (`kappa >= 0.6`) must pass before centroid retraining
+  - strict κ gate (`kappa > 0.7`) must pass on a blinded `100+` sentence subset before centroid retraining
+  - IRR must remain true human-human IRR; model-vs-label agreement is not an IRR substitute
 
 ## Assistive API Bootstrap (Iteration 1)
 
@@ -117,3 +118,14 @@ Rows with labels outside this set fail QA.
 - Batch creation consumes only the canonical 2024 sentence table and the bounded pilot manifest:
   - `data/processed/sentences/year=2024/ai_sentences.parquet`
   - `data/manifests/filings/pilot_2024_10k_v1.csv`
+
+## Scaled Label Expansion (Iteration 2)
+
+- Iteration 2 expands beyond the bootstrap batch toward a stakeholder target of:
+  - `500` firms in the 2024 candidate pool
+  - `1–2k` clean AI sentences in the expanded candidate pool
+- The final pre-retraining labeled dataset must satisfy:
+  - `>= 500` adjudicated labels
+  - `>= 80` labels per class
+  - zero held-out overlap
+- API outputs remain assistive-only during this expansion and must not become canonical labels.

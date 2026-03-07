@@ -12,6 +12,7 @@ Director now operates as a deterministic planning control loop.
 ## Monitor
 Director ingests:
 - canonical roadmap YAML
+- canonical stakeholder expectations
 - implementation protocol summary
 - iteration log snapshot
 - compiled repo state
@@ -27,6 +28,7 @@ Director compiles:
 - policy blocks
 - source-window deferrals
 - sentence-quality gate failures
+- stakeholder-alignment status for current and due requirements
 
 ## Plan
 Director scores ready work using configured weights and emits:
@@ -55,6 +57,7 @@ Every run should update:
 - blocker and decision records
 - optimization artifacts
 - iteration log evidence
+- stakeholder-alignment evidence when roadmap or review artifacts change
 
 ## Boundary Reviews
 At iteration boundaries, the control loop adds a formal review layer:
@@ -65,6 +68,8 @@ At iteration boundaries, the control loop adds a formal review layer:
 5. Validate kickoff on the integration branch
 
 This gives director an explicit lessons-learned and stage-gate mechanism instead of burying planning corrections inside execution logs.
+
+Stakeholder evidence can patch future iterations through the same review flow. The roadmap is not only updated by execution blockers; it is also updated when stakeholder requirements become clearer, stricter, or more publication-critical.
 
 ## Policy
 - The optimizer is proposal-only.

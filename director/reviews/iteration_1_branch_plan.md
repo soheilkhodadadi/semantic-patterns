@@ -1,15 +1,15 @@
 # Branch Plan
 
-- Current branch: `director/iteration-review`
+- Current branch: `iteration2/integration`
 - Integration branch: `iteration1/integration`
 - Merge target: `main`
 - Suggested next phase: `iteration2/kickoff-and-preflight`
 - Starter prompt: `/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/reviews/iteration_1_starter_prompt.md`
 
 ## Closeout Steps
-- `git push origin director/iteration-review`
+- `git push origin iteration2/integration`
 - `git switch iteration1/integration`
-- `git merge --ff-only director/iteration-review`
+- `git merge --ff-only iteration2/integration`
 - `git switch main`
 - `git pull --ff-only`
 - `git switch iteration1/integration`

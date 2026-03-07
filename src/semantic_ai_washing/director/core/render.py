@@ -25,6 +25,20 @@ ROADMAP_NOTICE_TEMPLATE = [
 _SHA_RE = re.compile(r"^<!-- source_sha256: (?P<sha>[a-f0-9]+) -->$", re.M)
 
 
+def json_like_summary(payload: dict[str, Any]) -> str:
+    if not payload:
+        return "none"
+    parts = []
+    for key in sorted(payload):
+        value = payload[key]
+        if isinstance(value, dict):
+            inner = ", ".join(f"{inner_key}={value[inner_key]}" for inner_key in sorted(value))
+            parts.append(f"{key}{{{inner}}}")
+        else:
+            parts.append(f"{key}={value}")
+    return "; ".join(parts)
+
+
 def render_roadmap_markdown(
     model: RoadmapModel,
     source_model: str,
@@ -65,6 +79,51 @@ def render_roadmap_markdown(
             "- Every iteration ends with `review-and-replan`.",
             "- Iterations 2-5 start with `kickoff-and-preflight`.",
             "- Approved reviews authorize the next iteration and main-merge closeout.",
+            "",
+            "## Stakeholder Alignment",
+            f"- source artifact: `{model.stakeholder_alignment.source_artifact}`",
+            f"- active development scope: `{model.stakeholder_alignment.active_development_scope}`",
+            f"- publication target scope: `{model.stakeholder_alignment.publication_target_scope}`",
+            f"- desired horizon: `{model.stakeholder_alignment.desired_horizon}`",
+            "",
+            "### Methodology Hard Gates",
+        ]
+    )
+    if model.stakeholder_alignment.methodology_hard_gates:
+        for gate in model.stakeholder_alignment.methodology_hard_gates:
+            lines.append(f"- {gate}")
+    else:
+        lines.append("- none")
+    lines.extend(["", "### Data Hard Gates"])
+    if model.stakeholder_alignment.data_hard_gates:
+        for gate in model.stakeholder_alignment.data_hard_gates:
+            lines.append(f"- {gate}")
+    else:
+        lines.append("- none")
+    lines.extend(["", "### Publication Hard Gates"])
+    if model.stakeholder_alignment.publication_hard_gates:
+        for gate in model.stakeholder_alignment.publication_hard_gates:
+            lines.append(f"- {gate}")
+    else:
+        lines.append("- none")
+    lines.extend(["", "### Stakeholder Requirements"])
+    if model.stakeholder_alignment.requirements:
+        for requirement in model.stakeholder_alignment.requirements:
+            lines.extend(
+                [
+                    f"- `{requirement.requirement_id}` priority=`{requirement.priority}` stakeholder=`{requirement.stakeholder}`",
+                    f"  - summary: {requirement.summary}",
+                    f"  - target iteration: `{requirement.target_iteration or 'none'}`",
+                    f"  - source refs: {', '.join(requirement.source_refs) or 'none'}",
+                    f"  - mapped phases: {', '.join(requirement.mapped_phases) or 'none'}",
+                    f"  - mapped gates: {', '.join(requirement.mapped_gates) or 'none'}",
+                ]
+            )
+    else:
+        lines.append("- none")
+
+    lines.extend(
+        [
             "",
             "## Policies",
         ]
@@ -163,6 +222,9 @@ def render_roadmap_markdown(
                     f"- Deferred changes: {', '.join(review.get('deferred_change_ids', [])) or 'none'}",
                     f"- Next iteration: `{(review.get('next_iteration') or {}).get('iteration_id', '') or 'none'}`",
                     f"- Entry criteria: {', '.join((review.get('next_iteration') or {}).get('entry_criteria', [])) or 'none'}",
+                    f"- Stakeholder summary: {json_like_summary(review.get('stakeholder_alignment_summary', {}))}",
+                    f"- Unmet stakeholder requirements: {', '.join(review.get('unmet_stakeholder_requirements', [])) or 'none'}",
+                    f"- Publication blockers: {', '.join(review.get('publication_readiness_blockers', [])) or 'none'}",
                     "",
                 ]
             )
@@ -291,6 +353,17 @@ def render_review_markdown(review: IterationReview | PhaseReview) -> str:
             )
     else:
         lines.append("- none")
+    lines.extend(["", "## Stakeholder Alignment"])
+    lines.append(f"- Summary: {json_like_summary(review.stakeholder_alignment_summary or {})}")
+    lines.append(
+        f"- Unmet stakeholder requirements: {', '.join(review.unmet_stakeholder_requirements) or 'none'}"
+    )
+    lines.append(
+        f"- Deferred stakeholder requirements: {', '.join(review.deferred_stakeholder_requirements) or 'none'}"
+    )
+    lines.append(
+        f"- Publication readiness blockers: {', '.join(review.publication_readiness_blockers) or 'none'}"
+    )
     lines.extend(["", "## Roadmap Changes"])
     if review.roadmap_changes:
         for change in review.roadmap_changes:

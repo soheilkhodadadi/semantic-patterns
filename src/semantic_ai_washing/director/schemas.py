@@ -8,7 +8,7 @@ from typing import Any, Literal, Optional
 from pydantic import BaseModel, Field, field_validator
 
 SCHEMA_VERSION = "1.0.0"
-ROADMAP_SCHEMA_VERSION = "1.2.0"
+ROADMAP_SCHEMA_VERSION = "1.3.0"
 
 
 class DeterministicModel(BaseModel):
@@ -122,6 +122,30 @@ class BranchingPolicySpec(DeterministicModel):
     starter_prompt_required: bool = True
     tag_template: str
     closeout_validation_commands: list[str] = Field(default_factory=list)
+
+
+class StakeholderRequirementSpec(DeterministicModel):
+    schema_version: str = Field(default=ROADMAP_SCHEMA_VERSION)
+    requirement_id: str
+    stakeholder: str
+    priority: Literal["non-negotiable", "publication-critical", "preferred", "operational"]
+    summary: str
+    target_iteration: str = ""
+    source_refs: list[str] = Field(default_factory=list)
+    mapped_phases: list[str] = Field(default_factory=list)
+    mapped_gates: list[str] = Field(default_factory=list)
+
+
+class StakeholderAlignmentSpec(DeterministicModel):
+    schema_version: str = Field(default=ROADMAP_SCHEMA_VERSION)
+    source_artifact: str
+    active_development_scope: str
+    publication_target_scope: str
+    desired_horizon: str
+    methodology_hard_gates: list[str] = Field(default_factory=list)
+    data_hard_gates: list[str] = Field(default_factory=list)
+    publication_hard_gates: list[str] = Field(default_factory=list)
+    requirements: list[StakeholderRequirementSpec] = Field(default_factory=list)
 
 
 class ApiAssistivePromptSpec(DeterministicModel):
@@ -300,6 +324,7 @@ class RoadmapModel(DeterministicModel):
     project: dict[str, Any] = Field(default_factory=dict)
     settings: dict[str, Any] = Field(default_factory=dict)
     branching_policy: BranchingPolicySpec
+    stakeholder_alignment: StakeholderAlignmentSpec
     policies: list[PolicySpec] = Field(default_factory=list)
     data_layers: list[DataLayerSpec] = Field(default_factory=list)
     source_windows: list[SourceWindowSpec] = Field(default_factory=list)
@@ -447,6 +472,10 @@ class IterationReview(DeterministicModel):
     timing_summary: dict[str, Any] = Field(default_factory=dict)
     manual_summary: dict[str, Any] = Field(default_factory=dict)
     quality_summary: dict[str, Any] = Field(default_factory=dict)
+    stakeholder_alignment_summary: dict[str, Any] = Field(default_factory=dict)
+    unmet_stakeholder_requirements: list[str] = Field(default_factory=list)
+    deferred_stakeholder_requirements: list[str] = Field(default_factory=list)
+    publication_readiness_blockers: list[str] = Field(default_factory=list)
     findings: list[ReviewFinding] = Field(default_factory=list)
     roadmap_changes: list[ReviewChangeProposal] = Field(default_factory=list)
     carryover_blockers: list[dict[str, Any]] = Field(default_factory=list)
@@ -470,6 +499,10 @@ class PhaseReview(DeterministicModel):
     timing_summary: dict[str, Any] = Field(default_factory=dict)
     manual_summary: dict[str, Any] = Field(default_factory=dict)
     quality_summary: dict[str, Any] = Field(default_factory=dict)
+    stakeholder_alignment_summary: dict[str, Any] = Field(default_factory=dict)
+    unmet_stakeholder_requirements: list[str] = Field(default_factory=list)
+    deferred_stakeholder_requirements: list[str] = Field(default_factory=list)
+    publication_readiness_blockers: list[str] = Field(default_factory=list)
     findings: list[ReviewFinding] = Field(default_factory=list)
     roadmap_changes: list[ReviewChangeProposal] = Field(default_factory=list)
     carryover_blockers: list[dict[str, Any]] = Field(default_factory=list)
