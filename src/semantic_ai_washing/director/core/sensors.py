@@ -27,6 +27,8 @@ def _compare(operator: str, left: Any, right: Any) -> bool:
         return left == right
     if operator == "!=":
         return left != right
+    if left is None or right is None:
+        return False
     if operator == ">=":
         return left >= right
     if operator == "<=":
@@ -103,6 +105,30 @@ def evaluate_condition(
             actual = len(pd.read_csv(resolved))
         passed = _compare(condition.operator, actual, condition.expected)
         details.update({"actual": actual, "resolved_target": str(resolved)})
+    elif condition.kind == "csv_nonempty_count_gte":
+        match = _JSON_TARGET_RE.match(target)
+        if not match:
+            raise ValueError(
+                "Invalid csv_nonempty_count_gte target. Expected `path/to/file.csv::column`."
+            )
+        resolved = _resolve_target(repo_root, match.group("path"))
+        column_name = match.group("field")
+        if not resolved.exists():
+            actual = 0
+        else:
+            frame = pd.read_csv(resolved)
+            if column_name not in frame.columns:
+                actual = 0
+            else:
+                actual = int(frame[column_name].fillna("").astype(str).map(str.strip).ne("").sum())
+        passed = _compare(condition.operator, actual, condition.expected)
+        details.update(
+            {
+                "actual": actual,
+                "resolved_target": str(resolved),
+                "column": column_name,
+            }
+        )
     elif condition.kind == "json_field_compare":
         match = _JSON_TARGET_RE.match(target)
         if not match:

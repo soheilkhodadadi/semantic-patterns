@@ -1504,3 +1504,56 @@ Rules:
 - Residual notes:
   - Iteration 2 execution should remain paused until the stakeholder-aligned roadmap and review artifacts are the accepted baseline for the next chat/session
   - publication significance remains a final-output expectation, not an upstream optimization target
+
+## 2026-03-07 - Iteration 2 Parallel Execution Alignment Patch
+
+- Branch baseline:
+  - current working branch: `iteration2/integration`
+  - preflight checkpoint pushed before implementation began
+- Scope completed:
+  - fixed director's false-positive future review recommendations by tightening explicit review-task dependencies and optimizer phase-eligibility filtering
+  - formalized Iteration 2 as parallel tracks:
+    - sentence-pool expansion toward stakeholder target
+    - tranche-1 assistive prelabels plus human verification
+  - added canonical CLIs:
+    - `python -m semantic_ai_washing.data.build_expanded_sentence_pool`
+    - `python -m semantic_ai_washing.labeling.assistive_prelabel_batch`
+    - `python -m semantic_ai_washing.labeling.merge_labeling_batches`
+  - extended the canonical tranche batch builder to exclude previously sampled `sentence_text_id` values for later tranches
+  - added `csv_nonempty_count_gte` as a readiness sensor so blank manual CSVs are not treated as completed work
+  - fixed readiness behavior so quality checks on build outputs run only after the outputs exist
+  - hardened JSON-field sensor behavior so missing nested fields fail conditions cleanly instead of crashing optimize
+- Roadmap/model changes:
+  - `iteration2/sentence-pool-expansion-2024` is now automated via the new expanded-pool CLI
+  - `iteration2/dataset-expansion-2024` now contains explicit tasks for:
+    - tranche 1 assistive prelabels
+    - tranche 1 human verification
+    - tranche 2 batch preparation from the expanded sentence pool
+    - tranche 2 assistive prelabels
+    - tranche 2 human verification
+    - canonical label merge and summary publication
+  - later `review.generate_review` tasks no longer appear actionable before their iteration's terminal substantive tasks
+- Truthfulness fixes:
+  - `data/labels/v1/labeling_batch_v1_filled.csv` still exists but has `0` non-empty canonical labels, so manual labeling is correctly incomplete
+  - dry-run tranche-1 prelabel artifacts were removed after helper validation so the live prelabel task remains `ready`, not falsely satisfied
+- Validation run:
+  - `make doctor` -> pass
+  - `make lint` -> pass
+  - `.venv/bin/pytest -q tests/test_director_roadmap_model.py tests/test_labeling_batch.py tests/test_iteration2_parallel.py tests/test_director_sensors.py` -> `19 passed`
+  - `.venv/bin/python -m semantic_ai_washing.director.cli render-roadmap` -> pass
+  - `.venv/bin/python -m semantic_ai_washing.director.cli optimize` -> pass
+  - `.venv/bin/pytest -q` -> `88 passed`
+- Current truthful optimizer state:
+  - top ready tasks:
+    - `iteration2.pool.expand_candidate_pool`
+    - `iteration2.labels.generate_tranche1_assistive_prelabels`
+  - future `iteration3/4/5 review.generate_review` tasks are no longer recommended early
+- Operational evidence:
+  - the expanded-pool CLI is now executable and instrumented with progress output
+  - a full 2024 corpus run was attempted, but the first corpus-scale pass remained CPU-bound and was stopped after confirming a performance hotspot rather than publishing incomplete artifacts
+  - progress at stop point on the corrected run:
+    - `scanned=250`
+    - `selected_firms=116`
+    - `clean_sentences=1117`
+- Residual note:
+  - the control-plane and workflow patch is complete, but the first full `500`-firm expansion run still needs runtime optimization before it is convenient for repeated use

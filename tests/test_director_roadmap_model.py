@@ -707,3 +707,216 @@ def test_actual_label_ops_phase_has_executable_batch_builder():
         "reports/labels/labeling_batch_v1_summary.json::quality.heldout_overlap_count"
         in quality_targets
     )
+
+
+def test_optimizer_does_not_surface_review_task_when_review_phase_waits_on_phase_deps(tmp_path):
+    paths = get_director_paths(tmp_path)
+    model = _minimal_model()
+    model["iterations"][0]["phases"] = [
+        {
+            "phase_id": "iteration1/substantive-phase",
+            "title": "Substantive",
+            "goal": "must finish first",
+            "depends_on": [],
+            "canonical": True,
+            "required_artifacts": ["reports/substantive.json"],
+            "tasks": [],
+        },
+        {
+            "phase_id": "iteration1/review-and-replan",
+            "title": "Review",
+            "goal": "closeout",
+            "depends_on": ["iteration1/substantive-phase"],
+            "canonical": True,
+            "required_artifacts": ["director/reviews/iteration_1_review.json"],
+            "tasks": [
+                {
+                    "task_id": "iteration1.review.generate_review",
+                    "title": "Generate review",
+                    "description": "review task should not be recommended early",
+                    "iteration_id": "1",
+                    "phase_id": "iteration1/review-and-replan",
+                    "kind": "analysis",
+                    "depends_on": [],
+                    "inputs": [],
+                    "outputs": [
+                        {
+                            "artifact_id": "review_json",
+                            "path": "director/reviews/iteration_1_review.json",
+                            "kind": "json",
+                            "required": True,
+                        }
+                    ],
+                    "preconditions": [],
+                    "quality_checks": [],
+                    "commands": [
+                        ".venv/bin/python -m semantic_ai_washing.director.cli review --iteration 1"
+                    ],
+                    "manual_handoff": False,
+                    "risks": ["R4"],
+                    "estimated_effort": 1,
+                    "risk_reduction": 8,
+                    "automation_level": "partial",
+                    "on_fail": "block",
+                    "reroute_to": [],
+                    "evidence_required": True,
+                    "tags": ["review_generation"],
+                    "gate_class": "ops",
+                }
+            ],
+        },
+    ]
+    _write_yaml(paths.model_dir / "roadmap_model.yaml", model)
+    _write_yaml(paths.model_dir / "remediation_library.yaml", _minimal_library())
+    optimizer = DirectorOptimizer(
+        repo_root=str(tmp_path),
+        roadmap_model_path=str(paths.model_dir / "roadmap_model.yaml"),
+        remediation_library_path=str(paths.model_dir / "remediation_library.yaml"),
+        optimization_dir=str(paths.optimization_dir),
+        decisions_dir=str(paths.decisions_dir),
+        weights=model["settings"]["optimizer_weights"],
+    )
+
+    report = optimizer.optimize(focus_iteration="1")
+
+    assert "iteration1.review.generate_review" not in report.recommendation.recommended_task_ids
+    assert "iteration1/review-and-replan" not in report.recommendation.recommended_phase_ids
+
+
+def test_task_with_missing_outputs_and_quality_checks_remains_ready(tmp_path):
+    paths = get_director_paths(tmp_path)
+    model = _minimal_model()
+    model["iterations"][0]["phases"] = [
+        {
+            "phase_id": "iteration1/build-phase",
+            "title": "Build",
+            "goal": "produce report before validation can pass",
+            "depends_on": [],
+            "canonical": True,
+            "required_artifacts": [],
+            "tasks": [
+                {
+                    "task_id": "iteration1.build.generate_report",
+                    "title": "Generate report",
+                    "description": "should still be runnable before outputs exist",
+                    "iteration_id": "1",
+                    "phase_id": "iteration1/build-phase",
+                    "kind": "build",
+                    "depends_on": [],
+                    "inputs": [],
+                    "outputs": [
+                        {
+                            "artifact_id": "report",
+                            "path": "reports/example.json",
+                            "kind": "json",
+                            "required": True,
+                        }
+                    ],
+                    "preconditions": [],
+                    "quality_checks": [
+                        {
+                            "condition_id": "report_status_passed",
+                            "kind": "json_field_compare",
+                            "target": "reports/example.json::status",
+                            "operator": "==",
+                            "expected": "passed",
+                            "on_fail": "block",
+                            "message": "report must be passed",
+                            "reroute_to": [],
+                        }
+                    ],
+                    "commands": ["echo generate"],
+                    "manual_handoff": False,
+                    "risks": ["R1"],
+                    "estimated_effort": 1,
+                    "risk_reduction": 1,
+                    "automation_level": "full",
+                    "on_fail": "block",
+                    "reroute_to": [],
+                    "evidence_required": True,
+                    "tags": ["build"],
+                    "gate_class": "data",
+                }
+            ],
+        }
+    ]
+    _write_yaml(paths.model_dir / "roadmap_model.yaml", model)
+    _write_yaml(paths.model_dir / "remediation_library.yaml", _minimal_library())
+    optimizer = DirectorOptimizer(
+        repo_root=str(tmp_path),
+        roadmap_model_path=str(paths.model_dir / "roadmap_model.yaml"),
+        remediation_library_path=str(paths.model_dir / "remediation_library.yaml"),
+        optimization_dir=str(paths.optimization_dir),
+        decisions_dir=str(paths.decisions_dir),
+        weights=model["settings"]["optimizer_weights"],
+    )
+
+    report = optimizer.optimize(focus_iteration="1")
+    task_state = next(
+        item for item in report.task_states if item.task_id == "iteration1.build.generate_report"
+    )
+
+    assert task_state.status == "ready"
+    assert "iteration1.build.generate_report" in report.recommendation.recommended_task_ids
+
+
+def test_actual_iteration2_parallel_tracks_are_wired():
+    model = load_roadmap_model("director/model/roadmap_model.yaml")
+
+    pool_phase = find_phase(model, iteration_id="2", phase_name="sentence-pool-expansion-2024")
+    assert pool_phase is not None
+    expand_task = next(
+        task
+        for task in pool_phase.tasks
+        if task.task_id == "iteration2.pool.expand_candidate_pool"
+    )
+    assert expand_task.commands
+    assert "semantic_ai_washing.data.build_expanded_sentence_pool" in expand_task.commands[0]
+
+    dataset_phase = find_phase(model, iteration_id="2", phase_name="dataset-expansion-2024")
+    assert dataset_phase is not None
+    task_ids = {task.task_id for task in dataset_phase.tasks}
+    assert "iteration2.labels.generate_tranche1_assistive_prelabels" in task_ids
+    assert "iteration2.labels.verify_tranche1_labels" in task_ids
+    assert "iteration2.labels.prepare_expanded_labeling_batches" in task_ids
+    assert "iteration2.labels.generate_expanded_assistive_prelabels" in task_ids
+    assert "iteration2.labels.verify_expanded_labels" in task_ids
+    assert "iteration2.labels.merge_canonical_labels" in task_ids
+
+    tranche1_prelabels = next(
+        task
+        for task in dataset_phase.tasks
+        if task.task_id == "iteration2.labels.generate_tranche1_assistive_prelabels"
+    )
+    assert any(
+        condition.kind == "json_field_compare"
+        and condition.target == "reports/labels/assistive_prelabel_tranche1_summary.json::status"
+        and condition.expected == "passed"
+        for condition in tranche1_prelabels.quality_checks
+    )
+    assert any(
+        condition.kind == "json_field_compare"
+        and condition.target
+        == "reports/labels/assistive_prelabel_tranche1_summary.json::usage.request_count"
+        and condition.expected == 1
+        for condition in tranche1_prelabels.quality_checks
+    )
+
+    verify_tranche1 = next(
+        task
+        for task in dataset_phase.tasks
+        if task.task_id == "iteration2.labels.verify_tranche1_labels"
+    )
+    assert any(
+        condition.kind == "csv_nonempty_count_gte"
+        and condition.target == "data/labels/v1/labeling_batch_v1_filled.csv::label"
+        and condition.expected == 240
+        for condition in verify_tranche1.quality_checks
+    )
+
+    review_phase = find_phase(model, iteration_id="3", phase_name="review-and-replan")
+    assert review_phase is not None
+    review_task = next(
+        task for task in review_phase.tasks if task.task_id == "iteration3.review.generate_review"
+    )
+    assert review_task.depends_on == ["iteration3.merge.verify_outputs"]

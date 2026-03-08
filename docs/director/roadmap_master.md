@@ -1,7 +1,7 @@
 <!-- generated_file: true -->
 <!-- source_model: /Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/model/roadmap_model.yaml -->
-<!-- source_sha256: 4aadd088017126c5d37221f0ecc2049a136497cd463d9f75e6b002dece872e75 -->
-<!-- rendered_at: 2026-03-07T21:09:40.588858+00:00 -->
+<!-- source_sha256: d19e45329d39f2147b6036f5026d8b705beea696a503e8341a637cf794c92060 -->
+<!-- rendered_at: 2026-03-08T03:46:59.089346+00:00 -->
 
 # Roadmap Master
 
@@ -344,7 +344,7 @@ Exit criteria: Foundation phases passed through label-ops-bootstrap., Iteration 
 #### Tasks
 - `iteration1.review.generate_review` Generate iteration review
   - kind: `analysis` gate_class: `ops` automation: `partial`
-  - depends_on: none
+  - depends_on: iteration1.labels.prepare_labeling_batch
   - inputs: docs/iteration_log.md
   - outputs: director/reviews/iteration_1_review.json, director/reviews/iteration_1_review.md, director/reviews/iteration_1_patch_proposal.yaml, director/reviews/iteration_1_branch_plan.md, director/reviews/iteration_1_starter_prompt.md
   - tags: review_generation
@@ -428,7 +428,7 @@ Exit criteria: Sentence-pool expansion reaches 500 firms and at least 1,000 clea
 
 #### Tasks
 - `iteration2.pool.expand_candidate_pool` Expand candidate pool to stakeholder scale
-  - kind: `manual` gate_class: `manual` automation: `manual`
+  - kind: `build` gate_class: `data` automation: `full`
   - depends_on: none
   - inputs: data/metadata/available_filings_index.csv, data/processed/sentences/year=2024/ai_sentences.parquet
   - outputs: data/manifests/filings/expansion_2024_500_firms_v1.csv, data/processed/sentences/year=2024/expanded_ai_sentences.parquet, reports/labels/sentence_pool_expansion_2024_summary.json
@@ -446,18 +446,53 @@ Exit criteria: Sentence-pool expansion reaches 500 firms and at least 1,000 clea
 - Title: Dataset Expansion 2024
 - Goal: Produce the expanded human-labeled dataset from the scaled 2024 sentence pool while keeping API use assistive only.
 - Lifecycle: `planned`
-- Depends on: iteration2/sentence-pool-expansion-2024
+- Depends on: iteration2/kickoff-and-preflight
 - Source window: `active_2021_2024`
 - Required artifacts: data/labels/v1/labels_master.parquet, data/labels/v1/labels_master_review.csv, reports/labels/label_expansion_summary.json
 - Tags: label_expansion, assistive_api
 
 #### Tasks
-- `iteration2.labels.expand_dataset` Expand canonical labels
-  - kind: `manual` gate_class: `manual` automation: `manual`
+- `iteration2.labels.generate_tranche1_assistive_prelabels` Generate tranche 1 assistive prelabels
+  - kind: `build` gate_class: `ops` automation: `partial`
   - depends_on: none
-  - inputs: reports/labels/sentence_pool_expansion_2024_summary.json, data/processed/sentences/year=2024/expanded_ai_sentences.parquet, data/manifests/filings/expansion_2024_500_firms_v1.csv
+  - inputs: data/labels/v1/labeling_batch_v1.csv, director/config/api_assistive_policy.yaml
+  - outputs: data/labels/v1/labeling_batch_v1_prelabeled.csv, reports/labels/assistive_prelabel_tranche1_summary.json
+  - tags: assistive_api, tranche1, prelabels
+  - risks: R1, R4
+- `iteration2.labels.verify_tranche1_labels` Verify tranche 1 labels
+  - kind: `manual` gate_class: `manual` automation: `manual`
+  - depends_on: iteration2.labels.generate_tranche1_assistive_prelabels
+  - inputs: data/labels/v1/labeling_batch_v1_prelabeled.csv
+  - outputs: data/labels/v1/labeling_batch_v1_filled.csv
+  - tags: human_labeling, tranche1
+  - risks: R1, R3
+- `iteration2.labels.prepare_expanded_labeling_batches` Prepare expanded labeling tranche
+  - kind: `build` gate_class: `data` automation: `full`
+  - depends_on: iteration2.pool.verify_candidate_pool_targets
+  - inputs: data/processed/sentences/year=2024/expanded_ai_sentences.parquet, data/manifests/filings/expansion_2024_500_firms_v1.csv, data/labels/v1/labeling_batch_v1.csv
+  - outputs: data/labels/v1/labeling_batch_v2.parquet, data/labels/v1/labeling_batch_v2.csv, reports/labels/labeling_batch_v2_summary.json
+  - tags: expanded_batch, label_expansion
+  - risks: R1, R2
+- `iteration2.labels.generate_expanded_assistive_prelabels` Generate expanded tranche assistive prelabels
+  - kind: `build` gate_class: `ops` automation: `partial`
+  - depends_on: iteration2.labels.prepare_expanded_labeling_batches
+  - inputs: data/labels/v1/labeling_batch_v2.csv, director/config/api_assistive_policy.yaml
+  - outputs: data/labels/v1/labeling_batch_v2_prelabeled.csv, reports/labels/assistive_prelabel_tranche2_summary.json
+  - tags: assistive_api, tranche2, prelabels
+  - risks: R1, R4
+- `iteration2.labels.verify_expanded_labels` Verify expanded tranche labels
+  - kind: `manual` gate_class: `manual` automation: `manual`
+  - depends_on: iteration2.labels.generate_expanded_assistive_prelabels
+  - inputs: data/labels/v1/labeling_batch_v2_prelabeled.csv
+  - outputs: data/labels/v1/labeling_batch_v2_filled.csv
+  - tags: human_labeling, tranche2
+  - risks: R1, R3
+- `iteration2.labels.merge_canonical_labels` Merge canonical labels
+  - kind: `build` gate_class: `data` automation: `full`
+  - depends_on: iteration2.labels.verify_tranche1_labels, iteration2.labels.verify_expanded_labels
+  - inputs: data/labels/v1/labeling_batch_v1_filled.csv, data/labels/v1/labeling_batch_v2_filled.csv
   - outputs: data/labels/v1/labels_master.parquet, data/labels/v1/labels_master_review.csv, reports/labels/label_expansion_summary.json
-  - tags: human_labeling
+  - tags: human_labeling, merge_labels
   - risks: R1, R2, R3
 
 ### iteration2/irr-and-adjudication
@@ -540,7 +575,7 @@ Exit criteria: Sentence-pool expansion reaches 500 firms and at least 1,000 clea
 #### Tasks
 - `iteration2.review.generate_review` Generate iteration review
   - kind: `analysis` gate_class: `ops` automation: `partial`
-  - depends_on: none
+  - depends_on: iteration2.labels.verify_label_sufficiency
   - inputs: docs/iteration_log.md
   - outputs: director/reviews/iteration_2_review.json, director/reviews/iteration_2_review.md, director/reviews/iteration_2_patch_proposal.yaml, director/reviews/iteration_2_branch_plan.md, director/reviews/iteration_2_starter_prompt.md
   - tags: review_generation
@@ -635,7 +670,13 @@ Exit criteria: Retraining, held-out evaluation, active-window classification, an
 - Tags: aggregation, merge_integrity
 
 #### Tasks
-- phase-level only in this roadmap version
+- `iteration3.merge.verify_outputs` Verify classification merge integrity outputs
+  - kind: `validation` gate_class: `ops` automation: `partial`
+  - depends_on: none
+  - inputs: none
+  - outputs: data/processed/aggregates/firm_year_ai_metrics_v1.parquet, reports/classification/aggregation_qa_v1.json, reports/classification/merge_integrity_v1.json
+  - tags: phase_completion_gate
+  - risks: R4
 
 ### iteration3/review-and-replan
 - Title: Review and Replan
@@ -649,7 +690,7 @@ Exit criteria: Retraining, held-out evaluation, active-window classification, an
 #### Tasks
 - `iteration3.review.generate_review` Generate iteration review
   - kind: `analysis` gate_class: `ops` automation: `partial`
-  - depends_on: none
+  - depends_on: iteration3.merge.verify_outputs
   - inputs: docs/iteration_log.md
   - outputs: director/reviews/iteration_3_review.json, director/reviews/iteration_3_review.md, director/reviews/iteration_3_patch_proposal.yaml, director/reviews/iteration_3_branch_plan.md, director/reviews/iteration_3_starter_prompt.md
   - tags: review_generation
@@ -732,7 +773,13 @@ Exit criteria: Active-window panel is assembled and QA-frozen., Job-postings rob
 - Tags: robustness, job_postings
 
 #### Tasks
-- phase-level only in this roadmap version
+- `iteration4.job_postings.verify_outputs` Verify job-postings robustness outputs
+  - kind: `validation` gate_class: `ops` automation: `partial`
+  - depends_on: none
+  - inputs: none
+  - outputs: data/interim/job_postings/job_postings_v1.parquet, reports/panels/job_postings_robustness_qa.json
+  - tags: phase_completion_gate
+  - risks: R4
 
 ### iteration4/historical-window-expansion-readiness
 - Title: Historical and All-Public-Firm Expansion Readiness
@@ -758,7 +805,7 @@ Exit criteria: Active-window panel is assembled and QA-frozen., Job-postings rob
 #### Tasks
 - `iteration4.review.generate_review` Generate iteration review
   - kind: `analysis` gate_class: `ops` automation: `partial`
-  - depends_on: none
+  - depends_on: iteration4.job_postings.verify_outputs
   - inputs: docs/iteration_log.md
   - outputs: director/reviews/iteration_4_review.json, director/reviews/iteration_4_review.md, director/reviews/iteration_4_patch_proposal.yaml, director/reviews/iteration_4_branch_plan.md, director/reviews/iteration_4_starter_prompt.md
   - tags: review_generation
@@ -853,7 +900,13 @@ Exit criteria: Publication regressions, robustness outputs, differentiation arti
 - Tags: release
 
 #### Tasks
-- phase-level only in this roadmap version
+- `iteration5.release.verify_outputs` Verify release packaging outputs
+  - kind: `validation` gate_class: `release` automation: `partial`
+  - depends_on: none
+  - inputs: none
+  - outputs: reports/release/release_manifest_v1.json
+  - tags: phase_completion_gate
+  - risks: R4
 
 ### iteration5/review-and-replan
 - Title: Review and Replan
@@ -867,7 +920,7 @@ Exit criteria: Publication regressions, robustness outputs, differentiation arti
 #### Tasks
 - `iteration5.review.generate_review` Generate iteration review
   - kind: `analysis` gate_class: `ops` automation: `partial`
-  - depends_on: none
+  - depends_on: iteration5.release.verify_outputs
   - inputs: docs/iteration_log.md
   - outputs: director/reviews/iteration_5_review.json, director/reviews/iteration_5_review.md, director/reviews/iteration_5_patch_proposal.yaml, director/reviews/iteration_5_branch_plan.md, director/reviews/iteration_5_starter_prompt.md
   - tags: review_generation

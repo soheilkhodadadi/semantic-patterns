@@ -176,11 +176,12 @@ class ReadinessEvaluator:
         outputs_present, missing_outputs = self._task_outputs_present(task)
         failed_quality_checks: list[str] = []
         quality_context: dict[str, Any] = {}
-        for condition in task.quality_checks:
-            result = evaluate_condition(condition, repo_root=self.repo_root)
-            quality_context[condition.condition_id] = result
-            if not result["passed"] and condition.on_fail != "warn":
-                failed_quality_checks.append(condition.condition_id)
+        if outputs_present:
+            for condition in task.quality_checks:
+                result = evaluate_condition(condition, repo_root=self.repo_root)
+                quality_context[condition.condition_id] = result
+                if not result["passed"] and condition.on_fail != "warn":
+                    failed_quality_checks.append(condition.condition_id)
 
         if outputs_present and not failed_quality_checks:
             return TaskStateSnapshot(

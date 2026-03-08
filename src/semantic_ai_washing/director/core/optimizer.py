@@ -168,8 +168,26 @@ class DirectorOptimizer:
         for state in scoped_phases:
             state.score = self._score_phase(graph, state)
 
+        phase_state_by_id = {state.phase_id: state for state in scoped_phases}
+
+        def _task_phase_eligible(phase_id: str) -> bool:
+            phase_state = phase_state_by_id.get(phase_id)
+            if phase_state is None:
+                return True
+            if phase_state.lifecycle_state in {"historical", "superseded", "completed"}:
+                return False
+            if phase_state.missing_dependencies:
+                return False
+            if phase_state.status == "deferred":
+                return False
+            return True
+
         ready_tasks = sorted(
-            [state for state in scoped_tasks if state.status == "ready"],
+            [
+                state
+                for state in scoped_tasks
+                if state.status == "ready" and _task_phase_eligible(state.phase_id)
+            ],
             key=lambda item: (-item.score, item.task_id),
         )
         blocked_tasks = sorted(
@@ -177,6 +195,7 @@ class DirectorOptimizer:
                 state
                 for state in scoped_tasks
                 if state.status in {"blocked_precondition", "blocked_quality", "blocked_manual"}
+                and _task_phase_eligible(state.phase_id)
             ],
             key=lambda item: (-item.score, item.task_id),
         )

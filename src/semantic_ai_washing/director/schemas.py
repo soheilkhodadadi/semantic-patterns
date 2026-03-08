@@ -48,6 +48,7 @@ class ConditionSpec(DeterministicModel):
     kind: Literal[
         "artifact_exists",
         "csv_row_count_gte",
+        "csv_nonempty_count_gte",
         "json_field_compare",
         "file_hash_present",
         "manual_artifact_present",

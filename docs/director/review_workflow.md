@@ -56,3 +56,13 @@ Stakeholder alignment is part of the review boundary, not a separate side proces
 - Every approved iteration review generates a starter prompt Markdown artifact.
 - Default policy is to start a new Codex chat at approved iteration boundaries.
 - Same-chat continuation remains allowed if context continuity matters more than separation.
+- The starter prompt should be treated as a boundary handoff, not as a replacement for current repo state:
+  - if kickoff already passed, continue to the next substantive phase
+  - if kickoff has not passed, run kickoff first
+
+## Iteration 2 Parallel Execution Note
+- Iteration 2 is intentionally split into parallel tracks:
+  - tranche-1 human verification of `labeling_batch_v1`
+  - expanded sentence-pool buildout and later tranche preparation
+- Reviews should explicitly report whether both tracks are advancing truthfully.
+- Assistive prelabels are allowed as operational aids, but review must continue to treat human-verified labels as the only canonical labeling source.

@@ -367,3 +367,116 @@ def test_build_labeling_batch_fails_when_filtered_pool_is_too_small(tmp_path):
             target_size=2,
             base_quarter_quota=1,
         )
+
+
+def test_build_labeling_batch_excludes_existing_sentence_text_ids(tmp_path):
+    manifest = pd.DataFrame(
+        [
+            _manifest_row(
+                path="2024/QTR1/a.txt",
+                quarter=1,
+                manifest_row_id="m1",
+                cik="1001",
+                ff12_code=6,
+                ff12_name="BusEq",
+                industry_metadata_source="controls_by_firm_year",
+            ),
+            _manifest_row(
+                path="2024/QTR2/b.txt",
+                quarter=2,
+                manifest_row_id="m2",
+                cik="1002",
+                ff12_code=6,
+                ff12_name="BusEq",
+                industry_metadata_source="controls_by_firm_year",
+            ),
+            _manifest_row(
+                path="2024/QTR3/c.txt",
+                quarter=3,
+                manifest_row_id="m3",
+                cik="1003",
+                ff12_code=6,
+                ff12_name="BusEq",
+                industry_metadata_source="controls_by_firm_year",
+            ),
+            _manifest_row(
+                path="2024/QTR4/d.txt",
+                quarter=4,
+                manifest_row_id="m4",
+                cik="1004",
+                ff12_code=6,
+                ff12_name="BusEq",
+                industry_metadata_source="controls_by_firm_year",
+            ),
+        ]
+    )
+    manifest_path = tmp_path / "manifest.csv"
+    manifest.to_csv(manifest_path, index=False)
+
+    rows = [
+        _sentence_row(
+            sentence="Quarter one excluded sentence about current artificial intelligence operations.",
+            source_file="2024/QTR1/a.txt",
+            quarter=1,
+            sentence_index=1,
+            cik="1001",
+        ),
+        _sentence_row(
+            sentence="Quarter two keep sentence about deployed machine learning today.",
+            source_file="2024/QTR2/b.txt",
+            quarter=2,
+            sentence_index=1,
+            cik="1002",
+        ),
+        _sentence_row(
+            sentence="Quarter three keep sentence about current AI deployment today.",
+            source_file="2024/QTR3/c.txt",
+            quarter=3,
+            sentence_index=1,
+            cik="1003",
+        ),
+        _sentence_row(
+            sentence="Quarter four keep sentence about current AI workflows today.",
+            source_file="2024/QTR4/d.txt",
+            quarter=4,
+            sentence_index=1,
+            cik="1004",
+        ),
+    ]
+    sentences = pd.DataFrame(rows)
+    sentences_path = tmp_path / "sentences.parquet"
+    sentences.to_parquet(sentences_path, index=False, engine="pyarrow", compression="snappy")
+
+    held_out_path = tmp_path / "held_out.csv"
+    pd.DataFrame([{"sentence": "unrelated sentence"}]).to_csv(held_out_path, index=False)
+
+    existing_batch_path = tmp_path / "existing.csv"
+    pd.DataFrame([{"sentence_text_id": rows[0]["sentence_text_id"]}]).to_csv(
+        existing_batch_path, index=False
+    )
+
+    output_parquet = tmp_path / "labeling_batch.parquet"
+    output_csv = tmp_path / "labeling_batch.csv"
+    report_path = tmp_path / "summary.json"
+
+    summary = build_labeling_batch(
+        sentences_path=str(sentences_path),
+        manifest_path=str(manifest_path),
+        held_out_path=str(held_out_path),
+        output_parquet_path=str(output_parquet),
+        output_csv_path=str(output_csv),
+        report_path=str(report_path),
+        batch_id="labeling_batch_v2",
+        target_size=3,
+        base_quarter_quota=1,
+        min_tokens=6,
+        max_tokens=120,
+        seed=20260308,
+        exclude_existing_csv=str(existing_batch_path),
+    )
+
+    batch = pd.read_csv(output_csv)
+
+    assert summary["candidate_stats"]["existing_batch_excluded"] == 1
+    assert rows[0]["sentence_text_id"] not in set(batch["sentence_text_id"])
+    assert len(batch) == 3

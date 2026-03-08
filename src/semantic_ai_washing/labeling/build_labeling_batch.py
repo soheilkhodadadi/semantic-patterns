@@ -91,6 +91,17 @@ def _load_heldout_norms(path: str) -> set[str]:
     }
 
 
+def _load_existing_sentence_text_ids(path: str) -> set[str]:
+    frame = pd.read_csv(path)
+    if "sentence_text_id" not in frame.columns:
+        raise ValueError("Existing batch CSV must contain `sentence_text_id`.")
+    return {
+        str(value).strip()
+        for value in frame["sentence_text_id"].fillna("").astype(str)
+        if str(value).strip()
+    }
+
+
 def _load_candidates(sentences_path: str, manifest_path: str) -> pd.DataFrame:
     sentences = pd.read_parquet(sentences_path)
     manifest = pd.read_csv(manifest_path)
@@ -326,6 +337,7 @@ def build_labeling_batch(
     min_tokens: int = 6,
     max_tokens: int = 120,
     seed: int = 20260306,
+    exclude_existing_csv: str = "",
 ) -> dict[str, Any]:
     candidates = _load_candidates(sentences_path=sentences_path, manifest_path=manifest_path)
     source_rows = int(len(candidates))
@@ -341,6 +353,13 @@ def build_labeling_batch(
     overlap_mask = clean["sentence_norm"].isin(held_out_norms)
     heldout_overlap_removed = int(overlap_mask.sum())
     clean = clean[~overlap_mask].copy()
+
+    existing_batch_excluded = 0
+    if exclude_existing_csv:
+        existing_sentence_text_ids = _load_existing_sentence_text_ids(exclude_existing_csv)
+        existing_mask = clean["sentence_text_id"].astype(str).isin(existing_sentence_text_ids)
+        existing_batch_excluded = int(existing_mask.sum())
+        clean = clean[~existing_mask].copy()
 
     clean = clean.sort_values(
         by=["source_quarter", "source_file", "sentence_index", "sentence_id"]
@@ -429,6 +448,7 @@ def build_labeling_batch(
             "sentences": sentences_path,
             "manifest": manifest_path,
             "held_out": held_out_path,
+            "exclude_existing_csv": exclude_existing_csv,
         },
         "parameters": {
             "batch_id": batch_id,
@@ -442,6 +462,7 @@ def build_labeling_batch(
             "source_rows": source_rows,
             "rows_after_clean_filters": rows_after_clean_filters,
             "heldout_overlap_removed": heldout_overlap_removed,
+            "existing_batch_excluded": existing_batch_excluded,
             "exact_text_duplicates_removed": exact_text_duplicates_removed,
             "rows_after_filters": available_rows,
             "available_quarter_counts": {
@@ -480,6 +501,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--min-tokens", type=int, default=6)
     parser.add_argument("--max-tokens", type=int, default=120)
     parser.add_argument("--seed", type=int, default=20260306)
+    parser.add_argument("--exclude-existing-csv", default="")
     return parser.parse_args()
 
 
@@ -498,6 +520,7 @@ def main() -> int:
         min_tokens=args.min_tokens,
         max_tokens=args.max_tokens,
         seed=args.seed,
+        exclude_existing_csv=args.exclude_existing_csv,
     )
     print(
         "[label-ops] "
