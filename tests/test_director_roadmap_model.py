@@ -860,51 +860,26 @@ def test_task_with_missing_outputs_and_quality_checks_remains_ready(tmp_path):
     assert "iteration1.build.generate_report" in report.recommendation.recommended_task_ids
 
 
-def test_actual_iteration2_parallel_tracks_are_wired():
+def test_actual_iteration2_tranche_workflow_is_wired():
     model = load_roadmap_model("director/model/roadmap_model.yaml")
 
-    pool_phase = find_phase(model, iteration_id="2", phase_name="sentence-pool-expansion-2024")
-    assert pool_phase is not None
-    expand_task = next(
-        task
-        for task in pool_phase.tasks
-        if task.task_id == "iteration2.pool.expand_candidate_pool"
-    )
-    assert expand_task.commands
-    assert "semantic_ai_washing.data.build_expanded_sentence_pool" in expand_task.commands[0]
-
-    dataset_phase = find_phase(model, iteration_id="2", phase_name="dataset-expansion-2024")
-    assert dataset_phase is not None
-    task_ids = {task.task_id for task in dataset_phase.tasks}
-    assert "iteration2.labels.generate_tranche1_assistive_prelabels" in task_ids
-    assert "iteration2.labels.verify_tranche1_labels" in task_ids
-    assert "iteration2.labels.prepare_expanded_labeling_batches" in task_ids
-    assert "iteration2.labels.generate_expanded_assistive_prelabels" in task_ids
-    assert "iteration2.labels.verify_expanded_labels" in task_ids
-    assert "iteration2.labels.merge_canonical_labels" in task_ids
-
+    tranche1_phase = find_phase(model, iteration_id="2", phase_name="tranche1-labeling")
+    assert tranche1_phase is not None
+    tranche1_task_ids = {task.task_id for task in tranche1_phase.tasks}
+    assert tranche1_task_ids == {
+        "iteration2.labels.generate_tranche1_assistive_prelabels",
+        "iteration2.labels.verify_tranche1_labels",
+    }
     tranche1_prelabels = next(
         task
-        for task in dataset_phase.tasks
+        for task in tranche1_phase.tasks
         if task.task_id == "iteration2.labels.generate_tranche1_assistive_prelabels"
     )
-    assert any(
-        condition.kind == "json_field_compare"
-        and condition.target == "reports/labels/assistive_prelabel_tranche1_summary.json::status"
-        and condition.expected == "passed"
-        for condition in tranche1_prelabels.quality_checks
-    )
-    assert any(
-        condition.kind == "json_field_compare"
-        and condition.target
-        == "reports/labels/assistive_prelabel_tranche1_summary.json::usage.request_count"
-        and condition.expected == 1
-        for condition in tranche1_prelabels.quality_checks
-    )
-
+    assert tranche1_prelabels.commands
+    assert "--checkpoint-every 10" in tranche1_prelabels.commands[0]
     verify_tranche1 = next(
         task
-        for task in dataset_phase.tasks
+        for task in tranche1_phase.tasks
         if task.task_id == "iteration2.labels.verify_tranche1_labels"
     )
     assert any(
@@ -914,9 +889,112 @@ def test_actual_iteration2_parallel_tracks_are_wired():
         for condition in verify_tranche1.quality_checks
     )
 
-    review_phase = find_phase(model, iteration_id="3", phase_name="review-and-replan")
+    pool_phase = find_phase(model, iteration_id="2", phase_name="sentence-pool-expansion-2024")
+    assert pool_phase is not None
+    pool_task_ids = [task.task_id for task in pool_phase.tasks]
+    assert pool_task_ids == [
+        "iteration2.pool.expand_candidate_pool_batch_01",
+        "iteration2.pool.expand_candidate_pool_batch_02",
+        "iteration2.pool.expand_candidate_pool_batch_03",
+        "iteration2.pool.expand_candidate_pool_batch_04",
+        "iteration2.pool.combine_candidate_pool_batches",
+        "iteration2.pool.verify_candidate_pool_targets",
+    ]
+    expand_task = next(
+        task
+        for task in pool_phase.tasks
+        if task.task_id == "iteration2.pool.expand_candidate_pool_batch_01"
+    )
+    assert expand_task.commands
+    assert "semantic_ai_washing.data.build_expanded_sentence_pool" in expand_task.commands[0]
+    expand_task_04 = next(
+        task
+        for task in pool_phase.tasks
+        if task.task_id == "iteration2.pool.expand_candidate_pool_batch_04"
+    )
+    assert "--exclude-manifests" in expand_task_04.commands[0]
+    combine_task = next(
+        task
+        for task in pool_phase.tasks
+        if task.task_id == "iteration2.pool.combine_candidate_pool_batches"
+    )
+    assert (
+        "semantic_ai_washing.data.combine_expanded_sentence_pool_batches"
+        in combine_task.commands[0]
+    )
+    verify_pool = next(
+        task
+        for task in pool_phase.tasks
+        if task.task_id == "iteration2.pool.verify_candidate_pool_targets"
+    )
+    assert any(
+        condition.kind == "json_field_compare"
+        and condition.target
+        == "reports/labels/sentence_pool_expansion_2024_summary.json::candidate_pool.firm_count"
+        and condition.expected == 500
+        for condition in verify_pool.quality_checks
+    )
+    assert any(
+        condition.kind == "json_field_compare"
+        and condition.target
+        == "reports/labels/sentence_pool_expansion_2024_summary.json::candidate_pool.clean_sentence_count"
+        and condition.expected == 1000
+        for condition in verify_pool.quality_checks
+    )
+
+    tranche2_phase = find_phase(model, iteration_id="2", phase_name="tranche2-labeling")
+    assert tranche2_phase is not None
+    tranche2_prepare = next(
+        task
+        for task in tranche2_phase.tasks
+        if task.task_id == "iteration2.labels.prepare_tranche2_labeling_batch"
+    )
+    assert "--target-size 160" in tranche2_prepare.commands[0]
+    assert "--base-quarter-quota 40" in tranche2_prepare.commands[0]
+    assert (
+        "--exclude-existing-csv data/labels/v1/labeling_batch_v1.csv"
+        in tranche2_prepare.commands[0]
+    )
+    assert any(
+        condition.kind == "json_field_compare"
+        and condition.target
+        == "reports/labels/labeling_batch_v2_summary.json::selection.batch_row_count"
+        and condition.expected == 160
+        for condition in tranche2_prepare.quality_checks
+    )
+
+    tranche3_phase = find_phase(model, iteration_id="2", phase_name="tranche3-labeling")
+    assert tranche3_phase is not None
+    tranche3_prepare = next(
+        task
+        for task in tranche3_phase.tasks
+        if task.task_id == "iteration2.labels.prepare_tranche3_labeling_batch"
+    )
+    assert (
+        "--exclude-existing-csv data/labels/v1/labeling_batch_v1.csv data/labels/v1/labeling_batch_v2.csv"
+        in tranche3_prepare.commands[0]
+    )
+
+    merge_phase = find_phase(model, iteration_id="2", phase_name="merge-canonical-labels")
+    assert merge_phase is not None
+    merge_task = next(
+        task
+        for task in merge_phase.tasks
+        if task.task_id == "iteration2.labels.merge_canonical_labels"
+    )
+    assert "semantic_ai_washing.labeling.merge_labeling_batches" in merge_task.commands[0]
+    assert "data/labels/v1/labeling_batch_v3_filled.csv" in merge_task.commands[0]
+    assert any(
+        condition.kind == "json_field_compare"
+        and condition.target
+        == "reports/labels/label_expansion_summary.json::summary.total_canonical_labeled_rows"
+        and condition.expected == 560
+        for condition in merge_task.quality_checks
+    )
+
+    review_phase = find_phase(model, iteration_id="2", phase_name="review-and-replan")
     assert review_phase is not None
     review_task = next(
-        task for task in review_phase.tasks if task.task_id == "iteration3.review.generate_review"
+        task for task in review_phase.tasks if task.task_id == "iteration2.review.generate_review"
     )
-    assert review_task.depends_on == ["iteration3.merge.verify_outputs"]
+    assert review_task.depends_on == ["iteration2.labels.verify_label_sufficiency"]

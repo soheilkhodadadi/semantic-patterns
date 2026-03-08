@@ -1,7 +1,7 @@
 <!-- generated_file: true -->
 <!-- source_model: /Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/model/roadmap_model.yaml -->
-<!-- source_sha256: d19e45329d39f2147b6036f5026d8b705beea696a503e8341a637cf794c92060 -->
-<!-- rendered_at: 2026-03-08T03:46:59.089346+00:00 -->
+<!-- source_sha256: 961bd2529ac0ac2b9e51d1bbd13da30c00f80cc86179c97f846a460be9f00bd8 -->
+<!-- rendered_at: 2026-03-08T06:54:27.452958+00:00 -->
 
 # Roadmap Master
 
@@ -66,13 +66,13 @@ Optimization proposals may recommend resequencing tasks or phases beyond the can
   - summary: Expand beyond the bootstrap pilot to a 500-firm candidate pool with roughly 1-2k clean AI sentences.
   - target iteration: `2`
   - source refs: email thread 2025-08-27, email thread 2025-09-08
-  - mapped phases: iteration2/sentence-pool-expansion-2024, iteration2/dataset-expansion-2024
+  - mapped phases: iteration2/sentence-pool-expansion-2024, iteration2/tranche2-labeling, iteration2/tranche3-labeling
   - mapped gates: candidate_pool_500_firms, candidate_pool_clean_sentences_gte_1000
 - `label_set_sufficiency_before_retraining` priority=`publication-critical` stakeholder=`Kuntara`
   - summary: Reach a publication-grade adjudicated label set before retraining, not just a small pilot.
   - target iteration: `2`
   - source refs: email thread 2025-08-27, email thread 2025-09-08
-  - mapped phases: iteration2/dataset-expansion-2024, iteration2/irr-and-adjudication, iteration2/label-sufficiency-gate
+  - mapped phases: iteration2/tranche1-labeling, iteration2/tranche2-labeling, iteration2/tranche3-labeling, iteration2/merge-canonical-labels, iteration2/irr-and-adjudication, iteration2/label-sufficiency-gate
   - mapped gates: adjudicated_labels_gte_500, per_class_labels_gte_80
 - `ai_total_merge_integrity` priority=`non-negotiable` stakeholder=`Kuntara`
   - summary: Fix and verify merge integrity, especially ai_total, before panel and regression work.
@@ -417,39 +417,14 @@ Exit criteria: Sentence-pool expansion reaches 500 firms and at least 1,000 clea
   - tags: kickoff
   - risks: R4, R7
 
-### iteration2/sentence-pool-expansion-2024
-- Title: Sentence Pool Expansion 2024
-- Goal: Expand beyond the 240-row bootstrap batch to a 500-firm, 1-2k clean AI sentence candidate pool using the external 2024 filing window.
+### iteration2/tranche1-labeling
+- Title: Tranche 1 Labeling
+- Goal: Complete the existing 240-row bootstrap batch as tranche 1 with assistive-only prelabels and human-canonical verification.
 - Lifecycle: `planned`
 - Depends on: iteration2/kickoff-and-preflight
 - Source window: `active_2021_2024`
-- Required artifacts: data/manifests/filings/expansion_2024_500_firms_v1.csv, data/processed/sentences/year=2024/expanded_ai_sentences.parquet, reports/labels/sentence_pool_expansion_2024_summary.json
-- Tags: sentence_pool, scale, stakeholder_alignment
-
-#### Tasks
-- `iteration2.pool.expand_candidate_pool` Expand candidate pool to stakeholder scale
-  - kind: `build` gate_class: `data` automation: `full`
-  - depends_on: none
-  - inputs: data/metadata/available_filings_index.csv, data/processed/sentences/year=2024/ai_sentences.parquet
-  - outputs: data/manifests/filings/expansion_2024_500_firms_v1.csv, data/processed/sentences/year=2024/expanded_ai_sentences.parquet, reports/labels/sentence_pool_expansion_2024_summary.json
-  - tags: sentence_pool, scale
-  - risks: R2, R5
-- `iteration2.pool.verify_candidate_pool_targets` Verify sentence-pool targets
-  - kind: `validation` gate_class: `data` automation: `partial`
-  - depends_on: iteration2.pool.expand_candidate_pool
-  - inputs: reports/labels/sentence_pool_expansion_2024_summary.json
-  - outputs: none
-  - tags: sentence_pool_gate
-  - risks: R2
-
-### iteration2/dataset-expansion-2024
-- Title: Dataset Expansion 2024
-- Goal: Produce the expanded human-labeled dataset from the scaled 2024 sentence pool while keeping API use assistive only.
-- Lifecycle: `planned`
-- Depends on: iteration2/kickoff-and-preflight
-- Source window: `active_2021_2024`
-- Required artifacts: data/labels/v1/labels_master.parquet, data/labels/v1/labels_master_review.csv, reports/labels/label_expansion_summary.json
-- Tags: label_expansion, assistive_api
+- Required artifacts: data/labels/v1/labeling_batch_v1_prelabeled.csv, reports/labels/assistive_prelabel_tranche1_summary.json, data/labels/v1/labeling_batch_v1_filled.csv
+- Tags: tranche1, human_labeling
 
 #### Tasks
 - `iteration2.labels.generate_tranche1_assistive_prelabels` Generate tranche 1 assistive prelabels
@@ -466,31 +441,138 @@ Exit criteria: Sentence-pool expansion reaches 500 firms and at least 1,000 clea
   - outputs: data/labels/v1/labeling_batch_v1_filled.csv
   - tags: human_labeling, tranche1
   - risks: R1, R3
-- `iteration2.labels.prepare_expanded_labeling_batches` Prepare expanded labeling tranche
+
+### iteration2/sentence-pool-expansion-2024
+- Title: Sentence Pool Expansion 2024
+- Goal: Expand beyond tranche 1 into 4 resumable 125-firm batches, then combine them into a cumulative 500-firm, 1-2k clean AI sentence pool.
+- Lifecycle: `planned`
+- Depends on: iteration2/tranche1-labeling
+- Source window: `active_2021_2024`
+- Required artifacts: data/manifests/filings/expansion_2024_500_firms_v1.csv, data/processed/sentences/year=2024/expanded_ai_sentences.parquet, reports/labels/sentence_pool_expansion_2024_summary.json
+- Tags: sentence_pool, scale, stakeholder_alignment
+
+#### Tasks
+- `iteration2.pool.expand_candidate_pool_batch_01` Expand candidate pool batch 01
+  - kind: `build` gate_class: `data` automation: `full`
+  - depends_on: none
+  - inputs: data/metadata/available_filings_index.csv
+  - outputs: data/manifests/filings/expansion_2024_batch_01.csv, data/processed/sentences/year=2024/expanded_ai_sentences_batch_01.parquet, reports/labels/sentence_pool_expansion_2024_batch_01_summary.json
+  - tags: sentence_pool, scale, batch_01
+  - risks: R2, R5
+- `iteration2.pool.expand_candidate_pool_batch_02` Expand candidate pool batch 02
+  - kind: `build` gate_class: `data` automation: `full`
+  - depends_on: iteration2.pool.expand_candidate_pool_batch_01
+  - inputs: data/metadata/available_filings_index.csv
+  - outputs: data/manifests/filings/expansion_2024_batch_02.csv, data/processed/sentences/year=2024/expanded_ai_sentences_batch_02.parquet, reports/labels/sentence_pool_expansion_2024_batch_02_summary.json
+  - tags: sentence_pool, scale, batch_02
+  - risks: R2, R5
+- `iteration2.pool.expand_candidate_pool_batch_03` Expand candidate pool batch 03
+  - kind: `build` gate_class: `data` automation: `full`
+  - depends_on: iteration2.pool.expand_candidate_pool_batch_02
+  - inputs: data/metadata/available_filings_index.csv
+  - outputs: data/manifests/filings/expansion_2024_batch_03.csv, data/processed/sentences/year=2024/expanded_ai_sentences_batch_03.parquet, reports/labels/sentence_pool_expansion_2024_batch_03_summary.json
+  - tags: sentence_pool, scale, batch_03
+  - risks: R2, R5
+- `iteration2.pool.expand_candidate_pool_batch_04` Expand candidate pool batch 04
+  - kind: `build` gate_class: `data` automation: `full`
+  - depends_on: iteration2.pool.expand_candidate_pool_batch_03
+  - inputs: data/metadata/available_filings_index.csv
+  - outputs: data/manifests/filings/expansion_2024_batch_04.csv, data/processed/sentences/year=2024/expanded_ai_sentences_batch_04.parquet, reports/labels/sentence_pool_expansion_2024_batch_04_summary.json
+  - tags: sentence_pool, scale, batch_04
+  - risks: R2, R5
+- `iteration2.pool.combine_candidate_pool_batches` Combine candidate pool batches
+  - kind: `build` gate_class: `data` automation: `full`
+  - depends_on: iteration2.pool.expand_candidate_pool_batch_04
+  - inputs: none
+  - outputs: data/manifests/filings/expansion_2024_500_firms_v1.csv, data/processed/sentences/year=2024/expanded_ai_sentences.parquet, reports/labels/sentence_pool_expansion_2024_summary.json
+  - tags: sentence_pool, scale, combine
+  - risks: R2, R5
+- `iteration2.pool.verify_candidate_pool_targets` Verify sentence-pool targets
+  - kind: `validation` gate_class: `data` automation: `partial`
+  - depends_on: iteration2.pool.combine_candidate_pool_batches
+  - inputs: reports/labels/sentence_pool_expansion_2024_summary.json
+  - outputs: none
+  - tags: sentence_pool_gate
+  - risks: R2
+
+### iteration2/tranche2-labeling
+- Title: Tranche 2 Labeling
+- Goal: Build, prelabel, and verify the first 160-row expanded tranche from the cumulative expanded sentence pool.
+- Lifecycle: `planned`
+- Depends on: iteration2/sentence-pool-expansion-2024
+- Source window: `active_2021_2024`
+- Required artifacts: data/labels/v1/labeling_batch_v2.parquet, data/labels/v1/labeling_batch_v2.csv, reports/labels/labeling_batch_v2_summary.json, data/labels/v1/labeling_batch_v2_prelabeled.csv, reports/labels/assistive_prelabel_tranche2_summary.json, data/labels/v1/labeling_batch_v2_filled.csv
+- Tags: tranche2, human_labeling
+
+#### Tasks
+- `iteration2.labels.prepare_tranche2_labeling_batch` Prepare tranche 2 labeling batch
   - kind: `build` gate_class: `data` automation: `full`
   - depends_on: iteration2.pool.verify_candidate_pool_targets
   - inputs: data/processed/sentences/year=2024/expanded_ai_sentences.parquet, data/manifests/filings/expansion_2024_500_firms_v1.csv, data/labels/v1/labeling_batch_v1.csv
   - outputs: data/labels/v1/labeling_batch_v2.parquet, data/labels/v1/labeling_batch_v2.csv, reports/labels/labeling_batch_v2_summary.json
-  - tags: expanded_batch, label_expansion
+  - tags: expanded_batch, tranche2
   - risks: R1, R2
-- `iteration2.labels.generate_expanded_assistive_prelabels` Generate expanded tranche assistive prelabels
+- `iteration2.labels.generate_tranche2_assistive_prelabels` Generate tranche 2 assistive prelabels
   - kind: `build` gate_class: `ops` automation: `partial`
-  - depends_on: iteration2.labels.prepare_expanded_labeling_batches
+  - depends_on: iteration2.labels.prepare_tranche2_labeling_batch
   - inputs: data/labels/v1/labeling_batch_v2.csv, director/config/api_assistive_policy.yaml
   - outputs: data/labels/v1/labeling_batch_v2_prelabeled.csv, reports/labels/assistive_prelabel_tranche2_summary.json
   - tags: assistive_api, tranche2, prelabels
   - risks: R1, R4
-- `iteration2.labels.verify_expanded_labels` Verify expanded tranche labels
+- `iteration2.labels.verify_tranche2_labels` Verify tranche 2 labels
   - kind: `manual` gate_class: `manual` automation: `manual`
-  - depends_on: iteration2.labels.generate_expanded_assistive_prelabels
+  - depends_on: iteration2.labels.generate_tranche2_assistive_prelabels
   - inputs: data/labels/v1/labeling_batch_v2_prelabeled.csv
   - outputs: data/labels/v1/labeling_batch_v2_filled.csv
   - tags: human_labeling, tranche2
   - risks: R1, R3
+
+### iteration2/tranche3-labeling
+- Title: Tranche 3 Labeling
+- Goal: Build, prelabel, and verify the second 160-row expanded tranche from the cumulative expanded sentence pool.
+- Lifecycle: `planned`
+- Depends on: iteration2/tranche2-labeling
+- Source window: `active_2021_2024`
+- Required artifacts: data/labels/v1/labeling_batch_v3.parquet, data/labels/v1/labeling_batch_v3.csv, reports/labels/labeling_batch_v3_summary.json, data/labels/v1/labeling_batch_v3_prelabeled.csv, reports/labels/assistive_prelabel_tranche3_summary.json, data/labels/v1/labeling_batch_v3_filled.csv
+- Tags: tranche3, human_labeling
+
+#### Tasks
+- `iteration2.labels.prepare_tranche3_labeling_batch` Prepare tranche 3 labeling batch
+  - kind: `build` gate_class: `data` automation: `full`
+  - depends_on: iteration2.labels.verify_tranche2_labels
+  - inputs: data/processed/sentences/year=2024/expanded_ai_sentences.parquet, data/manifests/filings/expansion_2024_500_firms_v1.csv, data/labels/v1/labeling_batch_v1.csv
+  - outputs: data/labels/v1/labeling_batch_v3.parquet, data/labels/v1/labeling_batch_v3.csv, reports/labels/labeling_batch_v3_summary.json
+  - tags: expanded_batch, tranche3
+  - risks: R1, R2
+- `iteration2.labels.generate_tranche3_assistive_prelabels` Generate tranche 3 assistive prelabels
+  - kind: `build` gate_class: `ops` automation: `partial`
+  - depends_on: iteration2.labels.prepare_tranche3_labeling_batch
+  - inputs: data/labels/v1/labeling_batch_v2.csv, director/config/api_assistive_policy.yaml
+  - outputs: data/labels/v1/labeling_batch_v3_prelabeled.csv, reports/labels/assistive_prelabel_tranche3_summary.json
+  - tags: assistive_api, tranche3, prelabels
+  - risks: R1, R4
+- `iteration2.labels.verify_tranche3_labels` Verify tranche 3 labels
+  - kind: `manual` gate_class: `manual` automation: `manual`
+  - depends_on: iteration2.labels.generate_tranche3_assistive_prelabels
+  - inputs: data/labels/v1/labeling_batch_v2_prelabeled.csv
+  - outputs: data/labels/v1/labeling_batch_v3_filled.csv
+  - tags: human_labeling, tranche3
+  - risks: R1, R3
+
+### iteration2/merge-canonical-labels
+- Title: Merge Canonical Labels
+- Goal: Merge the 3 verified tranches into the canonical labels master before IRR.
+- Lifecycle: `planned`
+- Depends on: iteration2/tranche3-labeling
+- Source window: `active_2021_2024`
+- Required artifacts: data/labels/v1/labels_master.parquet, data/labels/v1/labels_master_review.csv, reports/labels/label_expansion_summary.json
+- Tags: merge_labels, stakeholder_alignment
+
+#### Tasks
 - `iteration2.labels.merge_canonical_labels` Merge canonical labels
   - kind: `build` gate_class: `data` automation: `full`
-  - depends_on: iteration2.labels.verify_tranche1_labels, iteration2.labels.verify_expanded_labels
-  - inputs: data/labels/v1/labeling_batch_v1_filled.csv, data/labels/v1/labeling_batch_v2_filled.csv
+  - depends_on: iteration2.labels.verify_tranche1_labels, iteration2.labels.verify_tranche2_labels, iteration2.labels.verify_tranche3_labels
+  - inputs: data/labels/v1/labeling_batch_v1_filled.csv, data/labels/v1/labeling_batch_v2_filled.csv, data/labels/v1/labeling_batch_v3_filled.csv
   - outputs: data/labels/v1/labels_master.parquet, data/labels/v1/labels_master_review.csv, reports/labels/label_expansion_summary.json
   - tags: human_labeling, merge_labels
   - risks: R1, R2, R3
@@ -499,7 +581,7 @@ Exit criteria: Sentence-pool expansion reaches 500 firms and at least 1,000 clea
 - Title: IRR and Adjudication
 - Goal: Run true human-human IRR on a blinded 100+ sentence subset, adjudicate disagreements, and record rubric refinements.
 - Lifecycle: `planned`
-- Depends on: iteration2/dataset-expansion-2024
+- Depends on: iteration2/merge-canonical-labels
 - Source window: `active_2021_2024`
 - Required artifacts: data/labels/v1/irr_subset.parquet, reports/labels/irr_report.json, data/labels/v1/adjudication.parquet
 - Tags: irr, adjudication, sentence_quality_gate
@@ -935,12 +1017,12 @@ Exit criteria: Publication regressions, robustness outputs, differentiation arti
 
 
 ## Approved Review Appendix
-### 4aadd088-313a3a32
+### 961bd252-313a3a32
 - Scope: `iteration 1`
 - Accepted changes: none
 - Deferred changes: optimizer-proposed_roadmap_patch_8732eb4e-3a3a3230-1, optimizer-proposed_roadmap_patch_8732eb4e-3a3a3230-2, optimizer-proposed_roadmap_patch_9d516339-3a3a3230-1, optimizer-proposed_roadmap_patch_9d516339-3a3a3230-2, optimizer-proposed_roadmap_patch_b2f116c5-3a3a3230-1, optimizer-proposed_roadmap_patch_b2f116c5-3a3a3230-2, optimizer-proposed_roadmap_patch_d3700831-313a6972-1, optimizer-proposed_roadmap_patch_d3700831-313a6972-2, optimizer-proposed_roadmap_patch_e08e31e6-3a3a3230-1, optimizer-proposed_roadmap_patch_e08e31e6-3a3a3230-2, optimizer-proposed_roadmap_patch_fb55837d-3a3a3230-1, optimizer-proposed_roadmap_patch_fb55837d-3a3a3230-2, review-availability-aware-quartering
 - Next iteration: `2`
 - Entry criteria: Iteration 1 review approved., Iteration 2 kickoff completed on iteration2/integration., Iteration 2 expansion uses the external DataWork filing corpus, not legacy in-repo sentence exports.
-- Stakeholder summary: active_development_scope=2021-2024 public-filing development window; counts_by_priority{non-negotiable=4, preferred=1, publication-critical=7}; counts_by_status{in_progress=1, open=11}; desired_horizon=20-year horizon when source availability permits; due_unsatisfied_count=0; publication_target_scope=all publicly traded firms; requirement_statuses=[{'requirement_id': 'validate_methodology_before_scale', 'priority': 'non-negotiable', 'target_iteration': '2', 'status': 'in_progress', 'mapped_phases': ['iteration1/rubric-and-api-bootstrap', 'iteration2/irr-and-adjudication', 'iteration2/label-sufficiency-gate'], 'mapped_statuses': ['satisfied', 'waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'true_human_irr_multi_rater', 'priority': 'non-negotiable', 'target_iteration': '2', 'status': 'open', 'mapped_phases': ['iteration2/irr-and-adjudication', 'iteration2/label-sufficiency-gate'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'scale_candidate_pool_to_500_firms', 'priority': 'publication-critical', 'target_iteration': '2', 'status': 'open', 'mapped_phases': ['iteration2/sentence-pool-expansion-2024', 'iteration2/dataset-expansion-2024'], 'mapped_statuses': ['blocked_manual', 'waiting_on_deps']}, {'requirement_id': 'label_set_sufficiency_before_retraining', 'priority': 'publication-critical', 'target_iteration': '2', 'status': 'open', 'mapped_phases': ['iteration2/dataset-expansion-2024', 'iteration2/irr-and-adjudication', 'iteration2/label-sufficiency-gate'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'ai_total_merge_integrity', 'priority': 'non-negotiable', 'target_iteration': '3', 'status': 'open', 'mapped_phases': ['iteration3/classification-merge-integrity', 'iteration4/panel-assembly-2021-2024'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'job_postings_robustness', 'priority': 'publication-critical', 'target_iteration': '4', 'status': 'open', 'mapped_phases': ['iteration4/job-postings-robustness-integration', 'iteration5/robustness-and-sensitivity'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'lagged_and_industry_robustness', 'priority': 'publication-critical', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/regression-specification', 'iteration5/robustness-and-sensitivity'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'patent_mismatch_washing_proxy', 'priority': 'publication-critical', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/robustness-and-sensitivity'], 'mapped_statuses': ['waiting_on_deps']}, {'requirement_id': 'literature_differentiation', 'priority': 'publication-critical', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/literature-differentiation-and-examples', 'iteration5/release-packaging'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'before_after_examples', 'priority': 'publication-critical', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/literature-differentiation-and-examples', 'iteration5/release-packaging'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'publication_scope_all_public_firms', 'priority': 'preferred', 'target_iteration': '4', 'status': 'open', 'mapped_phases': ['iteration4/historical-window-expansion-readiness', 'iteration5/results-generation'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'results_and_paper_package', 'priority': 'non-negotiable', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/release-packaging'], 'mapped_statuses': ['waiting_on_deps']}]; source_artifact=docs/director/stakeholder_expectations.md
+- Stakeholder summary: active_development_scope=2021-2024 public-filing development window; counts_by_priority{non-negotiable=4, preferred=1, publication-critical=7}; counts_by_status{in_progress=1, open=11}; desired_horizon=20-year horizon when source availability permits; due_unsatisfied_count=0; publication_target_scope=all publicly traded firms; requirement_statuses=[{'requirement_id': 'validate_methodology_before_scale', 'priority': 'non-negotiable', 'target_iteration': '2', 'status': 'in_progress', 'mapped_phases': ['iteration1/rubric-and-api-bootstrap', 'iteration2/irr-and-adjudication', 'iteration2/label-sufficiency-gate'], 'mapped_statuses': ['satisfied', 'waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'true_human_irr_multi_rater', 'priority': 'non-negotiable', 'target_iteration': '2', 'status': 'open', 'mapped_phases': ['iteration2/irr-and-adjudication', 'iteration2/label-sufficiency-gate'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'scale_candidate_pool_to_500_firms', 'priority': 'publication-critical', 'target_iteration': '2', 'status': 'open', 'mapped_phases': ['iteration2/sentence-pool-expansion-2024', 'iteration2/tranche2-labeling', 'iteration2/tranche3-labeling'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'label_set_sufficiency_before_retraining', 'priority': 'publication-critical', 'target_iteration': '2', 'status': 'open', 'mapped_phases': ['iteration2/tranche1-labeling', 'iteration2/tranche2-labeling', 'iteration2/tranche3-labeling', 'iteration2/merge-canonical-labels', 'iteration2/irr-and-adjudication', 'iteration2/label-sufficiency-gate'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps', 'waiting_on_deps', 'waiting_on_deps', 'waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'ai_total_merge_integrity', 'priority': 'non-negotiable', 'target_iteration': '3', 'status': 'open', 'mapped_phases': ['iteration3/classification-merge-integrity', 'iteration4/panel-assembly-2021-2024'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'job_postings_robustness', 'priority': 'publication-critical', 'target_iteration': '4', 'status': 'open', 'mapped_phases': ['iteration4/job-postings-robustness-integration', 'iteration5/robustness-and-sensitivity'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'lagged_and_industry_robustness', 'priority': 'publication-critical', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/regression-specification', 'iteration5/robustness-and-sensitivity'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'patent_mismatch_washing_proxy', 'priority': 'publication-critical', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/robustness-and-sensitivity'], 'mapped_statuses': ['waiting_on_deps']}, {'requirement_id': 'literature_differentiation', 'priority': 'publication-critical', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/literature-differentiation-and-examples', 'iteration5/release-packaging'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'before_after_examples', 'priority': 'publication-critical', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/literature-differentiation-and-examples', 'iteration5/release-packaging'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'publication_scope_all_public_firms', 'priority': 'preferred', 'target_iteration': '4', 'status': 'open', 'mapped_phases': ['iteration4/historical-window-expansion-readiness', 'iteration5/results-generation'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'results_and_paper_package', 'priority': 'non-negotiable', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/release-packaging'], 'mapped_statuses': ['waiting_on_deps']}]; source_artifact=docs/director/stakeholder_expectations.md
 - Unmet stakeholder requirements: none
 - Publication blockers: none

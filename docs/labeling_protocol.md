@@ -124,17 +124,25 @@ Rows with labels outside this set fail QA.
 - Iteration 2 expands beyond the bootstrap batch toward a stakeholder target of:
   - `500` firms in the 2024 candidate pool
   - `1–2k` clean AI sentences in the expanded candidate pool
-- Iteration 2 is intentionally parallel:
+- Iteration 2 is intentionally linear and tranche-based:
   - `tranche1`: verify the current `240`-row bootstrap batch
-  - `tranche2+`: expand the 2024 sentence pool and prepare larger follow-on labeling batches
+  - `sentence-pool-expansion-2024`: build the expanded candidate pool in four resumable `125`-firm batches
+  - `tranche2`: prepare and verify a `160`-row expanded labeling tranche
+  - `tranche3`: prepare and verify a second `160`-row expanded labeling tranche
 - `labeling_batch_v1.csv` is tranche 1 only. It contributes toward the final sufficiency gate but is not the final training dataset.
+- The tranche contracts are fixed:
+  - tranche 1 = `240`
+  - tranche 2 = `160`
+  - tranche 3 = `160`
 - The final pre-retraining labeled dataset must satisfy:
   - `>= 500` adjudicated labels
   - `>= 80` labels per class
   - zero held-out overlap
+- The frozen held-out set remains external evaluation-only and is not repurposed for train/validation splitting.
 - Centroid retraining remains blocked until both of these are true:
   - the label sufficiency gate passes
   - the human-human IRR gate (`kappa > 0.7` on `>=100` reviewed items) passes
+- IRR happens after canonical tranche merge and before centroid retraining.
 - API outputs remain assistive-only during this expansion and must not become canonical labels.
 - Assistive prelabels are operational aids only:
   - they may populate `assistive_*` review columns

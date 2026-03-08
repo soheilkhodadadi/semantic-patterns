@@ -80,6 +80,23 @@ def _build_cost_controller(cost_policy_path: str) -> tuple[CostController, dict[
     return controller, policy
 
 
+def _flush_progress(
+    frame: pd.DataFrame,
+    output_path: Path,
+    report: dict[str, Any],
+    report_file: Path,
+    *,
+    status: str,
+) -> None:
+    frame.to_csv(output_path, index=False)
+    report["status"] = status
+    current_pending_mask = frame["label"].fillna("").astype(str).map(str.strip).eq("") & frame[
+        "assistive_label"
+    ].fillna("").astype(str).map(str.strip).eq("")
+    report["counts"]["pending_rows_after_run"] = int(current_pending_mask.sum())
+    dump_json(report_file, report)
+
+
 def _record_usage(
     controller: CostController,
     cost_policy: dict[str, Any],
@@ -128,6 +145,7 @@ def generate_assistive_prelabels(
     mode: str = "live",
     max_rows: int = 0,
     sleep_seconds: float = 0.0,
+    checkpoint_every: int = 10,
 ) -> tuple[dict[str, Any], int]:
     policy, resolved_policy = load_api_assistive_policy(policy_path)
     frame, resumed = _load_frame(input_csv, output_csv)
@@ -154,6 +172,7 @@ def generate_assistive_prelabels(
         "parameters": {
             "max_rows": int(max_rows),
             "sleep_seconds": float(sleep_seconds),
+            "checkpoint_every": int(checkpoint_every),
         },
         "counts": {
             "input_rows": int(len(frame)),
@@ -181,21 +200,15 @@ def generate_assistive_prelabels(
     report_file.parent.mkdir(parents=True, exist_ok=True)
 
     if mode == "dry-run":
-        frame.to_csv(output_path, index=False)
-        report["status"] = "dry_run"
-        report["counts"]["pending_rows_after_run"] = int(len(pending))
-        dump_json(report_file, report)
+        _flush_progress(frame, output_path, report, report_file, status="dry_run")
         return report, 0
 
     api_key = os.getenv(policy.env_var, "").strip()
     if not api_key:
-        frame.to_csv(output_path, index=False)
-        report["status"] = "missing_key"
-        report["counts"]["pending_rows_after_run"] = int(len(pending))
         report["errors"].append(
             {"type": "missing_key", "message": f"{policy.env_var} is required"}
         )
-        dump_json(report_file, report)
+        _flush_progress(frame, output_path, report, report_file, status="missing_key")
         return report, 1
 
     controller, cost_policy = _build_cost_controller(cost_policy_path)
@@ -241,8 +254,7 @@ def generate_assistive_prelabels(
                 }
             )
             report["counts"]["failed_rows"] += 1
-            frame.to_csv(output_path, index=False)
-            report["status"] = "request_failed"
+            _flush_progress(frame, output_path, report, report_file, status="request_failed")
             break
         except (OpenAIResponsesError, ValueError, json.JSONDecodeError) as exc:
             report["errors"].append(
@@ -253,8 +265,7 @@ def generate_assistive_prelabels(
                 }
             )
             report["counts"]["failed_rows"] += 1
-            frame.to_csv(output_path, index=False)
-            report["status"] = "request_failed"
+            _flush_progress(frame, output_path, report, report_file, status="request_failed")
             break
 
         frame.at[row.Index, "assistive_label"] = summary["label"]
@@ -273,17 +284,19 @@ def generate_assistive_prelabels(
         )
         report["usage"]["cost_estimation_status"] = usage["cost_estimation_status"]
 
+        if (
+            checkpoint_every > 0
+            and report["counts"]["processed_rows"] % int(checkpoint_every) == 0
+        ):
+            _flush_progress(frame, output_path, report, report_file, status="in_progress")
+
         if sleep_seconds > 0:
             time.sleep(sleep_seconds)
 
-    frame.to_csv(output_path, index=False)
     if report["status"] == "pending":
-        report["status"] = "passed"
-    current_pending_mask = frame["label"].fillna("").astype(str).map(str.strip).eq("") & frame[
-        "assistive_label"
-    ].fillna("").astype(str).map(str.strip).eq("")
-    report["counts"]["pending_rows_after_run"] = int(current_pending_mask.sum())
-    dump_json(report_file, report)
+        _flush_progress(frame, output_path, report, report_file, status="passed")
+    else:
+        _flush_progress(frame, output_path, report, report_file, status=str(report["status"]))
     return report, 0 if report["status"] == "passed" else 1
 
 
@@ -297,6 +310,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--mode", choices=["live", "dry-run"], default="live")
     parser.add_argument("--max-rows", type=int, default=0)
     parser.add_argument("--sleep-seconds", type=float, default=0.0)
+    parser.add_argument("--checkpoint-every", type=int, default=10)
     return parser.parse_args()
 
 
@@ -311,6 +325,7 @@ def main() -> int:
         mode=args.mode,
         max_rows=args.max_rows,
         sleep_seconds=args.sleep_seconds,
+        checkpoint_every=args.checkpoint_every,
     )
     return exit_code
 

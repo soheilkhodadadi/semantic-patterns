@@ -1557,3 +1557,46 @@ Rules:
     - `clean_sentences=1117`
 - Residual note:
   - the control-plane and workflow patch is complete, but the first full `500`-firm expansion run still needs runtime optimization before it is convenient for repeated use
+
+## 2026-03-07 - Iteration 2 Tranche-Based Linear Workflow Patch
+
+- Branch baseline:
+  - working branch: `iteration2/integration`
+  - patch goal: replace the current Iteration 2 parallel execution model with a simpler tranche-based linear workflow
+- Scope completed:
+  - replaced the active Iteration 2 roadmap with a linear sequence:
+    - `iteration2/tranche1-labeling`
+    - `iteration2/sentence-pool-expansion-2024`
+    - `iteration2/tranche2-labeling`
+    - `iteration2/tranche3-labeling`
+    - `iteration2/merge-canonical-labels`
+    - `iteration2/irr-and-adjudication`
+    - `iteration2/split-registry-freeze`
+    - `iteration2/label-sufficiency-gate`
+  - kept the scientific gates unchanged:
+    - frozen held-out remains external evaluation-only
+    - candidate pool target stays `>=500` firms and `>=1000` clean AI sentences minimum
+    - pre-retraining canonical label target stays `>=500` adjudicated labels and `>=80` per class
+    - IRR stays human-human only with `kappa > 0.7` on `>=100` items
+  - made sentence-pool expansion batch-scoped and resumable:
+    - four `125`-firm expansion batches
+    - one cumulative combine step
+  - added canonical cumulative combine CLI:
+    - `python -m semantic_ai_washing.data.combine_expanded_sentence_pool_batches`
+  - extended the batch-scoped expansion CLI to exclude prior batch manifests deterministically
+  - extended assistive prelabeling to checkpoint progress every `10` rows by default so long runs do not lose completed work
+  - extended the tranche batch builder so later tranches can exclude multiple prior batch CSVs
+- Iteration 2 tranche contract now encoded:
+  - tranche 1 = existing `240`-row bootstrap verification sheet
+  - tranche 2 = `160` rows from the cumulative expanded sentence pool
+  - tranche 3 = `160` rows from the cumulative expanded sentence pool excluding tranche 1 and tranche 2 sentence texts
+- Current truthful manual state:
+  - `data/labels/v1/labeling_batch_v1_filled.csv` still has `0` non-empty canonical `label` values
+  - tranche 1 therefore remains incomplete and correctly blocks downstream merge / IRR work
+- Validation run:
+  - `make format` -> pass
+  - `make lint` -> pass
+  - `make doctor` -> pass
+  - `.venv/bin/pytest -q` -> pending until after roadmap/doc regeneration in this patch
+- Residual note:
+  - the earlier parallel-workflow entry remains in this log as historical evidence, but the active roadmap and current execution model are now tranche-based and linear

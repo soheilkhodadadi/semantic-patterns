@@ -1,4 +1,4 @@
-"""Build the canonical labeling batch for Iteration 1 label ops bootstrap."""
+"""Build a canonical human-labeling batch from a sentence pool and manifest."""
 
 from __future__ import annotations
 
@@ -91,15 +91,20 @@ def _load_heldout_norms(path: str) -> set[str]:
     }
 
 
-def _load_existing_sentence_text_ids(path: str) -> set[str]:
-    frame = pd.read_csv(path)
-    if "sentence_text_id" not in frame.columns:
-        raise ValueError("Existing batch CSV must contain `sentence_text_id`.")
-    return {
-        str(value).strip()
-        for value in frame["sentence_text_id"].fillna("").astype(str)
-        if str(value).strip()
-    }
+def _load_existing_sentence_text_ids(paths: list[str]) -> set[str]:
+    sentence_text_ids: set[str] = set()
+    for path in paths:
+        frame = pd.read_csv(path)
+        if "sentence_text_id" not in frame.columns:
+            raise ValueError("Existing batch CSV must contain `sentence_text_id`.")
+        sentence_text_ids.update(
+            {
+                str(value).strip()
+                for value in frame["sentence_text_id"].fillna("").astype(str)
+                if str(value).strip()
+            }
+        )
+    return sentence_text_ids
 
 
 def _load_candidates(sentences_path: str, manifest_path: str) -> pd.DataFrame:
@@ -338,6 +343,7 @@ def build_labeling_batch(
     max_tokens: int = 120,
     seed: int = 20260306,
     exclude_existing_csv: str = "",
+    exclude_existing_csvs: list[str] | None = None,
 ) -> dict[str, Any]:
     candidates = _load_candidates(sentences_path=sentences_path, manifest_path=manifest_path)
     source_rows = int(len(candidates))
@@ -354,9 +360,12 @@ def build_labeling_batch(
     heldout_overlap_removed = int(overlap_mask.sum())
     clean = clean[~overlap_mask].copy()
 
-    existing_batch_excluded = 0
     if exclude_existing_csv:
-        existing_sentence_text_ids = _load_existing_sentence_text_ids(exclude_existing_csv)
+        exclude_existing_csvs = [exclude_existing_csv, *(exclude_existing_csvs or [])]
+    exclude_existing_csvs = [path for path in (exclude_existing_csvs or []) if path]
+    existing_batch_excluded = 0
+    if exclude_existing_csvs:
+        existing_sentence_text_ids = _load_existing_sentence_text_ids(exclude_existing_csvs)
         existing_mask = clean["sentence_text_id"].astype(str).isin(existing_sentence_text_ids)
         existing_batch_excluded = int(existing_mask.sum())
         clean = clean[~existing_mask].copy()
@@ -448,7 +457,7 @@ def build_labeling_batch(
             "sentences": sentences_path,
             "manifest": manifest_path,
             "held_out": held_out_path,
-            "exclude_existing_csv": exclude_existing_csv,
+            "exclude_existing_csvs": exclude_existing_csvs,
         },
         "parameters": {
             "batch_id": batch_id,
@@ -501,7 +510,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--min-tokens", type=int, default=6)
     parser.add_argument("--max-tokens", type=int, default=120)
     parser.add_argument("--seed", type=int, default=20260306)
-    parser.add_argument("--exclude-existing-csv", default="")
+    parser.add_argument("--exclude-existing-csv", nargs="*", default=[])
     return parser.parse_args()
 
 
@@ -520,7 +529,7 @@ def main() -> int:
         min_tokens=args.min_tokens,
         max_tokens=args.max_tokens,
         seed=args.seed,
-        exclude_existing_csv=args.exclude_existing_csv,
+        exclude_existing_csvs=args.exclude_existing_csv,
     )
     print(
         "[label-ops] "

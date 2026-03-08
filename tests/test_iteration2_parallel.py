@@ -6,8 +6,12 @@ from pathlib import Path
 import pandas as pd
 
 from semantic_ai_washing.data.build_expanded_sentence_pool import build_expanded_sentence_pool
+from semantic_ai_washing.data.combine_expanded_sentence_pool_batches import (
+    combine_expanded_sentence_pool_batches,
+)
 from semantic_ai_washing.director.core.cost import CostController
 from semantic_ai_washing.labeling.assistive_prelabel_batch import generate_assistive_prelabels
+from semantic_ai_washing.labeling.build_labeling_batch import build_labeling_batch
 from semantic_ai_washing.labeling.merge_labeling_batches import merge_labeling_batches
 
 
@@ -169,6 +173,148 @@ def test_build_expanded_sentence_pool_targets_unique_firms(tmp_path):
     assert payload["candidate_pool"]["firm_count"] == 4
 
 
+def test_build_expanded_sentence_pool_excludes_prior_batch_manifests(tmp_path):
+    index_path, source_root, controls, keywords = _make_index_and_source_root(tmp_path)
+    crosswalk = tmp_path / "crosswalk.csv"
+
+    batch1_manifest = tmp_path / "batch1_manifest.csv"
+    batch1_sentences = tmp_path / "batch1_sentences.parquet"
+    batch1_report = tmp_path / "batch1_report.json"
+    build_expanded_sentence_pool(
+        index_path=str(index_path),
+        output_manifest_path=str(batch1_manifest),
+        output_sentences_path=str(batch1_sentences),
+        report_path=str(batch1_report),
+        controls_path=str(controls),
+        crosswalk_path=str(crosswalk),
+        keywords_path=str(keywords),
+        source_root=str(source_root),
+        target_firms=2,
+        min_clean_sentences=2,
+        manifest_id="expansion_batch_01",
+        seed=100,
+    )
+
+    batch2_manifest = tmp_path / "batch2_manifest.csv"
+    batch2_sentences = tmp_path / "batch2_sentences.parquet"
+    batch2_report = tmp_path / "batch2_report.json"
+    payload = build_expanded_sentence_pool(
+        index_path=str(index_path),
+        output_manifest_path=str(batch2_manifest),
+        output_sentences_path=str(batch2_sentences),
+        report_path=str(batch2_report),
+        controls_path=str(controls),
+        crosswalk_path=str(crosswalk),
+        keywords_path=str(keywords),
+        source_root=str(source_root),
+        target_firms=2,
+        min_clean_sentences=2,
+        manifest_id="expansion_batch_02",
+        seed=101,
+        exclude_manifest_paths=[str(batch1_manifest)],
+    )
+
+    batch1_ciks = set(pd.read_csv(batch1_manifest)["cik"].astype(str))
+    batch2_ciks = set(pd.read_csv(batch2_manifest)["cik"].astype(str))
+
+    assert batch1_ciks.isdisjoint(batch2_ciks)
+    assert payload["manifest"]["excluded_prior_firm_count"] == 2
+    assert payload["selection"]["excluded_prior_firms"] == 2
+
+
+def test_combine_expanded_sentence_pool_batches_writes_cumulative_outputs(tmp_path):
+    batch1_manifest = _write_csv(
+        tmp_path / "batch1_manifest.csv",
+        [
+            {
+                "manifest_id": "batch1",
+                "manifest_row_id": "m1",
+                "cik": "1001",
+                "quarter": 1,
+                "filename": "f1.txt",
+                "path": "2024/QTR1/f1.txt",
+                "industry_metadata_source": "controls",
+            }
+        ],
+    )
+    batch2_manifest = _write_csv(
+        tmp_path / "batch2_manifest.csv",
+        [
+            {
+                "manifest_id": "batch2",
+                "manifest_row_id": "m2",
+                "cik": "1002",
+                "quarter": 2,
+                "filename": "f2.txt",
+                "path": "2024/QTR2/f2.txt",
+                "industry_metadata_source": "unknown",
+            }
+        ],
+    )
+    batch1_sentences = tmp_path / "batch1_sentences.parquet"
+    pd.DataFrame(
+        [
+            {
+                "sentence_id": "s1",
+                "sentence_text_id": "t1",
+                "sentence": "AI improves current workflows.",
+                "sentence_norm": "ai improves current workflows",
+                "source_file": "2024/QTR1/f1.txt",
+                "source_year": 2024,
+                "source_quarter": 1,
+                "source_form": "10-K",
+                "source_cik": "1001",
+                "sentence_index": 1,
+                "manifest_id": "batch1",
+                "source_window_id": "active_2021_2024",
+                "token_count": 4,
+                "fragment_score": 0.0,
+                "integrity_flags": "",
+            }
+        ]
+    ).to_parquet(batch1_sentences, index=False)
+    batch2_sentences = tmp_path / "batch2_sentences.parquet"
+    pd.DataFrame(
+        [
+            {
+                "sentence_id": "s2",
+                "sentence_text_id": "t2",
+                "sentence": "Machine learning supports current planning.",
+                "sentence_norm": "machine learning supports current planning",
+                "source_file": "2024/QTR2/f2.txt",
+                "source_year": 2024,
+                "source_quarter": 2,
+                "source_form": "10-K",
+                "source_cik": "1002",
+                "sentence_index": 1,
+                "manifest_id": "batch2",
+                "source_window_id": "active_2021_2024",
+                "token_count": 5,
+                "fragment_score": 0.0,
+                "integrity_flags": "",
+            }
+        ]
+    ).to_parquet(batch2_sentences, index=False)
+
+    output_manifest = tmp_path / "combined_manifest.csv"
+    output_sentences = tmp_path / "combined_sentences.parquet"
+    report_path = tmp_path / "combined_report.json"
+    report = combine_expanded_sentence_pool_batches(
+        manifest_paths=[str(batch1_manifest), str(batch2_manifest)],
+        sentence_paths=[str(batch1_sentences), str(batch2_sentences)],
+        output_manifest_path=str(output_manifest),
+        output_sentences_path=str(output_sentences),
+        report_path=str(report_path),
+    )
+
+    assert output_manifest.exists()
+    assert output_sentences.exists()
+    assert report["candidate_pool"]["firm_count"] == 2
+    assert report["candidate_pool"]["clean_sentence_count"] == 2
+    assert report["quality"]["duplicate_firm_count"] == 0
+    assert report["quality"]["post_combine_duplicate_sentence_text_count"] == 0
+
+
 def test_generate_assistive_prelabels_keeps_canonical_label_blank(monkeypatch, tmp_path):
     input_csv = _write_csv(
         tmp_path / "labeling_batch.csv",
@@ -247,6 +393,214 @@ def test_generate_assistive_prelabels_keeps_canonical_label_blank(monkeypatch, t
     assert pd.isna(output.loc[1, "assistive_label"]) or output.loc[1, "assistive_label"] == ""
     assert report["usage"]["request_count"] == 1
     assert usage_file.exists()
+
+
+def test_generate_assistive_prelabels_flushes_checkpoint_progress(monkeypatch, tmp_path):
+    input_csv = _write_csv(
+        tmp_path / "labeling_batch.csv",
+        [
+            {
+                "sentence_id": "s1",
+                "sentence": "We use artificial intelligence in operations today.",
+                "source_file": "2024/QTR1/f1.txt",
+                "sentence_index": 1,
+                "label": "",
+            },
+            {
+                "sentence_id": "s2",
+                "sentence": "We currently use machine learning in underwriting.",
+                "source_file": "2024/QTR2/f2.txt",
+                "sentence_index": 2,
+                "label": "",
+            },
+        ],
+    )
+    output_csv = tmp_path / "labeling_batch_prelabeled.csv"
+    report_path = tmp_path / "assistive_prelabel_summary.json"
+    usage_file = tmp_path / "cost_usage.jsonl"
+
+    call_count = {"value": 0}
+
+    def _fake_call_responses_api(**_: object) -> dict[str, object]:
+        call_count["value"] += 1
+        if call_count["value"] == 2:
+            raise OpenAIResponsesHTTPError(500, "boom", "")
+        return {"usage": {"input_tokens": 12, "output_tokens": 8, "total_tokens": 20}}
+
+    def _fake_extract_response_text(_: dict[str, object]) -> str:
+        return json.dumps(
+            {
+                "label": "Actionable",
+                "confidence": "high",
+                "rationale": "Current operational use is explicit.",
+                "assistive_only": True,
+            }
+        )
+
+    def _fake_cost_controller(_: str):
+        controller = CostController(
+            policy={},
+            usage_file=usage_file,
+            cache_dir=tmp_path / "cache",
+        )
+        return controller, {}
+
+    from semantic_ai_washing.director.core.openai_responses import OpenAIResponsesHTTPError
+
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    monkeypatch.setattr(
+        "semantic_ai_washing.labeling.assistive_prelabel_batch.call_responses_api",
+        _fake_call_responses_api,
+    )
+    monkeypatch.setattr(
+        "semantic_ai_washing.labeling.assistive_prelabel_batch.extract_response_text",
+        _fake_extract_response_text,
+    )
+    monkeypatch.setattr(
+        "semantic_ai_washing.labeling.assistive_prelabel_batch._build_cost_controller",
+        _fake_cost_controller,
+    )
+
+    report, exit_code = generate_assistive_prelabels(
+        input_csv=str(input_csv),
+        output_csv=str(output_csv),
+        report_path=str(report_path),
+        policy_path="director/config/api_assistive_policy.yaml",
+        mode="live",
+        checkpoint_every=1,
+    )
+
+    output = pd.read_csv(output_csv)
+
+    assert exit_code == 1
+    assert report["status"] == "request_failed"
+    assert output.loc[0, "assistive_label"] == "Actionable"
+    assert output.loc[1, "assistive_label"] in ("", None) or pd.isna(
+        output.loc[1, "assistive_label"]
+    )
+    assert report["counts"]["processed_rows"] == 1
+
+
+def test_build_labeling_batch_excludes_multiple_prior_batches(tmp_path):
+    sentences_path = tmp_path / "sentences.parquet"
+    manifest_path = tmp_path / "manifest.csv"
+    held_out_path = _write_csv(
+        tmp_path / "held_out.csv",
+        [{"sentence": "held out sentence"}],
+    )
+    pd.DataFrame(
+        [
+            {
+                "sentence_id": "s1",
+                "sentence_text_id": "t1",
+                "sentence": "We use AI in operations.",
+                "sentence_norm": "we use ai in operations",
+                "source_file": "2024/QTR1/f1.txt",
+                "source_year": 2024,
+                "source_quarter": 1,
+                "source_form": "10-K",
+                "source_cik": "1001",
+                "sentence_index": 1,
+                "manifest_id": "m1",
+                "source_window_id": "active_2021_2024",
+                "token_count": 6,
+                "fragment_score": 0.0,
+                "integrity_flags": "",
+            },
+            {
+                "sentence_id": "s2",
+                "sentence_text_id": "t2",
+                "sentence": "AI supports underwriting decisions.",
+                "sentence_norm": "ai supports underwriting decisions",
+                "source_file": "2024/QTR2/f2.txt",
+                "source_year": 2024,
+                "source_quarter": 2,
+                "source_form": "10-K",
+                "source_cik": "1002",
+                "sentence_index": 1,
+                "manifest_id": "m2",
+                "source_window_id": "active_2021_2024",
+                "token_count": 6,
+                "fragment_score": 0.0,
+                "integrity_flags": "",
+            },
+            {
+                "sentence_id": "s3",
+                "sentence_text_id": "t3",
+                "sentence": "AI improves planning processes.",
+                "sentence_norm": "ai improves planning processes",
+                "source_file": "2024/QTR3/f3.txt",
+                "source_year": 2024,
+                "source_quarter": 3,
+                "source_form": "10-K",
+                "source_cik": "1003",
+                "sentence_index": 1,
+                "manifest_id": "m3",
+                "source_window_id": "active_2021_2024",
+                "token_count": 6,
+                "fragment_score": 0.0,
+                "integrity_flags": "",
+            },
+        ]
+    ).to_parquet(sentences_path, index=False)
+    _write_csv(
+        manifest_path,
+        [
+            {
+                "path": "2024/QTR1/f1.txt",
+                "manifest_id": "m1",
+                "manifest_row_id": "mr1",
+                "selection_reason": "seed",
+                "sic": 3571,
+                "ff12_code": 6,
+                "ff12_name": "Business Equipment",
+                "industry_metadata_source": "controls",
+            },
+            {
+                "path": "2024/QTR2/f2.txt",
+                "manifest_id": "m2",
+                "manifest_row_id": "mr2",
+                "selection_reason": "seed",
+                "sic": 3571,
+                "ff12_code": 6,
+                "ff12_name": "Business Equipment",
+                "industry_metadata_source": "controls",
+            },
+            {
+                "path": "2024/QTR3/f3.txt",
+                "manifest_id": "m3",
+                "manifest_row_id": "mr3",
+                "selection_reason": "seed",
+                "sic": 3571,
+                "ff12_code": 6,
+                "ff12_name": "Business Equipment",
+                "industry_metadata_source": "controls",
+            },
+        ],
+    )
+    tranche1 = _write_csv(tmp_path / "tranche1.csv", [{"sentence_text_id": "t1"}])
+    tranche2 = _write_csv(tmp_path / "tranche2.csv", [{"sentence_text_id": "t2"}])
+    output_parquet = tmp_path / "batch.parquet"
+    output_csv = tmp_path / "batch.csv"
+    report_path = tmp_path / "batch_summary.json"
+
+    summary = build_labeling_batch(
+        sentences_path=str(sentences_path),
+        manifest_path=str(manifest_path),
+        held_out_path=str(held_out_path),
+        output_parquet_path=str(output_parquet),
+        output_csv_path=str(output_csv),
+        report_path=str(report_path),
+        batch_id="batch",
+        target_size=1,
+        base_quarter_quota=1,
+        exclude_existing_csvs=[str(tranche1), str(tranche2)],
+    )
+
+    output = pd.read_csv(output_csv)
+
+    assert output["sentence_text_id"].tolist() == ["t3"]
+    assert summary["candidate_stats"]["existing_batch_excluded"] == 2
 
 
 def test_merge_labeling_batches_writes_master_outputs(tmp_path):

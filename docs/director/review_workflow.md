@@ -60,9 +60,14 @@ Stakeholder alignment is part of the review boundary, not a separate side proces
   - if kickoff already passed, continue to the next substantive phase
   - if kickoff has not passed, run kickoff first
 
-## Iteration 2 Parallel Execution Note
-- Iteration 2 is intentionally split into parallel tracks:
-  - tranche-1 human verification of `labeling_batch_v1`
-  - expanded sentence-pool buildout and later tranche preparation
-- Reviews should explicitly report whether both tracks are advancing truthfully.
+## Iteration 2 Tranche Execution Note
+- Iteration 2 is intentionally linear and batch-based:
+  - tranche 1 human verification of `labeling_batch_v1`
+  - four resumable expansion batches to build the 2024 candidate pool
+  - tranche 2 and tranche 3 human-verification batches from the cumulative expanded pool
+- Reviews should explicitly report whether the workflow is still moving toward:
+  - `>=500` firms
+  - `>=1000` clean AI sentences
+  - `>=500` adjudicated labels
+  - `>=80` labels per class
 - Assistive prelabels are allowed as operational aids, but review must continue to treat human-verified labels as the only canonical labeling source.

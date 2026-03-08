@@ -104,7 +104,8 @@ stakeholder_alignment:
     - email thread 2025-09-08
     mapped_phases:
     - iteration2/sentence-pool-expansion-2024
-    - iteration2/dataset-expansion-2024
+    - iteration2/tranche2-labeling
+    - iteration2/tranche3-labeling
     mapped_gates:
     - candidate_pool_500_firms
     - candidate_pool_clean_sentences_gte_1000
@@ -118,7 +119,10 @@ stakeholder_alignment:
     - email thread 2025-08-27
     - email thread 2025-09-08
     mapped_phases:
-    - iteration2/dataset-expansion-2024
+    - iteration2/tranche1-labeling
+    - iteration2/tranche2-labeling
+    - iteration2/tranche3-labeling
+    - iteration2/merge-canonical-labels
     - iteration2/irr-and-adjudication
     - iteration2/label-sufficiency-gate
     mapped_gates:
@@ -257,8 +261,10 @@ policies:
   enforcement: hard
   targets:
   - iteration1/rubric-and-api-bootstrap
-  - iteration2/dataset-expansion-2024
-  - iteration3/classifier-calibration
+  - iteration2/tranche1-labeling
+  - iteration2/tranche2-labeling
+  - iteration2/tranche3-labeling
+  - iteration3/classifier-calibration-and-heldout-eval
   value: assistive_only
 - policy_id: no_significance_optimization
   kind: analysis_governance
@@ -281,7 +287,9 @@ policies:
   enforcement: hard
   targets:
   - iteration1/label-ops-bootstrap
-  - iteration2/dataset-expansion-2024
+  - iteration2/tranche1-labeling
+  - iteration2/tranche2-labeling
+  - iteration2/tranche3-labeling
   value: true
 - policy_id: sentence_quality_gate_before_irr
   kind: data_governance
@@ -1416,163 +1424,29 @@ iterations:
       tags:
       - kickoff
       gate_class: ops
-  - phase_id: iteration2/sentence-pool-expansion-2024
-    title: Sentence Pool Expansion 2024
-    goal: Expand beyond the 240-row bootstrap batch to a 500-firm, 1-2k clean AI sentence
-      candidate pool using the external 2024 filing window.
+  - phase_id: iteration2/tranche1-labeling
+    title: Tranche 1 Labeling
+    goal: Complete the existing 240-row bootstrap batch as tranche 1 with assistive-only
+      prelabels and human-canonical verification.
     lifecycle_state: planned
     canonical: true
     depends_on:
     - iteration2/kickoff-and-preflight
     required_artifacts:
-    - data/manifests/filings/expansion_2024_500_firms_v1.csv
-    - data/processed/sentences/year=2024/expanded_ai_sentences.parquet
-    - reports/labels/sentence_pool_expansion_2024_summary.json
+    - data/labels/v1/labeling_batch_v1_prelabeled.csv
+    - reports/labels/assistive_prelabel_tranche1_summary.json
+    - data/labels/v1/labeling_batch_v1_filled.csv
     source_window_id: active_2021_2024
     tags:
-    - sentence_pool
-    - scale
-    - stakeholder_alignment
-    tasks:
-    - task_id: iteration2.pool.expand_candidate_pool
-      title: Expand candidate pool to stakeholder scale
-      description: Build the expanded 2024 filing manifest and clean AI sentence pool
-        from the external SEC corpus until the stakeholder scale target is met.
-      iteration_id: '2'
-      phase_id: iteration2/sentence-pool-expansion-2024
-      kind: build
-      depends_on: []
-      inputs:
-      - artifact_id: source_index
-        path: data/metadata/available_filings_index.csv
-        kind: csv
-        required: true
-      - artifact_id: pilot_sentence_table
-        path: data/processed/sentences/year=2024/ai_sentences.parquet
-        kind: parquet
-        required: true
-      outputs:
-      - artifact_id: expansion_manifest
-        path: data/manifests/filings/expansion_2024_500_firms_v1.csv
-        kind: csv
-        required: true
-      - artifact_id: expanded_sentence_table
-        path: data/processed/sentences/year=2024/expanded_ai_sentences.parquet
-        kind: parquet
-        required: true
-      - artifact_id: expansion_summary
-        path: reports/labels/sentence_pool_expansion_2024_summary.json
-        kind: json
-        required: true
-      preconditions:
-      - condition_id: source_index_exists
-        kind: artifact_exists
-        target: data/metadata/available_filings_index.csv
-        operator: ==
-        expected: true
-        on_fail: block
-        message: Canonical filing index must exist before scaling the candidate pool.
-        reroute_to: []
-      quality_checks: []
-      commands:
-      - .venv/bin/python -m semantic_ai_washing.data.build_expanded_sentence_pool
-        --index data/metadata/available_filings_index.csv --output-manifest data/manifests/filings/expansion_2024_500_firms_v1.csv
-        --output-sentences data/processed/sentences/year=2024/expanded_ai_sentences.parquet
-        --report reports/labels/sentence_pool_expansion_2024_summary.json --controls
-        data/interim/controls/controls_by_firm_year.csv --crosswalk data/externals/crosswalks/cik_gvkey.csv
-        --year 2024 --form 10-K --target-firms 500 --min-clean-sentences 1000 --min-tokens
-        6 --max-tokens 120 --manifest-id expansion_2024_500_firms_v1 --seed 20260307
-      manual_handoff: false
-      risks:
-      - R2
-      - R5
-      estimated_effort: 8
-      risk_reduction: 10
-      automation_level: full
-      on_fail: block
-      reroute_to: []
-      evidence_required: true
-      tags:
-      - sentence_pool
-      - scale
-      gate_class: data
-    - task_id: iteration2.pool.verify_candidate_pool_targets
-      title: Verify sentence-pool targets
-      description: Confirm the expanded 2024 candidate pool reaches the firm and sentence
-        targets required for stakeholder-aligned label expansion.
-      iteration_id: '2'
-      phase_id: iteration2/sentence-pool-expansion-2024
-      kind: validation
-      depends_on:
-      - iteration2.pool.expand_candidate_pool
-      inputs:
-      - artifact_id: expansion_summary
-        path: reports/labels/sentence_pool_expansion_2024_summary.json
-        kind: json
-        required: true
-      outputs: []
-      preconditions:
-      - condition_id: expansion_summary_exists
-        kind: artifact_exists
-        target: reports/labels/sentence_pool_expansion_2024_summary.json
-        operator: ==
-        expected: true
-        on_fail: block
-        message: Sentence-pool expansion summary is required before target checks.
-        reroute_to: []
-      quality_checks:
-      - condition_id: candidate_pool_500_firms
-        kind: json_field_compare
-        target: reports/labels/sentence_pool_expansion_2024_summary.json::candidate_pool.firm_count
-        operator: '>='
-        expected: 500
-        on_fail: block
-        message: Expanded sentence pool must cover at least 500 firms.
-        reroute_to: []
-      - condition_id: candidate_pool_clean_sentences_gte_1000
-        kind: json_field_compare
-        target: reports/labels/sentence_pool_expansion_2024_summary.json::candidate_pool.clean_sentence_count
-        operator: '>='
-        expected: 1000
-        on_fail: block
-        message: Expanded sentence pool must contain at least 1,000 clean AI sentences.
-        reroute_to: []
-      commands: []
-      manual_handoff: false
-      risks:
-      - R2
-      estimated_effort: 2
-      risk_reduction: 9
-      automation_level: partial
-      on_fail: block
-      reroute_to: []
-      evidence_required: true
-      tags:
-      - sentence_pool_gate
-      gate_class: data
-  - phase_id: iteration2/dataset-expansion-2024
-    title: Dataset Expansion 2024
-    goal: Produce the expanded human-labeled dataset from the scaled 2024 sentence
-      pool while keeping API use assistive only.
-    lifecycle_state: planned
-    canonical: true
-    depends_on:
-    - iteration2/kickoff-and-preflight
-    required_artifacts:
-    - data/labels/v1/labels_master.parquet
-    - data/labels/v1/labels_master_review.csv
-    - reports/labels/label_expansion_summary.json
-    source_window_id: active_2021_2024
-    tags:
-    - label_expansion
-    - assistive_api
+    - tranche1
+    - human_labeling
     tasks:
     - task_id: iteration2.labels.generate_tranche1_assistive_prelabels
       title: Generate tranche 1 assistive prelabels
       description: Add assistive-only prelabels to the 240-row tranche 1 review CSV
         without mutating canonical label columns.
       iteration_id: '2'
-      phase_id: iteration2/dataset-expansion-2024
+      phase_id: iteration2/tranche1-labeling
       kind: build
       depends_on: []
       inputs:
@@ -1623,7 +1497,7 @@ iterations:
       - .venv/bin/python -m semantic_ai_washing.labeling.assistive_prelabel_batch
         --input-csv data/labels/v1/labeling_batch_v1.csv --output-csv data/labels/v1/labeling_batch_v1_prelabeled.csv
         --report reports/labels/assistive_prelabel_tranche1_summary.json --policy
-        director/config/api_assistive_policy.yaml --mode live
+        director/config/api_assistive_policy.yaml --mode live --checkpoint-every 10
       manual_handoff: false
       risks:
       - R1
@@ -1644,7 +1518,7 @@ iterations:
       description: Human-review the tranche 1 prelabels and finalize canonical label,
         uncertainty, and note fields.
       iteration_id: '2'
-      phase_id: iteration2/dataset-expansion-2024
+      phase_id: iteration2/tranche1-labeling
       kind: manual
       depends_on:
       - iteration2.labels.generate_tranche1_assistive_prelabels
@@ -1691,12 +1565,406 @@ iterations:
       - human_labeling
       - tranche1
       gate_class: manual
-    - task_id: iteration2.labels.prepare_expanded_labeling_batches
-      title: Prepare expanded labeling tranche
-      description: Build the next human-review-ready tranche from the expanded sentence
-        pool while excluding tranche 1 sentence texts.
+  - phase_id: iteration2/sentence-pool-expansion-2024
+    title: Sentence Pool Expansion 2024
+    goal: Expand beyond tranche 1 into 4 resumable 125-firm batches, then combine
+      them into a cumulative 500-firm, 1-2k clean AI sentence pool.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration2/tranche1-labeling
+    required_artifacts:
+    - data/manifests/filings/expansion_2024_500_firms_v1.csv
+    - data/processed/sentences/year=2024/expanded_ai_sentences.parquet
+    - reports/labels/sentence_pool_expansion_2024_summary.json
+    source_window_id: active_2021_2024
+    tags:
+    - sentence_pool
+    - scale
+    - stakeholder_alignment
+    tasks:
+    - task_id: iteration2.pool.expand_candidate_pool_batch_01
+      title: Expand candidate pool batch 01
+      description: Build expansion batch 01 with 125 new firms and at least 200 clean
+        AI sentences from the external 2024 filing window.
       iteration_id: '2'
-      phase_id: iteration2/dataset-expansion-2024
+      phase_id: iteration2/sentence-pool-expansion-2024
+      kind: build
+      depends_on: []
+      inputs:
+      - artifact_id: source_index
+        path: data/metadata/available_filings_index.csv
+        kind: csv
+        required: true
+      outputs:
+      - artifact_id: expansion_manifest_batch_01
+        path: data/manifests/filings/expansion_2024_batch_01.csv
+        kind: csv
+        required: true
+      - artifact_id: expanded_sentence_table_batch_01
+        path: data/processed/sentences/year=2024/expanded_ai_sentences_batch_01.parquet
+        kind: parquet
+        required: true
+      - artifact_id: expansion_summary_batch_01
+        path: reports/labels/sentence_pool_expansion_2024_batch_01_summary.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: source_index_exists
+        kind: artifact_exists
+        target: data/metadata/available_filings_index.csv
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Canonical filing index must exist before scaling the candidate pool.
+        reroute_to: []
+      quality_checks: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.data.build_expanded_sentence_pool
+        --index data/metadata/available_filings_index.csv --output-manifest data/manifests/filings/expansion_2024_batch_01.csv
+        --output-sentences data/processed/sentences/year=2024/expanded_ai_sentences_batch_01.parquet
+        --report reports/labels/sentence_pool_expansion_2024_batch_01_summary.json
+        --controls data/interim/controls/controls_by_firm_year.csv --crosswalk data/externals/crosswalks/cik_gvkey.csv
+        --year 2024 --form 10-K --target-firms 125 --min-clean-sentences 200 --min-tokens
+        6 --max-tokens 120 --manifest-id expansion_2024_batch_01 --seed 20260307
+      manual_handoff: false
+      risks:
+      - R2
+      - R5
+      estimated_effort: 5
+      risk_reduction: 9
+      automation_level: full
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - sentence_pool
+      - scale
+      - batch_01
+      gate_class: data
+    - task_id: iteration2.pool.expand_candidate_pool_batch_02
+      title: Expand candidate pool batch 02
+      description: Build expansion batch 02 with 125 new firms and at least 200 clean
+        AI sentences from the external 2024 filing window.
+      iteration_id: '2'
+      phase_id: iteration2/sentence-pool-expansion-2024
+      kind: build
+      depends_on:
+      - iteration2.pool.expand_candidate_pool_batch_01
+      inputs:
+      - artifact_id: source_index
+        path: data/metadata/available_filings_index.csv
+        kind: csv
+        required: true
+      outputs:
+      - artifact_id: expansion_manifest_batch_02
+        path: data/manifests/filings/expansion_2024_batch_02.csv
+        kind: csv
+        required: true
+      - artifact_id: expanded_sentence_table_batch_02
+        path: data/processed/sentences/year=2024/expanded_ai_sentences_batch_02.parquet
+        kind: parquet
+        required: true
+      - artifact_id: expansion_summary_batch_02
+        path: reports/labels/sentence_pool_expansion_2024_batch_02_summary.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: expansion_manifest_batch_01_exists
+        kind: artifact_exists
+        target: data/manifests/filings/expansion_2024_batch_01.csv
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Expansion batch 01 manifest is required before batch 02.
+        reroute_to: []
+      quality_checks: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.data.build_expanded_sentence_pool
+        --index data/metadata/available_filings_index.csv --output-manifest data/manifests/filings/expansion_2024_batch_02.csv
+        --output-sentences data/processed/sentences/year=2024/expanded_ai_sentences_batch_02.parquet
+        --report reports/labels/sentence_pool_expansion_2024_batch_02_summary.json
+        --controls data/interim/controls/controls_by_firm_year.csv --crosswalk data/externals/crosswalks/cik_gvkey.csv
+        --year 2024 --form 10-K --target-firms 125 --min-clean-sentences 200 --min-tokens
+        6 --max-tokens 120 --manifest-id expansion_2024_batch_02 --seed 20260308 --exclude-manifests
+        data/manifests/filings/expansion_2024_batch_01.csv
+      manual_handoff: false
+      risks:
+      - R2
+      - R5
+      estimated_effort: 5
+      risk_reduction: 9
+      automation_level: full
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - sentence_pool
+      - scale
+      - batch_02
+      gate_class: data
+    - task_id: iteration2.pool.expand_candidate_pool_batch_03
+      title: Expand candidate pool batch 03
+      description: Build expansion batch 03 with 125 new firms and at least 200 clean
+        AI sentences from the external 2024 filing window.
+      iteration_id: '2'
+      phase_id: iteration2/sentence-pool-expansion-2024
+      kind: build
+      depends_on:
+      - iteration2.pool.expand_candidate_pool_batch_02
+      inputs:
+      - artifact_id: source_index
+        path: data/metadata/available_filings_index.csv
+        kind: csv
+        required: true
+      outputs:
+      - artifact_id: expansion_manifest_batch_03
+        path: data/manifests/filings/expansion_2024_batch_03.csv
+        kind: csv
+        required: true
+      - artifact_id: expanded_sentence_table_batch_03
+        path: data/processed/sentences/year=2024/expanded_ai_sentences_batch_03.parquet
+        kind: parquet
+        required: true
+      - artifact_id: expansion_summary_batch_03
+        path: reports/labels/sentence_pool_expansion_2024_batch_03_summary.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: expansion_manifest_batch_02_exists
+        kind: artifact_exists
+        target: data/manifests/filings/expansion_2024_batch_02.csv
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Expansion batch 02 manifest is required before batch 03.
+        reroute_to: []
+      quality_checks: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.data.build_expanded_sentence_pool
+        --index data/metadata/available_filings_index.csv --output-manifest data/manifests/filings/expansion_2024_batch_03.csv
+        --output-sentences data/processed/sentences/year=2024/expanded_ai_sentences_batch_03.parquet
+        --report reports/labels/sentence_pool_expansion_2024_batch_03_summary.json
+        --controls data/interim/controls/controls_by_firm_year.csv --crosswalk data/externals/crosswalks/cik_gvkey.csv
+        --year 2024 --form 10-K --target-firms 125 --min-clean-sentences 200 --min-tokens
+        6 --max-tokens 120 --manifest-id expansion_2024_batch_03 --seed 20260309 --exclude-manifests
+        data/manifests/filings/expansion_2024_batch_01.csv data/manifests/filings/expansion_2024_batch_02.csv
+      manual_handoff: false
+      risks:
+      - R2
+      - R5
+      estimated_effort: 5
+      risk_reduction: 9
+      automation_level: full
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - sentence_pool
+      - scale
+      - batch_03
+      gate_class: data
+    - task_id: iteration2.pool.expand_candidate_pool_batch_04
+      title: Expand candidate pool batch 04
+      description: Build expansion batch 04 with 125 new firms and at least 200 clean
+        AI sentences from the external 2024 filing window.
+      iteration_id: '2'
+      phase_id: iteration2/sentence-pool-expansion-2024
+      kind: build
+      depends_on:
+      - iteration2.pool.expand_candidate_pool_batch_03
+      inputs:
+      - artifact_id: source_index
+        path: data/metadata/available_filings_index.csv
+        kind: csv
+        required: true
+      outputs:
+      - artifact_id: expansion_manifest_batch_04
+        path: data/manifests/filings/expansion_2024_batch_04.csv
+        kind: csv
+        required: true
+      - artifact_id: expanded_sentence_table_batch_04
+        path: data/processed/sentences/year=2024/expanded_ai_sentences_batch_04.parquet
+        kind: parquet
+        required: true
+      - artifact_id: expansion_summary_batch_04
+        path: reports/labels/sentence_pool_expansion_2024_batch_04_summary.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: expansion_manifest_batch_03_exists
+        kind: artifact_exists
+        target: data/manifests/filings/expansion_2024_batch_03.csv
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Expansion batch 03 manifest is required before batch 04.
+        reroute_to: []
+      quality_checks: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.data.build_expanded_sentence_pool
+        --index data/metadata/available_filings_index.csv --output-manifest data/manifests/filings/expansion_2024_batch_04.csv
+        --output-sentences data/processed/sentences/year=2024/expanded_ai_sentences_batch_04.parquet
+        --report reports/labels/sentence_pool_expansion_2024_batch_04_summary.json
+        --controls data/interim/controls/controls_by_firm_year.csv --crosswalk data/externals/crosswalks/cik_gvkey.csv
+        --year 2024 --form 10-K --target-firms 125 --min-clean-sentences 200 --min-tokens
+        6 --max-tokens 120 --manifest-id expansion_2024_batch_04 --seed 20260310 --exclude-manifests
+        data/manifests/filings/expansion_2024_batch_01.csv data/manifests/filings/expansion_2024_batch_02.csv
+        data/manifests/filings/expansion_2024_batch_03.csv
+      manual_handoff: false
+      risks:
+      - R2
+      - R5
+      estimated_effort: 5
+      risk_reduction: 9
+      automation_level: full
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - sentence_pool
+      - scale
+      - batch_04
+      gate_class: data
+    - task_id: iteration2.pool.combine_candidate_pool_batches
+      title: Combine candidate pool batches
+      description: Combine the 4 batch-scoped expansion artifacts into the cumulative
+        500-firm sentence pool outputs.
+      iteration_id: '2'
+      phase_id: iteration2/sentence-pool-expansion-2024
+      kind: build
+      depends_on:
+      - iteration2.pool.expand_candidate_pool_batch_04
+      inputs: []
+      outputs:
+      - artifact_id: expansion_manifest
+        path: data/manifests/filings/expansion_2024_500_firms_v1.csv
+        kind: csv
+        required: true
+      - artifact_id: expanded_sentence_table
+        path: data/processed/sentences/year=2024/expanded_ai_sentences.parquet
+        kind: parquet
+        required: true
+      - artifact_id: expansion_summary
+        path: reports/labels/sentence_pool_expansion_2024_summary.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: expansion_manifest_batch_04_exists
+        kind: artifact_exists
+        target: data/manifests/filings/expansion_2024_batch_04.csv
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Expansion batch 04 must complete before batch combination.
+        reroute_to: []
+      quality_checks: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.data.combine_expanded_sentence_pool_batches
+        --manifests data/manifests/filings/expansion_2024_batch_01.csv data/manifests/filings/expansion_2024_batch_02.csv
+        data/manifests/filings/expansion_2024_batch_03.csv data/manifests/filings/expansion_2024_batch_04.csv
+        --sentences data/processed/sentences/year=2024/expanded_ai_sentences_batch_01.parquet
+        data/processed/sentences/year=2024/expanded_ai_sentences_batch_02.parquet
+        data/processed/sentences/year=2024/expanded_ai_sentences_batch_03.parquet
+        data/processed/sentences/year=2024/expanded_ai_sentences_batch_04.parquet
+        --output-manifest data/manifests/filings/expansion_2024_500_firms_v1.csv --output-sentences
+        data/processed/sentences/year=2024/expanded_ai_sentences.parquet --report
+        reports/labels/sentence_pool_expansion_2024_summary.json
+      manual_handoff: false
+      risks:
+      - R2
+      - R5
+      estimated_effort: 3
+      risk_reduction: 9
+      automation_level: full
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - sentence_pool
+      - scale
+      - combine
+      gate_class: data
+    - task_id: iteration2.pool.verify_candidate_pool_targets
+      title: Verify sentence-pool targets
+      description: Confirm the cumulative expanded 2024 candidate pool reaches the
+        stakeholder firm and sentence targets.
+      iteration_id: '2'
+      phase_id: iteration2/sentence-pool-expansion-2024
+      kind: validation
+      depends_on:
+      - iteration2.pool.combine_candidate_pool_batches
+      inputs:
+      - artifact_id: expansion_summary
+        path: reports/labels/sentence_pool_expansion_2024_summary.json
+        kind: json
+        required: true
+      outputs: []
+      preconditions:
+      - condition_id: expansion_summary_exists
+        kind: artifact_exists
+        target: reports/labels/sentence_pool_expansion_2024_summary.json
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Sentence-pool expansion summary is required before target checks.
+        reroute_to: []
+      quality_checks:
+      - condition_id: candidate_pool_500_firms
+        kind: json_field_compare
+        target: reports/labels/sentence_pool_expansion_2024_summary.json::candidate_pool.firm_count
+        operator: '>='
+        expected: 500
+        on_fail: block
+        message: Expanded sentence pool must cover at least 500 firms.
+        reroute_to: []
+      - condition_id: candidate_pool_clean_sentences_gte_1000
+        kind: json_field_compare
+        target: reports/labels/sentence_pool_expansion_2024_summary.json::candidate_pool.clean_sentence_count
+        operator: '>='
+        expected: 1000
+        on_fail: block
+        message: Expanded sentence pool must contain at least 1,000 clean AI sentences.
+        reroute_to: []
+      commands: []
+      manual_handoff: false
+      risks:
+      - R2
+      estimated_effort: 2
+      risk_reduction: 9
+      automation_level: partial
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - sentence_pool_gate
+      gate_class: data
+  - phase_id: iteration2/tranche2-labeling
+    title: Tranche 2 Labeling
+    goal: Build, prelabel, and verify the first 160-row expanded tranche from the
+      cumulative expanded sentence pool.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration2/sentence-pool-expansion-2024
+    required_artifacts:
+    - data/labels/v1/labeling_batch_v2.parquet
+    - data/labels/v1/labeling_batch_v2.csv
+    - reports/labels/labeling_batch_v2_summary.json
+    - data/labels/v1/labeling_batch_v2_prelabeled.csv
+    - reports/labels/assistive_prelabel_tranche2_summary.json
+    - data/labels/v1/labeling_batch_v2_filled.csv
+    source_window_id: active_2021_2024
+    tags:
+    - tranche2
+    - human_labeling
+    tasks:
+    - task_id: iteration2.labels.prepare_tranche2_labeling_batch
+      title: Prepare tranche 2 labeling batch
+      description: Build the next 160-row human-review tranche from the cumulative
+        expanded sentence pool while excluding tranche 1 sentence texts.
+      iteration_id: '2'
+      phase_id: iteration2/tranche2-labeling
       kind: build
       depends_on:
       - iteration2.pool.verify_candidate_pool_targets
@@ -1739,10 +2007,10 @@ iterations:
       - condition_id: tranche2_batch_count
         kind: json_field_compare
         target: reports/labels/labeling_batch_v2_summary.json::selection.batch_row_count
-        operator: '>='
-        expected: 320
+        operator: ==
+        expected: 160
         on_fail: block
-        message: Expanded labeling tranche must contain at least 320 rows.
+        message: Tranche 2 must contain exactly 160 rows.
         reroute_to: []
       - condition_id: tranche2_heldout_zero
         kind: json_field_compare
@@ -1758,8 +2026,8 @@ iterations:
         data/manifests/filings/expansion_2024_500_firms_v1.csv --held-out data/validation/held_out_sentences.csv
         --output-parquet data/labels/v1/labeling_batch_v2.parquet --output-csv data/labels/v1/labeling_batch_v2.csv
         --report reports/labels/labeling_batch_v2_summary.json --batch-id labeling_batch_v2
-        --target-size 320 --base-quarter-quota 80 --min-tokens 6 --max-tokens 120
-        --seed 20260308 --exclude-existing-csv data/labels/v1/labeling_batch_v1.csv
+        --target-size 160 --base-quarter-quota 40 --min-tokens 6 --max-tokens 120
+        --seed 20260311 --exclude-existing-csv data/labels/v1/labeling_batch_v1.csv
       manual_handoff: false
       risks:
       - R1
@@ -1772,17 +2040,17 @@ iterations:
       evidence_required: true
       tags:
       - expanded_batch
-      - label_expansion
+      - tranche2
       gate_class: data
-    - task_id: iteration2.labels.generate_expanded_assistive_prelabels
-      title: Generate expanded tranche assistive prelabels
-      description: Add assistive-only prelabels to the expanded labeling tranche without
+    - task_id: iteration2.labels.generate_tranche2_assistive_prelabels
+      title: Generate tranche 2 assistive prelabels
+      description: Add assistive-only prelabels to the tranche 2 review CSV without
         mutating canonical label columns.
       iteration_id: '2'
-      phase_id: iteration2/dataset-expansion-2024
+      phase_id: iteration2/tranche2-labeling
       kind: build
       depends_on:
-      - iteration2.labels.prepare_expanded_labeling_batches
+      - iteration2.labels.prepare_tranche2_labeling_batch
       inputs:
       - artifact_id: tranche2_batch_csv
         path: data/labels/v1/labeling_batch_v2.csv
@@ -1817,7 +2085,8 @@ iterations:
         operator: ==
         expected: passed
         on_fail: block
-        message: Expanded tranche assistive prelabels must be generated in live passed mode.
+        message: Expanded tranche assistive prelabels must be generated in live passed
+          mode.
         reroute_to: []
       - condition_id: tranche2_prelabel_request_count
         kind: json_field_compare
@@ -1825,13 +2094,14 @@ iterations:
         operator: '>='
         expected: 1
         on_fail: block
-        message: Expanded tranche assistive prelabels must record at least one live API request.
+        message: Expanded tranche assistive prelabels must record at least one live
+          API request.
         reroute_to: []
       commands:
       - .venv/bin/python -m semantic_ai_washing.labeling.assistive_prelabel_batch
         --input-csv data/labels/v1/labeling_batch_v2.csv --output-csv data/labels/v1/labeling_batch_v2_prelabeled.csv
         --report reports/labels/assistive_prelabel_tranche2_summary.json --policy
-        director/config/api_assistive_policy.yaml --mode live
+        director/config/api_assistive_policy.yaml --mode live --checkpoint-every 10
       manual_handoff: false
       risks:
       - R1
@@ -1847,15 +2117,15 @@ iterations:
       - tranche2
       - prelabels
       gate_class: ops
-    - task_id: iteration2.labels.verify_expanded_labels
-      title: Verify expanded tranche labels
-      description: Human-review the expanded tranche prelabels and finalize canonical
-        label, uncertainty, and note fields.
+    - task_id: iteration2.labels.verify_tranche2_labels
+      title: Verify tranche 2 labels
+      description: Human-review the tranche 2 prelabels and finalize canonical label,
+        uncertainty, and note fields.
       iteration_id: '2'
-      phase_id: iteration2/dataset-expansion-2024
+      phase_id: iteration2/tranche2-labeling
       kind: manual
       depends_on:
-      - iteration2.labels.generate_expanded_assistive_prelabels
+      - iteration2.labels.generate_tranche2_assistive_prelabels
       inputs:
       - artifact_id: tranche2_prelabeled_csv
         path: data/labels/v1/labeling_batch_v2_prelabeled.csv
@@ -1880,9 +2150,9 @@ iterations:
         kind: csv_nonempty_count_gte
         target: data/labels/v1/labeling_batch_v2_filled.csv::label
         operator: '>='
-        expected: 320
+        expected: 160
         on_fail: block
-        message: Expanded tranche verification must fill all tranche labels.
+        message: Tranche 2 verification must fill all 160 labels.
         reroute_to: []
       commands: []
       manual_handoff: true
@@ -1899,16 +2169,264 @@ iterations:
       - human_labeling
       - tranche2
       gate_class: manual
+  - phase_id: iteration2/tranche3-labeling
+    title: Tranche 3 Labeling
+    goal: Build, prelabel, and verify the second 160-row expanded tranche from the
+      cumulative expanded sentence pool.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration2/tranche2-labeling
+    required_artifacts:
+    - data/labels/v1/labeling_batch_v3.parquet
+    - data/labels/v1/labeling_batch_v3.csv
+    - reports/labels/labeling_batch_v3_summary.json
+    - data/labels/v1/labeling_batch_v3_prelabeled.csv
+    - reports/labels/assistive_prelabel_tranche3_summary.json
+    - data/labels/v1/labeling_batch_v3_filled.csv
+    source_window_id: active_2021_2024
+    tags:
+    - tranche3
+    - human_labeling
+    tasks:
+    - task_id: iteration2.labels.prepare_tranche3_labeling_batch
+      title: Prepare tranche 3 labeling batch
+      description: Build the final 160-row expanded tranche while excluding sentence
+        texts already used in tranches 1 and 2.
+      iteration_id: '2'
+      phase_id: iteration2/tranche3-labeling
+      kind: build
+      depends_on:
+      - iteration2.labels.verify_tranche2_labels
+      inputs:
+      - artifact_id: expanded_sentence_table
+        path: data/processed/sentences/year=2024/expanded_ai_sentences.parquet
+        kind: parquet
+        required: true
+      - artifact_id: expanded_manifest
+        path: data/manifests/filings/expansion_2024_500_firms_v1.csv
+        kind: csv
+        required: true
+      - artifact_id: tranche1_batch_csv
+        path: data/labels/v1/labeling_batch_v1.csv
+        kind: csv
+        required: true
+      outputs:
+      - artifact_id: tranche2_batch_parquet
+        path: data/labels/v1/labeling_batch_v3.parquet
+        kind: parquet
+        required: true
+      - artifact_id: tranche2_batch_csv
+        path: data/labels/v1/labeling_batch_v3.csv
+        kind: csv
+        required: true
+      - artifact_id: tranche2_batch_summary
+        path: reports/labels/labeling_batch_v3_summary.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: expanded_sentence_table_exists
+        kind: artifact_exists
+        target: data/processed/sentences/year=2024/expanded_ai_sentences.parquet
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Expanded sentence table is required before tranche 2 batch preparation.
+        reroute_to: []
+      quality_checks:
+      - condition_id: tranche2_batch_count
+        kind: json_field_compare
+        target: reports/labels/labeling_batch_v3_summary.json::selection.batch_row_count
+        operator: ==
+        expected: 160
+        on_fail: block
+        message: Tranche 3 must contain exactly 160 rows.
+        reroute_to: []
+      - condition_id: tranche2_heldout_zero
+        kind: json_field_compare
+        target: reports/labels/labeling_batch_v3_summary.json::quality.heldout_overlap_count
+        operator: ==
+        expected: 0
+        on_fail: block
+        message: Tranche 3 must remain leakage-safe against held-out.
+        reroute_to: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.labeling.build_labeling_batch --sentences
+        data/processed/sentences/year=2024/expanded_ai_sentences.parquet --manifest
+        data/manifests/filings/expansion_2024_500_firms_v1.csv --held-out data/validation/held_out_sentences.csv
+        --output-parquet data/labels/v1/labeling_batch_v3.parquet --output-csv data/labels/v1/labeling_batch_v3.csv
+        --report reports/labels/labeling_batch_v3_summary.json --batch-id labeling_batch_v3
+        --target-size 160 --base-quarter-quota 40 --min-tokens 6 --max-tokens 120
+        --seed 20260312 --exclude-existing-csv data/labels/v1/labeling_batch_v1.csv
+        data/labels/v1/labeling_batch_v2.csv
+      manual_handoff: false
+      risks:
+      - R1
+      - R2
+      estimated_effort: 4
+      risk_reduction: 8
+      automation_level: full
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - expanded_batch
+      - tranche3
+      gate_class: data
+    - task_id: iteration2.labels.generate_tranche3_assistive_prelabels
+      title: Generate tranche 3 assistive prelabels
+      description: Add assistive-only prelabels to the tranche 3 review CSV without
+        mutating canonical label columns.
+      iteration_id: '2'
+      phase_id: iteration2/tranche3-labeling
+      kind: build
+      depends_on:
+      - iteration2.labels.prepare_tranche3_labeling_batch
+      inputs:
+      - artifact_id: tranche2_batch_csv
+        path: data/labels/v1/labeling_batch_v2.csv
+        kind: csv
+        required: true
+      - artifact_id: assistive_api_policy
+        path: director/config/api_assistive_policy.yaml
+        kind: file
+        required: true
+      outputs:
+      - artifact_id: tranche2_prelabeled_csv
+        path: data/labels/v1/labeling_batch_v3_prelabeled.csv
+        kind: csv
+        required: true
+      - artifact_id: tranche2_prelabeled_summary
+        path: reports/labels/assistive_prelabel_tranche3_summary.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: tranche2_batch_exists
+        kind: artifact_exists
+        target: data/labels/v1/labeling_batch_v2.csv
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Expanded tranche batch must exist before assistive prelabeling.
+        reroute_to: []
+      quality_checks:
+      - condition_id: tranche2_prelabel_status_passed
+        kind: json_field_compare
+        target: reports/labels/assistive_prelabel_tranche3_summary.json::status
+        operator: ==
+        expected: passed
+        on_fail: block
+        message: Expanded tranche assistive prelabels must be generated in live passed
+          mode.
+        reroute_to: []
+      - condition_id: tranche2_prelabel_request_count
+        kind: json_field_compare
+        target: reports/labels/assistive_prelabel_tranche3_summary.json::usage.request_count
+        operator: '>='
+        expected: 1
+        on_fail: block
+        message: Expanded tranche assistive prelabels must record at least one live
+          API request.
+        reroute_to: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.labeling.assistive_prelabel_batch
+        --input-csv data/labels/v1/labeling_batch_v3.csv --output-csv data/labels/v1/labeling_batch_v3_prelabeled.csv
+        --report reports/labels/assistive_prelabel_tranche3_summary.json --policy
+        director/config/api_assistive_policy.yaml --mode live --checkpoint-every 10
+      manual_handoff: false
+      risks:
+      - R1
+      - R4
+      estimated_effort: 4
+      risk_reduction: 7
+      automation_level: partial
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - assistive_api
+      - tranche3
+      - prelabels
+      gate_class: ops
+    - task_id: iteration2.labels.verify_tranche3_labels
+      title: Verify tranche 3 labels
+      description: Human-review the tranche 3 prelabels and finalize canonical label,
+        uncertainty, and note fields.
+      iteration_id: '2'
+      phase_id: iteration2/tranche3-labeling
+      kind: manual
+      depends_on:
+      - iteration2.labels.generate_tranche3_assistive_prelabels
+      inputs:
+      - artifact_id: tranche2_prelabeled_csv
+        path: data/labels/v1/labeling_batch_v2_prelabeled.csv
+        kind: csv
+        required: true
+      outputs:
+      - artifact_id: tranche2_filled_csv
+        path: data/labels/v1/labeling_batch_v3_filled.csv
+        kind: csv
+        required: true
+      preconditions:
+      - condition_id: tranche2_prelabeled_exists
+        kind: artifact_exists
+        target: data/labels/v1/labeling_batch_v3_prelabeled.csv
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Tranche 3 prelabels must exist before human verification.
+        reroute_to: []
+      quality_checks:
+      - condition_id: tranche2_label_count_complete
+        kind: csv_nonempty_count_gte
+        target: data/labels/v1/labeling_batch_v3_filled.csv::label
+        operator: '>='
+        expected: 160
+        on_fail: block
+        message: Tranche 3 verification must fill all 160 labels.
+        reroute_to: []
+      commands: []
+      manual_handoff: true
+      risks:
+      - R1
+      - R3
+      estimated_effort: 9
+      risk_reduction: 8
+      automation_level: manual
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - human_labeling
+      - tranche3
+      gate_class: manual
+  - phase_id: iteration2/merge-canonical-labels
+    title: Merge Canonical Labels
+    goal: Merge the 3 verified tranches into the canonical labels master before IRR.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration2/tranche3-labeling
+    required_artifacts:
+    - data/labels/v1/labels_master.parquet
+    - data/labels/v1/labels_master_review.csv
+    - reports/labels/label_expansion_summary.json
+    source_window_id: active_2021_2024
+    tags:
+    - merge_labels
+    - stakeholder_alignment
+    tasks:
     - task_id: iteration2.labels.merge_canonical_labels
       title: Merge canonical labels
       description: Merge the verified tranche CSVs into the canonical labels master
         artifacts and publish the label expansion summary.
       iteration_id: '2'
-      phase_id: iteration2/dataset-expansion-2024
+      phase_id: iteration2/merge-canonical-labels
       kind: build
       depends_on:
       - iteration2.labels.verify_tranche1_labels
-      - iteration2.labels.verify_expanded_labels
+      - iteration2.labels.verify_tranche2_labels
+      - iteration2.labels.verify_tranche3_labels
       inputs:
       - artifact_id: tranche1_filled_csv
         path: data/labels/v1/labeling_batch_v1_filled.csv
@@ -1916,6 +2434,10 @@ iterations:
         required: true
       - artifact_id: tranche2_filled_csv
         path: data/labels/v1/labeling_batch_v2_filled.csv
+        kind: csv
+        required: true
+      - artifact_id: tranche3_filled_csv
+        path: data/labels/v1/labeling_batch_v3_filled.csv
         kind: csv
         required: true
       outputs:
@@ -1948,7 +2470,24 @@ iterations:
         on_fail: block
         message: Verified tranche 2 CSV is required before label merge.
         reroute_to: []
+      - condition_id: tranche3_filled_exists
+        kind: artifact_exists
+        target: data/labels/v1/labeling_batch_v3_filled.csv
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Verified tranche 3 CSV is required before label merge.
+        reroute_to: []
       quality_checks:
+      - condition_id: labels_master_total_gte_560
+        kind: json_field_compare
+        target: reports/labels/label_expansion_summary.json::summary.total_canonical_labeled_rows
+        operator: '>='
+        expected: 560
+        on_fail: block
+        message: Canonical labels summary must contain at least 560 labeled rows after
+          3 tranches.
+        reroute_to: []
       - condition_id: labels_master_heldout_zero
         kind: json_field_compare
         target: reports/labels/label_expansion_summary.json::quality.heldout_overlap_count
@@ -1968,8 +2507,9 @@ iterations:
       commands:
       - .venv/bin/python -m semantic_ai_washing.labeling.merge_labeling_batches --inputs
         data/labels/v1/labeling_batch_v1_filled.csv data/labels/v1/labeling_batch_v2_filled.csv
-        --held-out data/validation/held_out_sentences.csv --output-parquet data/labels/v1/labels_master.parquet
-        --output-review-csv data/labels/v1/labels_master_review.csv --report reports/labels/label_expansion_summary.json
+        data/labels/v1/labeling_batch_v3_filled.csv --held-out data/validation/held_out_sentences.csv
+        --output-parquet data/labels/v1/labels_master.parquet --output-review-csv
+        data/labels/v1/labels_master_review.csv --report reports/labels/label_expansion_summary.json
       manual_handoff: false
       risks:
       - R1
@@ -1992,7 +2532,7 @@ iterations:
     lifecycle_state: planned
     canonical: true
     depends_on:
-    - iteration2/dataset-expansion-2024
+    - iteration2/merge-canonical-labels
     required_artifacts:
     - data/labels/v1/irr_subset.parquet
     - reports/labels/irr_report.json

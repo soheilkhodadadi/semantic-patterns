@@ -94,6 +94,23 @@ def _ordered_unique_firm_rows(candidates: pd.DataFrame) -> list[pd.Series]:
     return ordered
 
 
+def _load_excluded_ciks(manifest_paths: list[str] | None) -> set[str]:
+    excluded: set[str] = set()
+    for manifest_path in manifest_paths or []:
+        path = Path(manifest_path)
+        if not path.exists():
+            raise ValueError(f"Exclude manifest does not exist: {path}")
+        manifest = pd.read_csv(path)
+        if "cik" not in manifest.columns:
+            raise ValueError(f"Exclude manifest missing `cik` column: {path}")
+        excluded.update(
+            normalize_cik(value)
+            for value in manifest["cik"].fillna("").astype(str)
+            if normalize_cik(value)
+        )
+    return excluded
+
+
 def _build_clean_sentence_rows(
     manifest_row: pd.Series,
     filing_text: str,
@@ -162,6 +179,7 @@ def build_expanded_sentence_pool(
     max_tokens: int = DEFAULT_MAX_TOKENS,
     manifest_id: str = DEFAULT_MANIFEST_ID,
     seed: int = DEFAULT_SAMPLE_SEED,
+    exclude_manifest_paths: list[str] | None = None,
 ) -> dict[str, Any]:
     candidates = _prepare_candidates(
         index_path=index_path,
@@ -170,6 +188,11 @@ def build_expanded_sentence_pool(
         controls_path=controls_path,
         crosswalk_path=crosswalk_path,
     )
+    excluded_ciks = _load_excluded_ciks(exclude_manifest_paths)
+    if excluded_ciks:
+        candidates = candidates[
+            ~candidates["cik"].astype(str).map(normalize_cik).isin(excluded_ciks)
+        ].copy()
     ordered_rows = _ordered_unique_firm_rows(candidates)
     if len(ordered_rows) < int(target_firms):
         raise ValueError(
@@ -292,6 +315,7 @@ def build_expanded_sentence_pool(
             "target_firms": int(target_firms),
             "minimum_clean_sentences": int(min_clean_sentences),
             "selected_filing_count": int(len(manifest)),
+            "excluded_prior_firm_count": int(len(excluded_ciks)),
         },
         "candidate_pool": {
             "firm_count": int(manifest["cik"].astype(str).nunique()),
@@ -319,6 +343,7 @@ def build_expanded_sentence_pool(
             "clean_sentence_target_satisfied": bool(
                 len(sentence_table) >= int(min_clean_sentences)
             ),
+            "excluded_prior_firms": int(len(excluded_ciks)),
             "quarter_coverage": {
                 str(int(key)): int(value)
                 for key, value in manifest["quarter"]
@@ -373,6 +398,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-tokens", type=int, default=DEFAULT_MAX_TOKENS)
     parser.add_argument("--manifest-id", default=DEFAULT_MANIFEST_ID)
     parser.add_argument("--seed", type=int, default=DEFAULT_SAMPLE_SEED)
+    parser.add_argument("--exclude-manifests", nargs="*", default=[])
     return parser.parse_args()
 
 
@@ -395,6 +421,7 @@ def main() -> int:
         max_tokens=args.max_tokens,
         manifest_id=args.manifest_id,
         seed=args.seed,
+        exclude_manifest_paths=args.exclude_manifests,
     )
     print(
         "[sentence-pool] "
