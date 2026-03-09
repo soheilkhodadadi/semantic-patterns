@@ -935,6 +935,31 @@ def test_actual_iteration2_tranche_workflow_is_wired():
         "iteration2.rubric.publish_protocol_v2",
         "iteration2.rubric.regenerate_tranche1_assistive_prelabels_v2",
     ]
+    regenerate_tranche1_v2 = next(
+        task
+        for task in rubric_phase.tasks
+        if task.task_id == "iteration2.rubric.regenerate_tranche1_assistive_prelabels_v2"
+    )
+    assert regenerate_tranche1_v2.manual_handoff is False
+    assert regenerate_tranche1_v2.kind == "build"
+    assert any(
+        "assistive_prelabel_batch" in command and "labeling_batch_v1_prelabeled_v2.csv" in command
+        for command in regenerate_tranche1_v2.commands
+    )
+    assert any(
+        condition.kind == "json_field_compare"
+        and condition.target
+        == "reports/labels/assistive_prelabel_tranche1_v2_summary.json::status"
+        and condition.expected == "passed"
+        for condition in regenerate_tranche1_v2.quality_checks
+    )
+    assert any(
+        condition.kind == "json_field_compare"
+        and condition.target
+        == "reports/labels/assistive_prelabel_tranche1_v2_summary.json::usage.request_count"
+        and condition.expected == 1
+        for condition in regenerate_tranche1_v2.quality_checks
+    )
 
     tranche1_phase = find_phase(model, iteration_id="2", phase_name="tranche1-labeling")
     assert tranche1_phase is not None

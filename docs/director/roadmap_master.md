@@ -1,7 +1,7 @@
 <!-- generated_file: true -->
 <!-- source_model: /Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/model/roadmap_model.yaml -->
-<!-- source_sha256: dbab2a1053caa82e1424b687489946300650dd458bdc9a7d642465df10eebfaa -->
-<!-- rendered_at: 2026-03-09T05:54:01.946015+00:00 -->
+<!-- source_sha256: 418621b1fe9c33159258a03e0646768bdd72de372de054f8b2878a4c03c835f6 -->
+<!-- rendered_at: 2026-03-09T19:49:09.726019+00:00 -->
 
 # Roadmap Master
 
@@ -507,7 +507,7 @@ Exit criteria: Rubric realignment report and revised protocol v2 are published.,
   - tags: rubric_calibration, protocol
   - risks: R1, R3
 - `iteration2.rubric.regenerate_tranche1_assistive_prelabels_v2` Regenerate tranche 1 assistive prelabels under rubric v2
-  - kind: `manual` gate_class: `ops` automation: `manual`
+  - kind: `build` gate_class: `ops` automation: `partial`
   - depends_on: iteration2.rubric.publish_protocol_v2
   - inputs: data/labels/v1/labeling_batch_v1.csv, director/config/api_assistive_policy.yaml
   - outputs: data/labels/v1/labeling_batch_v1_prelabeled_v2.csv, reports/labels/assistive_prelabel_tranche1_v2_summary.json

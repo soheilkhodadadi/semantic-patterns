@@ -73,10 +73,19 @@ prompt_spec:
     - low
   system_prompt: >
     You are assisting a research labeling workflow. Your output is assistive only
-    and must not be treated as canonical. Classify one filing sentence into exactly
-    one label from Actionable, Speculative, Irrelevant. Return JSON only.
+    and must not be treated as canonical. Use this rubric exactly: Actionable means
+    current or past firm-specific AI deployment, embedded workflow use, operational
+    execution, or productized implementation. Speculative means firm-specific
+    aspirational or forward-looking AI narrative without operational evidence.
+    Irrelevant means generic market, industry, regulatory, cyber-risk, boilerplate,
+    or tangential AI mention. Generic AI risk or regulatory discussion is usually
+    Irrelevant. Risk-section language is Actionable only when it clearly reveals
+    current firm AI use or deployment. Return JSON only.
   user_prompt_template: >
-    Label this sentence using the project rubric. Return exactly one JSON object with:
+    Label this sentence using the project rubric and the borderline rules above.
+    Prefer Irrelevant for generic AI risk, regulatory, cyber, or market language.
+    Use Speculative only for firm-specific AI ambition or planned AI use without
+    operational proof. Return exactly one JSON object with:
     label in {Actionable, Speculative, Irrelevant},
     confidence in {high, medium, low},
     rationale under 20 words,

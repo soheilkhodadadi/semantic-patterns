@@ -1631,3 +1631,16 @@ Rules:
 - Truthful execution note:
   - tranche-1 canonical labeling is paused until rubric v2 is published and tranche-1 assistive prelabels are regenerated under the revised rubric
   - earlier tranche-1 prelabels remain diagnostic evidence only
+
+## 2026-03-09 - Iteration 2 Rubric Realignment Execution
+
+- Committed proposal-alignment patch separately as `540347a` (`director: align roadmap and rubric with proposal methodology`).
+- Committed prelabel-resume fixes separately as `11be81c` (`labeling: harden tranche prelabel resume behavior`).
+- Patched `iteration2.rubric.regenerate_tranche1_assistive_prelabels_v2` to run as an automated resumable build task.
+- Updated `director/config/api_assistive_policy.yaml` so rubric-v2 semantics are injected directly into assistive labeling prompts.
+- Published tranche-1 rubric realignment note at `reports/labels/tranche1_rubric_realignment_v2.md`.
+- Generated tranche-1 rubric-v2 assistive prelabels in six resumable 40-row chunks.
+- Outputs: `data/labels/v1/labeling_batch_v1_prelabeled_v2.csv`, `reports/labels/assistive_prelabel_tranche1_v2_summary.json`.
+- Result: `assistive_label_nonempty = 240`, `status = passed`, `request_count = 240`.
+- Prepared canonical tranche-1 review sheet at `data/labels/v1/labeling_batch_v1_filled_v2.csv` with canonical review fields reset blank.
+- Legacy tranche-1 files remain diagnostic only: `data/labels/v1/labeling_batch_v1_prelabeled.csv`, `data/labels/v1/labeling_batch_v1_filled.csv`.

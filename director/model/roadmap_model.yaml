@@ -1687,7 +1687,7 @@ iterations:
         review. The regenerated outputs must supersede the earlier diagnostic prelabels.
       iteration_id: '2'
       phase_id: iteration2/rubric-realignment
-      kind: manual
+      kind: build
       depends_on:
       - iteration2.rubric.publish_protocol_v2
       inputs:
@@ -1717,15 +1717,36 @@ iterations:
         on_fail: block
         message: Rubric v2 protocol must exist before tranche-1 prelabels are regenerated.
         reroute_to: []
-      quality_checks: []
-      commands: []
-      manual_handoff: true
+      quality_checks:
+      - condition_id: tranche1_v2_prelabel_status_passed
+        kind: json_field_compare
+        target: reports/labels/assistive_prelabel_tranche1_v2_summary.json::status
+        operator: ==
+        expected: passed
+        on_fail: block
+        message: Tranche-1 rubric-v2 assistive prelabels must complete in passed mode.
+        reroute_to: []
+      - condition_id: tranche1_v2_prelabel_request_count
+        kind: json_field_compare
+        target: reports/labels/assistive_prelabel_tranche1_v2_summary.json::usage.request_count
+        operator: '>='
+        expected: 1
+        on_fail: block
+        message: Tranche-1 rubric-v2 assistive prelabels must record at least one live
+          API request.
+        reroute_to: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.labeling.assistive_prelabel_batch
+        --input-csv data/labels/v1/labeling_batch_v1.csv --output-csv data/labels/v1/labeling_batch_v1_prelabeled_v2.csv
+        --report reports/labels/assistive_prelabel_tranche1_v2_summary.json --policy
+        director/config/api_assistive_policy.yaml --mode live --checkpoint-every 10
+      manual_handoff: false
       risks:
       - R1
       - R4
       estimated_effort: 4
       risk_reduction: 9
-      automation_level: manual
+      automation_level: partial
       on_fail: block
       reroute_to: []
       evidence_required: true
