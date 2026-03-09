@@ -71,7 +71,7 @@ def test_cli_ingest_with_roadmap_model_and_optimize(tmp_path, monkeypatch):
     _write(
         model,
         """
-schema_version: "1.3.0"
+schema_version: "1.4.0"
 project:
   name: semantic-patterns
   description: test
@@ -104,7 +104,7 @@ branching_policy:
   closeout_validation_commands:
     - .venv/bin/pytest -q
 stakeholder_alignment:
-  schema_version: "1.3.0"
+  schema_version: "1.4.0"
   source_artifact: docs/director/stakeholder_expectations.md
   active_development_scope: 2021-2024
   publication_target_scope: all publicly traded firms
@@ -128,6 +128,54 @@ stakeholder_alignment:
         - iteration2/sentence-pool-expansion-2024
       mapped_gates:
         - candidate_pool_500_firms
+methodology_alignment:
+  schema_version: "1.4.0"
+  source_artifact: docs/director/proposal_methodology.md
+  core_construct: AI-washing is speculative AI narrative without later capability.
+  active_development_scope: 2021-2024
+  publication_target_scope: all publicly traded firms
+  desired_horizon: 2000-2024 when source availability permits
+  core_constructs:
+    - Actionable statements indicate current firm AI capability.
+  label_semantics:
+    Actionable: current firm AI deployment
+    Speculative: firm-specific AI aspiration without operational evidence
+    Irrelevant: generic AI context or risk language
+  borderline_rules:
+    - Generic AI risk language is Irrelevant.
+  irr_design_requirements:
+    - 100+ firms
+    - industry-year balance
+    - by-class kappa
+  named_measures:
+    - measure_id: A_S
+      formula: log(1 + A / (1 + S))
+      description: Actionable-to-speculative ratio.
+      mapped_phases:
+        - iteration3/development-predictive-validity-gate
+  baseline_predictive_specs:
+    - Patents and job postings for l in {0,1,2}.
+  ai_washing_specification:
+    - A_S x PatentMismatch
+  rubric_calibration_policy:
+    - Rubric may change during development calibration.
+  rubric_freeze_policy:
+    - Rubric must freeze before publication-scale deployment.
+  predictive_validity_policy:
+    - Directional predictive validity is the required development gate.
+  hard_gates:
+    - human_human_irr_only
+  requirements:
+    - requirement_id: proposal-rubric-realignment
+      priority: non-negotiable
+      summary: Realign the rubric before tranche-1 canonical labeling continues.
+      target_iteration: "2"
+      source_refs:
+        - proposal methodology
+      mapped_phases:
+        - iteration2/rubric-realignment
+      mapped_gates:
+        - rubric_realignment_complete
 policies: []
 data_layers: []
 source_windows: []

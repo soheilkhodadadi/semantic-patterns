@@ -4,6 +4,7 @@
 - `director/model/roadmap_model.yaml` is the canonical planning source.
 - `docs/director/roadmap_master.md` is generated from canonical YAML and must stay hash-synchronized.
 - `docs/director/stakeholder_expectations.md` is the canonical stakeholder-alignment source.
+- `docs/director/proposal_methodology.md` is the canonical methodology-alignment source.
 - Canonical planning inputs are repo snapshots under `director/snapshots/`.
 - External documents and chats are ingested as structured summaries, not committed raw.
 - Blockers are escalated with ranked options; no silent continuation past failed gates.
@@ -13,18 +14,21 @@
 - Every iteration ends with an explicit `review-and-replan` phase.
 - Iterations 2-5 start with `kickoff-and-preflight`.
 - Next-iteration work is not authorized until the previous iteration review is approved.
-- Iteration reviews must report stakeholder-alignment status before closeout approval.
+- Iteration reviews must report stakeholder-alignment and methodology-alignment status before closeout approval.
 
 ## Scientific Policies
 - `held_out_sentences.csv` is frozen evaluation-only.
 - IRR is human-human only. Model-vs-label agreement is not IRR.
 - Canonical IRR must exceed `0.7` on a blinded `100+` sentence subset before retraining.
+- Proposal-style IRR must be stratified across at least `100` firms, balanced by industry/year, and report by-class kappa with a third adjudicator.
 - Labeling and adjudication must not peek at downstream outcomes.
 - Retraining requires a frozen split registry.
 - Retraining requires at least `500` adjudicated labels and at least `80` adjudicated labels per class.
 - Sentence-quality gates must pass before manual labeling and IRR work.
 - Recovery or infrastructure phases do not silently satisfy canonical science gates.
 - ai_total merge integrity must be verified before panel or regression work.
+- Rubric refinement is allowed during development calibration only and must freeze before publication-scale deployment.
+- Directional predictive-validity evidence is required before publication-scale rollout, but significance is not an optimization objective during earlier pipeline stages.
 
 ## API Policy
 - OpenAI API output is assistive-only until a later benchmark gate explicitly promotes a new mode.
@@ -77,3 +81,10 @@
   - lagged regressions
   - industry FE or SIC-bucket robustness
 - Statistical significance remains an output expectation for publication, not an optimization objective during earlier science phases.
+- Proposal-defined firm-year measures must be published explicitly before predictive-validity review:
+  - `AI Focus`
+  - `log(1+A)`
+  - `log(1+S)`
+  - `SpecShare`
+  - `CredAI`
+  - `A_S`

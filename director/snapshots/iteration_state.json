@@ -1,7 +1,7 @@
 {
   "source_path": "docs/iteration_log.md",
-  "source_sha256": "95de4e864cf532c2f9cdba93629cbe9bd80d6bcd49a11183b0c14c3f85735745",
-  "ingested_at": "2026-03-07T21:09:41.848040+00:00",
+  "source_sha256": "165845a47b276c3682fac4fbb0ec2b569a06f9e74eeba5c97ed14b2ce94b7c6c",
+  "ingested_at": "2026-03-09T05:54:03.187865+00:00",
   "iteration_count": 2,
   "iterations": [
     {
@@ -415,7 +415,25 @@
         "Director/review changes:",
         "Validation run:",
         "Evidence/artifacts refreshed:",
-        "Residual notes:"
+        "Residual notes:",
+        "Branch baseline:",
+        "Scope completed:",
+        "Roadmap/model changes:",
+        "Truthfulness fixes:",
+        "Validation run:",
+        "Current truthful optimizer state:",
+        "Operational evidence:",
+        "Residual note:",
+        "Branch baseline:",
+        "Scope completed:",
+        "Iteration 2 tranche contract now encoded:",
+        "Current truthful manual state:",
+        "Validation run:",
+        "Residual note:",
+        "Branch baseline:",
+        "Scope completed:",
+        "Methodology changes encoded:",
+        "Truthful execution note:"
       ]
     }
   ],

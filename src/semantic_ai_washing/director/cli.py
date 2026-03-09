@@ -405,6 +405,7 @@ def _status_command(args: argparse.Namespace) -> int:
             )
 
     latest_approval_payload = (load_json(approvals[-1], default={}) if approvals else {}) or {}
+    latest_review_payload = (load_json(reviews[-1], default={}) if reviews else {}) or {}
     branch_policy_summary = {}
     try:
         config = load_configs(paths)
@@ -432,6 +433,22 @@ def _status_command(args: argparse.Namespace) -> int:
         "latest_kickoff": str(kickoffs[-1]) if kickoffs else "",
         "next_iteration_authorized": bool(
             latest_approval_payload.get("next_iteration_authorized", False)
+        ),
+        "latest_stakeholder_alignment_summary": latest_review_payload.get(
+            "stakeholder_alignment_summary", {}
+        ),
+        "latest_methodology_alignment_summary": latest_review_payload.get(
+            "methodology_alignment_summary", {}
+        ),
+        "latest_unmet_methodology_requirements": latest_review_payload.get(
+            "unmet_methodology_requirements", []
+        ),
+        "latest_rubric_calibration_status": latest_review_payload.get(
+            "rubric_calibration_status", ""
+        ),
+        "latest_rubric_freeze_status": latest_review_payload.get("rubric_freeze_status", ""),
+        "latest_predictive_validity_gate_status": latest_review_payload.get(
+            "predictive_validity_gate_status", ""
         ),
         "branching_policy": branch_policy_summary,
         "active_deferred_blockers": active_deferred,

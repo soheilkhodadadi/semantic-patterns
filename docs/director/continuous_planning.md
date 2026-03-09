@@ -13,6 +13,7 @@ Director now operates as a deterministic planning control loop.
 Director ingests:
 - canonical roadmap YAML
 - canonical stakeholder expectations
+- canonical proposal methodology
 - implementation protocol summary
 - iteration log snapshot
 - compiled repo state
@@ -29,6 +30,7 @@ Director compiles:
 - source-window deferrals
 - sentence-quality gate failures
 - stakeholder-alignment status for current and due requirements
+- methodology-alignment status for current and due requirements
 
 ## Plan
 Director scores ready work using configured weights and emits:
@@ -58,6 +60,7 @@ Every run should update:
 - optimization artifacts
 - iteration log evidence
 - stakeholder-alignment evidence when roadmap or review artifacts change
+- methodology-alignment evidence when roadmap, protocol, or review artifacts change
 
 ## Boundary Reviews
 At iteration boundaries, the control loop adds a formal review layer:
@@ -71,6 +74,8 @@ This gives director an explicit lessons-learned and stage-gate mechanism instead
 
 Stakeholder evidence can patch future iterations through the same review flow. The roadmap is not only updated by execution blockers; it is also updated when stakeholder requirements become clearer, stricter, or more publication-critical.
 
+Proposal methodology evidence can patch future iterations through the same review flow. The roadmap is updated not only when execution blockers appear, but also when construct definitions, rubric boundaries, or predictive-validity requirements need to be made explicit.
+
 ## Policy
 - The optimizer is proposal-only.
 - Cross-iteration resequencing may be recommended, but not auto-applied.
@@ -78,3 +83,5 @@ Stakeholder evidence can patch future iterations through the same review flow. T
 - Historical and superseded phases remain visible for traceability and are excluded from next-work ranking.
 - Strict science gates are not cleared by infrastructure-only completion.
 - Held-out evaluation data remain frozen and cannot be repurposed for training.
+- Rubric refinement is bounded to calibration phases and must freeze before publication-scale deployment.
+- Predictive-validity checks are directional, predeclared development gates rather than open-ended significance-seeking loops.

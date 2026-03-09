@@ -1600,3 +1600,34 @@ Rules:
   - `.venv/bin/pytest -q` -> pending until after roadmap/doc regeneration in this patch
 - Residual note:
   - the earlier parallel-workflow entry remains in this log as historical evidence, but the active roadmap and current execution model are now tranche-based and linear
+
+## 2026-03-08 - Proposal-Alignment Patch
+
+- Branch baseline:
+  - working branch: `iteration2/integration`
+  - patch goal: align the roadmap, rubric, and review layer with the proposal methodology while keeping stakeholder thresholds unchanged
+- Scope completed:
+  - added `docs/director/proposal_methodology.md` as the canonical methodology source
+  - added roadmap-level `methodology_alignment` alongside stakeholder alignment
+  - rewrote Iteration 2 so tranche-1 canonical labeling now routes through `iteration2/rubric-realignment`
+  - changed tranche-1 canonical artifacts to rubric-v2 outputs:
+    - `data/labels/v1/labeling_batch_v1_prelabeled_v2.csv`
+    - `data/labels/v1/labeling_batch_v1_filled_v2.csv`
+  - added `iteration2/provisional-rubric-freeze-and-split-registry`
+  - added Iteration 3 methodology phases:
+    - `iteration3/firm-year-measure-construction`
+    - `iteration3/development-predictive-validity-gate`
+  - extended review artifacts and roadmap rendering to report methodology alignment, rubric calibration status, rubric freeze status, and predictive-validity gate status
+- Methodology changes encoded:
+  - `Actionable` tightened to present or past firm-specific AI deployment or operational execution
+  - `Speculative` narrowed to firm-specific aspirational AI narrative without operational evidence
+  - generic AI risk, regulatory, cyber, and boilerplate language is now treated as `Irrelevant`
+  - proposal-style IRR now requires:
+    - stratified `100+` firm design
+    - industry/year balance
+    - by-class kappa diagnostics
+    - third-adjudicator resolution
+  - predictive-validity remains a directional development gate, not an open-ended significance-seeking rule
+- Truthful execution note:
+  - tranche-1 canonical labeling is paused until rubric v2 is published and tranche-1 assistive prelabels are regenerated under the revised rubric
+  - earlier tranche-1 prelabels remain diagnostic evidence only

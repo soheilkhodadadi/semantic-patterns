@@ -1,6 +1,19 @@
-# Labeling Protocol (Iteration 1 Phase 1)
+# Labeling Protocol (Proposal-Aligned Rubric v2)
 
-This protocol defines how to label AI-related filing sentences for the Iteration 1 training dataset.
+This protocol defines how to label AI-related filing sentences for the AI-washing project after proposal-methodology alignment.
+
+## Purpose
+
+The project is not only a sentence classifier. It is a predictive credibility-measure project.
+
+The sentence labels exist to support firm-year measures that can later be tested against observable AI capability proxies such as:
+- AI-related patents
+- AI-skills job postings
+
+Because of that objective:
+- rubric refinement is allowed during development calibration
+- rubric drift is not allowed after rubric freeze
+- the frozen held-out set remains evaluation-only throughout
 
 ## Scope and Unit of Labeling
 
@@ -13,138 +26,167 @@ This protocol defines how to label AI-related filing sentences for the Iteration
 
 ## Allowed Labels
 
-- `Actionable`: sentence describes concrete implementation, deployment, operation, measurable execution, or in-production use of AI.
-- `Speculative`: sentence describes plans, intentions, forward-looking expectations, potential benefits/risks, or exploratory statements without concrete deployment.
-- `Irrelevant`: sentence mentions AI/technology only in generic, list-like, boilerplate, or non-substantive ways not tied to meaningful firm action.
+- `Actionable`: sentence describes explicit current or realized firm-specific AI deployment, implementation, embedded workflow, productized use, or measurable operational execution.
+- `Speculative`: sentence describes firm-specific aspirational, exploratory, or forward-looking AI narrative without operational proof.
+- `Irrelevant`: sentence mentions AI in a generic, boilerplate, market-wide, regulatory, cyber-risk, list-like, or tangential way that does not function as a firm capability claim.
 
 Rows with labels outside this set fail QA.
 
-## Decision Rules
+## Proposal-Faithful Decision Rules
 
-- Prefer `Actionable` when there is explicit evidence of current/realized implementation.
-- Prefer `Speculative` when language is future-oriented (`may`, `might`, `plan`, `intend`, `expect`) or uncertainty/risk-oriented without concrete deployment.
-- Prefer `Irrelevant` for laundry-list mentions where AI appears as one of many trends/topics without actionability.
+### Actionable
+Prefer `Actionable` when the sentence clearly shows one or more of the following:
+- current deployment or current use
+- already-implemented AI workflow or operational process
+- productized or embedded AI functionality
+- realized execution with concrete detail
+- evidence that the firm is already using AI in a specific business activity
 
-## Borderline A vs S Disambiguation
+A sentence may still be `Actionable` inside a risk section if it reveals current firm AI deployment or use.
 
-- If both action and future intent appear, prioritize:
-  - `Actionable` when execution is explicit (for example, “deployed”, “currently use”, “in production”, quantifiable outcomes).
-  - `Speculative` when execution evidence is absent and intent dominates.
-- If still ambiguous, mark uncertain (`is_uncertain=1`) and provide a short `uncertainty_note`.
+### Speculative
+Prefer `Speculative` when the sentence clearly shows:
+- future-looking plans or intentions
+- AI ambitions, aspirations, or exploratory initiatives
+- expected future benefits from AI
+- narrative signaling around AI transformation without operational proof
+- promises, goals, or pursuits of AI capability not yet shown as implemented
+
+A sentence is not `Speculative` simply because it is uncertain or risk-oriented. It must still be a firm-specific AI narrative claim.
+
+### Irrelevant
+Prefer `Irrelevant` when the sentence is:
+- generic AI market or technology commentary
+- generic legal, cyber, regulatory, or business-risk language about AI
+- broad boilerplate mention of AI among many topics
+- not really a firm capability claim
+- discussing AI as an external topic rather than the firm's own implemented or aspired capability
+
+## Borderline Rules
+
+- Generic AI regulatory, cyber, or market-risk language is `Irrelevant` unless the sentence also reveals current firm AI deployment.
+- If a sentence only says AI may matter, could matter, or creates risks/opportunities in general, it is usually `Irrelevant`.
+- If a sentence says the firm plans, expects, explores, or intends to use AI but does not show current operational evidence, it is `Speculative`.
+- If a sentence shows current or realized deployment, it is `Actionable` even if it also contains risk or forward-looking context.
+- If both action and aspiration appear, prefer:
+  - `Actionable` when present or realized execution is explicit
+  - `Speculative` when future intent dominates and current execution evidence is absent
+
+## Tranche-1 Realignment Rule
+
+`labeling_batch_v1` is diagnostic tranche 1 only.
+
+Current policy:
+- tranche 1 canonical labeling is paused under the older rubric
+- tranche 1 must be re-prelabeled and re-reviewed under rubric v2
+- previously generated tranche-1 prelabels are diagnostic evidence, not final canonical labels
+
+Required tranche-1 realignment outputs:
+- revised protocol in this file
+- tranche-1 rubric realignment note
+- tranche-1 assistive prelabels regenerated under rubric v2 before canonical human verification resumes
 
 ## Uncertainty Policy
 
 - Use `is_uncertain=1` when label confidence is insufficient.
 - Always provide `uncertainty_note` for uncertain rows.
-- Uncertain rows are excluded from final training in Phase 1 and written to `uncertain_rows.csv` pending adjudication.
+- Uncertain rows may be retained for adjudication but should be clearly marked.
 
 ## Data Hygiene Rules
 
 - No empty sentences.
 - No missing labels for non-uncertain rows.
 - Minimum token count: `>= 6`.
-- No overlap (by `sentence_norm`) with frozen held-out set:
+- No overlap by `sentence_norm` with the frozen held-out set:
   - `data/validation/held_out_sentences.csv`
 - Deduplication policy:
   - exact dedupe by `sentence_norm`
-  - near-dedupe by `difflib.SequenceMatcher` at threshold `0.95`
-  - near-duplicate conflicting labels routed to `label_conflicts.csv`
+  - exact text dedupe by `sentence_text_id`
+  - conflicting duplicates must be routed before canonical merge
 
-## QA and Reproducibility
+## Frozen Held-Out Policy
 
-- QA command:
-  - `python -m semantic_ai_washing.labeling.qa_labeled_dataset --input data/labels/iteration1/expanded_labeled_sentences_preqa.csv --held-out data/validation/held_out_sentences.csv --min-tokens 6 --min-class-count 60 --target-size 400 --output data/labels/iteration1/expanded_labeled_sentences.csv --report reports/iteration1/phase1/qa_report.json --leakage-report reports/iteration1/phase1/leakage_overlap_report.csv`
-- Dataset metadata:
-  - `data/labels/iteration1/dataset_metadata.json`
-  - includes commit hash, source fingerprints, sampling/dedupe settings, leakage policy, and rubric reference.
+- `data/validation/held_out_sentences.csv` remains frozen evaluation-only.
+- It must not be repurposed for training, tranche selection, or assistive prompt examples.
+- It must not be reused as the IRR source set.
 
-## IRR Workflow (Phase 2)
+## Assistive API Policy
 
-- Rater 2 sheet is text-only by default (`irr_item_id`, `sentence`, `rater2_label`, `rater2_note`) to reduce contextual anchoring.
-- Rater instructions:
-  - label each sentence as one of `Actionable|Speculative|Irrelevant`
-  - avoid using downstream outcomes (patents/returns/performance) during labeling
-  - use `rater2_note` only for uncertainty rationale, not external evidence
-- Disagreement taxonomy:
-  - transitions tracked as `A->S`, `A->I`, `S->A`, `S->I`, `I->A`, `I->S`
-  - pairwise classes tracked as `A_vs_S`, `A_vs_I`, `S_vs_I`
-- Adjudication rules:
-  - when both raters agree, keep agreed label
-  - when raters disagree, set `final_label` in adjudication sheet with brief `adjudication_note`
-  - unresolved/blank `final_label` rows are considered pending adjudication
-- IRR gate policy:
-  - infrastructure-mode Phase 2 can complete with `pending_rater2` or `pending_adjudication`
-  - strict κ gate (`kappa > 0.7`) must pass on a blinded `100+` sentence subset before centroid retraining
-  - IRR must remain true human-human IRR; model-vs-label agreement is not an IRR substitute
-
-## Assistive API Bootstrap (Iteration 1)
-
-- OpenAI API output is assistive-only and is never canonical by default.
+- OpenAI API output is assistive-only and never canonical by default.
 - API output is not IRR and must not replace the second-rater workflow.
-- `data/validation/held_out_sentences.csv` remains frozen evaluation-only and must not be reused for assistive prompt training or canonical label generation.
-- Human raters remain the source of truth for labels, adjudication, and rubric refinement.
-- The assistive prompt must return exactly one of `Actionable|Speculative|Irrelevant`.
-- Returned rationale is short and review-oriented.
-- Returned confidence is informational only and must not override the rubric.
-- The smoke test uses one deterministic clean sentence from `data/processed/sentences/year=2024/ai_sentences_sample.csv`.
-- The API key must be injected through `OPENAI_API_KEY`. Do not store it in tracked files or paste it back into chat.
-- No downstream outcomes, patents, returns, or later panel variables may appear in the prompt or adjudication reasoning.
+- Human raters remain the source of truth for final canonical labels.
+- Assistive prelabels may populate review columns only.
+- Assistive prelabels must never overwrite canonical `label`.
+- Returned confidence is informational only.
+- No downstream outcomes, patents, returns, or later panel variables may appear in prompts or adjudication reasoning.
 
-### Assistive Prompt Rubric Summary
+## Calibration and Freeze
 
-- `Actionable`: explicit current deployment, operational use, implementation details, or realized AI execution.
-- `Speculative`: future-looking plans, intentions, risks, expected benefits, or exploratory AI statements without concrete execution evidence.
-- `Irrelevant`: generic, boilerplate, list-like, or non-substantive AI mentions that do not indicate meaningful firm action.
+### Calibration
+During development, rubric refinement is allowed when:
+- tranche evidence shows the current labels do not reflect the proposal's construct
+- predeclared predictive-validity checks show weak directional fit between disclosure measures and later AI capability proxies
 
-### Disallowed API Uses
+### Freeze
+Rubric freeze is required before publication-scale deployment.
 
-- Generating canonical labels for the training set.
-- Replacing the blinded human second-rater workflow.
-- Reusing held-out sentences as training or assistive prompt examples.
+After provisional freeze:
+- large-scale labeling and retraining proceed under the frozen rubric
+- any later rubric change requires a formal review-driven return to rubric realignment
 
-## Label Ops Bootstrap (Iteration 1)
+## IRR Workflow
 
-- `labeling_batch_v1` is leakage-safe against the frozen held-out dataset.
-- Exact duplicate sentence texts are removed before the batch is created.
-- The first bootstrap batch is human-labeling-ready and leaves review fields blank:
-  - `label`
-  - `is_uncertain`
-  - `uncertainty_note`
-- API suggestions are intentionally excluded from `labeling_batch_v1`.
-- The bootstrap batch contract is:
-  - `240` rows total
-  - availability-aware quarter redistribution after clean-filter, held-out exclusion, and exact-text dedupe
-  - exact quarter counts are recorded in `reports/labels/labeling_batch_v1_summary.json`
-- Batch creation consumes only the canonical 2024 sentence table and the bounded pilot manifest:
-  - `data/processed/sentences/year=2024/ai_sentences.parquet`
-  - `data/manifests/filings/pilot_2024_10k_v1.csv`
+IRR is a human-human reliability check on the canonical labeled pool.
 
-## Scaled Label Expansion (Iteration 2)
+Required design:
+- stratified sample covering at least `100` firms
+- balanced by industry and year
+- two independent human raters
+- third adjudicator for disagreements
+- report Cohen's kappa overall and by class
 
-- Iteration 2 expands beyond the bootstrap batch toward a stakeholder target of:
-  - `500` firms in the 2024 candidate pool
-  - `1–2k` clean AI sentences in the expanded candidate pool
-- Iteration 2 is intentionally linear and tranche-based:
-  - `tranche1`: verify the current `240`-row bootstrap batch
-  - `sentence-pool-expansion-2024`: build the expanded candidate pool in four resumable `125`-firm batches
-  - `tranche2`: prepare and verify a `160`-row expanded labeling tranche
-  - `tranche3`: prepare and verify a second `160`-row expanded labeling tranche
-- `labeling_batch_v1.csv` is tranche 1 only. It contributes toward the final sufficiency gate but is not the final training dataset.
-- The tranche contracts are fixed:
-  - tranche 1 = `240`
-  - tranche 2 = `160`
-  - tranche 3 = `160`
-- The final pre-retraining labeled dataset must satisfy:
-  - `>= 500` adjudicated labels
-  - `>= 80` labels per class
-  - zero held-out overlap
-- The frozen held-out set remains external evaluation-only and is not repurposed for train/validation splitting.
-- Centroid retraining remains blocked until both of these are true:
-  - the label sufficiency gate passes
-  - the human-human IRR gate (`kappa > 0.7` on `>=100` reviewed items) passes
-- IRR happens after canonical tranche merge and before centroid retraining.
-- API outputs remain assistive-only during this expansion and must not become canonical labels.
-- Assistive prelabels are operational aids only:
-  - they may populate `assistive_*` review columns
-  - they must never overwrite canonical `label`
-  - human verification remains required before any row enters `labels_master`
+IRR gate policy:
+- human-human only
+- `kappa > 0.7`
+- at least `100` reviewed items
+- by-class kappa diagnostics required before retraining
+
+## Iteration 2 Execution Model
+
+Iteration 2 is no longer interpreted as continuous labeling under the old rubric.
+
+It now proceeds in this order:
+1. rubric realignment
+2. tranche 1 labeling under rubric v2
+3. sentence-pool expansion
+4. tranche 2 labeling
+5. tranche 3 labeling
+6. canonical label merge
+7. IRR and adjudication
+8. provisional rubric freeze and split registry
+9. label sufficiency gate
+
+Fixed tranche sizes:
+- tranche 1 = `240`
+- tranche 2 = `160`
+- tranche 3 = `160`
+
+Retraining remains blocked until all of the following pass:
+- `>=500` adjudicated labels
+- `>=80` labels per class
+- zero held-out overlap
+- proposal-style IRR gate
+- split registry freeze
+- provisional rubric freeze
+
+## Later Measure Construction
+
+Later firm-year construction should explicitly publish:
+- `AI Focus = log(1 + AI sentences)`
+- `log(1 + A)`
+- `log(1 + S)`
+- `SpecShare = S / (A + S)`
+- `CredAI = z(A) - z(S)`
+- `A_S = log(1 + A / (1 + S))`
+
+These measures are part of the proposal's core methodology and must remain visible in the roadmap and review artifacts.

@@ -1,12 +1,12 @@
 {
-  "schema_version": "1.3.0",
-  "review_id": "961bd252-313a3a32",
+  "schema_version": "1.4.0",
+  "review_id": "dbab2a10-313a3a32",
   "review_type": "iteration",
   "iteration_id": "1",
-  "generated_at": "2026-03-08T06:54:16.536374+00:00",
+  "generated_at": "2026-03-09T05:53:58.621580+00:00",
   "git": {
     "branch": "iteration2/integration",
-    "commit": "e31b31ab64df09b77566fdbbc579258ce5242ab8",
+    "commit": "0ba4320498b66773e91b40a15b05f6a28973e819",
     "dirty": true
   },
   "inputs": {
@@ -331,8 +331,7 @@
       "preferred": 1
     },
     "counts_by_status": {
-      "in_progress": 1,
-      "open": 11
+      "open": 12
     },
     "due_unsatisfied_count": 0,
     "requirement_statuses": [
@@ -340,14 +339,14 @@
         "requirement_id": "validate_methodology_before_scale",
         "priority": "non-negotiable",
         "target_iteration": "2",
-        "status": "in_progress",
+        "status": "open",
         "mapped_phases": [
-          "iteration1/rubric-and-api-bootstrap",
+          "iteration2/rubric-realignment",
           "iteration2/irr-and-adjudication",
           "iteration2/label-sufficiency-gate"
         ],
         "mapped_statuses": [
-          "satisfied",
+          "blocked_manual",
           "waiting_on_deps",
           "waiting_on_deps"
         ]
@@ -393,9 +392,11 @@
           "iteration2/tranche3-labeling",
           "iteration2/merge-canonical-labels",
           "iteration2/irr-and-adjudication",
+          "iteration2/provisional-rubric-freeze-and-split-registry",
           "iteration2/label-sufficiency-gate"
         ],
         "mapped_statuses": [
+          "waiting_on_deps",
           "waiting_on_deps",
           "waiting_on_deps",
           "waiting_on_deps",
@@ -514,8 +515,123 @@
       }
     ]
   },
+  "methodology_alignment_summary": {
+    "source_artifact": "docs/director/proposal_methodology.md",
+    "core_construct": "AI-washing is speculative firm AI narrative without later observable AI capability.",
+    "active_development_scope": "2021-2024 public-filing development window",
+    "publication_target_scope": "all publicly traded firms",
+    "desired_horizon": "2000-2024 when source availability permits",
+    "counts_by_priority": {
+      "non-negotiable": 3,
+      "publication-critical": 2
+    },
+    "counts_by_status": {
+      "open": 5
+    },
+    "hard_gates": [
+      "human_human_irr_only",
+      "irr_stratified_100_firms_min",
+      "by_class_kappa_report_required",
+      "rubric_freeze_before_final_scale",
+      "directional_predictive_validity_before_publication_scale"
+    ],
+    "named_measures": [
+      {
+        "measure_id": "AI_Focus",
+        "formula": "log(1 + AI sentences)"
+      },
+      {
+        "measure_id": "log_1_plus_A",
+        "formula": "log(1 + A)"
+      },
+      {
+        "measure_id": "log_1_plus_S",
+        "formula": "log(1 + S)"
+      },
+      {
+        "measure_id": "SpecShare",
+        "formula": "S / (A + S)"
+      },
+      {
+        "measure_id": "CredAI",
+        "formula": "z(A) - z(S)"
+      },
+      {
+        "measure_id": "A_S",
+        "formula": "log(1 + A / (1 + S))"
+      }
+    ],
+    "requirement_statuses": [
+      {
+        "requirement_id": "proposal_rubric_realignment_before_scale",
+        "priority": "non-negotiable",
+        "target_iteration": "2",
+        "status": "open",
+        "mapped_phases": [
+          "iteration2/rubric-realignment",
+          "iteration2/tranche1-labeling"
+        ],
+        "mapped_statuses": [
+          "blocked_manual",
+          "waiting_on_deps"
+        ]
+      },
+      {
+        "requirement_id": "proposal_style_irr_design",
+        "priority": "non-negotiable",
+        "target_iteration": "2",
+        "status": "open",
+        "mapped_phases": [
+          "iteration2/irr-and-adjudication"
+        ],
+        "mapped_statuses": [
+          "waiting_on_deps"
+        ]
+      },
+      {
+        "requirement_id": "proposal_named_measure_construction",
+        "priority": "publication-critical",
+        "target_iteration": "3",
+        "status": "open",
+        "mapped_phases": [
+          "iteration3/firm-year-measure-construction"
+        ],
+        "mapped_statuses": [
+          "waiting_on_deps"
+        ]
+      },
+      {
+        "requirement_id": "proposal_directional_predictive_validity",
+        "priority": "publication-critical",
+        "target_iteration": "3",
+        "status": "open",
+        "mapped_phases": [
+          "iteration3/development-predictive-validity-gate"
+        ],
+        "mapped_statuses": [
+          "waiting_on_deps"
+        ]
+      },
+      {
+        "requirement_id": "proposal_rubric_freeze",
+        "priority": "non-negotiable",
+        "target_iteration": "2",
+        "status": "open",
+        "mapped_phases": [
+          "iteration2/provisional-rubric-freeze-and-split-registry"
+        ],
+        "mapped_statuses": [
+          "waiting_on_deps"
+        ]
+      }
+    ]
+  },
   "unmet_stakeholder_requirements": [],
   "deferred_stakeholder_requirements": [],
+  "unmet_methodology_requirements": [],
+  "rubric_calibration_status": "future",
+  "rubric_freeze_status": "future",
+  "predictive_validity_gate_status": "future",
   "publication_readiness_blockers": [],
   "findings": [
     {
@@ -811,7 +927,7 @@
     "entry_criteria": [
       "Iteration 1 review approved.",
       "Iteration 2 kickoff completed on iteration2/integration.",
-      "Iteration 2 expansion uses the external DataWork filing corpus, not legacy in-repo sentence exports."
+      "Proposal methodology source and stakeholder expectations are both current."
     ],
     "authorized": false
   },

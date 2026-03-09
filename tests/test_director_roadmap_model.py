@@ -38,7 +38,7 @@ def _write_yaml(path: Path, payload: dict) -> None:
 
 def _minimal_stakeholder_alignment() -> dict:
     return {
-        "schema_version": "1.3.0",
+        "schema_version": "1.4.0",
         "source_artifact": "docs/director/stakeholder_expectations.md",
         "active_development_scope": "2021-2024",
         "publication_target_scope": "all publicly traded firms",
@@ -61,9 +61,70 @@ def _minimal_stakeholder_alignment() -> dict:
     }
 
 
+def _minimal_methodology_alignment() -> dict:
+    return {
+        "schema_version": "1.4.0",
+        "source_artifact": "docs/director/proposal_methodology.md",
+        "core_construct": "AI-washing is speculative AI narrative without later observable capability.",
+        "active_development_scope": "2021-2024",
+        "publication_target_scope": "all publicly traded firms",
+        "desired_horizon": "2000-2024 when source availability permits",
+        "core_constructs": [
+            "Actionable statements indicate current firm AI capability.",
+            "Speculative statements indicate firm-specific AI aspiration without operational proof.",
+            "Irrelevant statements mention AI generically without capability claims.",
+        ],
+        "label_semantics": {
+            "Actionable": "present or past deployment, implementation, or operational AI use",
+            "Speculative": "firm-specific aspirational or forward-looking AI narrative",
+            "Irrelevant": "generic AI market, risk, regulatory, or boilerplate language",
+        },
+        "borderline_rules": [
+            "Generic AI cyber-risk language is Irrelevant.",
+            "Risk-section language becomes Actionable only when it discloses current firm AI deployment.",
+        ],
+        "irr_design_requirements": [
+            "Stratified sample across at least 100 firms.",
+            "Balanced by industry and year.",
+            "Two raters plus third adjudicator.",
+        ],
+        "named_measures": [
+            {
+                "measure_id": "AI_Focus",
+                "formula": "log(1 + AI sentences)",
+                "description": "Firm-year AI disclosure intensity.",
+                "mapped_phases": ["iteration3/firm-year-measure-construction"],
+            }
+        ],
+        "baseline_predictive_specs": [
+            "Patents and job postings at l in {0,1,2} with firm/year FE."
+        ],
+        "ai_washing_specification": ["A_S", "A_S x PatentMismatch"],
+        "rubric_calibration_policy": [
+            "Rubric refinement is allowed during development calibration."
+        ],
+        "rubric_freeze_policy": ["Rubric must freeze before publication-scale deployment."],
+        "predictive_validity_policy": [
+            "Directional predictive validity is required before publication scale."
+        ],
+        "hard_gates": ["IRR stratified 100-firm minimum", "Rubric freeze before final scale"],
+        "requirements": [
+            {
+                "requirement_id": "proposal-rubric-realignment",
+                "priority": "non-negotiable",
+                "summary": "Rubric must be realigned to the proposal construct before tranche-1 canonical labeling continues.",
+                "target_iteration": "2",
+                "source_refs": ["proposal methodology"],
+                "mapped_phases": ["iteration2/rubric-realignment"],
+                "mapped_gates": ["rubric_realignment_complete"],
+            }
+        ],
+    }
+
+
 def _minimal_model() -> dict:
     return {
-        "schema_version": "1.3.0",
+        "schema_version": "1.4.0",
         "project": {"name": "semantic-patterns", "description": "test"},
         "settings": {
             "active_horizon_iterations": ["1", "2"],
@@ -105,6 +166,7 @@ def _minimal_model() -> dict:
             ],
         },
         "stakeholder_alignment": _minimal_stakeholder_alignment(),
+        "methodology_alignment": _minimal_methodology_alignment(),
         "policies": [
             {
                 "policy_id": "heldout_frozen",
@@ -404,6 +466,7 @@ def test_load_and_render_roadmap_model(tmp_path):
     assert "## Policies" in body
     assert "## Data Layers" in body
     assert "## Stakeholder Alignment" in body
+    assert "## Methodology Alignment" in body
     assert "stakeholder-scale" in body
 
 
@@ -524,7 +587,7 @@ def test_load_remediation_library_validates(tmp_path):
 
 def test_phase_dependencies_flow_into_task_readiness(tmp_path):
     model_payload = {
-        "schema_version": "1.3.0",
+        "schema_version": "1.4.0",
         "project": {"name": "semantic-patterns", "description": "test"},
         "settings": {"defaults": {"phase_execution_mode": "phase_first"}},
         "branching_policy": {
@@ -541,6 +604,7 @@ def test_phase_dependencies_flow_into_task_readiness(tmp_path):
             "closeout_validation_commands": [".venv/bin/pytest -q"],
         },
         "stakeholder_alignment": _minimal_stakeholder_alignment(),
+        "methodology_alignment": _minimal_methodology_alignment(),
         "policies": [],
         "data_layers": [],
         "source_windows": [],
@@ -863,20 +927,19 @@ def test_task_with_missing_outputs_and_quality_checks_remains_ready(tmp_path):
 def test_actual_iteration2_tranche_workflow_is_wired():
     model = load_roadmap_model("director/model/roadmap_model.yaml")
 
+    rubric_phase = find_phase(model, iteration_id="2", phase_name="rubric-realignment")
+    assert rubric_phase is not None
+    rubric_task_ids = [task.task_id for task in rubric_phase.tasks]
+    assert rubric_task_ids == [
+        "iteration2.rubric.review_tranche1_error_patterns",
+        "iteration2.rubric.publish_protocol_v2",
+        "iteration2.rubric.regenerate_tranche1_assistive_prelabels_v2",
+    ]
+
     tranche1_phase = find_phase(model, iteration_id="2", phase_name="tranche1-labeling")
     assert tranche1_phase is not None
-    tranche1_task_ids = {task.task_id for task in tranche1_phase.tasks}
-    assert tranche1_task_ids == {
-        "iteration2.labels.generate_tranche1_assistive_prelabels",
-        "iteration2.labels.verify_tranche1_labels",
-    }
-    tranche1_prelabels = next(
-        task
-        for task in tranche1_phase.tasks
-        if task.task_id == "iteration2.labels.generate_tranche1_assistive_prelabels"
-    )
-    assert tranche1_prelabels.commands
-    assert "--checkpoint-every 10" in tranche1_prelabels.commands[0]
+    tranche1_task_ids = [task.task_id for task in tranche1_phase.tasks]
+    assert tranche1_task_ids == ["iteration2.labels.verify_tranche1_labels"]
     verify_tranche1 = next(
         task
         for task in tranche1_phase.tasks
@@ -884,7 +947,7 @@ def test_actual_iteration2_tranche_workflow_is_wired():
     )
     assert any(
         condition.kind == "csv_nonempty_count_gte"
-        and condition.target == "data/labels/v1/labeling_batch_v1_filled.csv::label"
+        and condition.target == "data/labels/v1/labeling_batch_v1_filled_v2.csv::label"
         and condition.expected == 240
         for condition in verify_tranche1.quality_checks
     )
@@ -984,6 +1047,7 @@ def test_actual_iteration2_tranche_workflow_is_wired():
     )
     assert "semantic_ai_washing.labeling.merge_labeling_batches" in merge_task.commands[0]
     assert "data/labels/v1/labeling_batch_v3_filled.csv" in merge_task.commands[0]
+    assert "data/labels/v1/labeling_batch_v1_filled_v2.csv" in merge_task.commands[0]
     assert any(
         condition.kind == "json_field_compare"
         and condition.target
@@ -991,6 +1055,24 @@ def test_actual_iteration2_tranche_workflow_is_wired():
         and condition.expected == 560
         for condition in merge_task.quality_checks
     )
+
+    freeze_phase = find_phase(
+        model, iteration_id="2", phase_name="provisional-rubric-freeze-and-split-registry"
+    )
+    assert freeze_phase is not None
+    assert any(
+        task.task_id == "iteration2.rubric.publish_provisional_freeze"
+        for task in freeze_phase.tasks
+    )
+
+    measures_phase = find_phase(
+        model, iteration_id="3", phase_name="firm-year-measure-construction"
+    )
+    assert measures_phase is not None
+    validity_phase = find_phase(
+        model, iteration_id="3", phase_name="development-predictive-validity-gate"
+    )
+    assert validity_phase is not None
 
     review_phase = find_phase(model, iteration_id="2", phase_name="review-and-replan")
     assert review_phase is not None

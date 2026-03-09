@@ -1,7 +1,7 @@
 <!-- generated_file: true -->
 <!-- source_model: /Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/model/roadmap_model.yaml -->
-<!-- source_sha256: 961bd2529ac0ac2b9e51d1bbd13da30c00f80cc86179c97f846a460be9f00bd8 -->
-<!-- rendered_at: 2026-03-08T06:54:27.452958+00:00 -->
+<!-- source_sha256: dbab2a1053caa82e1424b687489946300650dd458bdc9a7d642465df10eebfaa -->
+<!-- rendered_at: 2026-03-09T05:54:01.946015+00:00 -->
 
 # Roadmap Master
 
@@ -54,8 +54,8 @@ Optimization proposals may recommend resequencing tasks or phases beyond the can
   - summary: Validate the new A/S/I classification approach before deeper investment in scaled execution.
   - target iteration: `2`
   - source refs: email thread 2025-07-26
-  - mapped phases: iteration1/rubric-and-api-bootstrap, iteration2/irr-and-adjudication, iteration2/label-sufficiency-gate
-  - mapped gates: assistive_api_bootstrap_passed, human_human_irr_gt_0_7, label_sufficiency_before_retraining
+  - mapped phases: iteration2/rubric-realignment, iteration2/irr-and-adjudication, iteration2/label-sufficiency-gate
+  - mapped gates: rubric_realignment_complete, human_human_irr_gt_0_7, label_sufficiency_before_retraining
 - `true_human_irr_multi_rater` priority=`non-negotiable` stakeholder=`Kuntara`
   - summary: Use multiple human raters and true IRR rather than model-vs-label agreement.
   - target iteration: `2`
@@ -72,7 +72,7 @@ Optimization proposals may recommend resequencing tasks or phases beyond the can
   - summary: Reach a publication-grade adjudicated label set before retraining, not just a small pilot.
   - target iteration: `2`
   - source refs: email thread 2025-08-27, email thread 2025-09-08
-  - mapped phases: iteration2/tranche1-labeling, iteration2/tranche2-labeling, iteration2/tranche3-labeling, iteration2/merge-canonical-labels, iteration2/irr-and-adjudication, iteration2/label-sufficiency-gate
+  - mapped phases: iteration2/tranche1-labeling, iteration2/tranche2-labeling, iteration2/tranche3-labeling, iteration2/merge-canonical-labels, iteration2/irr-and-adjudication, iteration2/provisional-rubric-freeze-and-split-registry, iteration2/label-sufficiency-gate
   - mapped gates: adjudicated_labels_gte_500, per_class_labels_gte_80
 - `ai_total_merge_integrity` priority=`non-negotiable` stakeholder=`Kuntara`
   - summary: Fix and verify merge integrity, especially ai_total, before panel and regression work.
@@ -122,6 +122,71 @@ Optimization proposals may recommend resequencing tasks or phases beyond the can
   - source refs: email thread 2025-11-01, email thread 2025-11-18
   - mapped phases: iteration5/release-packaging
   - mapped gates: results_package_present
+
+## Methodology Alignment
+- source artifact: `docs/director/proposal_methodology.md`
+- core construct: AI-washing is speculative firm AI narrative without later observable AI capability.
+- active development scope: `2021-2024 public-filing development window`
+- publication target scope: `all publicly traded firms`
+- desired horizon: `2000-2024 when source availability permits`
+
+### Core Constructs
+- Actionable statements indicate current or realized firm AI capability.
+- Speculative statements indicate firm-specific AI aspiration without operational proof.
+- Irrelevant statements mention AI generically without serving as a firm capability claim.
+
+### Label Semantics
+- `Actionable`: present or past firm-specific deployment, implementation, embedded workflow, or operational execution of AI
+- `Speculative`: firm-specific aspirational or forward-looking AI narrative without operational evidence
+- `Irrelevant`: generic market, regulatory, cyber-risk, boilerplate, or tangential AI mention
+
+### Borderline Rules
+- Generic AI risk, regulatory, or cyber language is Irrelevant unless it discloses current firm AI deployment.
+- Risk-section language becomes Actionable only when it reveals current firm AI use or implementation.
+- A sentence is not Speculative merely because it is uncertain or risk-oriented; it must still be a firm-specific AI narrative claim.
+
+### IRR Design
+- Stratified sample covering at least 100 firms.
+- Balanced by industry and year.
+- Two independent human raters and a third adjudicator.
+- Report Cohen's kappa overall and by class.
+
+### Named Measures
+- `AI_Focus`: `log(1 + AI sentences)` - Firm-year AI disclosure intensity.
+- `log_1_plus_A`: `log(1 + A)` - Firm-year intensity of Actionable AI statements.
+- `log_1_plus_S`: `log(1 + S)` - Firm-year intensity of Speculative AI statements.
+- `SpecShare`: `S / (A + S)` - Speculative share among non-irrelevant AI statements.
+- `CredAI`: `z(A) - z(S)` - Credibility index contrasting Actionable and Speculative intensity.
+- `A_S`: `log(1 + A / (1 + S))` - Stabilized actionable-to-speculative ratio.
+
+### Baseline Predictive Specs
+- Use patents and AI-skills job postings as capability outcomes.
+- Evaluate horizons l in {0,1,2}.
+- Use firm and year fixed effects in the baseline specification.
+- Use industry x year fixed effects as robustness.
+
+### AI-Washing Specification
+- Use A_S as the main narrative-credibility measure.
+- Use A_S x PatentMismatch in the AI-washing specification.
+
+### Rubric Calibration Policy
+- Rubric refinement is allowed during development calibration when tranche evidence shows the construct is being captured poorly.
+- Calibration changes must be tied to proposal-faithful label semantics and predeclared predictive outcomes.
+
+### Rubric Freeze Policy
+- Rubric must freeze before publication-scale deployment.
+- If later evidence requires label-definition changes, director must route back to rubric realignment through review.
+
+### Predictive Validity Policy
+- Predictive-validity is a directional development gate, not an unconstrained significance target.
+- Failure of the development predictive-validity gate triggers review-driven return to rubric realignment rather than arbitrary metric fishing.
+
+### Methodology Hard Gates
+- human_human_irr_only
+- irr_stratified_100_firms_min
+- by_class_kappa_report_required
+- rubric_freeze_before_final_scale
+- directional_predictive_validity_before_publication_scale
 
 ## Policies
 - `heldout_frozen` `dataset_freeze` enforcement=`hard` value=`True`
@@ -394,10 +459,10 @@ Exit criteria: Foundation phases passed through label-ops-bootstrap., Iteration 
 - phase-level only in this roadmap version
 
 
-## Iteration 2 - Scaled Label Expansion, Human IRR, and Modeling Readiness
-Goal: Expand the 2024 development window to stakeholder scale, build a publication-grade adjudicated label set, validate the rubric with true human-human IRR, and gate retraining on explicit sufficiency criteria.
-Entry criteria: Iteration 1 review approved., Iteration 2 kickoff completed on iteration2/integration., Iteration 2 expansion uses the external DataWork filing corpus, not legacy in-repo sentence exports.
-Exit criteria: Sentence-pool expansion reaches 500 firms and at least 1,000 clean AI sentences in the 2024 candidate pool., At least 500 adjudicated labels with at least 80 labels per class are available before retraining., Human-human IRR exceeds 0.7 on a blinded 100+ sentence subset., Split registry is frozen with zero held-out leakage and the modeling readiness report is published., Iteration 2 review approved.
+## Iteration 2 - Rubric Realignment, Label Expansion, and Provisional Freeze
+Goal: Realign the rubric to the proposal construct, rebuild tranche-based canonical labels under rubric v2, and provisionally freeze the rubric only after sufficiency and IRR gates pass.
+Entry criteria: Iteration 1 review approved., Iteration 2 kickoff completed on iteration2/integration., Proposal methodology source and stakeholder expectations are both current.
+Exit criteria: Rubric realignment report and revised protocol v2 are published., Tranche 1 is re-reviewed under rubric v2 before further canonical labeling proceeds., Sentence-pool expansion reaches 500 firms and at least 1,000 clean AI sentences in the 2024 candidate pool., At least 500 adjudicated labels with at least 80 labels per class are available before retraining., Human-human IRR exceeds 0.7 on a stratified, blinded 100+ item subset with by-class diagnostics., Provisional rubric freeze and split registry are published with zero held-out leakage., Iteration 2 review approved.
 
 ### iteration2/kickoff-and-preflight
 - Title: Kickoff and Preflight
@@ -417,28 +482,53 @@ Exit criteria: Sentence-pool expansion reaches 500 firms and at least 1,000 clea
   - tags: kickoff
   - risks: R4, R7
 
-### iteration2/tranche1-labeling
-- Title: Tranche 1 Labeling
-- Goal: Complete the existing 240-row bootstrap batch as tranche 1 with assistive-only prelabels and human-canonical verification.
+### iteration2/rubric-realignment
+- Title: Rubric Realignment
+- Goal: Review tranche-1 error patterns, revise the proposal-faithful rubric, and regenerate tranche-1 assistive prelabels under rubric v2 before canonical labeling resumes.
 - Lifecycle: `planned`
 - Depends on: iteration2/kickoff-and-preflight
 - Source window: `active_2021_2024`
-- Required artifacts: data/labels/v1/labeling_batch_v1_prelabeled.csv, reports/labels/assistive_prelabel_tranche1_summary.json, data/labels/v1/labeling_batch_v1_filled.csv
+- Required artifacts: docs/labeling_protocol.md, reports/labels/tranche1_rubric_realignment_v2.md, data/labels/v1/labeling_batch_v1_prelabeled_v2.csv, reports/labels/assistive_prelabel_tranche1_v2_summary.json
+- Tags: rubric_calibration, methodology_alignment
+
+#### Tasks
+- `iteration2.rubric.review_tranche1_error_patterns` Review tranche 1 error patterns
+  - kind: `analysis` gate_class: `science` automation: `manual`
+  - depends_on: none
+  - inputs: data/labels/v1/labeling_batch_v1_prelabeled.csv, docs/director/proposal_methodology.md
+  - outputs: reports/labels/tranche1_rubric_realignment_v2.md
+  - tags: rubric_calibration, proposal_alignment
+  - risks: R1, R3
+- `iteration2.rubric.publish_protocol_v2` Publish rubric v2 protocol
+  - kind: `manual` gate_class: `science` automation: `manual`
+  - depends_on: iteration2.rubric.review_tranche1_error_patterns
+  - inputs: reports/labels/tranche1_rubric_realignment_v2.md
+  - outputs: docs/labeling_protocol.md
+  - tags: rubric_calibration, protocol
+  - risks: R1, R3
+- `iteration2.rubric.regenerate_tranche1_assistive_prelabels_v2` Regenerate tranche 1 assistive prelabels under rubric v2
+  - kind: `manual` gate_class: `ops` automation: `manual`
+  - depends_on: iteration2.rubric.publish_protocol_v2
+  - inputs: data/labels/v1/labeling_batch_v1.csv, director/config/api_assistive_policy.yaml
+  - outputs: data/labels/v1/labeling_batch_v1_prelabeled_v2.csv, reports/labels/assistive_prelabel_tranche1_v2_summary.json
+  - tags: assistive_api, rubric_calibration, tranche1
+  - risks: R1, R4
+
+### iteration2/tranche1-labeling
+- Title: Tranche 1 Labeling
+- Goal: Verify tranche 1 under rubric v2 after rubric realignment and regenerated assistive prelabels.
+- Lifecycle: `planned`
+- Depends on: iteration2/rubric-realignment
+- Source window: `active_2021_2024`
+- Required artifacts: data/labels/v1/labeling_batch_v1_filled_v2.csv
 - Tags: tranche1, human_labeling
 
 #### Tasks
-- `iteration2.labels.generate_tranche1_assistive_prelabels` Generate tranche 1 assistive prelabels
-  - kind: `build` gate_class: `ops` automation: `partial`
-  - depends_on: none
-  - inputs: data/labels/v1/labeling_batch_v1.csv, director/config/api_assistive_policy.yaml
-  - outputs: data/labels/v1/labeling_batch_v1_prelabeled.csv, reports/labels/assistive_prelabel_tranche1_summary.json
-  - tags: assistive_api, tranche1, prelabels
-  - risks: R1, R4
 - `iteration2.labels.verify_tranche1_labels` Verify tranche 1 labels
   - kind: `manual` gate_class: `manual` automation: `manual`
-  - depends_on: iteration2.labels.generate_tranche1_assistive_prelabels
-  - inputs: data/labels/v1/labeling_batch_v1_prelabeled.csv
-  - outputs: data/labels/v1/labeling_batch_v1_filled.csv
+  - depends_on: iteration2.rubric.regenerate_tranche1_assistive_prelabels_v2
+  - inputs: data/labels/v1/labeling_batch_v1_prelabeled_v2.csv
+  - outputs: data/labels/v1/labeling_batch_v1_filled_v2.csv
   - tags: human_labeling, tranche1
   - risks: R1, R3
 
@@ -547,21 +637,21 @@ Exit criteria: Sentence-pool expansion reaches 500 firms and at least 1,000 clea
 - `iteration2.labels.generate_tranche3_assistive_prelabels` Generate tranche 3 assistive prelabels
   - kind: `build` gate_class: `ops` automation: `partial`
   - depends_on: iteration2.labels.prepare_tranche3_labeling_batch
-  - inputs: data/labels/v1/labeling_batch_v2.csv, director/config/api_assistive_policy.yaml
+  - inputs: data/labels/v1/labeling_batch_v3.csv, director/config/api_assistive_policy.yaml
   - outputs: data/labels/v1/labeling_batch_v3_prelabeled.csv, reports/labels/assistive_prelabel_tranche3_summary.json
   - tags: assistive_api, tranche3, prelabels
   - risks: R1, R4
 - `iteration2.labels.verify_tranche3_labels` Verify tranche 3 labels
   - kind: `manual` gate_class: `manual` automation: `manual`
   - depends_on: iteration2.labels.generate_tranche3_assistive_prelabels
-  - inputs: data/labels/v1/labeling_batch_v2_prelabeled.csv
+  - inputs: data/labels/v1/labeling_batch_v3_prelabeled.csv
   - outputs: data/labels/v1/labeling_batch_v3_filled.csv
   - tags: human_labeling, tranche3
   - risks: R1, R3
 
 ### iteration2/merge-canonical-labels
 - Title: Merge Canonical Labels
-- Goal: Merge the 3 verified tranches into the canonical labels master before IRR.
+- Goal: Merge the three verified tranches into the canonical label master after proposal-faithful tranche 1 review.
 - Lifecycle: `planned`
 - Depends on: iteration2/tranche3-labeling
 - Source window: `active_2021_2024`
@@ -572,14 +662,14 @@ Exit criteria: Sentence-pool expansion reaches 500 firms and at least 1,000 clea
 - `iteration2.labels.merge_canonical_labels` Merge canonical labels
   - kind: `build` gate_class: `data` automation: `full`
   - depends_on: iteration2.labels.verify_tranche1_labels, iteration2.labels.verify_tranche2_labels, iteration2.labels.verify_tranche3_labels
-  - inputs: data/labels/v1/labeling_batch_v1_filled.csv, data/labels/v1/labeling_batch_v2_filled.csv, data/labels/v1/labeling_batch_v3_filled.csv
+  - inputs: data/labels/v1/labeling_batch_v1_filled_v2.csv, data/labels/v1/labeling_batch_v2_filled.csv, data/labels/v1/labeling_batch_v3_filled.csv
   - outputs: data/labels/v1/labels_master.parquet, data/labels/v1/labels_master_review.csv, reports/labels/label_expansion_summary.json
   - tags: human_labeling, merge_labels
   - risks: R1, R2, R3
 
 ### iteration2/irr-and-adjudication
 - Title: IRR and Adjudication
-- Goal: Run true human-human IRR on a blinded 100+ sentence subset, adjudicate disagreements, and record rubric refinements.
+- Goal: Run proposal-style human-human IRR on a stratified 100+ firm subset, publish by-class diagnostics, and adjudicate disagreements.
 - Lifecycle: `planned`
 - Depends on: iteration2/merge-canonical-labels
 - Source window: `active_2021_2024`
@@ -602,14 +692,14 @@ Exit criteria: Sentence-pool expansion reaches 500 firms and at least 1,000 clea
   - tags: human_irr
   - risks: R1, R3
 
-### iteration2/split-registry-freeze
-- Title: Split Registry Freeze
-- Goal: Freeze train and validation sentence assignments after adjudication while keeping held-out separate and leakage-safe.
+### iteration2/provisional-rubric-freeze-and-split-registry
+- Title: Provisional Rubric Freeze and Split Registry
+- Goal: Freeze the rubric provisionally for scale-up, generate the split registry, and preserve zero held-out leakage before retraining.
 - Lifecycle: `planned`
 - Depends on: iteration2/irr-and-adjudication
 - Source window: `active_2021_2024`
-- Required artifacts: data/metadata/splits/split_registry_v1.csv, data/metadata/splits/split_registry_v1.json
-- Tags: split_registry, leakage_control
+- Required artifacts: data/metadata/splits/split_registry_v1.csv, data/metadata/splits/split_registry_v1.json, reports/labels/rubric_freeze_v2.json
+- Tags: split_registry, rubric_freeze, methodology_alignment
 
 #### Tasks
 - `iteration2.splits.freeze_registry` Freeze split registry
@@ -619,12 +709,19 @@ Exit criteria: Sentence-pool expansion reaches 500 firms and at least 1,000 clea
   - outputs: data/metadata/splits/split_registry_v1.csv, data/metadata/splits/split_registry_v1.json
   - tags: split_registry
   - risks: R3, R6
+- `iteration2.rubric.publish_provisional_freeze` Publish provisional rubric freeze
+  - kind: `manual` gate_class: `science` automation: `manual`
+  - depends_on: iteration2.splits.freeze_registry
+  - inputs: reports/labels/irr_report.json
+  - outputs: reports/labels/rubric_freeze_v2.json
+  - tags: rubric_freeze, methodology_alignment
+  - risks: R1, R3
 
 ### iteration2/label-sufficiency-gate
 - Title: Label Sufficiency Gate
-- Goal: Publish and verify the modeling readiness report before centroid retraining begins.
+- Goal: Publish and verify the modeling readiness report only after proposal-style IRR, split freeze, and provisional rubric freeze are complete.
 - Lifecycle: `planned`
-- Depends on: iteration2/split-registry-freeze
+- Depends on: iteration2/provisional-rubric-freeze-and-split-registry
 - Source window: `active_2021_2024`
 - Required artifacts: reports/models/modeling_readiness_gate.json
 - Tags: modeling_gate, stakeholder_alignment
@@ -633,7 +730,7 @@ Exit criteria: Sentence-pool expansion reaches 500 firms and at least 1,000 clea
 - `iteration2.labels.publish_modeling_readiness_report` Publish modeling readiness report
   - kind: `manual` gate_class: `manual` automation: `manual`
   - depends_on: none
-  - inputs: data/labels/v1/labels_master.parquet, reports/labels/irr_report.json, data/metadata/splits/split_registry_v1.csv
+  - inputs: data/labels/v1/labels_master.parquet, reports/labels/irr_report.json, data/metadata/splits/split_registry_v1.csv, reports/labels/rubric_freeze_v2.json
   - outputs: reports/models/modeling_readiness_gate.json
   - tags: modeling_gate
   - risks: R1, R3
@@ -671,10 +768,10 @@ Exit criteria: Sentence-pool expansion reaches 500 firms and at least 1,000 clea
   - risks: R4
 
 
-## Iteration 3 - Retraining, Evaluation, and Active-Window Classification
-Goal: Retrain on the expanded adjudicated label set, benchmark whether fine-tuning is warranted, evaluate on held-out, and classify the active development window with explicit merge-integrity QA.
-Entry criteria: Iteration 2 review approved., Iteration 3 kickoff completed on iteration3/integration., Label sufficiency gate passed with at least 500 adjudicated labels, at least 80 labels per class, and human-human IRR > 0.7.
-Exit criteria: Retraining, held-out evaluation, active-window classification, and ai_total merge-integrity QA are complete., Held-out evaluation remains at or above the 0.80 project baseline before publication-scale rollout., Iteration 3 review approved.
+## Iteration 3 - Retraining, Measure Construction, and Development Predictive Validity
+Goal: Retrain on the proposal-aligned adjudicated labels, build named firm-year measures, and test whether the rubric directionally predicts later AI capability before publication-scale deployment.
+Entry criteria: Iteration 2 review approved., Iteration 3 kickoff completed on iteration3/integration., Label sufficiency gate passed with at least 500 adjudicated labels, at least 80 labels per class, human-human IRR > 0.7, and provisional rubric freeze recorded.
+Exit criteria: Retraining, held-out evaluation, active-window classification, and ai_total merge-integrity QA are complete., Named firm-year narrative measures are published explicitly., Development predictive-validity gate is documented before publication-scale rollout., Iteration 3 review approved.
 
 ### iteration3/kickoff-and-preflight
 - Title: Kickoff and Preflight
@@ -760,11 +857,47 @@ Exit criteria: Retraining, held-out evaluation, active-window classification, an
   - tags: phase_completion_gate
   - risks: R4
 
+### iteration3/firm-year-measure-construction
+- Title: Firm-Year Measure Construction
+- Goal: Construct the proposal-defined firm-year narrative measures AI Focus, log(1+A), log(1+S), SpecShare, CredAI, and A_S from the classified disclosure outputs.
+- Lifecycle: `planned`
+- Depends on: iteration3/classification-merge-integrity
+- Source window: `active_2021_2024`
+- Required artifacts: data/processed/aggregates/firm_year_narrative_measures_v1.parquet, reports/classification/firm_year_narrative_measures_v1.json
+- Tags: measures, methodology_alignment
+
+#### Tasks
+- `iteration3.measures.publish_firm_year_measures` Publish firm-year narrative measures
+  - kind: `manual` gate_class: `science` automation: `manual`
+  - depends_on: iteration3.merge.verify_outputs
+  - inputs: data/processed/aggregates/firm_year_ai_metrics_v1.parquet
+  - outputs: data/processed/aggregates/firm_year_narrative_measures_v1.parquet, reports/classification/firm_year_narrative_measures_v1.json
+  - tags: firm_year_measures, proposal_alignment
+  - risks: R2, R6
+
+### iteration3/development-predictive-validity-gate
+- Title: Development Predictive-Validity Gate
+- Goal: Document whether the proposal-aligned rubric and firm-year measures directionally predict later AI capability outcomes before publication-scale deployment.
+- Lifecycle: `planned`
+- Depends on: iteration3/firm-year-measure-construction
+- Source window: `active_2021_2024`
+- Required artifacts: reports/evaluation/development_predictive_validity_v1.json
+- Tags: predictive_validity, methodology_alignment
+
+#### Tasks
+- `iteration3.validity.publish_development_predictive_validity` Publish development predictive-validity report
+  - kind: `manual` gate_class: `science` automation: `manual`
+  - depends_on: iteration3.measures.publish_firm_year_measures
+  - inputs: reports/classification/firm_year_narrative_measures_v1.json
+  - outputs: reports/evaluation/development_predictive_validity_v1.json
+  - tags: predictive_validity, proposal_alignment
+  - risks: R2, R6
+
 ### iteration3/review-and-replan
 - Title: Review and Replan
 - Goal: Synthesize iteration evidence, approve closeout, and prepare the next iteration handoff.
 - Lifecycle: `planned`
-- Depends on: iteration3/classification-merge-integrity
+- Depends on: iteration3/development-predictive-validity-gate
 - Source window: `none`
 - Required artifacts: director/reviews/iteration_3_review.json, director/reviews/iteration_3_review.md, director/reviews/iteration_3_patch_proposal.yaml, director/reviews/iteration_3_branch_plan.md, director/reviews/iteration_3_starter_prompt.md, director/reviews/iteration_3_approval.json
 - Tags: review, closeout
@@ -772,7 +905,7 @@ Exit criteria: Retraining, held-out evaluation, active-window classification, an
 #### Tasks
 - `iteration3.review.generate_review` Generate iteration review
   - kind: `analysis` gate_class: `ops` automation: `partial`
-  - depends_on: iteration3.merge.verify_outputs
+  - depends_on: iteration3.validity.publish_development_predictive_validity
   - inputs: docs/iteration_log.md
   - outputs: director/reviews/iteration_3_review.json, director/reviews/iteration_3_review.md, director/reviews/iteration_3_patch_proposal.yaml, director/reviews/iteration_3_branch_plan.md, director/reviews/iteration_3_starter_prompt.md
   - tags: review_generation
@@ -1017,12 +1150,17 @@ Exit criteria: Publication regressions, robustness outputs, differentiation arti
 
 
 ## Approved Review Appendix
-### 961bd252-313a3a32
+### dbab2a10-313a3a32
 - Scope: `iteration 1`
 - Accepted changes: none
 - Deferred changes: optimizer-proposed_roadmap_patch_8732eb4e-3a3a3230-1, optimizer-proposed_roadmap_patch_8732eb4e-3a3a3230-2, optimizer-proposed_roadmap_patch_9d516339-3a3a3230-1, optimizer-proposed_roadmap_patch_9d516339-3a3a3230-2, optimizer-proposed_roadmap_patch_b2f116c5-3a3a3230-1, optimizer-proposed_roadmap_patch_b2f116c5-3a3a3230-2, optimizer-proposed_roadmap_patch_d3700831-313a6972-1, optimizer-proposed_roadmap_patch_d3700831-313a6972-2, optimizer-proposed_roadmap_patch_e08e31e6-3a3a3230-1, optimizer-proposed_roadmap_patch_e08e31e6-3a3a3230-2, optimizer-proposed_roadmap_patch_fb55837d-3a3a3230-1, optimizer-proposed_roadmap_patch_fb55837d-3a3a3230-2, review-availability-aware-quartering
 - Next iteration: `2`
-- Entry criteria: Iteration 1 review approved., Iteration 2 kickoff completed on iteration2/integration., Iteration 2 expansion uses the external DataWork filing corpus, not legacy in-repo sentence exports.
-- Stakeholder summary: active_development_scope=2021-2024 public-filing development window; counts_by_priority{non-negotiable=4, preferred=1, publication-critical=7}; counts_by_status{in_progress=1, open=11}; desired_horizon=20-year horizon when source availability permits; due_unsatisfied_count=0; publication_target_scope=all publicly traded firms; requirement_statuses=[{'requirement_id': 'validate_methodology_before_scale', 'priority': 'non-negotiable', 'target_iteration': '2', 'status': 'in_progress', 'mapped_phases': ['iteration1/rubric-and-api-bootstrap', 'iteration2/irr-and-adjudication', 'iteration2/label-sufficiency-gate'], 'mapped_statuses': ['satisfied', 'waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'true_human_irr_multi_rater', 'priority': 'non-negotiable', 'target_iteration': '2', 'status': 'open', 'mapped_phases': ['iteration2/irr-and-adjudication', 'iteration2/label-sufficiency-gate'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'scale_candidate_pool_to_500_firms', 'priority': 'publication-critical', 'target_iteration': '2', 'status': 'open', 'mapped_phases': ['iteration2/sentence-pool-expansion-2024', 'iteration2/tranche2-labeling', 'iteration2/tranche3-labeling'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'label_set_sufficiency_before_retraining', 'priority': 'publication-critical', 'target_iteration': '2', 'status': 'open', 'mapped_phases': ['iteration2/tranche1-labeling', 'iteration2/tranche2-labeling', 'iteration2/tranche3-labeling', 'iteration2/merge-canonical-labels', 'iteration2/irr-and-adjudication', 'iteration2/label-sufficiency-gate'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps', 'waiting_on_deps', 'waiting_on_deps', 'waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'ai_total_merge_integrity', 'priority': 'non-negotiable', 'target_iteration': '3', 'status': 'open', 'mapped_phases': ['iteration3/classification-merge-integrity', 'iteration4/panel-assembly-2021-2024'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'job_postings_robustness', 'priority': 'publication-critical', 'target_iteration': '4', 'status': 'open', 'mapped_phases': ['iteration4/job-postings-robustness-integration', 'iteration5/robustness-and-sensitivity'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'lagged_and_industry_robustness', 'priority': 'publication-critical', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/regression-specification', 'iteration5/robustness-and-sensitivity'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'patent_mismatch_washing_proxy', 'priority': 'publication-critical', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/robustness-and-sensitivity'], 'mapped_statuses': ['waiting_on_deps']}, {'requirement_id': 'literature_differentiation', 'priority': 'publication-critical', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/literature-differentiation-and-examples', 'iteration5/release-packaging'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'before_after_examples', 'priority': 'publication-critical', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/literature-differentiation-and-examples', 'iteration5/release-packaging'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'publication_scope_all_public_firms', 'priority': 'preferred', 'target_iteration': '4', 'status': 'open', 'mapped_phases': ['iteration4/historical-window-expansion-readiness', 'iteration5/results-generation'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'results_and_paper_package', 'priority': 'non-negotiable', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/release-packaging'], 'mapped_statuses': ['waiting_on_deps']}]; source_artifact=docs/director/stakeholder_expectations.md
+- Entry criteria: Iteration 1 review approved., Iteration 2 kickoff completed on iteration2/integration., Proposal methodology source and stakeholder expectations are both current.
+- Stakeholder summary: active_development_scope=2021-2024 public-filing development window; counts_by_priority{non-negotiable=4, preferred=1, publication-critical=7}; counts_by_status{open=12}; desired_horizon=20-year horizon when source availability permits; due_unsatisfied_count=0; publication_target_scope=all publicly traded firms; requirement_statuses=[{'requirement_id': 'validate_methodology_before_scale', 'priority': 'non-negotiable', 'target_iteration': '2', 'status': 'open', 'mapped_phases': ['iteration2/rubric-realignment', 'iteration2/irr-and-adjudication', 'iteration2/label-sufficiency-gate'], 'mapped_statuses': ['blocked_manual', 'waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'true_human_irr_multi_rater', 'priority': 'non-negotiable', 'target_iteration': '2', 'status': 'open', 'mapped_phases': ['iteration2/irr-and-adjudication', 'iteration2/label-sufficiency-gate'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'scale_candidate_pool_to_500_firms', 'priority': 'publication-critical', 'target_iteration': '2', 'status': 'open', 'mapped_phases': ['iteration2/sentence-pool-expansion-2024', 'iteration2/tranche2-labeling', 'iteration2/tranche3-labeling'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'label_set_sufficiency_before_retraining', 'priority': 'publication-critical', 'target_iteration': '2', 'status': 'open', 'mapped_phases': ['iteration2/tranche1-labeling', 'iteration2/tranche2-labeling', 'iteration2/tranche3-labeling', 'iteration2/merge-canonical-labels', 'iteration2/irr-and-adjudication', 'iteration2/provisional-rubric-freeze-and-split-registry', 'iteration2/label-sufficiency-gate'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps', 'waiting_on_deps', 'waiting_on_deps', 'waiting_on_deps', 'waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'ai_total_merge_integrity', 'priority': 'non-negotiable', 'target_iteration': '3', 'status': 'open', 'mapped_phases': ['iteration3/classification-merge-integrity', 'iteration4/panel-assembly-2021-2024'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'job_postings_robustness', 'priority': 'publication-critical', 'target_iteration': '4', 'status': 'open', 'mapped_phases': ['iteration4/job-postings-robustness-integration', 'iteration5/robustness-and-sensitivity'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'lagged_and_industry_robustness', 'priority': 'publication-critical', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/regression-specification', 'iteration5/robustness-and-sensitivity'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'patent_mismatch_washing_proxy', 'priority': 'publication-critical', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/robustness-and-sensitivity'], 'mapped_statuses': ['waiting_on_deps']}, {'requirement_id': 'literature_differentiation', 'priority': 'publication-critical', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/literature-differentiation-and-examples', 'iteration5/release-packaging'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'before_after_examples', 'priority': 'publication-critical', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/literature-differentiation-and-examples', 'iteration5/release-packaging'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'publication_scope_all_public_firms', 'priority': 'preferred', 'target_iteration': '4', 'status': 'open', 'mapped_phases': ['iteration4/historical-window-expansion-readiness', 'iteration5/results-generation'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'results_and_paper_package', 'priority': 'non-negotiable', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/release-packaging'], 'mapped_statuses': ['waiting_on_deps']}]; source_artifact=docs/director/stakeholder_expectations.md
+- Methodology summary: active_development_scope=2021-2024 public-filing development window; core_construct=AI-washing is speculative firm AI narrative without later observable AI capability.; counts_by_priority{non-negotiable=3, publication-critical=2}; counts_by_status{open=5}; desired_horizon=2000-2024 when source availability permits; hard_gates=['human_human_irr_only', 'irr_stratified_100_firms_min', 'by_class_kappa_report_required', 'rubric_freeze_before_final_scale', 'directional_predictive_validity_before_publication_scale']; named_measures=[{'measure_id': 'AI_Focus', 'formula': 'log(1 + AI sentences)'}, {'measure_id': 'log_1_plus_A', 'formula': 'log(1 + A)'}, {'measure_id': 'log_1_plus_S', 'formula': 'log(1 + S)'}, {'measure_id': 'SpecShare', 'formula': 'S / (A + S)'}, {'measure_id': 'CredAI', 'formula': 'z(A) - z(S)'}, {'measure_id': 'A_S', 'formula': 'log(1 + A / (1 + S))'}]; publication_target_scope=all publicly traded firms; requirement_statuses=[{'requirement_id': 'proposal_rubric_realignment_before_scale', 'priority': 'non-negotiable', 'target_iteration': '2', 'status': 'open', 'mapped_phases': ['iteration2/rubric-realignment', 'iteration2/tranche1-labeling'], 'mapped_statuses': ['blocked_manual', 'waiting_on_deps']}, {'requirement_id': 'proposal_style_irr_design', 'priority': 'non-negotiable', 'target_iteration': '2', 'status': 'open', 'mapped_phases': ['iteration2/irr-and-adjudication'], 'mapped_statuses': ['waiting_on_deps']}, {'requirement_id': 'proposal_named_measure_construction', 'priority': 'publication-critical', 'target_iteration': '3', 'status': 'open', 'mapped_phases': ['iteration3/firm-year-measure-construction'], 'mapped_statuses': ['waiting_on_deps']}, {'requirement_id': 'proposal_directional_predictive_validity', 'priority': 'publication-critical', 'target_iteration': '3', 'status': 'open', 'mapped_phases': ['iteration3/development-predictive-validity-gate'], 'mapped_statuses': ['waiting_on_deps']}, {'requirement_id': 'proposal_rubric_freeze', 'priority': 'non-negotiable', 'target_iteration': '2', 'status': 'open', 'mapped_phases': ['iteration2/provisional-rubric-freeze-and-split-registry'], 'mapped_statuses': ['waiting_on_deps']}]; source_artifact=docs/director/proposal_methodology.md
 - Unmet stakeholder requirements: none
+- Unmet methodology requirements: none
+- Rubric calibration status: `future`
+- Rubric freeze status: `future`
+- Predictive-validity gate status: `future`
 - Publication blockers: none

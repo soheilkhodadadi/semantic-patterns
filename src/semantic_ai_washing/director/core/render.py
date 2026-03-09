@@ -125,6 +125,85 @@ def render_roadmap_markdown(
     lines.extend(
         [
             "",
+            "## Methodology Alignment",
+            f"- source artifact: `{model.methodology_alignment.source_artifact}`",
+            f"- core construct: {model.methodology_alignment.core_construct}",
+            f"- active development scope: `{model.methodology_alignment.active_development_scope}`",
+            f"- publication target scope: `{model.methodology_alignment.publication_target_scope}`",
+            f"- desired horizon: `{model.methodology_alignment.desired_horizon}`",
+            "",
+            "### Core Constructs",
+        ]
+    )
+    if model.methodology_alignment.core_constructs:
+        for construct in model.methodology_alignment.core_constructs:
+            lines.append(f"- {construct}")
+    else:
+        lines.append("- none")
+    lines.extend(["", "### Label Semantics"])
+    if model.methodology_alignment.label_semantics:
+        for label, summary in model.methodology_alignment.label_semantics.items():
+            lines.append(f"- `{label}`: {summary}")
+    else:
+        lines.append("- none")
+    lines.extend(["", "### Borderline Rules"])
+    if model.methodology_alignment.borderline_rules:
+        for rule in model.methodology_alignment.borderline_rules:
+            lines.append(f"- {rule}")
+    else:
+        lines.append("- none")
+    lines.extend(["", "### IRR Design"])
+    if model.methodology_alignment.irr_design_requirements:
+        for item in model.methodology_alignment.irr_design_requirements:
+            lines.append(f"- {item}")
+    else:
+        lines.append("- none")
+    lines.extend(["", "### Named Measures"])
+    if model.methodology_alignment.named_measures:
+        for measure in model.methodology_alignment.named_measures:
+            lines.append(f"- `{measure.measure_id}`: `{measure.formula}` - {measure.description}")
+    else:
+        lines.append("- none")
+    lines.extend(["", "### Baseline Predictive Specs"])
+    if model.methodology_alignment.baseline_predictive_specs:
+        for item in model.methodology_alignment.baseline_predictive_specs:
+            lines.append(f"- {item}")
+    else:
+        lines.append("- none")
+    lines.extend(["", "### AI-Washing Specification"])
+    if model.methodology_alignment.ai_washing_specification:
+        for item in model.methodology_alignment.ai_washing_specification:
+            lines.append(f"- {item}")
+    else:
+        lines.append("- none")
+    lines.extend(["", "### Rubric Calibration Policy"])
+    if model.methodology_alignment.rubric_calibration_policy:
+        for item in model.methodology_alignment.rubric_calibration_policy:
+            lines.append(f"- {item}")
+    else:
+        lines.append("- none")
+    lines.extend(["", "### Rubric Freeze Policy"])
+    if model.methodology_alignment.rubric_freeze_policy:
+        for item in model.methodology_alignment.rubric_freeze_policy:
+            lines.append(f"- {item}")
+    else:
+        lines.append("- none")
+    lines.extend(["", "### Predictive Validity Policy"])
+    if model.methodology_alignment.predictive_validity_policy:
+        for item in model.methodology_alignment.predictive_validity_policy:
+            lines.append(f"- {item}")
+    else:
+        lines.append("- none")
+    lines.extend(["", "### Methodology Hard Gates"])
+    if model.methodology_alignment.hard_gates:
+        for gate in model.methodology_alignment.hard_gates:
+            lines.append(f"- {gate}")
+    else:
+        lines.append("- none")
+
+    lines.extend(
+        [
+            "",
             "## Policies",
         ]
     )
@@ -223,7 +302,12 @@ def render_roadmap_markdown(
                     f"- Next iteration: `{(review.get('next_iteration') or {}).get('iteration_id', '') or 'none'}`",
                     f"- Entry criteria: {', '.join((review.get('next_iteration') or {}).get('entry_criteria', [])) or 'none'}",
                     f"- Stakeholder summary: {json_like_summary(review.get('stakeholder_alignment_summary', {}))}",
+                    f"- Methodology summary: {json_like_summary(review.get('methodology_alignment_summary', {}))}",
                     f"- Unmet stakeholder requirements: {', '.join(review.get('unmet_stakeholder_requirements', [])) or 'none'}",
+                    f"- Unmet methodology requirements: {', '.join(review.get('unmet_methodology_requirements', [])) or 'none'}",
+                    f"- Rubric calibration status: `{review.get('rubric_calibration_status', '') or 'none'}`",
+                    f"- Rubric freeze status: `{review.get('rubric_freeze_status', '') or 'none'}`",
+                    f"- Predictive-validity gate status: `{review.get('predictive_validity_gate_status', '') or 'none'}`",
                     f"- Publication blockers: {', '.join(review.get('publication_readiness_blockers', [])) or 'none'}",
                     "",
                 ]
@@ -363,6 +447,16 @@ def render_review_markdown(review: IterationReview | PhaseReview) -> str:
     )
     lines.append(
         f"- Publication readiness blockers: {', '.join(review.publication_readiness_blockers) or 'none'}"
+    )
+    lines.extend(["", "## Methodology Alignment"])
+    lines.append(f"- Summary: {json_like_summary(review.methodology_alignment_summary or {})}")
+    lines.append(
+        f"- Unmet methodology requirements: {', '.join(review.unmet_methodology_requirements) or 'none'}"
+    )
+    lines.append(f"- Rubric calibration status: `{review.rubric_calibration_status or 'none'}`")
+    lines.append(f"- Rubric freeze status: `{review.rubric_freeze_status or 'none'}`")
+    lines.append(
+        f"- Predictive-validity gate status: `{review.predictive_validity_gate_status or 'none'}`"
     )
     lines.extend(["", "## Roadmap Changes"])
     if review.roadmap_changes:

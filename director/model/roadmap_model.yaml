@@ -1,4 +1,4 @@
-schema_version: 1.3.0
+schema_version: 1.4.0
 project:
   name: semantic-patterns
   description: Policy-gated roadmap for AI-washing pipeline transformation.
@@ -39,7 +39,7 @@ branching_policy:
   - make lint
   - .venv/bin/pytest -q
 stakeholder_alignment:
-  schema_version: 1.3.0
+  schema_version: 1.4.0
   source_artifact: docs/director/stakeholder_expectations.md
   active_development_scope: 2021-2024 public-filing development window
   publication_target_scope: all publicly traded firms
@@ -72,11 +72,11 @@ stakeholder_alignment:
     source_refs:
     - email thread 2025-07-26
     mapped_phases:
-    - iteration1/rubric-and-api-bootstrap
+    - iteration2/rubric-realignment
     - iteration2/irr-and-adjudication
     - iteration2/label-sufficiency-gate
     mapped_gates:
-    - assistive_api_bootstrap_passed
+    - rubric_realignment_complete
     - human_human_irr_gt_0_7
     - label_sufficiency_before_retraining
   - requirement_id: true_human_irr_multi_rater
@@ -124,6 +124,7 @@ stakeholder_alignment:
     - iteration2/tranche3-labeling
     - iteration2/merge-canonical-labels
     - iteration2/irr-and-adjudication
+    - iteration2/provisional-rubric-freeze-and-split-registry
     - iteration2/label-sufficiency-gate
     mapped_gates:
     - adjudicated_labels_gte_500
@@ -232,6 +233,158 @@ stakeholder_alignment:
     - iteration5/release-packaging
     mapped_gates:
     - results_package_present
+methodology_alignment:
+  schema_version: 1.4.0
+  source_artifact: docs/director/proposal_methodology.md
+  core_construct: AI-washing is speculative firm AI narrative without later observable
+    AI capability.
+  active_development_scope: 2021-2024 public-filing development window
+  publication_target_scope: all publicly traded firms
+  desired_horizon: 2000-2024 when source availability permits
+  core_constructs:
+  - Actionable statements indicate current or realized firm AI capability.
+  - Speculative statements indicate firm-specific AI aspiration without operational
+    proof.
+  - Irrelevant statements mention AI generically without serving as a firm capability
+    claim.
+  label_semantics:
+    Actionable: present or past firm-specific deployment, implementation, embedded
+      workflow, or operational execution of AI
+    Speculative: firm-specific aspirational or forward-looking AI narrative without
+      operational evidence
+    Irrelevant: generic market, regulatory, cyber-risk, boilerplate, or tangential
+      AI mention
+  borderline_rules:
+  - Generic AI risk, regulatory, or cyber language is Irrelevant unless it discloses
+    current firm AI deployment.
+  - Risk-section language becomes Actionable only when it reveals current firm AI
+    use or implementation.
+  - A sentence is not Speculative merely because it is uncertain or risk-oriented;
+    it must still be a firm-specific AI narrative claim.
+  irr_design_requirements:
+  - Stratified sample covering at least 100 firms.
+  - Balanced by industry and year.
+  - Two independent human raters and a third adjudicator.
+  - Report Cohen's kappa overall and by class.
+  named_measures:
+  - measure_id: AI_Focus
+    formula: log(1 + AI sentences)
+    description: Firm-year AI disclosure intensity.
+    mapped_phases:
+    - iteration3/firm-year-measure-construction
+  - measure_id: log_1_plus_A
+    formula: log(1 + A)
+    description: Firm-year intensity of Actionable AI statements.
+    mapped_phases:
+    - iteration3/firm-year-measure-construction
+  - measure_id: log_1_plus_S
+    formula: log(1 + S)
+    description: Firm-year intensity of Speculative AI statements.
+    mapped_phases:
+    - iteration3/firm-year-measure-construction
+  - measure_id: SpecShare
+    formula: S / (A + S)
+    description: Speculative share among non-irrelevant AI statements.
+    mapped_phases:
+    - iteration3/firm-year-measure-construction
+  - measure_id: CredAI
+    formula: z(A) - z(S)
+    description: Credibility index contrasting Actionable and Speculative intensity.
+    mapped_phases:
+    - iteration3/firm-year-measure-construction
+  - measure_id: A_S
+    formula: log(1 + A / (1 + S))
+    description: Stabilized actionable-to-speculative ratio.
+    mapped_phases:
+    - iteration3/firm-year-measure-construction
+    - iteration3/development-predictive-validity-gate
+  baseline_predictive_specs:
+  - Use patents and AI-skills job postings as capability outcomes.
+  - Evaluate horizons l in {0,1,2}.
+  - Use firm and year fixed effects in the baseline specification.
+  - Use industry x year fixed effects as robustness.
+  ai_washing_specification:
+  - Use A_S as the main narrative-credibility measure.
+  - Use A_S x PatentMismatch in the AI-washing specification.
+  rubric_calibration_policy:
+  - Rubric refinement is allowed during development calibration when tranche evidence
+    shows the construct is being captured poorly.
+  - Calibration changes must be tied to proposal-faithful label semantics and predeclared
+    predictive outcomes.
+  rubric_freeze_policy:
+  - Rubric must freeze before publication-scale deployment.
+  - If later evidence requires label-definition changes, director must route back
+    to rubric realignment through review.
+  predictive_validity_policy:
+  - Predictive-validity is a directional development gate, not an unconstrained significance
+    target.
+  - Failure of the development predictive-validity gate triggers review-driven return
+    to rubric realignment rather than arbitrary metric fishing.
+  hard_gates:
+  - human_human_irr_only
+  - irr_stratified_100_firms_min
+  - by_class_kappa_report_required
+  - rubric_freeze_before_final_scale
+  - directional_predictive_validity_before_publication_scale
+  requirements:
+  - requirement_id: proposal_rubric_realignment_before_scale
+    priority: non-negotiable
+    summary: Rubric must be realigned to the proposal construct before tranche-1 canonical
+      labeling resumes.
+    target_iteration: '2'
+    source_refs:
+    - proposal methodology
+    mapped_phases:
+    - iteration2/rubric-realignment
+    - iteration2/tranche1-labeling
+    mapped_gates:
+    - rubric_realignment_complete
+    - tranche1_v2_review_complete
+  - requirement_id: proposal_style_irr_design
+    priority: non-negotiable
+    summary: IRR must use a stratified 100+ firm design with by-class diagnostics
+      and a third adjudicator.
+    target_iteration: '2'
+    source_refs:
+    - proposal methodology
+    mapped_phases:
+    - iteration2/irr-and-adjudication
+    mapped_gates:
+    - irr_stratified_100_firms_min
+    - by_class_kappa_report_required
+  - requirement_id: proposal_named_measure_construction
+    priority: publication-critical
+    summary: Firm-year narrative measures must be constructed explicitly from the
+      labeled sentence outputs.
+    target_iteration: '3'
+    source_refs:
+    - proposal methodology
+    mapped_phases:
+    - iteration3/firm-year-measure-construction
+    mapped_gates:
+    - firm_year_measures_published
+  - requirement_id: proposal_directional_predictive_validity
+    priority: publication-critical
+    summary: Development predictive-validity must be documented before publication-scale
+      deployment.
+    target_iteration: '3'
+    source_refs:
+    - proposal methodology
+    mapped_phases:
+    - iteration3/development-predictive-validity-gate
+    mapped_gates:
+    - directional_predictive_validity_before_publication_scale
+  - requirement_id: proposal_rubric_freeze
+    priority: non-negotiable
+    summary: Rubric must be provisionally frozen after Iteration 2 labeling, IRR,
+      and split freeze before scale-up.
+    target_iteration: '2'
+    source_refs:
+    - proposal methodology
+    mapped_phases:
+    - iteration2/provisional-rubric-freeze-and-split-registry
+    mapped_gates:
+    - rubric_freeze_before_final_scale
 policies:
 - policy_id: heldout_frozen
   kind: dataset_freeze
@@ -1348,23 +1501,25 @@ iterations:
     - superseded
     tasks: []
 - iteration_id: '2'
-  title: Scaled Label Expansion, Human IRR, and Modeling Readiness
-  goal: Expand the 2024 development window to stakeholder scale, build a publication-grade
-    adjudicated label set, validate the rubric with true human-human IRR, and gate
-    retraining on explicit sufficiency criteria.
+  title: Rubric Realignment, Label Expansion, and Provisional Freeze
+  goal: Realign the rubric to the proposal construct, rebuild tranche-based canonical
+    labels under rubric v2, and provisionally freeze the rubric only after sufficiency
+    and IRR gates pass.
   entry_criteria:
   - Iteration 1 review approved.
   - Iteration 2 kickoff completed on iteration2/integration.
-  - Iteration 2 expansion uses the external DataWork filing corpus, not legacy in-repo
-    sentence exports.
+  - Proposal methodology source and stakeholder expectations are both current.
   exit_criteria:
+  - Rubric realignment report and revised protocol v2 are published.
+  - Tranche 1 is re-reviewed under rubric v2 before further canonical labeling proceeds.
   - Sentence-pool expansion reaches 500 firms and at least 1,000 clean AI sentences
     in the 2024 candidate pool.
   - At least 500 adjudicated labels with at least 80 labels per class are available
     before retraining.
-  - Human-human IRR exceeds 0.7 on a blinded 100+ sentence subset.
-  - Split registry is frozen with zero held-out leakage and the modeling readiness
-    report is published.
+  - Human-human IRR exceeds 0.7 on a stratified, blinded 100+ item subset with by-class
+    diagnostics.
+  - Provisional rubric freeze and split registry are published with zero held-out
+    leakage.
   - Iteration 2 review approved.
   phases:
   - phase_id: iteration2/kickoff-and-preflight
@@ -1424,31 +1579,117 @@ iterations:
       tags:
       - kickoff
       gate_class: ops
-  - phase_id: iteration2/tranche1-labeling
-    title: Tranche 1 Labeling
-    goal: Complete the existing 240-row bootstrap batch as tranche 1 with assistive-only
-      prelabels and human-canonical verification.
+  - phase_id: iteration2/rubric-realignment
+    title: Rubric Realignment
+    goal: Review tranche-1 error patterns, revise the proposal-faithful rubric, and
+      regenerate tranche-1 assistive prelabels under rubric v2 before canonical labeling
+      resumes.
     lifecycle_state: planned
     canonical: true
     depends_on:
     - iteration2/kickoff-and-preflight
     required_artifacts:
-    - data/labels/v1/labeling_batch_v1_prelabeled.csv
-    - reports/labels/assistive_prelabel_tranche1_summary.json
-    - data/labels/v1/labeling_batch_v1_filled.csv
+    - docs/labeling_protocol.md
+    - reports/labels/tranche1_rubric_realignment_v2.md
+    - data/labels/v1/labeling_batch_v1_prelabeled_v2.csv
+    - reports/labels/assistive_prelabel_tranche1_v2_summary.json
     source_window_id: active_2021_2024
     tags:
-    - tranche1
-    - human_labeling
+    - rubric_calibration
+    - methodology_alignment
     tasks:
-    - task_id: iteration2.labels.generate_tranche1_assistive_prelabels
-      title: Generate tranche 1 assistive prelabels
-      description: Add assistive-only prelabels to the 240-row tranche 1 review CSV
-        without mutating canonical label columns.
+    - task_id: iteration2.rubric.review_tranche1_error_patterns
+      title: Review tranche 1 error patterns
+      description: Inspect tranche-1 diagnostic prelabels against the proposal construct
+        and publish the rubric realignment note.
       iteration_id: '2'
-      phase_id: iteration2/tranche1-labeling
-      kind: build
+      phase_id: iteration2/rubric-realignment
+      kind: analysis
       depends_on: []
+      inputs:
+      - artifact_id: tranche1_diagnostic_prelabeled_csv
+        path: data/labels/v1/labeling_batch_v1_prelabeled.csv
+        kind: csv
+        required: true
+      - artifact_id: proposal_methodology
+        path: docs/director/proposal_methodology.md
+        kind: markdown
+        required: true
+      outputs:
+      - artifact_id: tranche1_rubric_realignment_note
+        path: reports/labels/tranche1_rubric_realignment_v2.md
+        kind: markdown
+        required: true
+      preconditions:
+      - condition_id: tranche1_diagnostic_prelabeled_exists
+        kind: artifact_exists
+        target: data/labels/v1/labeling_batch_v1_prelabeled.csv
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Diagnostic tranche-1 prelabels must exist before rubric review.
+        reroute_to: []
+      quality_checks: []
+      commands: []
+      manual_handoff: true
+      risks:
+      - R1
+      - R3
+      estimated_effort: 6
+      risk_reduction: 10
+      automation_level: manual
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - rubric_calibration
+      - proposal_alignment
+      gate_class: science
+    - task_id: iteration2.rubric.publish_protocol_v2
+      title: Publish rubric v2 protocol
+      description: Revise the labeling protocol to align Actionable, Speculative,
+        and Irrelevant with the proposal construct.
+      iteration_id: '2'
+      phase_id: iteration2/rubric-realignment
+      kind: manual
+      depends_on:
+      - iteration2.rubric.review_tranche1_error_patterns
+      inputs:
+      - artifact_id: tranche1_rubric_realignment_note
+        path: reports/labels/tranche1_rubric_realignment_v2.md
+        kind: markdown
+        required: true
+      outputs:
+      - artifact_id: labeling_protocol
+        path: docs/labeling_protocol.md
+        kind: markdown
+        required: true
+      preconditions: []
+      quality_checks: []
+      commands: []
+      manual_handoff: true
+      risks:
+      - R1
+      - R3
+      estimated_effort: 4
+      risk_reduction: 10
+      automation_level: manual
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - rubric_calibration
+      - protocol
+      gate_class: science
+    - task_id: iteration2.rubric.regenerate_tranche1_assistive_prelabels_v2
+      title: Regenerate tranche 1 assistive prelabels under rubric v2
+      description: Publish a rubric-v2 tranche-1 prelabel sheet for renewed human
+        review. The regenerated outputs must supersede the earlier diagnostic prelabels.
+      iteration_id: '2'
+      phase_id: iteration2/rubric-realignment
+      kind: manual
+      depends_on:
+      - iteration2.rubric.publish_protocol_v2
       inputs:
       - artifact_id: tranche1_labeling_batch
         path: data/labels/v1/labeling_batch_v1.csv
@@ -1459,83 +1700,78 @@ iterations:
         kind: file
         required: true
       outputs:
-      - artifact_id: tranche1_prelabeled_csv
-        path: data/labels/v1/labeling_batch_v1_prelabeled.csv
+      - artifact_id: tranche1_prelabeled_v2_csv
+        path: data/labels/v1/labeling_batch_v1_prelabeled_v2.csv
         kind: csv
         required: true
-      - artifact_id: tranche1_prelabeled_summary
-        path: reports/labels/assistive_prelabel_tranche1_summary.json
+      - artifact_id: tranche1_prelabeled_v2_summary
+        path: reports/labels/assistive_prelabel_tranche1_v2_summary.json
         kind: json
         required: true
       preconditions:
-      - condition_id: tranche1_batch_exists
+      - condition_id: labeling_protocol_exists
         kind: artifact_exists
-        target: data/labels/v1/labeling_batch_v1.csv
+        target: docs/labeling_protocol.md
         operator: ==
         expected: true
         on_fail: block
-        message: Tranche 1 labeling batch must exist before assistive prelabeling.
+        message: Rubric v2 protocol must exist before tranche-1 prelabels are regenerated.
         reroute_to: []
-      quality_checks:
-      - condition_id: tranche1_prelabel_status_passed
-        kind: json_field_compare
-        target: reports/labels/assistive_prelabel_tranche1_summary.json::status
-        operator: ==
-        expected: passed
-        on_fail: block
-        message: Tranche 1 assistive prelabels must be generated in live passed mode.
-        reroute_to: []
-      - condition_id: tranche1_prelabel_request_count
-        kind: json_field_compare
-        target: reports/labels/assistive_prelabel_tranche1_summary.json::usage.request_count
-        operator: '>='
-        expected: 1
-        on_fail: block
-        message: Tranche 1 assistive prelabels must record at least one live API request.
-        reroute_to: []
-      commands:
-      - .venv/bin/python -m semantic_ai_washing.labeling.assistive_prelabel_batch
-        --input-csv data/labels/v1/labeling_batch_v1.csv --output-csv data/labels/v1/labeling_batch_v1_prelabeled.csv
-        --report reports/labels/assistive_prelabel_tranche1_summary.json --policy
-        director/config/api_assistive_policy.yaml --mode live --checkpoint-every 10
-      manual_handoff: false
+      quality_checks: []
+      commands: []
+      manual_handoff: true
       risks:
       - R1
       - R4
-      estimated_effort: 3
-      risk_reduction: 7
-      automation_level: partial
+      estimated_effort: 4
+      risk_reduction: 9
+      automation_level: manual
       on_fail: block
       reroute_to: []
       evidence_required: true
       tags:
       - assistive_api
+      - rubric_calibration
       - tranche1
-      - prelabels
       gate_class: ops
+  - phase_id: iteration2/tranche1-labeling
+    title: Tranche 1 Labeling
+    goal: Verify tranche 1 under rubric v2 after rubric realignment and regenerated
+      assistive prelabels.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration2/rubric-realignment
+    required_artifacts:
+    - data/labels/v1/labeling_batch_v1_filled_v2.csv
+    source_window_id: active_2021_2024
+    tags:
+    - tranche1
+    - human_labeling
+    tasks:
     - task_id: iteration2.labels.verify_tranche1_labels
       title: Verify tranche 1 labels
-      description: Human-review the tranche 1 prelabels and finalize canonical label,
+      description: Human-review tranche 1 under rubric v2 and finalize canonical label,
         uncertainty, and note fields.
       iteration_id: '2'
       phase_id: iteration2/tranche1-labeling
       kind: manual
       depends_on:
-      - iteration2.labels.generate_tranche1_assistive_prelabels
+      - iteration2.rubric.regenerate_tranche1_assistive_prelabels_v2
       inputs:
       - artifact_id: tranche1_prelabeled_csv
-        path: data/labels/v1/labeling_batch_v1_prelabeled.csv
+        path: data/labels/v1/labeling_batch_v1_prelabeled_v2.csv
         kind: csv
         required: true
       outputs:
       - artifact_id: tranche1_filled_csv
-        path: data/labels/v1/labeling_batch_v1_filled.csv
+        path: data/labels/v1/labeling_batch_v1_filled_v2.csv
         kind: csv
         required: true
       preconditions:
       - condition_id: tranche1_prelabeled_exists
         kind: artifact_exists
-        target: data/labels/v1/labeling_batch_v1_prelabeled.csv
+        target: data/labels/v1/labeling_batch_v1_prelabeled_v2.csv
         operator: ==
         expected: true
         on_fail: block
@@ -1544,7 +1780,7 @@ iterations:
       quality_checks:
       - condition_id: tranche1_label_count_complete
         kind: csv_nonempty_count_gte
-        target: data/labels/v1/labeling_batch_v1_filled.csv::label
+        target: data/labels/v1/labeling_batch_v1_filled_v2.csv::label
         operator: '>='
         expected: 240
         on_fail: block
@@ -2212,15 +2448,15 @@ iterations:
         kind: csv
         required: true
       outputs:
-      - artifact_id: tranche2_batch_parquet
+      - artifact_id: tranche3_batch_parquet
         path: data/labels/v1/labeling_batch_v3.parquet
         kind: parquet
         required: true
-      - artifact_id: tranche2_batch_csv
+      - artifact_id: tranche3_batch_csv
         path: data/labels/v1/labeling_batch_v3.csv
         kind: csv
         required: true
-      - artifact_id: tranche2_batch_summary
+      - artifact_id: tranche3_batch_summary
         path: reports/labels/labeling_batch_v3_summary.json
         kind: json
         required: true
@@ -2231,10 +2467,10 @@ iterations:
         operator: ==
         expected: true
         on_fail: block
-        message: Expanded sentence table is required before tranche 2 batch preparation.
+        message: Expanded sentence table is required before tranche 3 batch preparation.
         reroute_to: []
       quality_checks:
-      - condition_id: tranche2_batch_count
+      - condition_id: tranche3_batch_count
         kind: json_field_compare
         target: reports/labels/labeling_batch_v3_summary.json::selection.batch_row_count
         operator: ==
@@ -2242,7 +2478,7 @@ iterations:
         on_fail: block
         message: Tranche 3 must contain exactly 160 rows.
         reroute_to: []
-      - condition_id: tranche2_heldout_zero
+      - condition_id: tranche3_heldout_zero
         kind: json_field_compare
         target: reports/labels/labeling_batch_v3_summary.json::quality.heldout_overlap_count
         operator: ==
@@ -2283,8 +2519,8 @@ iterations:
       depends_on:
       - iteration2.labels.prepare_tranche3_labeling_batch
       inputs:
-      - artifact_id: tranche2_batch_csv
-        path: data/labels/v1/labeling_batch_v2.csv
+      - artifact_id: tranche3_batch_csv
+        path: data/labels/v1/labeling_batch_v3.csv
         kind: csv
         required: true
       - artifact_id: assistive_api_policy
@@ -2292,41 +2528,39 @@ iterations:
         kind: file
         required: true
       outputs:
-      - artifact_id: tranche2_prelabeled_csv
+      - artifact_id: tranche3_prelabeled_csv
         path: data/labels/v1/labeling_batch_v3_prelabeled.csv
         kind: csv
         required: true
-      - artifact_id: tranche2_prelabeled_summary
+      - artifact_id: tranche3_prelabeled_summary
         path: reports/labels/assistive_prelabel_tranche3_summary.json
         kind: json
         required: true
       preconditions:
-      - condition_id: tranche2_batch_exists
+      - condition_id: tranche3_batch_exists
         kind: artifact_exists
-        target: data/labels/v1/labeling_batch_v2.csv
+        target: data/labels/v1/labeling_batch_v3.csv
         operator: ==
         expected: true
         on_fail: block
-        message: Expanded tranche batch must exist before assistive prelabeling.
+        message: Tranche 3 batch must exist before assistive prelabeling.
         reroute_to: []
       quality_checks:
-      - condition_id: tranche2_prelabel_status_passed
+      - condition_id: tranche3_prelabel_status_passed
         kind: json_field_compare
         target: reports/labels/assistive_prelabel_tranche3_summary.json::status
         operator: ==
         expected: passed
         on_fail: block
-        message: Expanded tranche assistive prelabels must be generated in live passed
-          mode.
+        message: Tranche 3 assistive prelabels must be generated in live passed mode.
         reroute_to: []
-      - condition_id: tranche2_prelabel_request_count
+      - condition_id: tranche3_prelabel_request_count
         kind: json_field_compare
         target: reports/labels/assistive_prelabel_tranche3_summary.json::usage.request_count
         operator: '>='
         expected: 1
         on_fail: block
-        message: Expanded tranche assistive prelabels must record at least one live
-          API request.
+        message: Tranche 3 assistive prelabels must record at least one live API request.
         reroute_to: []
       commands:
       - .venv/bin/python -m semantic_ai_washing.labeling.assistive_prelabel_batch
@@ -2358,17 +2592,17 @@ iterations:
       depends_on:
       - iteration2.labels.generate_tranche3_assistive_prelabels
       inputs:
-      - artifact_id: tranche2_prelabeled_csv
-        path: data/labels/v1/labeling_batch_v2_prelabeled.csv
+      - artifact_id: tranche3_prelabeled_csv
+        path: data/labels/v1/labeling_batch_v3_prelabeled.csv
         kind: csv
         required: true
       outputs:
-      - artifact_id: tranche2_filled_csv
+      - artifact_id: tranche3_filled_csv
         path: data/labels/v1/labeling_batch_v3_filled.csv
         kind: csv
         required: true
       preconditions:
-      - condition_id: tranche2_prelabeled_exists
+      - condition_id: tranche3_prelabeled_exists
         kind: artifact_exists
         target: data/labels/v1/labeling_batch_v3_prelabeled.csv
         operator: ==
@@ -2377,7 +2611,7 @@ iterations:
         message: Tranche 3 prelabels must exist before human verification.
         reroute_to: []
       quality_checks:
-      - condition_id: tranche2_label_count_complete
+      - condition_id: tranche3_label_count_complete
         kind: csv_nonempty_count_gte
         target: data/labels/v1/labeling_batch_v3_filled.csv::label
         operator: '>='
@@ -2402,7 +2636,8 @@ iterations:
       gate_class: manual
   - phase_id: iteration2/merge-canonical-labels
     title: Merge Canonical Labels
-    goal: Merge the 3 verified tranches into the canonical labels master before IRR.
+    goal: Merge the three verified tranches into the canonical label master after
+      proposal-faithful tranche 1 review.
     lifecycle_state: planned
     canonical: true
     depends_on:
@@ -2429,7 +2664,7 @@ iterations:
       - iteration2.labels.verify_tranche3_labels
       inputs:
       - artifact_id: tranche1_filled_csv
-        path: data/labels/v1/labeling_batch_v1_filled.csv
+        path: data/labels/v1/labeling_batch_v1_filled_v2.csv
         kind: csv
         required: true
       - artifact_id: tranche2_filled_csv
@@ -2456,11 +2691,11 @@ iterations:
       preconditions:
       - condition_id: tranche1_filled_exists
         kind: artifact_exists
-        target: data/labels/v1/labeling_batch_v1_filled.csv
+        target: data/labels/v1/labeling_batch_v1_filled_v2.csv
         operator: ==
         expected: true
         on_fail: block
-        message: Verified tranche 1 CSV is required before label merge.
+        message: Verified tranche 1 rubric-v2 CSV is required before label merge.
         reroute_to: []
       - condition_id: tranche2_filled_exists
         kind: artifact_exists
@@ -2506,7 +2741,7 @@ iterations:
         reroute_to: []
       commands:
       - .venv/bin/python -m semantic_ai_washing.labeling.merge_labeling_batches --inputs
-        data/labels/v1/labeling_batch_v1_filled.csv data/labels/v1/labeling_batch_v2_filled.csv
+        data/labels/v1/labeling_batch_v1_filled_v2.csv data/labels/v1/labeling_batch_v2_filled.csv
         data/labels/v1/labeling_batch_v3_filled.csv --held-out data/validation/held_out_sentences.csv
         --output-parquet data/labels/v1/labels_master.parquet --output-review-csv
         data/labels/v1/labels_master_review.csv --report reports/labels/label_expansion_summary.json
@@ -2527,8 +2762,8 @@ iterations:
       gate_class: data
   - phase_id: iteration2/irr-and-adjudication
     title: IRR and Adjudication
-    goal: Run true human-human IRR on a blinded 100+ sentence subset, adjudicate disagreements,
-      and record rubric refinements.
+    goal: Run proposal-style human-human IRR on a stratified 100+ firm subset, publish
+      by-class diagnostics, and adjudicate disagreements.
     lifecycle_state: planned
     canonical: true
     depends_on:
@@ -2598,8 +2833,9 @@ iterations:
       gate_class: data
     - task_id: iteration2.irr.prepare_and_collect
       title: Prepare and collect blinded IRR labels
-      description: Prepare blinded IRR subset, collect second-rater labels, and publish
-        adjudication outputs.
+      description: Prepare a stratified and blinded IRR subset, collect second-rater
+        labels, publish by-class diagnostics, and adjudicate disagreements with a
+        third adjudicator.
       iteration_id: '2'
       phase_id: iteration2/irr-and-adjudication
       kind: manual
@@ -2657,6 +2893,38 @@ iterations:
         on_fail: block
         message: IRR report must confirm true human-human IRR.
         reroute_to: []
+      - condition_id: irr_stratified_100_firms_min
+        kind: json_field_compare
+        target: reports/labels/irr_report.json::summary.stratified_100_firms_min
+        operator: ==
+        expected: true
+        on_fail: block
+        message: IRR must confirm the proposal-style stratified 100+ firm design.
+        reroute_to: []
+      - condition_id: irr_industry_year_balanced
+        kind: json_field_compare
+        target: reports/labels/irr_report.json::summary.industry_year_balanced
+        operator: ==
+        expected: true
+        on_fail: block
+        message: IRR must report balanced industry and year coverage.
+        reroute_to: []
+      - condition_id: by_class_kappa_report_required
+        kind: json_field_compare
+        target: reports/labels/irr_report.json::summary.by_class_kappa_reported
+        operator: ==
+        expected: true
+        on_fail: block
+        message: IRR must report by-class kappa diagnostics.
+        reroute_to: []
+      - condition_id: third_adjudicator_used
+        kind: json_field_compare
+        target: reports/labels/irr_report.json::summary.third_adjudicator_used
+        operator: ==
+        expected: true
+        on_fail: block
+        message: IRR must confirm third-adjudicator resolution for disagreements.
+        reroute_to: []
       commands: []
       manual_handoff: true
       risks:
@@ -2671,10 +2939,10 @@ iterations:
       tags:
       - human_irr
       gate_class: manual
-  - phase_id: iteration2/split-registry-freeze
-    title: Split Registry Freeze
-    goal: Freeze train and validation sentence assignments after adjudication while
-      keeping held-out separate and leakage-safe.
+  - phase_id: iteration2/provisional-rubric-freeze-and-split-registry
+    title: Provisional Rubric Freeze and Split Registry
+    goal: Freeze the rubric provisionally for scale-up, generate the split registry,
+      and preserve zero held-out leakage before retraining.
     lifecycle_state: planned
     canonical: true
     depends_on:
@@ -2682,17 +2950,19 @@ iterations:
     required_artifacts:
     - data/metadata/splits/split_registry_v1.csv
     - data/metadata/splits/split_registry_v1.json
+    - reports/labels/rubric_freeze_v2.json
     source_window_id: active_2021_2024
     tags:
     - split_registry
-    - leakage_control
+    - rubric_freeze
+    - methodology_alignment
     tasks:
     - task_id: iteration2.splits.freeze_registry
       title: Freeze split registry
       description: Generate and fingerprint the canonical split registry from adjudicated
         labels.
       iteration_id: '2'
-      phase_id: iteration2/split-registry-freeze
+      phase_id: iteration2/provisional-rubric-freeze-and-split-registry
       kind: build
       depends_on: []
       inputs:
@@ -2734,14 +3004,66 @@ iterations:
       tags:
       - split_registry
       gate_class: data
+    - task_id: iteration2.rubric.publish_provisional_freeze
+      title: Publish provisional rubric freeze
+      description: Record that rubric v2 is provisionally frozen for scale-up pending
+        later predictive-validity review.
+      iteration_id: '2'
+      phase_id: iteration2/provisional-rubric-freeze-and-split-registry
+      kind: manual
+      depends_on:
+      - iteration2.splits.freeze_registry
+      inputs:
+      - artifact_id: irr_report
+        path: reports/labels/irr_report.json
+        kind: json
+        required: true
+      outputs:
+      - artifact_id: rubric_freeze_report
+        path: reports/labels/rubric_freeze_v2.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: split_registry_exists
+        kind: artifact_exists
+        target: data/metadata/splits/split_registry_v1.csv
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Split registry must exist before provisional rubric freeze is published.
+        reroute_to: []
+      quality_checks:
+      - condition_id: rubric_freeze_status
+        kind: json_field_compare
+        target: reports/labels/rubric_freeze_v2.json::status
+        operator: ==
+        expected: provisional_frozen
+        on_fail: block
+        message: Rubric freeze report must mark the rubric as provisionally frozen.
+        reroute_to: []
+      commands: []
+      manual_handoff: true
+      risks:
+      - R1
+      - R3
+      estimated_effort: 3
+      risk_reduction: 9
+      automation_level: manual
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - rubric_freeze
+      - methodology_alignment
+      gate_class: science
   - phase_id: iteration2/label-sufficiency-gate
     title: Label Sufficiency Gate
-    goal: Publish and verify the modeling readiness report before centroid retraining
-      begins.
+    goal: Publish and verify the modeling readiness report only after proposal-style
+      IRR, split freeze, and provisional rubric freeze are complete.
     lifecycle_state: planned
     canonical: true
     depends_on:
-    - iteration2/split-registry-freeze
+    - iteration2/provisional-rubric-freeze-and-split-registry
     required_artifacts:
     - reports/models/modeling_readiness_gate.json
     source_window_id: active_2021_2024
@@ -2770,6 +3092,10 @@ iterations:
         path: data/metadata/splits/split_registry_v1.csv
         kind: csv
         required: true
+      - artifact_id: rubric_freeze_report
+        path: reports/labels/rubric_freeze_v2.json
+        kind: json
+        required: true
       outputs:
       - artifact_id: modeling_readiness_report
         path: reports/models/modeling_readiness_gate.json
@@ -2783,6 +3109,15 @@ iterations:
         expected: true
         on_fail: block
         message: Split registry must exist before the readiness report can be published.
+        reroute_to: []
+      - condition_id: rubric_freeze_report_exists
+        kind: artifact_exists
+        target: reports/labels/rubric_freeze_v2.json
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Rubric freeze report must exist before modeling readiness can be
+          published.
         reroute_to: []
       quality_checks: []
       commands: []
@@ -2870,6 +3205,14 @@ iterations:
         expected: true
         on_fail: block
         message: Split registry must be frozen before retraining.
+        reroute_to: []
+      - condition_id: rubric_freeze_before_final_scale
+        kind: json_field_compare
+        target: reports/models/modeling_readiness_gate.json::summary.rubric_freeze_status
+        operator: ==
+        expected: provisional_frozen
+        on_fail: block
+        message: Rubric must be provisionally frozen before retraining is authorized.
         reroute_to: []
       commands: []
       manual_handoff: false
@@ -3015,20 +3358,20 @@ iterations:
       - review_approval
       gate_class: manual
 - iteration_id: '3'
-  title: Retraining, Evaluation, and Active-Window Classification
-  goal: Retrain on the expanded adjudicated label set, benchmark whether fine-tuning
-    is warranted, evaluate on held-out, and classify the active development window
-    with explicit merge-integrity QA.
+  title: Retraining, Measure Construction, and Development Predictive Validity
+  goal: Retrain on the proposal-aligned adjudicated labels, build named firm-year
+    measures, and test whether the rubric directionally predicts later AI capability
+    before publication-scale deployment.
   entry_criteria:
   - Iteration 2 review approved.
   - Iteration 3 kickoff completed on iteration3/integration.
   - Label sufficiency gate passed with at least 500 adjudicated labels, at least 80
-    labels per class, and human-human IRR > 0.7.
+    labels per class, human-human IRR > 0.7, and provisional rubric freeze recorded.
   exit_criteria:
   - Retraining, held-out evaluation, active-window classification, and ai_total merge-integrity
     QA are complete.
-  - Held-out evaluation remains at or above the 0.80 project baseline before publication-scale
-    rollout.
+  - Named firm-year narrative measures are published explicitly.
+  - Development predictive-validity gate is documented before publication-scale rollout.
   - Iteration 3 review approved.
   phases:
   - phase_id: iteration3/kickoff-and-preflight
@@ -3231,6 +3574,157 @@ iterations:
       tags:
       - phase_completion_gate
       gate_class: ops
+  - phase_id: iteration3/firm-year-measure-construction
+    title: Firm-Year Measure Construction
+    goal: Construct the proposal-defined firm-year narrative measures AI Focus, log(1+A),
+      log(1+S), SpecShare, CredAI, and A_S from the classified disclosure outputs.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration3/classification-merge-integrity
+    required_artifacts:
+    - data/processed/aggregates/firm_year_narrative_measures_v1.parquet
+    - reports/classification/firm_year_narrative_measures_v1.json
+    source_window_id: active_2021_2024
+    tags:
+    - measures
+    - methodology_alignment
+    tasks:
+    - task_id: iteration3.measures.publish_firm_year_measures
+      title: Publish firm-year narrative measures
+      description: Publish the canonical firm-year measures table and supporting summary
+        for the proposal-defined narrative metrics.
+      iteration_id: '3'
+      phase_id: iteration3/firm-year-measure-construction
+      kind: manual
+      depends_on:
+      - iteration3.merge.verify_outputs
+      inputs:
+      - artifact_id: firm_year_ai_metrics
+        path: data/processed/aggregates/firm_year_ai_metrics_v1.parquet
+        kind: parquet
+        required: true
+      outputs:
+      - artifact_id: firm_year_narrative_measures
+        path: data/processed/aggregates/firm_year_narrative_measures_v1.parquet
+        kind: parquet
+        required: true
+      - artifact_id: firm_year_narrative_measures_report
+        path: reports/classification/firm_year_narrative_measures_v1.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: firm_year_ai_metrics_exists
+        kind: artifact_exists
+        target: data/processed/aggregates/firm_year_ai_metrics_v1.parquet
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Aggregate firm-year AI metrics must exist before named measure construction.
+        reroute_to: []
+      quality_checks:
+      - condition_id: firm_year_measures_complete
+        kind: json_field_compare
+        target: reports/classification/firm_year_narrative_measures_v1.json::summary.named_measures_complete
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Firm-year measures report must confirm all proposal-defined measures
+          are present.
+        reroute_to: []
+      commands: []
+      manual_handoff: true
+      risks:
+      - R2
+      - R6
+      estimated_effort: 4
+      risk_reduction: 9
+      automation_level: manual
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - firm_year_measures
+      - proposal_alignment
+      gate_class: science
+  - phase_id: iteration3/development-predictive-validity-gate
+    title: Development Predictive-Validity Gate
+    goal: Document whether the proposal-aligned rubric and firm-year measures directionally
+      predict later AI capability outcomes before publication-scale deployment.
+    lifecycle_state: planned
+    canonical: true
+    depends_on:
+    - iteration3/firm-year-measure-construction
+    required_artifacts:
+    - reports/evaluation/development_predictive_validity_v1.json
+    source_window_id: active_2021_2024
+    tags:
+    - predictive_validity
+    - methodology_alignment
+    tasks:
+    - task_id: iteration3.validity.publish_development_predictive_validity
+      title: Publish development predictive-validity report
+      description: Record whether the proposal-defined narrative measures directionally
+        align with later capability outcomes and whether rubric realignment must be
+        revisited.
+      iteration_id: '3'
+      phase_id: iteration3/development-predictive-validity-gate
+      kind: manual
+      depends_on:
+      - iteration3.measures.publish_firm_year_measures
+      inputs:
+      - artifact_id: firm_year_narrative_measures_report
+        path: reports/classification/firm_year_narrative_measures_v1.json
+        kind: json
+        required: true
+      outputs:
+      - artifact_id: development_predictive_validity_report
+        path: reports/evaluation/development_predictive_validity_v1.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: firm_year_measures_report_exists
+        kind: artifact_exists
+        target: reports/classification/firm_year_narrative_measures_v1.json
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Firm-year measure report must exist before predictive-validity review.
+        reroute_to: []
+      quality_checks:
+      - condition_id: development_predictive_validity_documented
+        kind: json_field_compare
+        target: reports/evaluation/development_predictive_validity_v1.json::summary.directional_predictive_validity_documented
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Development predictive-validity report must document directional
+          validity decisions.
+        reroute_to: []
+      - condition_id: baseline_specs_recorded
+        kind: json_field_compare
+        target: reports/evaluation/development_predictive_validity_v1.json::summary.baseline_specs_recorded
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Development predictive-validity report must record the predeclared
+          baseline and robustness specs.
+        reroute_to: []
+      commands: []
+      manual_handoff: true
+      risks:
+      - R2
+      - R6
+      estimated_effort: 4
+      risk_reduction: 10
+      automation_level: manual
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - predictive_validity
+      - proposal_alignment
+      gate_class: science
   - phase_id: iteration3/review-and-replan
     title: Review and Replan
     goal: Synthesize iteration evidence, approve closeout, and prepare the next iteration
@@ -3238,7 +3732,7 @@ iterations:
     lifecycle_state: planned
     canonical: true
     depends_on:
-    - iteration3/classification-merge-integrity
+    - iteration3/development-predictive-validity-gate
     required_artifacts:
     - director/reviews/iteration_3_review.json
     - director/reviews/iteration_3_review.md
@@ -3258,7 +3752,7 @@ iterations:
       phase_id: iteration3/review-and-replan
       kind: analysis
       depends_on:
-      - iteration3.merge.verify_outputs
+      - iteration3.validity.publish_development_predictive_validity
       inputs:
       - artifact_id: iteration_log
         path: docs/iteration_log.md

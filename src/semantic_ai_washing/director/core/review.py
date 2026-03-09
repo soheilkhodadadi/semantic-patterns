@@ -480,6 +480,115 @@ class ReviewEngine:
         }
         return summary, unmet_requirements, deferred_requirements, publication_blockers
 
+    def _methodology_alignment(
+        self, iteration_id: str
+    ) -> tuple[dict[str, Any], list[str], str, str, str]:
+        model, _, evaluator = self._evaluator()
+        _, phase_states = evaluator.evaluate_all()
+        phase_statuses = {state.phase_id: state.status for state in phase_states}
+        current_iteration = int(iteration_id)
+        by_priority = Counter()
+        by_status = Counter()
+        requirement_rows: list[dict[str, Any]] = []
+        unmet_requirements: list[str] = []
+
+        for requirement in model.methodology_alignment.requirements:
+            mapped_statuses = [
+                phase_statuses.get(phase_id, "unmapped") for phase_id in requirement.mapped_phases
+            ]
+            if mapped_statuses and all(
+                status in {"satisfied", "completed", "historical", "superseded"}
+                for status in mapped_statuses
+            ):
+                status = "satisfied"
+            elif mapped_statuses and all(status == "deferred" for status in mapped_statuses):
+                status = "deferred"
+            elif mapped_statuses and any(
+                status in {"satisfied", "completed", "historical", "superseded"}
+                for status in mapped_statuses
+            ):
+                status = "in_progress"
+            else:
+                status = "open"
+
+            target_iteration = (
+                int(requirement.target_iteration)
+                if str(requirement.target_iteration).isdigit()
+                else 0
+            )
+            due_now = target_iteration > 0 and target_iteration <= current_iteration
+            by_priority[requirement.priority] += 1
+            by_status[status] += 1
+            if (
+                due_now
+                and status != "satisfied"
+                and requirement.priority
+                in {
+                    "non-negotiable",
+                    "publication-critical",
+                }
+            ):
+                unmet_requirements.append(requirement.requirement_id)
+
+            requirement_rows.append(
+                {
+                    "requirement_id": requirement.requirement_id,
+                    "priority": requirement.priority,
+                    "target_iteration": requirement.target_iteration,
+                    "status": status,
+                    "mapped_phases": list(requirement.mapped_phases),
+                    "mapped_statuses": mapped_statuses,
+                }
+            )
+
+        def _phase_gate_status(
+            phase_id: str, future_if_before_iteration: int | None = None
+        ) -> str:
+            if (
+                future_if_before_iteration is not None
+                and current_iteration < future_if_before_iteration
+            ):
+                return "future"
+            return str(phase_statuses.get(phase_id, "not_mapped"))
+
+        calibration_status = _phase_gate_status(
+            "iteration2/rubric-realignment", future_if_before_iteration=2
+        )
+        freeze_status = _phase_gate_status(
+            "iteration2/provisional-rubric-freeze-and-split-registry",
+            future_if_before_iteration=2,
+        )
+        predictive_validity_status = _phase_gate_status(
+            "iteration3/development-predictive-validity-gate",
+            future_if_before_iteration=3,
+        )
+
+        summary = {
+            "source_artifact": model.methodology_alignment.source_artifact,
+            "core_construct": model.methodology_alignment.core_construct,
+            "active_development_scope": model.methodology_alignment.active_development_scope,
+            "publication_target_scope": model.methodology_alignment.publication_target_scope,
+            "desired_horizon": model.methodology_alignment.desired_horizon,
+            "counts_by_priority": dict(by_priority),
+            "counts_by_status": dict(by_status),
+            "hard_gates": list(model.methodology_alignment.hard_gates),
+            "named_measures": [
+                {
+                    "measure_id": measure.measure_id,
+                    "formula": measure.formula,
+                }
+                for measure in model.methodology_alignment.named_measures
+            ],
+            "requirement_statuses": requirement_rows,
+        }
+        return (
+            summary,
+            unmet_requirements,
+            calibration_status,
+            freeze_status,
+            predictive_validity_status,
+        )
+
     def _carryover_blockers(self, iteration_id: str) -> list[dict[str, Any]]:
         carryover: list[dict[str, Any]] = []
         for path in sorted(self.paths.decisions_dir.glob("deferred_*.json")):
@@ -651,6 +760,13 @@ class ReviewEngine:
             deferred_stakeholder_requirements,
             publication_readiness_blockers,
         ) = self._stakeholder_alignment(iteration_id)
+        (
+            methodology_summary,
+            unmet_methodology_requirements,
+            rubric_calibration_status,
+            rubric_freeze_status,
+            predictive_validity_gate_status,
+        ) = self._methodology_alignment(iteration_id)
         starter = self._starter_prompt(iteration_id, phase_summary)
         roadmap_changes, patch = self._roadmap_changes(
             iteration_id, blocker_findings + quality_findings, focus_phase=phase_id
@@ -706,8 +822,13 @@ class ReviewEngine:
             manual_summary=self._manual_summary(iteration_id, phase_id=phase_id),
             quality_summary=quality_summary,
             stakeholder_alignment_summary=stakeholder_summary,
+            methodology_alignment_summary=methodology_summary,
             unmet_stakeholder_requirements=unmet_stakeholder_requirements,
             deferred_stakeholder_requirements=deferred_stakeholder_requirements,
+            unmet_methodology_requirements=unmet_methodology_requirements,
+            rubric_calibration_status=rubric_calibration_status,
+            rubric_freeze_status=rubric_freeze_status,
+            predictive_validity_gate_status=predictive_validity_gate_status,
             publication_readiness_blockers=publication_readiness_blockers,
             findings=blocker_findings + quality_findings,
             roadmap_changes=roadmap_changes,
@@ -979,7 +1100,14 @@ def load_approved_review_summaries(reviews_dir: str | Path) -> list[dict[str, An
                 "deferred_change_ids": approval.get("deferred_change_ids", []),
                 "next_iteration": review.get("next_iteration", {}),
                 "stakeholder_alignment_summary": review.get("stakeholder_alignment_summary", {}),
+                "methodology_alignment_summary": review.get("methodology_alignment_summary", {}),
                 "unmet_stakeholder_requirements": review.get("unmet_stakeholder_requirements", []),
+                "unmet_methodology_requirements": review.get("unmet_methodology_requirements", []),
+                "rubric_calibration_status": review.get("rubric_calibration_status", ""),
+                "rubric_freeze_status": review.get("rubric_freeze_status", ""),
+                "predictive_validity_gate_status": review.get(
+                    "predictive_validity_gate_status", ""
+                ),
                 "publication_readiness_blockers": review.get("publication_readiness_blockers", []),
             }
         )

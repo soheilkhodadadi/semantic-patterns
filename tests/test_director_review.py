@@ -38,7 +38,7 @@ def _init_git_repo(tmp_path: Path) -> None:
 
 def _review_model() -> dict:
     return {
-        "schema_version": "1.3.0",
+        "schema_version": "1.4.0",
         "project": {"name": "semantic-patterns", "description": "test"},
         "settings": {
             "active_horizon_iterations": ["1", "2"],
@@ -74,7 +74,7 @@ def _review_model() -> dict:
             "closeout_validation_commands": [".venv/bin/pytest -q"],
         },
         "stakeholder_alignment": {
-            "schema_version": "1.3.0",
+            "schema_version": "1.4.0",
             "source_artifact": "docs/director/stakeholder_expectations.md",
             "active_development_scope": "2021-2024",
             "publication_target_scope": "all publicly traded firms",
@@ -103,6 +103,54 @@ def _review_model() -> dict:
                     "mapped_phases": ["iteration1/rubric-and-api-bootstrap"],
                     "mapped_gates": ["assistive_api_smoke_passed"],
                 },
+            ],
+        },
+        "methodology_alignment": {
+            "schema_version": "1.4.0",
+            "source_artifact": "docs/director/proposal_methodology.md",
+            "core_construct": "AI-washing is speculative AI narrative without later observable capability.",
+            "active_development_scope": "2021-2024",
+            "publication_target_scope": "all publicly traded firms",
+            "desired_horizon": "2000-2024 when source availability permits",
+            "core_constructs": [
+                "Actionable vs Speculative vs Irrelevant support a predictive credibility measure."
+            ],
+            "label_semantics": {
+                "Actionable": "current firm AI deployment",
+                "Speculative": "firm-specific AI aspiration without operational evidence",
+                "Irrelevant": "generic AI context or risk language",
+            },
+            "borderline_rules": [
+                "Generic AI risk language is Irrelevant.",
+                "Risk-section disclosure of present AI deployment is Actionable.",
+            ],
+            "irr_design_requirements": ["100+ firms", "industry-year balance", "by-class kappa"],
+            "named_measures": [
+                {
+                    "measure_id": "A_S",
+                    "formula": "log(1 + A / (1 + S))",
+                    "description": "Actionable-to-speculative ratio.",
+                    "mapped_phases": ["iteration3/firm-year-measure-construction"],
+                }
+            ],
+            "baseline_predictive_specs": ["Patents and job postings for l in {0,1,2}."],
+            "ai_washing_specification": ["A_S x PatentMismatch"],
+            "rubric_calibration_policy": ["Rubric may change during development calibration."],
+            "rubric_freeze_policy": ["Rubric must freeze before publication-scale deployment."],
+            "predictive_validity_policy": [
+                "Directional predictive validity is the required development gate."
+            ],
+            "hard_gates": ["human_human_irr_only", "irr_stratified_100_firms_min"],
+            "requirements": [
+                {
+                    "requirement_id": "proposal-rubric-realignment",
+                    "priority": "non-negotiable",
+                    "summary": "Realign the rubric before tranche-1 canonical labeling continues.",
+                    "target_iteration": "2",
+                    "source_refs": ["proposal methodology"],
+                    "mapped_phases": ["iteration2/tranche1-labeling"],
+                    "mapped_gates": ["rubric_realignment_complete"],
+                }
             ],
         },
         "policies": [],
@@ -372,6 +420,7 @@ def test_review_approval_patch_and_kickoff_flow(tmp_path, monkeypatch, capsys):
     assert phase_review["review_type"] == "phase"
     assert phase_review["blocker_summary"]["blocker_count"] == 1
     assert "requirement_statuses" in phase_review["stakeholder_alignment_summary"]
+    assert "requirement_statuses" in phase_review["methodology_alignment_summary"]
 
     _run(["git", "switch", "-c", "iteration2/integration"], tmp_path)
     kickoff_blocked = main_with_args(["kickoff", "--iteration", "2"])
@@ -420,6 +469,7 @@ def test_review_approval_patch_and_kickoff_flow(tmp_path, monkeypatch, capsys):
     assert "## Branching Policy" in roadmap_body
     assert "## Review Workflow" in roadmap_body
     assert "## Stakeholder Alignment" in roadmap_body
+    assert "## Methodology Alignment" in roadmap_body
     assert "Approved Review Appendix" in roadmap_body
 
     capsys.readouterr()
@@ -429,3 +479,9 @@ def test_review_approval_patch_and_kickoff_flow(tmp_path, monkeypatch, capsys):
     assert status_payload["latest_review"].endswith("iteration_1_review.json")
     assert status_payload["latest_review_approval"].endswith("iteration_1_approval.json")
     assert status_payload["latest_kickoff"].endswith("iteration_2_kickoff.json")
+
+    refreshed_review = json.loads(review_path.read_text(encoding="utf-8"))
+    assert (
+        refreshed_review["methodology_alignment_summary"]["source_artifact"]
+        == "docs/director/proposal_methodology.md"
+    )
