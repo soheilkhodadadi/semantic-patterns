@@ -67,6 +67,7 @@ def _load_frame(input_csv: str, output_csv: str) -> tuple[pd.DataFrame, bool]:
     for column in ASSISTIVE_COLUMNS:
         if column not in frame.columns:
             frame[column] = ""
+        frame[column] = frame[column].fillna("").astype(object)
     return frame, output_path.exists()
 
 
@@ -184,7 +185,7 @@ def generate_assistive_prelabels(
             "pending_rows_after_run": 0,
         },
         "usage": {
-            "request_count": 0,
+            "request_count": int(existing_assistive_mask.sum()),
             "prompt_tokens": 0,
             "completion_tokens": 0,
             "total_tokens": 0,
@@ -201,6 +202,10 @@ def generate_assistive_prelabels(
 
     if mode == "dry-run":
         _flush_progress(frame, output_path, report, report_file, status="dry_run")
+        return report, 0
+
+    if pending.empty:
+        _flush_progress(frame, output_path, report, report_file, status="passed")
         return report, 0
 
     api_key = os.getenv(policy.env_var, "").strip()
@@ -293,11 +298,13 @@ def generate_assistive_prelabels(
         if sleep_seconds > 0:
             time.sleep(sleep_seconds)
 
-    if report["status"] == "pending":
-        _flush_progress(frame, output_path, report, report_file, status="passed")
-    else:
+    if report["status"] in {"missing_key", "request_failed"}:
         _flush_progress(frame, output_path, report, report_file, status=str(report["status"]))
-    return report, 0 if report["status"] == "passed" else 1
+        return report, 1
+
+    final_status = "passed" if report["counts"]["pending_rows_after_run"] == 0 else "in_progress"
+    _flush_progress(frame, output_path, report, report_file, status=final_status)
+    return report, 0
 
 
 def parse_args() -> argparse.Namespace:

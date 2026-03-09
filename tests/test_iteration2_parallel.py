@@ -481,6 +481,103 @@ def test_generate_assistive_prelabels_flushes_checkpoint_progress(monkeypatch, t
     assert report["counts"]["processed_rows"] == 1
 
 
+def test_generate_assistive_prelabels_returns_success_for_bounded_chunk_resume(
+    monkeypatch, tmp_path
+):
+    input_csv = _write_csv(
+        tmp_path / "labeling_batch.csv",
+        [
+            {
+                "sentence_id": "s1",
+                "sentence": "We use artificial intelligence in operations today.",
+                "source_file": "2024/QTR1/f1.txt",
+                "sentence_index": 1,
+                "label": "",
+            },
+            {
+                "sentence_id": "s2",
+                "sentence": "We currently use machine learning in underwriting.",
+                "source_file": "2024/QTR2/f2.txt",
+                "sentence_index": 2,
+                "label": "",
+            },
+        ],
+    )
+    output_csv = tmp_path / "labeling_batch_prelabeled.csv"
+    report_path = tmp_path / "assistive_prelabel_summary.json"
+    usage_file = tmp_path / "cost_usage.jsonl"
+
+    def _fake_call_responses_api(**_: object) -> dict[str, object]:
+        return {"usage": {"input_tokens": 12, "output_tokens": 8, "total_tokens": 20}}
+
+    def _fake_extract_response_text(_: dict[str, object]) -> str:
+        return json.dumps(
+            {
+                "label": "Actionable",
+                "confidence": "high",
+                "rationale": "Current operational use is explicit.",
+                "assistive_only": True,
+            }
+        )
+
+    def _fake_cost_controller(_: str):
+        controller = CostController(
+            policy={},
+            usage_file=usage_file,
+            cache_dir=tmp_path / "cache",
+        )
+        return controller, {}
+
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    monkeypatch.setattr(
+        "semantic_ai_washing.labeling.assistive_prelabel_batch.call_responses_api",
+        _fake_call_responses_api,
+    )
+    monkeypatch.setattr(
+        "semantic_ai_washing.labeling.assistive_prelabel_batch.extract_response_text",
+        _fake_extract_response_text,
+    )
+    monkeypatch.setattr(
+        "semantic_ai_washing.labeling.assistive_prelabel_batch._build_cost_controller",
+        _fake_cost_controller,
+    )
+
+    report, exit_code = generate_assistive_prelabels(
+        input_csv=str(input_csv),
+        output_csv=str(output_csv),
+        report_path=str(report_path),
+        policy_path="director/config/api_assistive_policy.yaml",
+        mode="live",
+        max_rows=1,
+        checkpoint_every=1,
+    )
+
+    output = pd.read_csv(output_csv)
+    assert exit_code == 0
+    assert report["status"] == "in_progress"
+    assert report["counts"]["processed_rows"] == 1
+    assert report["counts"]["pending_rows_after_run"] == 1
+    assert output["assistive_label"].fillna("").astype(str).eq("Actionable").sum() == 1
+
+    report_2, exit_code_2 = generate_assistive_prelabels(
+        input_csv=str(input_csv),
+        output_csv=str(output_csv),
+        report_path=str(report_path),
+        policy_path="director/config/api_assistive_policy.yaml",
+        mode="live",
+        max_rows=1,
+        checkpoint_every=1,
+    )
+
+    output_2 = pd.read_csv(output_csv)
+    assert exit_code_2 == 0
+    assert report_2["status"] == "passed"
+    assert report_2["counts"]["processed_rows"] == 1
+    assert report_2["counts"]["pending_rows_after_run"] == 0
+    assert report_2["usage"]["request_count"] == 2
+    assert output_2["assistive_label"].fillna("").astype(str).eq("Actionable").sum() == 2
+
+
 def test_build_labeling_batch_excludes_multiple_prior_batches(tmp_path):
     sentences_path = tmp_path / "sentences.parquet"
     manifest_path = tmp_path / "manifest.csv"
