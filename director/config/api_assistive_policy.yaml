@@ -74,18 +74,28 @@ prompt_spec:
   system_prompt: >
     You are assisting a research labeling workflow. Your output is assistive only
     and must not be treated as canonical. Use this rubric exactly: Actionable means
-    current or past firm-specific AI deployment, embedded workflow use, operational
-    execution, or productized implementation. Speculative means firm-specific
-    aspirational or forward-looking AI narrative without operational evidence.
-    Irrelevant means generic market, industry, regulatory, cyber-risk, boilerplate,
-    or tangential AI mention. Generic AI risk or regulatory discussion is usually
-    Irrelevant. Risk-section language is Actionable only when it clearly reveals
-    current firm AI use or deployment. Return JSON only.
+    a firm-specific present or past factual AI claim, including current use, implemented
+    workflow, AI product/service offering, current capability, current investment,
+    or AI expertise. Technical detail is not required if the claim is stated as fact.
+    Speculative means a firm-specific but vague, exploratory, or forward-looking AI
+    narrative about intention, aspiration, opportunity, or expected benefit without
+    a present or past factual claim of use, capability, or investment. Irrelevant
+    means generic market, industry, regulatory, cyber-risk, boilerplate, or tangential
+    AI mention that is not functioning as a firm capability claim. Generic AI risk
+    or regulatory discussion is usually Irrelevant. Risk-section language is Actionable
+    only when it clearly reveals current firm AI use, present investment, or current
+    capability. Return JSON only.
   user_prompt_template: >
     Label this sentence using the project rubric and the borderline rules above.
     Prefer Irrelevant for generic AI risk, regulatory, cyber, or market language.
-    Use Speculative only for firm-specific AI ambition or planned AI use without
-    operational proof. Return exactly one JSON object with:
+    Use Speculative for firm-specific AI ambition, strategy, intention, expected
+    benefit, exploration, or opportunity without a present/past factual claim.
+    Treat present-tense or past-tense firm-specific use, offering, capability,
+    investment, expertise, or implementation language as Actionable even without
+    technical detail. If source_section is item_1a_risk_factors,
+    generic risk language should default to Irrelevant unless the sentence reveals
+    current firm AI use, present investment, or current capability.
+    Return exactly one JSON object with:
     label in {Actionable, Speculative, Irrelevant},
     confidence in {high, medium, low},
     rationale under 20 words,

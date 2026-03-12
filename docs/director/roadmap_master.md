@@ -1,7 +1,7 @@
 <!-- generated_file: true -->
 <!-- source_model: /Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/model/roadmap_model.yaml -->
-<!-- source_sha256: 418621b1fe9c33159258a03e0646768bdd72de372de054f8b2878a4c03c835f6 -->
-<!-- rendered_at: 2026-03-09T19:49:09.726019+00:00 -->
+<!-- source_sha256: 262c21e37c38dc64862df9f3c22d3db059c79a815af483a66c999a6c94696e87 -->
+<!-- rendered_at: 2026-03-10T19:46:45.805100+00:00 -->
 
 # Roadmap Master
 
@@ -460,9 +460,9 @@ Exit criteria: Foundation phases passed through label-ops-bootstrap., Iteration 
 
 
 ## Iteration 2 - Rubric Realignment, Label Expansion, and Provisional Freeze
-Goal: Realign the rubric to the proposal construct, rebuild tranche-based canonical labels under rubric v2, and provisionally freeze the rubric only after sufficiency and IRR gates pass.
+Goal: Realign the rubric to the proposal construct, rebuild tranche-based canonical labels under rubric v2.2, and provisionally freeze the rubric only after sufficiency and IRR gates pass.
 Entry criteria: Iteration 1 review approved., Iteration 2 kickoff completed on iteration2/integration., Proposal methodology source and stakeholder expectations are both current.
-Exit criteria: Rubric realignment report and revised protocol v2 are published., Tranche 1 is re-reviewed under rubric v2 before further canonical labeling proceeds., Sentence-pool expansion reaches 500 firms and at least 1,000 clean AI sentences in the 2024 candidate pool., At least 500 adjudicated labels with at least 80 labels per class are available before retraining., Human-human IRR exceeds 0.7 on a stratified, blinded 100+ item subset with by-class diagnostics., Provisional rubric freeze and split registry are published with zero held-out leakage., Iteration 2 review approved.
+Exit criteria: Rubric realignment report and revised protocol v2.2 are published., Tranche 1 is re-reviewed under rubric v2.2 before further canonical labeling proceeds., Sentence-pool expansion reaches 500 firms and at least 1,000 clean AI sentences in the 2024 candidate pool., At least 500 adjudicated labels with at least 80 labels per class are available before retraining., Human-human IRR exceeds 0.7 on a stratified, blinded 100+ item subset with by-class diagnostics., Provisional rubric freeze and split registry are published with zero held-out leakage., Iteration 2 review approved.
 
 ### iteration2/kickoff-and-preflight
 - Title: Kickoff and Preflight
@@ -484,51 +484,86 @@ Exit criteria: Rubric realignment report and revised protocol v2 are published.,
 
 ### iteration2/rubric-realignment
 - Title: Rubric Realignment
-- Goal: Review tranche-1 error patterns, revise the proposal-faithful rubric, and regenerate tranche-1 assistive prelabels under rubric v2 before canonical labeling resumes.
+- Goal: Review tranche-1 error patterns, publish rubric v2.2, rebuild the current 40-row calibration slice from raw filings, and require slice sign-off before full tranche-1 canonical labeling resumes.
 - Lifecycle: `planned`
 - Depends on: iteration2/kickoff-and-preflight
 - Source window: `active_2021_2024`
-- Required artifacts: docs/labeling_protocol.md, reports/labels/tranche1_rubric_realignment_v2.md, data/labels/v1/labeling_batch_v1_prelabeled_v2.csv, reports/labels/assistive_prelabel_tranche1_v2_summary.json
+- Required artifacts: docs/labeling_protocol.md, reports/labels/tranche1_rubric_calibration_v2_2.md, data/labels/v1/labeling_batch_v1_reextracted_v2_2_slice40.csv, reports/labels/tranche1_reextraction_v2_2_summary.json, data/labels/v1/labeling_batch_v1_prelabeled_v2_2_slice40.csv, reports/labels/assistive_prelabel_tranche1_v2_2_slice40_summary.json, data/labels/v1/labeling_batch_v1_filled_v2_2_slice40.csv, reports/labels/tranche1_calibration_slice_v2_2.md, data/labels/v1/labeling_batch_v1_prelabeled_v2_2.csv, reports/labels/assistive_prelabel_tranche1_v2_2_summary.json, data/labels/v1/labeling_batch_v1_filled_v2_2.csv
 - Tags: rubric_calibration, methodology_alignment
 
 #### Tasks
-- `iteration2.rubric.review_tranche1_error_patterns` Review tranche 1 error patterns
+- `iteration2.rubric.review_tranche1_error_patterns_v2_2` Review tranche 1 error patterns for rubric v2.2
   - kind: `analysis` gate_class: `science` automation: `manual`
   - depends_on: none
-  - inputs: data/labels/v1/labeling_batch_v1_prelabeled.csv, docs/director/proposal_methodology.md
-  - outputs: reports/labels/tranche1_rubric_realignment_v2.md
+  - inputs: data/labels/v1/labeling_batch_v1_filled_v2_1_slice40.csv, docs/director/proposal_methodology.md
+  - outputs: reports/labels/tranche1_rubric_calibration_v2_2.md
   - tags: rubric_calibration, proposal_alignment
   - risks: R1, R3
-- `iteration2.rubric.publish_protocol_v2` Publish rubric v2 protocol
+- `iteration2.rubric.publish_protocol_v2_2` Publish rubric v2.2 protocol
   - kind: `manual` gate_class: `science` automation: `manual`
-  - depends_on: iteration2.rubric.review_tranche1_error_patterns
-  - inputs: reports/labels/tranche1_rubric_realignment_v2.md
+  - depends_on: iteration2.rubric.review_tranche1_error_patterns_v2_2
+  - inputs: reports/labels/tranche1_rubric_calibration_v2_2.md
   - outputs: docs/labeling_protocol.md
   - tags: rubric_calibration, protocol
   - risks: R1, R3
-- `iteration2.rubric.regenerate_tranche1_assistive_prelabels_v2` Regenerate tranche 1 assistive prelabels under rubric v2
+- `iteration2.rubric.reextract_tranche1_slice_v2_2` Re-extract tranche 1 slice under rubric v2.2
+  - kind: `build` gate_class: `data` automation: `partial`
+  - depends_on: iteration2.rubric.publish_protocol_v2_2
+  - inputs: data/labels/v1/labeling_batch_v1_filled_v2_1_slice40.csv
+  - outputs: data/labels/v1/labeling_batch_v1_reextracted_v2_2_slice40.csv, reports/labels/tranche1_reextraction_v2_2_summary.json
+  - tags: tranche1, calibration, extraction
+  - risks: R1, R3
+- `iteration2.rubric.generate_tranche1_slice_prelables_v2_2` Generate tranche 1 slice assistive prelabels under rubric v2.2
   - kind: `build` gate_class: `ops` automation: `partial`
-  - depends_on: iteration2.rubric.publish_protocol_v2
-  - inputs: data/labels/v1/labeling_batch_v1.csv, director/config/api_assistive_policy.yaml
-  - outputs: data/labels/v1/labeling_batch_v1_prelabeled_v2.csv, reports/labels/assistive_prelabel_tranche1_v2_summary.json
+  - depends_on: iteration2.rubric.reextract_tranche1_slice_v2_2, iteration2.rubric.publish_protocol_v2_2
+  - inputs: data/labels/v1/labeling_batch_v1_reextracted_v2_2_slice40.csv, director/config/api_assistive_policy.yaml
+  - outputs: data/labels/v1/labeling_batch_v1_prelabeled_v2_2_slice40.csv, reports/labels/assistive_prelabel_tranche1_v2_2_slice40_summary.json
   - tags: assistive_api, rubric_calibration, tranche1
   - risks: R1, R4
+- `iteration2.rubric.initialize_tranche1_slice_review_v2_2` Initialize tranche 1 rubric-v2.2 slice review sheet
+  - kind: `build` gate_class: `ops` automation: `full`
+  - depends_on: iteration2.rubric.generate_tranche1_slice_prelables_v2_2
+  - inputs: data/labels/v1/labeling_batch_v1_prelabeled_v2_2_slice40.csv
+  - outputs: data/labels/v1/labeling_batch_v1_filled_v2_2_slice40.csv
+  - tags: tranche1, rubric_calibration, review_sheet
+  - risks: R1
+- `iteration2.rubric.review_calibration_slice_v2_2` Review tranche 1 calibration slice under rubric v2.2
+  - kind: `manual` gate_class: `science` automation: `manual`
+  - depends_on: iteration2.rubric.initialize_tranche1_slice_review_v2_2
+  - inputs: data/labels/v1/labeling_batch_v1_filled_v2_2_slice40.csv
+  - outputs: reports/labels/tranche1_calibration_slice_v2_2.md
+  - tags: tranche1, calibration, manual_review
+  - risks: R1, R3
+- `iteration2.rubric.regenerate_tranche1_assistive_prelabels_v2_2` Regenerate full tranche 1 assistive prelabels under rubric v2.2
+  - kind: `build` gate_class: `ops` automation: `partial`
+  - depends_on: iteration2.rubric.review_calibration_slice_v2_2
+  - inputs: data/labels/v1/labeling_batch_v1.csv, director/config/api_assistive_policy.yaml
+  - outputs: data/labels/v1/labeling_batch_v1_prelabeled_v2_2.csv, reports/labels/assistive_prelabel_tranche1_v2_2_summary.json
+  - tags: assistive_api, tranche1, calibration
+  - risks: R1, R4
+- `iteration2.rubric.initialize_tranche1_review_v2_2` Initialize full tranche 1 rubric-v2.2 review sheet
+  - kind: `build` gate_class: `ops` automation: `full`
+  - depends_on: iteration2.rubric.regenerate_tranche1_assistive_prelabels_v2_2
+  - inputs: data/labels/v1/labeling_batch_v1_prelabeled_v2_2.csv
+  - outputs: data/labels/v1/labeling_batch_v1_filled_v2_2.csv
+  - tags: tranche1, review_sheet
+  - risks: R1
 
 ### iteration2/tranche1-labeling
 - Title: Tranche 1 Labeling
-- Goal: Verify tranche 1 under rubric v2 after rubric realignment and regenerated assistive prelabels.
+- Goal: Verify tranche 1 under rubric v2.2 after slice sign-off and regenerated assistive prelabels.
 - Lifecycle: `planned`
 - Depends on: iteration2/rubric-realignment
 - Source window: `active_2021_2024`
-- Required artifacts: data/labels/v1/labeling_batch_v1_filled_v2.csv
+- Required artifacts: data/labels/v1/labeling_batch_v1_filled_v2_2.csv
 - Tags: tranche1, human_labeling
 
 #### Tasks
 - `iteration2.labels.verify_tranche1_labels` Verify tranche 1 labels
   - kind: `manual` gate_class: `manual` automation: `manual`
-  - depends_on: iteration2.rubric.regenerate_tranche1_assistive_prelabels_v2
-  - inputs: data/labels/v1/labeling_batch_v1_prelabeled_v2.csv
-  - outputs: data/labels/v1/labeling_batch_v1_filled_v2.csv
+  - depends_on: iteration2.rubric.initialize_tranche1_review_v2_2
+  - inputs: data/labels/v1/labeling_batch_v1_prelabeled_v2_2.csv
+  - outputs: data/labels/v1/labeling_batch_v1_filled_v2_2.csv
   - tags: human_labeling, tranche1
   - risks: R1, R3
 
@@ -662,7 +697,7 @@ Exit criteria: Rubric realignment report and revised protocol v2 are published.,
 - `iteration2.labels.merge_canonical_labels` Merge canonical labels
   - kind: `build` gate_class: `data` automation: `full`
   - depends_on: iteration2.labels.verify_tranche1_labels, iteration2.labels.verify_tranche2_labels, iteration2.labels.verify_tranche3_labels
-  - inputs: data/labels/v1/labeling_batch_v1_filled_v2.csv, data/labels/v1/labeling_batch_v2_filled.csv, data/labels/v1/labeling_batch_v3_filled.csv
+  - inputs: data/labels/v1/labeling_batch_v1_filled_v2_2.csv, data/labels/v1/labeling_batch_v2_filled.csv, data/labels/v1/labeling_batch_v3_filled.csv
   - outputs: data/labels/v1/labels_master.parquet, data/labels/v1/labels_master_review.csv, reports/labels/label_expansion_summary.json
   - tags: human_labeling, merge_labels
   - risks: R1, R2, R3

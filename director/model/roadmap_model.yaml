@@ -1503,15 +1503,15 @@ iterations:
 - iteration_id: '2'
   title: Rubric Realignment, Label Expansion, and Provisional Freeze
   goal: Realign the rubric to the proposal construct, rebuild tranche-based canonical
-    labels under rubric v2, and provisionally freeze the rubric only after sufficiency
+    labels under rubric v2.2, and provisionally freeze the rubric only after sufficiency
     and IRR gates pass.
   entry_criteria:
   - Iteration 1 review approved.
   - Iteration 2 kickoff completed on iteration2/integration.
   - Proposal methodology source and stakeholder expectations are both current.
   exit_criteria:
-  - Rubric realignment report and revised protocol v2 are published.
-  - Tranche 1 is re-reviewed under rubric v2 before further canonical labeling proceeds.
+  - Rubric realignment report and revised protocol v2.2 are published.
+  - Tranche 1 is re-reviewed under rubric v2.2 before further canonical labeling proceeds.
   - Sentence-pool expansion reaches 500 firms and at least 1,000 clean AI sentences
     in the 2024 candidate pool.
   - At least 500 adjudicated labels with at least 80 labels per class are available
@@ -1581,34 +1581,41 @@ iterations:
       gate_class: ops
   - phase_id: iteration2/rubric-realignment
     title: Rubric Realignment
-    goal: Review tranche-1 error patterns, revise the proposal-faithful rubric, and
-      regenerate tranche-1 assistive prelabels under rubric v2 before canonical labeling
-      resumes.
+    goal: Review tranche-1 error patterns, publish rubric v2.2, rebuild the current
+      40-row calibration slice from raw filings, and require slice sign-off before
+      full tranche-1 canonical labeling resumes.
     lifecycle_state: planned
     canonical: true
     depends_on:
     - iteration2/kickoff-and-preflight
     required_artifacts:
     - docs/labeling_protocol.md
-    - reports/labels/tranche1_rubric_realignment_v2.md
-    - data/labels/v1/labeling_batch_v1_prelabeled_v2.csv
-    - reports/labels/assistive_prelabel_tranche1_v2_summary.json
+    - reports/labels/tranche1_rubric_calibration_v2_2.md
+    - data/labels/v1/labeling_batch_v1_reextracted_v2_2_slice40.csv
+    - reports/labels/tranche1_reextraction_v2_2_summary.json
+    - data/labels/v1/labeling_batch_v1_prelabeled_v2_2_slice40.csv
+    - reports/labels/assistive_prelabel_tranche1_v2_2_slice40_summary.json
+    - data/labels/v1/labeling_batch_v1_filled_v2_2_slice40.csv
+    - reports/labels/tranche1_calibration_slice_v2_2.md
+    - data/labels/v1/labeling_batch_v1_prelabeled_v2_2.csv
+    - reports/labels/assistive_prelabel_tranche1_v2_2_summary.json
+    - data/labels/v1/labeling_batch_v1_filled_v2_2.csv
     source_window_id: active_2021_2024
     tags:
     - rubric_calibration
     - methodology_alignment
     tasks:
-    - task_id: iteration2.rubric.review_tranche1_error_patterns
-      title: Review tranche 1 error patterns
-      description: Inspect tranche-1 diagnostic prelabels against the proposal construct
-        and publish the rubric realignment note.
+    - task_id: iteration2.rubric.review_tranche1_error_patterns_v2_2
+      title: Review tranche 1 error patterns for rubric v2.2
+      description: Inspect the reviewed tranche-1 v2.1 slice against the proposal
+        construct and publish the rubric-v2.2 calibration note.
       iteration_id: '2'
       phase_id: iteration2/rubric-realignment
       kind: analysis
       depends_on: []
       inputs:
-      - artifact_id: tranche1_diagnostic_prelabeled_csv
-        path: data/labels/v1/labeling_batch_v1_prelabeled.csv
+      - artifact_id: tranche1_v2_1_slice_review
+        path: data/labels/v1/labeling_batch_v1_filled_v2_1_slice40.csv
         kind: csv
         required: true
       - artifact_id: proposal_methodology
@@ -1616,18 +1623,19 @@ iterations:
         kind: markdown
         required: true
       outputs:
-      - artifact_id: tranche1_rubric_realignment_note
-        path: reports/labels/tranche1_rubric_realignment_v2.md
+      - artifact_id: tranche1_rubric_calibration_v2_2_note
+        path: reports/labels/tranche1_rubric_calibration_v2_2.md
         kind: markdown
         required: true
       preconditions:
-      - condition_id: tranche1_diagnostic_prelabeled_exists
+      - condition_id: tranche1_v2_1_slice_exists
         kind: artifact_exists
-        target: data/labels/v1/labeling_batch_v1_prelabeled.csv
+        target: data/labels/v1/labeling_batch_v1_filled_v2_1_slice40.csv
         operator: ==
         expected: true
         on_fail: block
-        message: Diagnostic tranche-1 prelabels must exist before rubric review.
+        message: The reviewed tranche-1 v2.1 slice must exist before rubric v2.2
+          review.
         reroute_to: []
       quality_checks: []
       commands: []
@@ -1645,18 +1653,18 @@ iterations:
       - rubric_calibration
       - proposal_alignment
       gate_class: science
-    - task_id: iteration2.rubric.publish_protocol_v2
-      title: Publish rubric v2 protocol
+    - task_id: iteration2.rubric.publish_protocol_v2_2
+      title: Publish rubric v2.2 protocol
       description: Revise the labeling protocol to align Actionable, Speculative,
-        and Irrelevant with the proposal construct.
+        and Irrelevant with the proposal construct and the verifiable/refutable criterion.
       iteration_id: '2'
       phase_id: iteration2/rubric-realignment
       kind: manual
       depends_on:
-      - iteration2.rubric.review_tranche1_error_patterns
+      - iteration2.rubric.review_tranche1_error_patterns_v2_2
       inputs:
-      - artifact_id: tranche1_rubric_realignment_note
-        path: reports/labels/tranche1_rubric_realignment_v2.md
+      - artifact_id: tranche1_rubric_calibration_v2_2_note
+        path: reports/labels/tranche1_rubric_calibration_v2_2.md
         kind: markdown
         required: true
       outputs:
@@ -1681,15 +1689,240 @@ iterations:
       - rubric_calibration
       - protocol
       gate_class: science
-    - task_id: iteration2.rubric.regenerate_tranche1_assistive_prelabels_v2
-      title: Regenerate tranche 1 assistive prelabels under rubric v2
-      description: Publish a rubric-v2 tranche-1 prelabel sheet for renewed human
-        review. The regenerated outputs must supersede the earlier diagnostic prelabels.
+    - task_id: iteration2.rubric.reextract_tranche1_slice_v2_2
+      title: Re-extract tranche 1 slice under rubric v2.2
+      description: Rebuild only the 40-row tranche-1 calibration slice from raw filings
+        with cleanup fixes and prospective section tags.
       iteration_id: '2'
       phase_id: iteration2/rubric-realignment
       kind: build
       depends_on:
-      - iteration2.rubric.publish_protocol_v2
+      - iteration2.rubric.publish_protocol_v2_2
+      inputs:
+      - artifact_id: tranche1_v2_1_slice_review
+        path: data/labels/v1/labeling_batch_v1_filled_v2_1_slice40.csv
+        kind: csv
+        required: true
+      outputs:
+      - artifact_id: tranche1_reextracted_v2_2_slice
+        path: data/labels/v1/labeling_batch_v1_reextracted_v2_2_slice40.csv
+        kind: csv
+        required: true
+      - artifact_id: tranche1_reextraction_summary_v2_2
+        path: reports/labels/tranche1_reextraction_v2_2_summary.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: labeling_protocol_v2_2_exists
+        kind: artifact_exists
+        target: docs/labeling_protocol.md
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Rubric v2.2 protocol must exist before the calibration slice is
+          re-extracted.
+        reroute_to: []
+      quality_checks: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.data.reextract_tranche_slice --input-csv
+        data/labels/v1/labeling_batch_v1_filled_v2_1_slice40.csv --output-csv data/labels/v1/labeling_batch_v1_reextracted_v2_2_slice40.csv
+        --report reports/labels/tranche1_reextraction_v2_2_summary.json
+      manual_handoff: false
+      risks:
+      - R1
+      - R3
+      estimated_effort: 3
+      risk_reduction: 9
+      automation_level: partial
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - tranche1
+      - calibration
+      - extraction
+      gate_class: data
+    - task_id: iteration2.rubric.generate_tranche1_slice_prelables_v2_2
+      title: Generate tranche 1 slice assistive prelabels under rubric v2.2
+      description: Publish a rubric-v2.2 assistive prelabel sheet only for the rebuilt
+        40-row tranche-1 calibration slice.
+      iteration_id: '2'
+      phase_id: iteration2/rubric-realignment
+      kind: build
+      depends_on:
+      - iteration2.rubric.reextract_tranche1_slice_v2_2
+      - iteration2.rubric.publish_protocol_v2_2
+      inputs:
+      - artifact_id: tranche1_reextracted_v2_2_slice
+        path: data/labels/v1/labeling_batch_v1_reextracted_v2_2_slice40.csv
+        kind: csv
+        required: true
+      - artifact_id: assistive_api_policy
+        path: director/config/api_assistive_policy.yaml
+        kind: file
+        required: true
+      outputs:
+      - artifact_id: tranche1_prelabeled_v2_2_slice_csv
+        path: data/labels/v1/labeling_batch_v1_prelabeled_v2_2_slice40.csv
+        kind: csv
+        required: true
+      - artifact_id: tranche1_prelabeled_v2_2_slice_summary
+        path: reports/labels/assistive_prelabel_tranche1_v2_2_slice40_summary.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: tranche1_reextracted_v2_2_slice_exists
+        kind: artifact_exists
+        target: data/labels/v1/labeling_batch_v1_reextracted_v2_2_slice40.csv
+        operator: ==
+        expected: true
+        on_fail: block
+        message: The rebuilt tranche-1 slice must exist before rubric-v2.2 slice
+          prelabels are generated.
+        reroute_to: []
+      quality_checks:
+      - condition_id: tranche1_v2_2_slice_prelabel_status_passed
+        kind: json_field_compare
+        target: reports/labels/assistive_prelabel_tranche1_v2_2_slice40_summary.json::status
+        operator: ==
+        expected: passed
+        on_fail: block
+        message: Tranche-1 rubric-v2.2 slice assistive prelabels must complete in
+          passed mode.
+        reroute_to: []
+      - condition_id: tranche1_v2_2_slice_prelabel_request_count
+        kind: json_field_compare
+        target: reports/labels/assistive_prelabel_tranche1_v2_2_slice40_summary.json::usage.request_count
+        operator: '>='
+        expected: 1
+        on_fail: block
+        message: Tranche-1 rubric-v2.2 slice assistive prelabels must record at least
+          one live API request.
+        reroute_to: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.labeling.assistive_prelabel_batch
+        --input-csv data/labels/v1/labeling_batch_v1_reextracted_v2_2_slice40.csv
+        --output-csv data/labels/v1/labeling_batch_v1_prelabeled_v2_2_slice40.csv
+        --report reports/labels/assistive_prelabel_tranche1_v2_2_slice40_summary.json
+        --policy director/config/api_assistive_policy.yaml --mode live --checkpoint-every
+        10
+      manual_handoff: false
+      risks:
+      - R1
+      - R4
+      estimated_effort: 3
+      risk_reduction: 9
+      automation_level: partial
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - assistive_api
+      - rubric_calibration
+      - tranche1
+      gate_class: ops
+    - task_id: iteration2.rubric.initialize_tranche1_slice_review_v2_2
+      title: Initialize tranche 1 rubric-v2.2 slice review sheet
+      description: Create the canonical tranche-1 rubric-v2.2 review sheet for the
+        rebuilt 40-row calibration slice.
+      iteration_id: '2'
+      phase_id: iteration2/rubric-realignment
+      kind: build
+      depends_on:
+      - iteration2.rubric.generate_tranche1_slice_prelables_v2_2
+      inputs:
+      - artifact_id: tranche1_prelabeled_v2_2_slice_csv
+        path: data/labels/v1/labeling_batch_v1_prelabeled_v2_2_slice40.csv
+        kind: csv
+        required: true
+      outputs:
+      - artifact_id: tranche1_filled_v2_2_slice
+        path: data/labels/v1/labeling_batch_v1_filled_v2_2_slice40.csv
+        kind: csv
+        required: true
+      preconditions:
+      - condition_id: tranche1_v2_2_slice_prelabeled_exists
+        kind: artifact_exists
+        target: data/labels/v1/labeling_batch_v1_prelabeled_v2_2_slice40.csv
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Regenerated tranche-1 v2.2 slice prelabels must exist before the
+          review sheet is initialized.
+        reroute_to: []
+      quality_checks: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.labeling.initialize_review_sheet --input-csv
+        data/labels/v1/labeling_batch_v1_prelabeled_v2_2_slice40.csv --output-csv
+        data/labels/v1/labeling_batch_v1_filled_v2_2_slice40.csv
+      manual_handoff: false
+      risks:
+      - R1
+      estimated_effort: 2
+      risk_reduction: 7
+      automation_level: full
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - tranche1
+      - rubric_calibration
+      - review_sheet
+      gate_class: ops
+    - task_id: iteration2.rubric.review_calibration_slice_v2_2
+      title: Review tranche 1 calibration slice under rubric v2.2
+      description: Manually review the rebuilt 40-row rubric-v2.2 tranche-1 slice
+        and publish a sign-off note before full tranche review resumes.
+      iteration_id: '2'
+      phase_id: iteration2/rubric-realignment
+      kind: manual
+      depends_on:
+      - iteration2.rubric.initialize_tranche1_slice_review_v2_2
+      inputs:
+      - artifact_id: tranche1_filled_v2_2_slice
+        path: data/labels/v1/labeling_batch_v1_filled_v2_2_slice40.csv
+        kind: csv
+        required: true
+      outputs:
+      - artifact_id: tranche1_calibration_slice_v2_2_note
+        path: reports/labels/tranche1_calibration_slice_v2_2.md
+        kind: markdown
+        required: true
+      preconditions:
+      - condition_id: tranche1_v2_2_slice_exists
+        kind: artifact_exists
+        target: data/labels/v1/labeling_batch_v1_filled_v2_2_slice40.csv
+        operator: ==
+        expected: true
+        on_fail: block
+        message: The tranche-1 v2.2 slice must exist before calibration review.
+        reroute_to: []
+      quality_checks: []
+      commands: []
+      manual_handoff: true
+      risks:
+      - R1
+      - R3
+      estimated_effort: 4
+      risk_reduction: 9
+      automation_level: manual
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - tranche1
+      - calibration
+      - manual_review
+      gate_class: science
+    - task_id: iteration2.rubric.regenerate_tranche1_assistive_prelabels_v2_2
+      title: Regenerate full tranche 1 assistive prelabels under rubric v2.2
+      description: After slice sign-off, regenerate the full tranche-1 assistive prelabel
+        sheet under rubric v2.2.
+      iteration_id: '2'
+      phase_id: iteration2/rubric-realignment
+      kind: build
+      depends_on:
+      - iteration2.rubric.review_calibration_slice_v2_2
       inputs:
       - artifact_id: tranche1_labeling_batch
         path: data/labels/v1/labeling_batch_v1.csv
@@ -1700,45 +1933,47 @@ iterations:
         kind: file
         required: true
       outputs:
-      - artifact_id: tranche1_prelabeled_v2_csv
-        path: data/labels/v1/labeling_batch_v1_prelabeled_v2.csv
+      - artifact_id: tranche1_prelabeled_v2_2_csv
+        path: data/labels/v1/labeling_batch_v1_prelabeled_v2_2.csv
         kind: csv
         required: true
-      - artifact_id: tranche1_prelabeled_v2_summary
-        path: reports/labels/assistive_prelabel_tranche1_v2_summary.json
+      - artifact_id: tranche1_prelabeled_v2_2_summary
+        path: reports/labels/assistive_prelabel_tranche1_v2_2_summary.json
         kind: json
         required: true
       preconditions:
-      - condition_id: labeling_protocol_exists
+      - condition_id: tranche1_calibration_v2_2_note_exists
         kind: artifact_exists
-        target: docs/labeling_protocol.md
+        target: reports/labels/tranche1_calibration_slice_v2_2.md
         operator: ==
         expected: true
         on_fail: block
-        message: Rubric v2 protocol must exist before tranche-1 prelabels are regenerated.
+        message: The tranche-1 v2.2 calibration sign-off note must exist before full
+          prelabels are regenerated.
         reroute_to: []
       quality_checks:
-      - condition_id: tranche1_v2_prelabel_status_passed
+      - condition_id: tranche1_v2_2_prelabel_status_passed
         kind: json_field_compare
-        target: reports/labels/assistive_prelabel_tranche1_v2_summary.json::status
+        target: reports/labels/assistive_prelabel_tranche1_v2_2_summary.json::status
         operator: ==
         expected: passed
         on_fail: block
-        message: Tranche-1 rubric-v2 assistive prelabels must complete in passed mode.
+        message: Full tranche-1 rubric-v2.2 assistive prelabels must complete in
+          passed mode.
         reroute_to: []
-      - condition_id: tranche1_v2_prelabel_request_count
+      - condition_id: tranche1_v2_2_prelabel_request_count
         kind: json_field_compare
-        target: reports/labels/assistive_prelabel_tranche1_v2_summary.json::usage.request_count
+        target: reports/labels/assistive_prelabel_tranche1_v2_2_summary.json::usage.request_count
         operator: '>='
         expected: 1
         on_fail: block
-        message: Tranche-1 rubric-v2 assistive prelabels must record at least one live
-          API request.
+        message: Full tranche-1 rubric-v2.2 assistive prelabels must record at least
+          one live API request.
         reroute_to: []
       commands:
       - .venv/bin/python -m semantic_ai_washing.labeling.assistive_prelabel_batch
-        --input-csv data/labels/v1/labeling_batch_v1.csv --output-csv data/labels/v1/labeling_batch_v1_prelabeled_v2.csv
-        --report reports/labels/assistive_prelabel_tranche1_v2_summary.json --policy
+        --input-csv data/labels/v1/labeling_batch_v1.csv --output-csv data/labels/v1/labeling_batch_v1_prelabeled_v2_2.csv
+        --report reports/labels/assistive_prelabel_tranche1_v2_2_summary.json --policy
         director/config/api_assistive_policy.yaml --mode live --checkpoint-every 10
       manual_handoff: false
       risks:
@@ -1752,19 +1987,65 @@ iterations:
       evidence_required: true
       tags:
       - assistive_api
-      - rubric_calibration
       - tranche1
+      - calibration
+      gate_class: ops
+    - task_id: iteration2.rubric.initialize_tranche1_review_v2_2
+      title: Initialize full tranche 1 rubric-v2.2 review sheet
+      description: Create the canonical full tranche-1 review sheet after rubric-v2.2
+        slice sign-off and full assistive prelabel regeneration.
+      iteration_id: '2'
+      phase_id: iteration2/rubric-realignment
+      kind: build
+      depends_on:
+      - iteration2.rubric.regenerate_tranche1_assistive_prelabels_v2_2
+      inputs:
+      - artifact_id: tranche1_prelabeled_v2_2_csv
+        path: data/labels/v1/labeling_batch_v1_prelabeled_v2_2.csv
+        kind: csv
+        required: true
+      outputs:
+      - artifact_id: tranche1_filled_v2_2_csv
+        path: data/labels/v1/labeling_batch_v1_filled_v2_2.csv
+        kind: csv
+        required: true
+      preconditions:
+      - condition_id: tranche1_v2_2_prelabeled_exists
+        kind: artifact_exists
+        target: data/labels/v1/labeling_batch_v1_prelabeled_v2_2.csv
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Full tranche-1 v2.2 prelabels must exist before the canonical review
+          sheet is initialized.
+        reroute_to: []
+      quality_checks: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.labeling.initialize_review_sheet --input-csv
+        data/labels/v1/labeling_batch_v1_prelabeled_v2_2.csv --output-csv data/labels/v1/labeling_batch_v1_filled_v2_2.csv
+      manual_handoff: false
+      risks:
+      - R1
+      estimated_effort: 2
+      risk_reduction: 7
+      automation_level: full
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - tranche1
+      - review_sheet
       gate_class: ops
   - phase_id: iteration2/tranche1-labeling
     title: Tranche 1 Labeling
-    goal: Verify tranche 1 under rubric v2 after rubric realignment and regenerated
+    goal: Verify tranche 1 under rubric v2.2 after slice sign-off and regenerated
       assistive prelabels.
     lifecycle_state: planned
     canonical: true
     depends_on:
     - iteration2/rubric-realignment
     required_artifacts:
-    - data/labels/v1/labeling_batch_v1_filled_v2.csv
+    - data/labels/v1/labeling_batch_v1_filled_v2_2.csv
     source_window_id: active_2021_2024
     tags:
     - tranche1
@@ -1772,36 +2053,36 @@ iterations:
     tasks:
     - task_id: iteration2.labels.verify_tranche1_labels
       title: Verify tranche 1 labels
-      description: Human-review tranche 1 under rubric v2 and finalize canonical label,
-        uncertainty, and note fields.
+      description: Human-review tranche 1 under rubric v2.2 and finalize canonical
+        label, uncertainty, and note fields.
       iteration_id: '2'
       phase_id: iteration2/tranche1-labeling
       kind: manual
       depends_on:
-      - iteration2.rubric.regenerate_tranche1_assistive_prelabels_v2
+      - iteration2.rubric.initialize_tranche1_review_v2_2
       inputs:
       - artifact_id: tranche1_prelabeled_csv
-        path: data/labels/v1/labeling_batch_v1_prelabeled_v2.csv
+        path: data/labels/v1/labeling_batch_v1_prelabeled_v2_2.csv
         kind: csv
         required: true
       outputs:
       - artifact_id: tranche1_filled_csv
-        path: data/labels/v1/labeling_batch_v1_filled_v2.csv
+        path: data/labels/v1/labeling_batch_v1_filled_v2_2.csv
         kind: csv
         required: true
       preconditions:
       - condition_id: tranche1_prelabeled_exists
         kind: artifact_exists
-        target: data/labels/v1/labeling_batch_v1_prelabeled_v2.csv
+        target: data/labels/v1/labeling_batch_v1_prelabeled_v2_2.csv
         operator: ==
         expected: true
         on_fail: block
-        message: Tranche 1 prelabels must exist before human verification.
+        message: Tranche 1 rubric-v2.2 prelabels must exist before human verification.
         reroute_to: []
       quality_checks:
       - condition_id: tranche1_label_count_complete
         kind: csv_nonempty_count_gte
-        target: data/labels/v1/labeling_batch_v1_filled_v2.csv::label
+        target: data/labels/v1/labeling_batch_v1_filled_v2_2.csv::label
         operator: '>='
         expected: 240
         on_fail: block
@@ -2685,7 +2966,7 @@ iterations:
       - iteration2.labels.verify_tranche3_labels
       inputs:
       - artifact_id: tranche1_filled_csv
-        path: data/labels/v1/labeling_batch_v1_filled_v2.csv
+        path: data/labels/v1/labeling_batch_v1_filled_v2_2.csv
         kind: csv
         required: true
       - artifact_id: tranche2_filled_csv
@@ -2712,11 +2993,11 @@ iterations:
       preconditions:
       - condition_id: tranche1_filled_exists
         kind: artifact_exists
-        target: data/labels/v1/labeling_batch_v1_filled_v2.csv
+        target: data/labels/v1/labeling_batch_v1_filled_v2_2.csv
         operator: ==
         expected: true
         on_fail: block
-        message: Verified tranche 1 rubric-v2 CSV is required before label merge.
+        message: Verified tranche 1 rubric-v2.2 CSV is required before label merge.
         reroute_to: []
       - condition_id: tranche2_filled_exists
         kind: artifact_exists
@@ -2762,7 +3043,7 @@ iterations:
         reroute_to: []
       commands:
       - .venv/bin/python -m semantic_ai_washing.labeling.merge_labeling_batches --inputs
-        data/labels/v1/labeling_batch_v1_filled_v2.csv data/labels/v1/labeling_batch_v2_filled.csv
+        data/labels/v1/labeling_batch_v1_filled_v2_2.csv data/labels/v1/labeling_batch_v2_filled.csv
         data/labels/v1/labeling_batch_v3_filled.csv --held-out data/validation/held_out_sentences.csv
         --output-parquet data/labels/v1/labels_master.parquet --output-review-csv
         data/labels/v1/labels_master_review.csv --report reports/labels/label_expansion_summary.json
@@ -3027,7 +3308,7 @@ iterations:
       gate_class: data
     - task_id: iteration2.rubric.publish_provisional_freeze
       title: Publish provisional rubric freeze
-      description: Record that rubric v2 is provisionally frozen for scale-up pending
+      description: Record that rubric v2.2 is provisionally frozen for scale-up pending
         later predictive-validity review.
       iteration_id: '2'
       phase_id: iteration2/provisional-rubric-freeze-and-split-registry

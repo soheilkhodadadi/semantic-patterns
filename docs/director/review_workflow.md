@@ -64,7 +64,11 @@ Stakeholder alignment and methodology alignment are part of the review boundary,
 
 ## Iteration 2 Tranche Execution Note
 - Iteration 2 now begins with `rubric-realignment` before tranche-1 canonical labeling resumes.
-- Tranche 1 under the original rubric is diagnostic only; tranche-1 canonical labels must be re-reviewed under rubric v2.
+- Tranche 1 under the original rubric is diagnostic only; tranche-1 canonical labels must be re-reviewed under rubric v2.2.
+- Rubric realignment is slice-first:
+  - rebuild the current 40-row calibration slice from raw filings
+  - regenerate assistive prelabels on that rebuilt slice
+  - require manual slice sign-off before regenerating the full 240-row tranche
 - After rubric realignment, Iteration 2 is intentionally linear and batch-based:
   - tranche 1 rubric-v2 human verification
   - four resumable expansion batches to build the 2024 candidate pool

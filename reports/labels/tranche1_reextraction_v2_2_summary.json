@@ -1,0 +1,30 @@
+{
+  "counts": {
+    "candidate_sentence_count": 83,
+    "exact_matches": 33,
+    "file_read_failures": 0,
+    "matched_rows": 34,
+    "similarity_matches": 1,
+    "slice_rows": 40,
+    "unique_source_files": 18,
+    "unmatched_rows": 6
+  },
+  "file_failures": [],
+  "input_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/labels/v1/labeling_batch_v1_filled_v2_1_slice40.csv",
+  "output_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/labels/v1/labeling_batch_v1_reextracted_v2_2_slice40.csv",
+  "section_counts": {
+    "item_1_business": 15,
+    "item_1a_risk_factors": 15,
+    "item_7_mda": 1,
+    "other": 9
+  },
+  "source_root": "/Users/soheilkhodadadi/DataWork/10-X_C_2021-2124",
+  "unmatched_sentence_ids": [
+    "1904b80dd2fe1a57",
+    "e59ee2f288168a96",
+    "b6d5079dbf6d7219",
+    "6fd59ad7f9a00747",
+    "1f7cfc4e51903d17",
+    "52515d9af8d976a1"
+  ]
+}

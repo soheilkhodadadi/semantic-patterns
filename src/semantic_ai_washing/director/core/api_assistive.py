@@ -83,9 +83,24 @@ def select_smoke_sentence(
     }, selection_fallback
 
 
-def build_prompt_messages(policy: ApiAssistivePolicy, sentence: str) -> list[dict[str, Any]]:
+def build_prompt_messages(
+    policy: ApiAssistivePolicy,
+    sentence: str,
+    *,
+    source_section: str = "",
+) -> list[dict[str, Any]]:
+    context_parts: list[str] = []
+    normalized_section = str(source_section).strip()
+    if normalized_section:
+        context_parts.append(f"Source section: {normalized_section}")
+
+    context_text = ""
+    if context_parts:
+        context_text = "\n\n" + "\n".join(context_parts)
+
     user_text = (
-        f"{policy.prompt_spec.user_prompt_template}\n\n"
+        f"{policy.prompt_spec.user_prompt_template}"
+        f"{context_text}\n\n"
         f"Sentence:\n{sentence}\n\n"
         "Return a single JSON object and no surrounding commentary."
     )

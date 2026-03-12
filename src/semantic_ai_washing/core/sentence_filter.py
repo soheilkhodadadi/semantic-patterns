@@ -8,6 +8,8 @@ Public API:
 - segment_sentences(text: str) -> list[str]
 - merge_page_fragments(sentences: list[str], raw_text: str | None = None) -> list[str]
 - merge_sentence_fragments(sentences: list[str]) -> list[str]
+- clean_extracted_sentence(text: str) -> str
+- filter_ai_sentences_with_sections(sentences: list[str], keywords: list[str]) -> list[tuple[str, str]]
 - filter_ai_sentences(sentences: list[str], keywords: list[str]) -> list[str]
 """
 
@@ -145,6 +147,26 @@ _PAGE_MARKER = re.compile(r"[\-\u2013\u2014]\s*\d+\s*[\-\u2013\u2014]")
 _PAGE_MARKER_LINE = re.compile(r"^\s*[\-\u2013\u2014]\s*\d+\s*[\-\u2013\u2014]\s*$")
 _NON_WORD_RE = re.compile(r"[^\w\s]+", re.UNICODE)
 _WS_RE = re.compile(r"\s+")
+_TABLE_OF_CONTENTS_FRAGMENT = re.compile(r"\b\d*\s*table of contents\b", re.I)
+_FORM_PAGE_FRAGMENT = re.compile(
+    r"\b[A-Z][A-Z0-9&.,' /\-]{2,}\|\s*20\d{2}\s+Form\s+10-K\s+\d+\s+"
+    r"(?:Risk Factors|Business|Table of Contents|Management['’]s Discussion and Analysis)?\b",
+    re.I,
+)
+_FORM_PAGE_PREFIX_RE = re.compile(r"^\s*FORM\s+10-K\s+\d+\s+", re.I)
+_GLOSSARY_BULLET_RE = re.compile(
+    r"^(?:[A-Z0-9]\s+)?[A-Z][A-Z0-9/]{1,20}\s*-\s*[A-Z][A-Za-z0-9/()\- ]+\.?$"
+)
+_LEADING_SINGLETON_PREFIX_RE = re.compile(
+    r"^\s*[A-Z]\s+(?=(?:The|We|Our|This|These|In|Artificial|Machine|Data|Cyber|Generative|AI)\b)"
+)
+_HEADING_PREFIX_RE = re.compile(
+    r"^(?P<prefix>(?:[A-Z][A-Za-z0-9,&/\-]+(?:\s+[A-Z][A-Za-z0-9,&/\-]+){0,7}))\s+"
+    r"(?P<body>(?:We|Our|The|This|These|With|In|By|As|At|From|EPAM|Artificial|Machine)\b.*)$"
+)
+_ITEM_1A_RE = re.compile(r"^\s*item\s*1a\b", re.I)
+_ITEM_1_RE = re.compile(r"^\s*item\s*1\b(?!\s*a\b)", re.I)
+_ITEM_7_RE = re.compile(r"^\s*item\s*7\b", re.I)
 
 
 def normalize_sentence_text(text: str) -> str:
@@ -155,6 +177,49 @@ def normalize_sentence_text(text: str) -> str:
     lowered = _NON_WORD_RE.sub(" ", lowered)
     lowered = _WS_RE.sub(" ", lowered)
     return lowered.strip()
+
+
+def clean_extracted_sentence(text: str) -> str:
+    """Apply conservative cleanup to extracted sentence candidates."""
+    original = "" if text is None else str(text)
+    cleaned = original
+    cleaned = cleaned.replace("\u00a0", " ")
+    cleaned = _LEADING_SINGLETON_PREFIX_RE.sub("", cleaned)
+    cleaned = _FORM_PAGE_FRAGMENT.sub(" ", cleaned)
+    cleaned = _FORM_PAGE_PREFIX_RE.sub(" ", cleaned)
+    cleaned = _TABLE_OF_CONTENTS_FRAGMENT.sub(" ", cleaned)
+    cleaned = _PAGE_MARKER.sub(" ", cleaned)
+    cleaned = re.sub(r"^[\s|:;\-–—]+", " ", cleaned)
+    if cleaned.count(")") != cleaned.count("("):
+        cleaned = cleaned.replace("(", " ").replace(")", " ")
+    cleaned = re.sub(r"\s+\)", ")", cleaned)
+    cleaned = re.sub(r"\(\s+", "(", cleaned)
+    cleaned = _WS_RE.sub(" ", cleaned).strip(" ;,-")
+
+    heading_match = _HEADING_PREFIX_RE.match(cleaned)
+    if heading_match is not None:
+        cleaned = heading_match.group("body").strip()
+
+    if re.match(r"^\s*[-*•]\s*[A-Za-z].*$", original):
+        token_count = len([token for token in cleaned.split() if token.strip()])
+        if token_count <= 4:
+            return ""
+
+    if _GLOSSARY_BULLET_RE.match(cleaned):
+        token_count = len([token for token in cleaned.split() if token.strip()])
+        if token_count <= 10:
+            return ""
+
+    if re.search(r"\btable of contents\b", cleaned, re.I):
+        return ""
+
+    cleaned = _WS_RE.sub(" ", cleaned).strip(" ;,-")
+    lowered = cleaned.lower()
+    if not cleaned or lowered == "table of contents":
+        return ""
+    if not re.search(r"[A-Za-z]", cleaned):
+        return ""
+    return cleaned
 
 
 def get_sentence_integrity_flags(text: str, min_tokens: int = 6) -> list[str]:
@@ -180,7 +245,11 @@ def _should_skip_fragment(fragment: str) -> bool:
     if not stripped:
         return True
     lowered = stripped.lower()
-    return stripped.isdigit() or lowered == "table of contents"
+    return (
+        stripped.isdigit()
+        or lowered == "table of contents"
+        or _TABLE_OF_CONTENTS_FRAGMENT.search(stripped) is not None
+    )
 
 
 def _is_incomplete(fragment: str) -> bool:
@@ -211,7 +280,7 @@ def _normalize_sentence(fragment: str) -> str:
         cleaned = cleaned[0].upper() + cleaned[1:]
     if cleaned and _PUNCTUATION_END.search(cleaned) is None:
         cleaned += "."
-    return cleaned
+    return clean_extracted_sentence(cleaned)
 
 
 def _is_page_fragment(fragment: str) -> bool:
@@ -495,20 +564,44 @@ def _compile_keyword_regex(keywords: Iterable[str]) -> re.Pattern:
     return re.compile(combined, flags=re.IGNORECASE)
 
 
+def _next_section_label(current_section: str, sentence: str) -> str:
+    normalized = normalize_sentence_text(sentence)
+    if _ITEM_1A_RE.search(normalized):
+        return "item_1a_risk_factors"
+    if _ITEM_1_RE.search(normalized):
+        return "item_1_business"
+    if _ITEM_7_RE.search(normalized):
+        return "item_7_mda"
+    return current_section
+
+
+def filter_ai_sentences_with_sections(
+    sentences: List[str], keywords: List[str]
+) -> list[tuple[str, str]]:
+    """Return AI sentences with lightweight prospective section tags."""
+    if not sentences or not keywords:
+        return []
+
+    rx = _compile_keyword_regex(keywords)
+    out: list[tuple[str, str]] = []
+    current_section = "other"
+    for raw_sentence in sentences:
+        sentence = clean_extracted_sentence(raw_sentence)
+        if not sentence:
+            continue
+        current_section = _next_section_label(current_section, sentence)
+        if len(sentence) < 4 or sentence.strip().isdigit():
+            continue
+        if rx.search(sentence):
+            out.append((sentence.strip(), current_section))
+    return out
+
+
 def filter_ai_sentences(sentences: List[str], keywords: List[str]) -> List[str]:
     """
     Return only sentences that contain any of the provided `keywords`.
     Matching is done via a compiled regex that supports multi-word phrases.
     """
-    if not sentences or not keywords:
-        return []
-
-    rx = _compile_keyword_regex(keywords)
-    out: list[str] = []
-    for s in sentences:
-        # cheap negative filter: skip very short or number-only lines
-        if len(s) < 4 or s.strip().isdigit():
-            continue
-        if rx.search(s):
-            out.append(s.strip())
-    return out
+    return [
+        sentence for sentence, _section in filter_ai_sentences_with_sections(sentences, keywords)
+    ]

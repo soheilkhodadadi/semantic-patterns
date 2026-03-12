@@ -1,0 +1,619 @@
+{
+  "generated_at": "2026-03-11T02:18:57.234836+00:00",
+  "input_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/labels/v1/labeling_batch_v1_reextracted_v2_2_slice40.csv",
+  "benchmark_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/labels/v1/labeling_batch_v1_filled_v2_1_slice40.csv",
+  "base_policy_path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/config/api_assistive_policy.yaml",
+  "variants_path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/config/prompt_variants/tranche1_v2_4.yaml",
+  "variants": [
+    {
+      "variant_id": "v2_4a",
+      "label": "factual_claim_rule",
+      "description": "Emphasize present/past factual firm claims as actionable without requiring technical detail.",
+      "policy_path": "",
+      "output_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/labels/v1/labeling_batch_v1_prelabeled_v2_4a_slice40.csv",
+      "summary_json": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/reports/labels/assistive_prelabel_tranche1_v2_4a_slice40_summary.json",
+      "exit_code": 0,
+      "summary_status": "passed",
+      "usage": {
+        "request_count": 40,
+        "prompt_tokens": 20884,
+        "completion_tokens": 2454,
+        "total_tokens": 23338,
+        "estimated_cost_usd": 0.0,
+        "cost_estimation_status": "pricing_unconfigured"
+      },
+      "score": {
+        "overall": {
+          "matches": 35,
+          "total": 40
+        },
+        "action_spec": {
+          "matches": 11,
+          "total": 12
+        },
+        "manual_distribution": {
+          "Irrelevant": 28,
+          "Speculative": 7,
+          "Actionable": 5
+        },
+        "assistive_distribution": {
+          "Irrelevant": 24,
+          "Speculative": 8,
+          "Actionable": 8
+        },
+        "confusion": {
+          "Actionable": {
+            "Actionable": 5,
+            "Irrelevant": 2,
+            "Speculative": 1
+          },
+          "Irrelevant": {
+            "Actionable": 0,
+            "Irrelevant": 24,
+            "Speculative": 0
+          },
+          "Speculative": {
+            "Actionable": 0,
+            "Irrelevant": 2,
+            "Speculative": 6
+          }
+        },
+        "mismatch_rows": [
+          {
+            "sentence_id": "1904b80dd2fe1a57",
+            "manual_label": "Irrelevant",
+            "assistive_label": "Speculative",
+            "source_section": "other",
+            "assistive_confidence": "high",
+            "assistive_rationale": "Firm expresses uncertainty/aspiration about future mitigation, not a current factual capability or use.",
+            "sentence": "We may not be able to sufficiently mitigate or detect any of the foregoing limitations or risks given the lack of experience with using AI/ML methods in our business, the pace of FREDDIE MAC | 2023 Form 10-K 128 Risk Factors technological change, and rapid adoption of AI/ML by our business partners and competitors."
+          },
+          {
+            "sentence_id": "3dd04eecfc20c3ba",
+            "manual_label": "Irrelevant",
+            "assistive_label": "Actionable",
+            "source_section": "item_1_business",
+            "assistive_confidence": "high",
+            "assistive_rationale": "States present use of generative AI by firm, affiliates, or third-party providers.",
+            "sentence": "For example, the use of generative AI technologies by us, our Affiliates, or our respective third-party service providers could result in new and expanded risks."
+          },
+          {
+            "sentence_id": "d585b999ea5eaa56",
+            "manual_label": "Speculative",
+            "assistive_label": "Actionable",
+            "source_section": "other",
+            "assistive_confidence": "high",
+            "assistive_rationale": "Firm asserts present expertise and active capability in data, analytics, AI, and platform development.",
+            "sentence": "Data, Analytics and Artificial Intelligence With deep expertise in data and analytics, business intelligence and cloud platform development, we navigate the complexities of building and scaling new data capabilities necessary for the evolving environment."
+          },
+          {
+            "sentence_id": "f7c7843cee66954d",
+            "manual_label": "Irrelevant",
+            "assistive_label": "Speculative",
+            "source_section": "item_1a_risk_factors",
+            "assistive_confidence": "high",
+            "assistive_rationale": "Discusses potential reliance and dependency as a future/possible risk, not stating current implemented use.",
+            "sentence": "Further, we may rely on AI models developed by third parties, and, to that extent, would be dependent in part on the manner in which those third parties develop and train their models, including risks arising from the inclusion of any unauthorized material in the training data for their models, and the effectiveness of the steps these third parties have taken to limit the risks associated with the output of their models, matters over which we may have limited visibility."
+          },
+          {
+            "sentence_id": "349b4c7239a5efd0",
+            "manual_label": "Irrelevant",
+            "assistive_label": "Actionable",
+            "source_section": "other",
+            "assistive_confidence": "high",
+            "assistive_rationale": "Explicit present claim: 'our use of AI technologies' indicates current firm AI use and exposure to related risks.",
+            "sentence": "29 In addition to our use of AI technologies, we are exposed to risks arising from the use of AI technologies by bad actors to commit fraud and misappropriate funds and to facilitate cyberattacks."
+          }
+        ],
+        "actionable_to_speculative_misses": 0,
+        "actionable_to_irrelevant_misses": 0
+      },
+      "eligible": true,
+      "gate_passed": true
+    },
+    {
+      "variant_id": "v2_4b",
+      "label": "clause_priority_rule",
+      "description": "Prioritize firm-specific clauses over generic surrounding context.",
+      "policy_path": "",
+      "output_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/labels/v1/labeling_batch_v1_prelabeled_v2_4b_slice40.csv",
+      "summary_json": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/reports/labels/assistive_prelabel_tranche1_v2_4b_slice40_summary.json",
+      "exit_code": 0,
+      "summary_status": "in_progress",
+      "usage": {
+        "request_count": 30,
+        "prompt_tokens": 16868,
+        "completion_tokens": 1823,
+        "total_tokens": 18691,
+        "estimated_cost_usd": 0.0,
+        "cost_estimation_status": "pricing_unconfigured"
+      },
+      "score": {
+        "overall": {
+          "matches": 27,
+          "total": 40
+        },
+        "action_spec": {
+          "matches": 7,
+          "total": 12
+        },
+        "manual_distribution": {
+          "Irrelevant": 28,
+          "Speculative": 7,
+          "Actionable": 5
+        },
+        "assistive_distribution": {
+          "Irrelevant": 20,
+          "": 10,
+          "Speculative": 5,
+          "Actionable": 5
+        },
+        "confusion": {
+          "": {
+            "Actionable": 2,
+            "Irrelevant": 6,
+            "Speculative": 2
+          },
+          "Actionable": {
+            "Actionable": 3,
+            "Irrelevant": 1,
+            "Speculative": 1
+          },
+          "Irrelevant": {
+            "Actionable": 0,
+            "Irrelevant": 20,
+            "Speculative": 0
+          },
+          "Speculative": {
+            "Actionable": 0,
+            "Irrelevant": 1,
+            "Speculative": 4
+          }
+        },
+        "mismatch_rows": [
+          {
+            "sentence_id": "1904b80dd2fe1a57",
+            "manual_label": "Irrelevant",
+            "assistive_label": "Speculative",
+            "source_section": "other",
+            "assistive_confidence": "high",
+            "assistive_rationale": "Firm expresses uncertainty/aspiration about future mitigation due to lack of experience, not present capability claim.",
+            "sentence": "We may not be able to sufficiently mitigate or detect any of the foregoing limitations or risks given the lack of experience with using AI/ML methods in our business, the pace of FREDDIE MAC | 2023 Form 10-K 128 Risk Factors technological change, and rapid adoption of AI/ML by our business partners and competitors."
+          },
+          {
+            "sentence_id": "3dd04eecfc20c3ba",
+            "manual_label": "Irrelevant",
+            "assistive_label": "Actionable",
+            "source_section": "item_1_business",
+            "assistive_confidence": "high",
+            "assistive_rationale": "Firm-specific claim of current use by us, affiliates, or service providers implies present use and risk.",
+            "sentence": "For example, the use of generative AI technologies by us, our Affiliates, or our respective third-party service providers could result in new and expanded risks."
+          },
+          {
+            "sentence_id": "d585b999ea5eaa56",
+            "manual_label": "Speculative",
+            "assistive_label": "Actionable",
+            "source_section": "other",
+            "assistive_confidence": "high",
+            "assistive_rationale": "Firm states present expertise and active capabilities in data, analytics, BI, and cloud platform development.",
+            "sentence": "Data, Analytics and Artificial Intelligence With deep expertise in data and analytics, business intelligence and cloud platform development, we navigate the complexities of building and scaling new data capabilities necessary for the evolving environment."
+          },
+          {
+            "sentence_id": "f7c7843cee66954d",
+            "manual_label": "Irrelevant",
+            "assistive_label": "",
+            "source_section": "item_1a_risk_factors",
+            "assistive_confidence": "nan",
+            "assistive_rationale": "nan",
+            "sentence": "Further, we may rely on AI models developed by third parties, and, to that extent, would be dependent in part on the manner in which those third parties develop and train their models, including risks arising from the inclusion of any unauthorized material in the training data for their models, and the effectiveness of the steps these third parties have taken to limit the risks associated with the output of their models, matters over which we may have limited visibility."
+          },
+          {
+            "sentence_id": "349b4c7239a5efd0",
+            "manual_label": "Irrelevant",
+            "assistive_label": "",
+            "source_section": "other",
+            "assistive_confidence": "nan",
+            "assistive_rationale": "nan",
+            "sentence": "29 In addition to our use of AI technologies, we are exposed to risks arising from the use of AI technologies by bad actors to commit fraud and misappropriate funds and to facilitate cyberattacks."
+          },
+          {
+            "sentence_id": "69bd158513daeab6",
+            "manual_label": "Irrelevant",
+            "assistive_label": "",
+            "source_section": "item_1a_risk_factors",
+            "assistive_confidence": "nan",
+            "assistive_rationale": "nan",
+            "sentence": "Generative AI, if used to perpetrate fraud or launch cyberattacks, could create panic at a particular financial institution or exchange, which could pose a threat to financial stability."
+          },
+          {
+            "sentence_id": "6eec5664f069e029",
+            "manual_label": "Irrelevant",
+            "assistive_label": "",
+            "source_section": "item_1a_risk_factors",
+            "assistive_confidence": "nan",
+            "assistive_rationale": "nan",
+            "sentence": "We and the third parties upon which we rely may be subject to a variety of evolving threats, including but not limited to social-engineering attacks (including through phishing attacks), malicious code (such as viruses and worms), malware (including as a result of advanced persistent threat intrusions), denial-of-service attacks (such as credential stuffing), credential harvesting, personnel misconduct or error, ransomware attacks, supply-chain attacks, software bugs, server malfunctions, software or hardware failures, loss of data or other information technology assets, adware, telecommunications failures, natural disasters (such as earthquakes, fires, floods), war, terrorism, attacks enhanced or facilitated by artificial intelligence, or AI, and other similar threats."
+          },
+          {
+            "sentence_id": "52515d9af8d976a1",
+            "manual_label": "Irrelevant",
+            "assistive_label": "",
+            "source_section": "other",
+            "assistive_confidence": "nan",
+            "assistive_rationale": "nan",
+            "sentence": "Additionally, our sensitive information could be leaked, 89 Table of Contents disclosed or revealed as a result of or in connection with our employees , personnel s or vendors use of generative AI technologies."
+          },
+          {
+            "sentence_id": "9ee2d8f8a21a2fc3",
+            "manual_label": "Actionable",
+            "assistive_label": "",
+            "source_section": "item_1_business",
+            "assistive_confidence": "nan",
+            "assistive_rationale": "nan",
+            "sentence": "Web application firewalls are designed to protect external facing applications, while our email security gateway utilizes machine learning and multilayered detection techniques designed to filter malicious emails."
+          },
+          {
+            "sentence_id": "31067261366384f7",
+            "manual_label": "Speculative",
+            "assistive_label": "",
+            "source_section": "item_1_business",
+            "assistive_confidence": "nan",
+            "assistive_rationale": "nan",
+            "sentence": "In order to grow and remain competitive, we will need to adapt to changes in available technology, including, but not limited to, artificial intelligence and machine learning, continually invest in our 5G Network Deployment, increase 5G Network capacity, enhance our existing service offerings and introduce new offerings to meet our current and potential subscribers changing service demands."
+          },
+          {
+            "sentence_id": "391ba078e069766d",
+            "manual_label": "Irrelevant",
+            "assistive_label": "",
+            "source_section": "item_1_business",
+            "assistive_confidence": "nan",
+            "assistive_rationale": "nan",
+            "sentence": "Further, the sophistication, availability and use of artificial intelligence by threat actors present an increased level of risk."
+          },
+          {
+            "sentence_id": "fbf1e648f8dce257",
+            "manual_label": "Speculative",
+            "assistive_label": "",
+            "source_section": "item_1_business",
+            "assistive_confidence": "nan",
+            "assistive_rationale": "nan",
+            "sentence": "For example, as automation, artificial intelligence and similar technological advancements continue to evolve, we may need to compete for talent that is familiar with these advancements in technologies in order to compete effectively with our industry peers."
+          },
+          {
+            "sentence_id": "2785fb0f732b8c95",
+            "manual_label": "Actionable",
+            "assistive_label": "",
+            "source_section": "item_1_business",
+            "assistive_confidence": "nan",
+            "assistive_rationale": "nan",
+            "sentence": "Intellicheck provides access to a wide variety of data signals including device fingerprinting, IP address, phone number, time zone, geographic location and more to analyze, using machine learning, the risk of doing business with that person."
+          }
+        ],
+        "actionable_to_speculative_misses": 0,
+        "actionable_to_irrelevant_misses": 0
+      },
+      "eligible": false,
+      "gate_passed": false
+    },
+    {
+      "variant_id": "v2_4c",
+      "label": "decision_tree_rule",
+      "description": "Enforce an explicit internal decision tree before choosing the label.",
+      "policy_path": "",
+      "output_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/labels/v1/labeling_batch_v1_prelabeled_v2_4c_slice40.csv",
+      "summary_json": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/reports/labels/assistive_prelabel_tranche1_v2_4c_slice40_summary.json",
+      "exit_code": 0,
+      "summary_status": "passed",
+      "usage": {
+        "request_count": 40,
+        "prompt_tokens": 20764,
+        "completion_tokens": 2420,
+        "total_tokens": 23184,
+        "estimated_cost_usd": 0.0,
+        "cost_estimation_status": "pricing_unconfigured"
+      },
+      "score": {
+        "overall": {
+          "matches": 36,
+          "total": 40
+        },
+        "action_spec": {
+          "matches": 10,
+          "total": 12
+        },
+        "manual_distribution": {
+          "Irrelevant": 28,
+          "Speculative": 7,
+          "Actionable": 5
+        },
+        "assistive_distribution": {
+          "Irrelevant": 27,
+          "Speculative": 7,
+          "Actionable": 6
+        },
+        "confusion": {
+          "Actionable": {
+            "Actionable": 4,
+            "Irrelevant": 1,
+            "Speculative": 1
+          },
+          "Irrelevant": {
+            "Actionable": 1,
+            "Irrelevant": 26,
+            "Speculative": 0
+          },
+          "Speculative": {
+            "Actionable": 0,
+            "Irrelevant": 1,
+            "Speculative": 6
+          }
+        },
+        "mismatch_rows": [
+          {
+            "sentence_id": "bb7466928a4c7499",
+            "manual_label": "Actionable",
+            "assistive_label": "Irrelevant",
+            "source_section": "item_1_business",
+            "assistive_confidence": "high",
+            "assistive_rationale": "Generic product catalog mention of AI among technologies, not firm-specific AI capability or claim.",
+            "sentence": "Our Products and Suppliers We offer a comprehensive catalog of more than 200,000 technology products as measured by active SKU's from more than 2,500 original equipment manufacturers OEM , suppliers of traditional technologies such as personal computing devices, mobile phones and accessories, and high-growth technologies such as cloud, security, data/analytics, AI and hyperscale infrastructure."
+          },
+          {
+            "sentence_id": "3dd04eecfc20c3ba",
+            "manual_label": "Irrelevant",
+            "assistive_label": "Speculative",
+            "source_section": "item_1_business",
+            "assistive_confidence": "high",
+            "assistive_rationale": "Firm-specific but framed as potential future risk from use, not stating current factual use.",
+            "sentence": "For example, the use of generative AI technologies by us, our Affiliates, or our respective third-party service providers could result in new and expanded risks."
+          },
+          {
+            "sentence_id": "d585b999ea5eaa56",
+            "manual_label": "Speculative",
+            "assistive_label": "Actionable",
+            "source_section": "other",
+            "assistive_confidence": "high",
+            "assistive_rationale": "Firm claims present expertise and active capabilities in data, analytics, AI and platform development.",
+            "sentence": "Data, Analytics and Artificial Intelligence With deep expertise in data and analytics, business intelligence and cloud platform development, we navigate the complexities of building and scaling new data capabilities necessary for the evolving environment."
+          },
+          {
+            "sentence_id": "349b4c7239a5efd0",
+            "manual_label": "Irrelevant",
+            "assistive_label": "Actionable",
+            "source_section": "other",
+            "assistive_confidence": "high",
+            "assistive_rationale": "Firm states present use of AI technologies\u2014clear present factual claim about their use.",
+            "sentence": "29 In addition to our use of AI technologies, we are exposed to risks arising from the use of AI technologies by bad actors to commit fraud and misappropriate funds and to facilitate cyberattacks."
+          }
+        ],
+        "actionable_to_speculative_misses": 0,
+        "actionable_to_irrelevant_misses": 1
+      },
+      "eligible": true,
+      "gate_passed": true
+    },
+    {
+      "variant_id": "v2_4d",
+      "label": "golden_example_rule",
+      "description": "Anchor the decision boundary with examples drawn from current mismatch patterns.",
+      "policy_path": "",
+      "output_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/labels/v1/labeling_batch_v1_prelabeled_v2_4d_slice40.csv",
+      "summary_json": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/reports/labels/assistive_prelabel_tranche1_v2_4d_slice40_summary.json",
+      "exit_code": 0,
+      "summary_status": "passed",
+      "usage": {
+        "request_count": 40,
+        "prompt_tokens": 20004,
+        "completion_tokens": 2432,
+        "total_tokens": 22436,
+        "estimated_cost_usd": 0.0,
+        "cost_estimation_status": "pricing_unconfigured"
+      },
+      "score": {
+        "overall": {
+          "matches": 33,
+          "total": 40
+        },
+        "action_spec": {
+          "matches": 11,
+          "total": 12
+        },
+        "manual_distribution": {
+          "Irrelevant": 28,
+          "Speculative": 7,
+          "Actionable": 5
+        },
+        "assistive_distribution": {
+          "Irrelevant": 22,
+          "Speculative": 10,
+          "Actionable": 8
+        },
+        "confusion": {
+          "Actionable": {
+            "Actionable": 5,
+            "Irrelevant": 2,
+            "Speculative": 1
+          },
+          "Irrelevant": {
+            "Actionable": 0,
+            "Irrelevant": 22,
+            "Speculative": 0
+          },
+          "Speculative": {
+            "Actionable": 0,
+            "Irrelevant": 4,
+            "Speculative": 6
+          }
+        },
+        "mismatch_rows": [
+          {
+            "sentence_id": "1904b80dd2fe1a57",
+            "manual_label": "Irrelevant",
+            "assistive_label": "Speculative",
+            "source_section": "other",
+            "assistive_confidence": "high",
+            "assistive_rationale": "Forward-looking uncertainty about ability to mitigate AI/ML risks; no present use or concrete investment claimed.",
+            "sentence": "We may not be able to sufficiently mitigate or detect any of the foregoing limitations or risks given the lack of experience with using AI/ML methods in our business, the pace of FREDDIE MAC | 2023 Form 10-K 128 Risk Factors technological change, and rapid adoption of AI/ML by our business partners and competitors."
+          },
+          {
+            "sentence_id": "4242b9a10b4ff277",
+            "manual_label": "Irrelevant",
+            "assistive_label": "Speculative",
+            "source_section": "item_1_business",
+            "assistive_confidence": "high",
+            "assistive_rationale": "Discusses potential future impact of AI on demand; no present firm-specific AI use claimed.",
+            "sentence": "Our Affiliates may not compare favorably with their competitors in any or all of these categories, and technological developments, including financial applications and services based on artificial intelligence AI , may over time reduce the demand for, or clients willingness to pay for, certain products and services."
+          },
+          {
+            "sentence_id": "3dd04eecfc20c3ba",
+            "manual_label": "Irrelevant",
+            "assistive_label": "Actionable",
+            "source_section": "item_1_business",
+            "assistive_confidence": "high",
+            "assistive_rationale": "Firm states current use of generative AI by them, affiliates, or third-party providers.",
+            "sentence": "For example, the use of generative AI technologies by us, our Affiliates, or our respective third-party service providers could result in new and expanded risks."
+          },
+          {
+            "sentence_id": "d585b999ea5eaa56",
+            "manual_label": "Speculative",
+            "assistive_label": "Actionable",
+            "source_section": "other",
+            "assistive_confidence": "medium",
+            "assistive_rationale": "Claims firm expertise and active role building/scaling data and AI capabilities (present tense).",
+            "sentence": "Data, Analytics and Artificial Intelligence With deep expertise in data and analytics, business intelligence and cloud platform development, we navigate the complexities of building and scaling new data capabilities necessary for the evolving environment."
+          },
+          {
+            "sentence_id": "f8276926a94d6f5c",
+            "manual_label": "Irrelevant",
+            "assistive_label": "Speculative",
+            "source_section": "item_1_business",
+            "assistive_confidence": "high",
+            "assistive_rationale": "Forward\u2011looking statement about potential effects of implementing AI, not a present factual claim.",
+            "sentence": "Our ability to implement new technologies, including AI, may affect our competitiveness and, consequently, our results of operations."
+          },
+          {
+            "sentence_id": "f7c7843cee66954d",
+            "manual_label": "Irrelevant",
+            "assistive_label": "Speculative",
+            "source_section": "item_1a_risk_factors",
+            "assistive_confidence": "high",
+            "assistive_rationale": "Describes potential reliance and dependency on third-party AI, framed as possible/conditional, not present use.",
+            "sentence": "Further, we may rely on AI models developed by third parties, and, to that extent, would be dependent in part on the manner in which those third parties develop and train their models, including risks arising from the inclusion of any unauthorized material in the training data for their models, and the effectiveness of the steps these third parties have taken to limit the risks associated with the output of their models, matters over which we may have limited visibility."
+          },
+          {
+            "sentence_id": "349b4c7239a5efd0",
+            "manual_label": "Irrelevant",
+            "assistive_label": "Actionable",
+            "source_section": "other",
+            "assistive_confidence": "high",
+            "assistive_rationale": "Explicitly states firm use of AI technologies (present factual claim).",
+            "sentence": "29 In addition to our use of AI technologies, we are exposed to risks arising from the use of AI technologies by bad actors to commit fraud and misappropriate funds and to facilitate cyberattacks."
+          }
+        ],
+        "actionable_to_speculative_misses": 0,
+        "actionable_to_irrelevant_misses": 0
+      },
+      "eligible": false,
+      "gate_passed": false
+    }
+  ],
+  "winner": {
+    "variant_id": "v2_4a",
+    "label": "factual_claim_rule",
+    "gate_passed": true,
+    "score": {
+      "overall": {
+        "matches": 35,
+        "total": 40
+      },
+      "action_spec": {
+        "matches": 11,
+        "total": 12
+      },
+      "manual_distribution": {
+        "Irrelevant": 28,
+        "Speculative": 7,
+        "Actionable": 5
+      },
+      "assistive_distribution": {
+        "Irrelevant": 24,
+        "Speculative": 8,
+        "Actionable": 8
+      },
+      "confusion": {
+        "Actionable": {
+          "Actionable": 5,
+          "Irrelevant": 2,
+          "Speculative": 1
+        },
+        "Irrelevant": {
+          "Actionable": 0,
+          "Irrelevant": 24,
+          "Speculative": 0
+        },
+        "Speculative": {
+          "Actionable": 0,
+          "Irrelevant": 2,
+          "Speculative": 6
+        }
+      },
+      "mismatch_rows": [
+        {
+          "sentence_id": "1904b80dd2fe1a57",
+          "manual_label": "Irrelevant",
+          "assistive_label": "Speculative",
+          "source_section": "other",
+          "assistive_confidence": "high",
+          "assistive_rationale": "Firm expresses uncertainty/aspiration about future mitigation, not a current factual capability or use.",
+          "sentence": "We may not be able to sufficiently mitigate or detect any of the foregoing limitations or risks given the lack of experience with using AI/ML methods in our business, the pace of FREDDIE MAC | 2023 Form 10-K 128 Risk Factors technological change, and rapid adoption of AI/ML by our business partners and competitors."
+        },
+        {
+          "sentence_id": "3dd04eecfc20c3ba",
+          "manual_label": "Irrelevant",
+          "assistive_label": "Actionable",
+          "source_section": "item_1_business",
+          "assistive_confidence": "high",
+          "assistive_rationale": "States present use of generative AI by firm, affiliates, or third-party providers.",
+          "sentence": "For example, the use of generative AI technologies by us, our Affiliates, or our respective third-party service providers could result in new and expanded risks."
+        },
+        {
+          "sentence_id": "d585b999ea5eaa56",
+          "manual_label": "Speculative",
+          "assistive_label": "Actionable",
+          "source_section": "other",
+          "assistive_confidence": "high",
+          "assistive_rationale": "Firm asserts present expertise and active capability in data, analytics, AI, and platform development.",
+          "sentence": "Data, Analytics and Artificial Intelligence With deep expertise in data and analytics, business intelligence and cloud platform development, we navigate the complexities of building and scaling new data capabilities necessary for the evolving environment."
+        },
+        {
+          "sentence_id": "f7c7843cee66954d",
+          "manual_label": "Irrelevant",
+          "assistive_label": "Speculative",
+          "source_section": "item_1a_risk_factors",
+          "assistive_confidence": "high",
+          "assistive_rationale": "Discusses potential reliance and dependency as a future/possible risk, not stating current implemented use.",
+          "sentence": "Further, we may rely on AI models developed by third parties, and, to that extent, would be dependent in part on the manner in which those third parties develop and train their models, including risks arising from the inclusion of any unauthorized material in the training data for their models, and the effectiveness of the steps these third parties have taken to limit the risks associated with the output of their models, matters over which we may have limited visibility."
+        },
+        {
+          "sentence_id": "349b4c7239a5efd0",
+          "manual_label": "Irrelevant",
+          "assistive_label": "Actionable",
+          "source_section": "other",
+          "assistive_confidence": "high",
+          "assistive_rationale": "Explicit present claim: 'our use of AI technologies' indicates current firm AI use and exposure to related risks.",
+          "sentence": "29 In addition to our use of AI technologies, we are exposed to risks arising from the use of AI technologies by bad actors to commit fraud and misappropriate funds and to facilitate cyberattacks."
+        }
+      ],
+      "actionable_to_speculative_misses": 0,
+      "actionable_to_irrelevant_misses": 0
+    }
+  },
+  "full_tranche": {
+    "attempted": true,
+    "generated": true,
+    "variant_id": "v2_4a",
+    "output_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/labels/v1/labeling_batch_v1_prelabeled_v2_4.csv",
+    "filled_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/labels/v1/labeling_batch_v1_filled_v2_4.csv",
+    "summary_json": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/reports/labels/assistive_prelabel_tranche1_v2_4_summary.json"
+  }
+}

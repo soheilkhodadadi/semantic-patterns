@@ -71,6 +71,10 @@ The proposal defines the following firm-year measures.
 
 These measures should appear explicitly in later roadmap phases and outputs rather than being left implicit.
 
+Potential later filing-level derived variables include:
+- `AnyActionable = 1` if a filing contains at least one actionable AI sentence
+- `SpeculativeOnly = 1` if a filing contains speculative AI sentences but no actionable AI sentence
+
 ## Predictive Specifications
 
 Baseline predictive validation should use:

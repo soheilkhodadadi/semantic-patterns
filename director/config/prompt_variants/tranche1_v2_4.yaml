@@ -1,0 +1,136 @@
+schema_version: "1.0.0"
+version_family: "v2.4"
+variants:
+  - variant_id: "v2_4a"
+    label: "factual_claim_rule"
+    description: "Emphasize present/past factual firm claims as actionable without requiring technical detail."
+    system_prompt: >
+      You are assisting a research labeling workflow. Your output is assistive only
+      and must not be treated as canonical. Use this rubric exactly: Actionable means
+      a firm-specific present or past factual AI claim, including current use,
+      implemented workflow, AI product/service offering, current capability,
+      current investment, or AI expertise. Technical detail is not required if the
+      claim is stated as fact. Speculative means a firm-specific but vague,
+      exploratory, or forward-looking AI narrative about intention, aspiration,
+      opportunity, or expected benefit without a present or past factual claim of
+      use, capability, or investment. Irrelevant means generic market, industry,
+      regulatory, cyber-risk, boilerplate, or tangential AI mention that is not
+      functioning as a firm capability claim. Generic AI risk or regulatory
+      discussion is usually Irrelevant. Risk-section language is Actionable only
+      when it clearly reveals current firm AI use, present investment, or current
+      capability. Return JSON only.
+    user_prompt_template: >
+      Label this sentence using the project rubric and the borderline rules above.
+      Treat firm-specific present or past factual claims such as "we offer",
+      "we provide", "we have used", "we invest", "we have expertise", and
+      "we are a provider" as Actionable even without technical detail. Use
+      Speculative for firm-specific intention, aspiration, exploration, opportunity,
+      or expected benefit without a present/past factual claim. Prefer Irrelevant
+      for generic AI risk, regulatory, cyber, or market language. If source_section
+      is item_1a_risk_factors, generic risk language should default to Irrelevant
+      unless the sentence reveals current firm AI use, present investment, or
+      current capability. Return exactly one JSON object with:
+      label in {Actionable, Speculative, Irrelevant},
+      confidence in {high, medium, low},
+      rationale under 20 words,
+      assistive_only equal to true.
+  - variant_id: "v2_4b"
+    label: "clause_priority_rule"
+    description: "Prioritize firm-specific clauses over generic surrounding context."
+    system_prompt: >
+      You are assisting a research labeling workflow. Your output is assistive only
+      and must not be treated as canonical. Use this rubric exactly: Actionable means
+      a firm-specific present or past factual AI claim, including current use,
+      implemented workflow, AI product/service offering, current capability,
+      current investment, or AI expertise. Technical detail is not required if the
+      claim is stated as fact. Speculative means a firm-specific but vague,
+      exploratory, or forward-looking AI narrative about intention, aspiration,
+      opportunity, or expected benefit without a present or past factual claim of
+      use, capability, or investment. Irrelevant means generic market, industry,
+      regulatory, cyber-risk, boilerplate, or tangential AI mention that is not
+      functioning as a firm capability claim. Generic AI risk or regulatory
+      discussion is usually Irrelevant. Risk-section language is Actionable only
+      when it clearly reveals current firm AI use, present investment, or current
+      capability. If a sentence contains both generic context and a firm-specific
+      clause, classify from the firm-specific clause. Return JSON only.
+    user_prompt_template: >
+      Label this sentence using the project rubric and the clause-priority rule.
+      If a sentence mixes generic market context with a firm-specific clause, label
+      based on the firm-specific clause. Treat firm-specific present or past factual
+      claims such as "we offer", "we provide", "we have used", "we invest",
+      "we have expertise", and "we are a provider" as Actionable even without
+      technical detail. Use Speculative for firm-specific intention, aspiration,
+      exploration, opportunity, or expected benefit without a present/past factual
+      claim. Prefer Irrelevant for generic AI risk, regulatory, cyber, or market
+      language. If source_section is item_1a_risk_factors, generic risk language
+      should default to Irrelevant unless the sentence reveals current firm AI use,
+      present investment, or current capability. Return exactly one JSON object with:
+      label in {Actionable, Speculative, Irrelevant},
+      confidence in {high, medium, low},
+      rationale under 20 words,
+      assistive_only equal to true.
+  - variant_id: "v2_4c"
+    label: "decision_tree_rule"
+    description: "Enforce an explicit internal decision tree before choosing the label."
+    system_prompt: >
+      You are assisting a research labeling workflow. Your output is assistive only
+      and must not be treated as canonical. Decide in this order: First, determine
+      whether the sentence is a firm-specific AI claim or only generic context/risk.
+      Second, if firm-specific, determine whether it is a present or past factual
+      claim of use, capability, investment, expertise, implementation, or product/
+      service offering. Third, if not factual, determine whether it is a future,
+      aspirational, exploratory, or opportunity claim. Actionable means a present
+      or past factual firm-specific AI claim. Speculative means a firm-specific but
+      vague future/aspirational/opportunity claim without a present or past factual
+      claim. Irrelevant means generic market, industry, regulatory, cyber-risk,
+      boilerplate, or tangential AI mention. Generic AI risk or regulatory discussion
+      is usually Irrelevant. Return JSON only.
+    user_prompt_template: >
+      Apply this decision tree mentally before labeling:
+      1. Is it a firm-specific AI claim or only generic context/risk?
+      2. If firm-specific, is it a present/past factual claim such as "we offer",
+      "we provide", "we have used", "we invest", "we have expertise", or
+      "we are a provider"? If yes, Actionable.
+      3. If firm-specific but mainly about intention, aspiration, exploration,
+      opportunity, or expected benefit, Speculative.
+      4. Otherwise Irrelevant.
+      If source_section is item_1a_risk_factors, generic risk language should
+      default to Irrelevant unless the sentence reveals current firm AI use,
+      present investment, or current capability.
+      Return exactly one JSON object with:
+      label in {Actionable, Speculative, Irrelevant},
+      confidence in {high, medium, low},
+      rationale under 20 words,
+      assistive_only equal to true.
+  - variant_id: "v2_4d"
+    label: "golden_example_rule"
+    description: "Anchor the decision boundary with examples drawn from current mismatch patterns."
+    system_prompt: >
+      You are assisting a research labeling workflow. Your output is assistive only
+      and must not be treated as canonical. Use this rubric exactly: Actionable means
+      a firm-specific present or past factual AI claim, including current use,
+      implemented workflow, AI product/service offering, current capability,
+      current investment, or AI expertise. Technical detail is not required if the
+      claim is stated as fact. Speculative means a firm-specific but vague,
+      exploratory, or forward-looking AI narrative about intention, aspiration,
+      opportunity, or expected benefit without a present or past factual claim of
+      use, capability, or investment. Irrelevant means generic market, industry,
+      regulatory, cyber-risk, boilerplate, or tangential AI mention that is not
+      functioning as a firm capability claim. Generic AI risk or regulatory
+      discussion is usually Irrelevant. Return JSON only.
+    user_prompt_template: >
+      Use these examples as high-priority anchors:
+      - "We offer AI-enabled products and services" -> Actionable
+      - "We have used our expertise to become a provider of AI-enabled services" -> Actionable
+      - "We may find opportunities by developing and applying AI" -> Speculative
+      - "AI/ML creates legal, cyber, and regulatory risks" -> Irrelevant
+      Then label this sentence using the same rule. If a sentence contains both
+      generic context and a firm-specific clause, label from the firm-specific clause.
+      If source_section is item_1a_risk_factors, generic risk language should default
+      to Irrelevant unless the sentence reveals current firm AI use, present
+      investment, or current capability.
+      Return exactly one JSON object with:
+      label in {Actionable, Speculative, Irrelevant},
+      confidence in {high, medium, low},
+      rationale under 20 words,
+      assistive_only equal to true.

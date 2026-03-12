@@ -1,7 +1,7 @@
 {
   "source_path": "docs/iteration_log.md",
-  "source_sha256": "165845a47b276c3682fac4fbb0ec2b569a06f9e74eeba5c97ed14b2ce94b7c6c",
-  "ingested_at": "2026-03-09T05:54:03.187865+00:00",
+  "source_sha256": "cec371d076aa6f57d5e01f44b9fcbb313731bae39a1f1d2a19af158f9d1be994",
+  "ingested_at": "2026-03-10T19:47:30.561749+00:00",
   "iteration_count": 2,
   "iterations": [
     {
@@ -433,7 +433,33 @@
         "Branch baseline:",
         "Scope completed:",
         "Methodology changes encoded:",
-        "Truthful execution note:"
+        "Truthful execution note:",
+        "Committed proposal-alignment patch separately as `540347a` (`director: align roadmap and rubric with proposal methodology`).",
+        "Committed prelabel-resume fixes separately as `11be81c` (`labeling: harden tranche prelabel resume behavior`).",
+        "Refined the tranche-1 rubric to proposal-faithful `v2.1` with:",
+        "Patched `iteration2/rubric-realignment` so tranche-1 `v2.1` prelabel regeneration is an automated resumable build task and full tranche review stays blocked on manual calibration-slice sign-off.",
+        "Added light extraction cleanup and prospective section tagging support:",
+        "Updated `director/config/api_assistive_policy.yaml` so the prompt injects rubric `v2.1` rules directly.",
+        "Published tranche-1 calibration note at `reports/labels/tranche1_rubric_calibration_v2_1.md`.",
+        "Generated tranche-1 `v2.1` assistive prelabels in six resumable 40-row chunks.",
+        "Outputs:",
+        "Result:",
+        "Initialized new canonical tranche-1 review artifacts:",
+        "Calibration state after regeneration:",
+        "Diagnostic label mix comparison:",
+        "Legacy tranche files remain diagnostic only:",
+        "Refined tranche-1 rubric from `v2.1` to `v2.2` around the checkable / verifiable-or-refutable criterion.",
+        "Updated `docs/labeling_protocol.md` and `director/config/api_assistive_policy.yaml` so:",
+        "Added a slice-only raw re-extraction harness:",
+        "Added light calibration-focused extraction cleanup:",
+        "Patched `iteration2/rubric-realignment` into a slice-first workflow under `v2.2`:",
+        "Published calibration note:",
+        "Rebuilt the current 40-row calibration slice from raw filings:",
+        "Re-extraction result:",
+        "Generated rebuilt-slice assistive prelabels under rubric `v2.2`:",
+        "Slice prelabel result:",
+        "Initialized the new canonical slice review sheet:",
+        "Truthful workflow state:"
       ]
     }
   ],
@@ -460,5 +486,5 @@
     "R7 scope control maintained (no retraining/calibration introduced).",
     "R2 class-balance and sample-size gate remains failed."
   ],
-  "last_successful_gate": "phase status: `passed`"
+  "last_successful_gate": "`status = passed`"
 }

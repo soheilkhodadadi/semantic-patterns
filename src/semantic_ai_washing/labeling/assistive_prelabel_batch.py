@@ -219,7 +219,14 @@ def generate_assistive_prelabels(
     controller, cost_policy = _build_cost_controller(cost_policy_path)
 
     for row in pending.itertuples(index=True):
-        messages = build_prompt_messages(policy, str(row.sentence))
+        source_section = ""
+        if hasattr(row, "source_section"):
+            source_section = str(getattr(row, "source_section") or "").strip()
+        messages = build_prompt_messages(
+            policy,
+            str(row.sentence),
+            source_section=source_section,
+        )
         prompt_hash_value = prompt_hash(messages)
         extra_payload: dict[str, Any] = {}
         reasoning_effort = str(policy.request.get("reasoning_effort", "")).strip()

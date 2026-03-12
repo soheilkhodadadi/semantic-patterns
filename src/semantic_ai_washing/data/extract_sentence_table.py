@@ -12,7 +12,7 @@ from typing import Any
 import pandas as pd
 
 from semantic_ai_washing.core.sentence_filter import (
-    filter_ai_sentences,
+    filter_ai_sentences_with_sections,
     get_sentence_integrity_flags,
     load_keywords,
     merge_page_fragments,
@@ -39,6 +39,7 @@ OUTPUT_COLUMNS = [
     "source_year",
     "source_quarter",
     "source_form",
+    "source_section",
     "source_cik",
     "sentence_index",
     "extractor_version",
@@ -94,6 +95,7 @@ def _build_row(
     manifest_row: pd.Series,
     keyword_version: str,
     min_tokens: int,
+    source_section: str,
 ) -> tuple[dict[str, Any], list[str]]:
     sentence_norm = normalize_sentence_text(sentence)
     flags = get_sentence_integrity_flags(sentence, min_tokens=min_tokens)
@@ -106,6 +108,7 @@ def _build_row(
         "source_year": int(manifest_row["year"]),
         "source_quarter": int(manifest_row["quarter"]),
         "source_form": str(manifest_row["form"]),
+        "source_section": str(source_section),
         "source_cik": str(manifest_row["cik"]),
         "sentence_index": int(sentence_index),
         "extractor_version": EXTRACTOR_VERSION,
@@ -173,17 +176,18 @@ def extract_sentence_table(
         total_segmented_sentences += len(segmented)
         page_merged = merge_page_fragments(segmented, raw_text=text)
         merged = merge_sentence_fragments(page_merged)
-        ai_sentences = filter_ai_sentences(merged, keywords)
+        ai_sentences = filter_ai_sentences_with_sections(merged, keywords)
         total_ai_sentences += len(ai_sentences)
 
         manifest_series = pd.Series(manifest_row._asdict())
-        for idx, sentence in enumerate(ai_sentences, start=1):
+        for idx, (sentence, source_section) in enumerate(ai_sentences, start=1):
             row, flags = _build_row(
                 sentence=sentence,
                 sentence_index=idx,
                 manifest_row=manifest_series,
                 keyword_version=keyword_version,
                 min_tokens=min_tokens,
+                source_section=source_section,
             )
             rows.append(row)
             integrity_counts.update(flags)

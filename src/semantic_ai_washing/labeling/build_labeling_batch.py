@@ -38,6 +38,7 @@ OUTPUT_COLUMNS = [
     "source_year",
     "source_quarter",
     "source_form",
+    "source_section",
     "source_cik",
     "sentence_index",
     "manifest_id",
@@ -181,6 +182,9 @@ def _load_candidates(sentences_path: str, manifest_path: str) -> pd.DataFrame:
     merged["fragment_score"] = merged["fragment_score"].astype(float)
     merged["sentence_norm"] = merged["sentence_norm"].fillna("").astype(str)
     merged["sentence"] = merged["sentence"].fillna("").astype(str)
+    if "source_section" not in merged.columns:
+        merged["source_section"] = "other"
+    merged["source_section"] = merged["source_section"].fillna("other").astype(str)
     merged["edge_case_flag"] = merged["sentence"].map(
         lambda value: bool(_EDGE_CASE_RE.search(value))
     )

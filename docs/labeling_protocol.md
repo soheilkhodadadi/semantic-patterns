@@ -1,4 +1,4 @@
-# Labeling Protocol (Proposal-Aligned Rubric v2)
+# Labeling Protocol (Proposal-Aligned Rubric v2.3)
 
 This protocol defines how to label AI-related filing sentences for the AI-washing project after proposal-methodology alignment.
 
@@ -26,8 +26,8 @@ Because of that objective:
 
 ## Allowed Labels
 
-- `Actionable`: sentence describes explicit current or realized firm-specific AI deployment, implementation, embedded workflow, productized use, or measurable operational execution.
-- `Speculative`: sentence describes firm-specific aspirational, exploratory, or forward-looking AI narrative without operational proof.
+- `Actionable`: sentence describes a firm-specific present or past factual AI claim, including current use, implementation, capability, investment, expertise, or AI product/service offering.
+- `Speculative`: sentence describes a firm-specific but vague, exploratory, or forward-looking AI narrative without a present or past factual claim of use, capability, or investment.
 - `Irrelevant`: sentence mentions AI in a generic, boilerplate, market-wide, regulatory, cyber-risk, list-like, or tangential way that does not function as a firm capability claim.
 
 Rows with labels outside this set fail QA.
@@ -39,8 +39,12 @@ Prefer `Actionable` when the sentence clearly shows one or more of the following
 - current deployment or current use
 - already-implemented AI workflow or operational process
 - productized or embedded AI functionality
-- realized execution with concrete detail
+- realized execution stated as a present or past fact
+- current investment, resource allocation, capability-building, or expertise that is firm-specific and presented as a fact
+- present-tense commercialized AI offering, product, or service
 - evidence that the firm is already using AI in a specific business activity
+
+Technical detail is not required in the same sentence. A present-tense factual firm claim can still be `Actionable`.
 
 A sentence may still be `Actionable` inside a risk section if it reveals current firm AI deployment or use.
 
@@ -51,6 +55,7 @@ Prefer `Speculative` when the sentence clearly shows:
 - expected future benefits from AI
 - narrative signaling around AI transformation without operational proof
 - promises, goals, or pursuits of AI capability not yet shown as implemented
+- language framed as possibility, aspiration, or opportunity rather than current fact
 
 A sentence is not `Speculative` simply because it is uncertain or risk-oriented. It must still be a firm-specific AI narrative claim.
 
@@ -65,12 +70,39 @@ Prefer `Irrelevant` when the sentence is:
 ## Borderline Rules
 
 - Generic AI regulatory, cyber, or market-risk language is `Irrelevant` unless the sentence also reveals current firm AI deployment.
-- If a sentence only says AI may matter, could matter, or creates risks/opportunities in general, it is usually `Irrelevant`.
+- If a sentence only says AI may matter, could matter, or creates generic risks/opportunities, it is usually `Irrelevant`.
 - If a sentence says the firm plans, expects, explores, or intends to use AI but does not show current operational evidence, it is `Speculative`.
-- If a sentence shows current or realized deployment, it is `Actionable` even if it also contains risk or forward-looking context.
+- If a sentence shows a current or past factual firm claim about AI deployment, capability-building, expertise, investment, or a current AI offering, it is `Actionable` even if it does not include technical detail.
 - If both action and aspiration appear, prefer:
   - `Actionable` when present or realized execution is explicit
   - `Speculative` when future intent dominates and current execution evidence is absent
+
+## Proposal-Faithful Decision Tree
+
+Use this order:
+1. Does the sentence disclose current or past firm-specific AI deployment, embedded workflow use, operational execution, current investment/capability-building, expertise, or a commercialized AI offering?
+   - If yes, label `Actionable`.
+2. If not, does it describe a firm-specific AI strategy, aspiration, intention, expected benefit, exploration, or opportunity without a present/past factual claim?
+   - If yes, label `Speculative`.
+3. Otherwise, label `Irrelevant`.
+
+This is intentionally short so the human rubric remains workable for IRR and second-rater use.
+
+## Proposal-Faithful Borderline Examples
+
+- `Speculative`: “Our global strategy includes investing in generative AI capabilities.”
+  - firm-specific ambition or strategic priority, but no present execution evidence
+- `Actionable`: “We offer AI-enabled technology products and services to customers.”
+  - present business offering or productized capability stated as fact
+- `Actionable`: “We have used our software engineering expertise to become a provider of AI-enabled transformation services.”
+  - present-tense capability or offering stated as fact, even without technical implementation detail
+- `Irrelevant`: “The use of AI/ML methods may create legal, cyber, and regulatory risks.”
+  - generic AI risk language, not a firm capability claim
+- `Speculative`: “We may find opportunities by developing and applying AI.”
+  - firm-specific expected benefit or intended use without a current factual claim
+- `Actionable` only by override: risk-section language that explicitly discloses current firm AI use or deployment
+  - example pattern: “Our current AI underwriting system may fail under certain conditions”
+  - the actionability comes from disclosing the present system, not from being inside a risk section
 
 ## Tranche-1 Realignment Rule
 
@@ -78,13 +110,17 @@ Prefer `Irrelevant` when the sentence is:
 
 Current policy:
 - tranche 1 canonical labeling is paused under the older rubric
-- tranche 1 must be re-prelabeled and re-reviewed under rubric v2
+- tranche 1 must be re-prelabeled and re-reviewed under rubric v2.3
 - previously generated tranche-1 prelabels are diagnostic evidence, not final canonical labels
+- canonical tranche-1 review now happens in:
+  - `data/labels/v1/labeling_batch_v1_filled_v2_2.csv`
+- earlier `v2` and `v2.1` review sheets remain diagnostic only
 
 Required tranche-1 realignment outputs:
 - revised protocol in this file
-- tranche-1 rubric realignment note
-- tranche-1 assistive prelabels regenerated under rubric v2 before canonical human verification resumes
+- tranche-1 rubric calibration note
+- rebuilt slice40 extracted from raw filings
+- tranche-1 assistive prelabels regenerated under rubric v2.2 before canonical human verification resumes
 
 ## Uncertainty Policy
 
@@ -156,8 +192,8 @@ IRR gate policy:
 Iteration 2 is no longer interpreted as continuous labeling under the old rubric.
 
 It now proceeds in this order:
-1. rubric realignment
-2. tranche 1 labeling under rubric v2
+1. rubric realignment and slice40 recalibration under rubric v2.2
+2. tranche 1 labeling under rubric v2.2
 3. sentence-pool expansion
 4. tranche 2 labeling
 5. tranche 3 labeling
@@ -190,3 +226,11 @@ Later firm-year construction should explicitly publish:
 - `A_S = log(1 + A / (1 + S))`
 
 These measures are part of the proposal's core methodology and must remain visible in the roadmap and review artifacts.
+
+## Later Filing-Level Derived Variables
+
+In addition to sentence-level and firm-year continuous measures, later robustness work may publish filing-level summary variables such as:
+- `AnyActionable = 1` if a filing contains any actionable AI sentence
+- `SpeculativeOnly = 1` if a filing contains speculative AI sentences but no actionable AI sentence
+
+These are future derived measures and are not part of the current sentence-labeling gate.

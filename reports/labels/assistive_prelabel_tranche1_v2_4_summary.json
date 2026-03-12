@@ -1,0 +1,34 @@
+{
+  "generated_at": "2026-03-11T02:12:54.051575+00:00",
+  "status": "passed",
+  "mode": "live",
+  "policy_path": "/private/var/folders/2d/qqssh8kj2875wxxjhh89xycr0000gn/T/prompt-benchmark-full-manual-p7srlzuo/v2_4a_full_policy.yaml",
+  "input_csv": "/private/var/folders/2d/qqssh8kj2875wxxjhh89xycr0000gn/T/prompt-benchmark-full-manual-p7srlzuo/v2_4a_full_input.csv",
+  "output_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/labels/v1/labeling_batch_v1_prelabeled_v2_4.csv",
+  "report_path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/reports/labels/assistive_prelabel_tranche1_v2_4_summary.json",
+  "model": "gpt-5-mini",
+  "resumed_existing_output": false,
+  "parameters": {
+    "max_rows": 0,
+    "sleep_seconds": 0.0,
+    "checkpoint_every": 10
+  },
+  "counts": {
+    "input_rows": 240,
+    "skipped_canonical_labeled_rows": 0,
+    "skipped_existing_assistive_rows": 0,
+    "pending_rows_before_run": 240,
+    "processed_rows": 240,
+    "failed_rows": 0,
+    "pending_rows_after_run": 0
+  },
+  "usage": {
+    "request_count": 240,
+    "prompt_tokens": 121480,
+    "completion_tokens": 14690,
+    "total_tokens": 136170,
+    "estimated_cost_usd": 0.0,
+    "cost_estimation_status": "pricing_unconfigured"
+  },
+  "errors": []
+}

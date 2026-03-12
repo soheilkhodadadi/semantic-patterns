@@ -7,11 +7,14 @@ import pandas as pd
 import pytest
 
 from semantic_ai_washing.core.sentence_filter import (
+    clean_extracted_sentence,
+    filter_ai_sentences_with_sections,
     get_sentence_integrity_flags,
     normalize_sentence_text,
 )
 from semantic_ai_washing.data.build_filing_manifest import build_manifest
 from semantic_ai_washing.data.extract_sentence_table import extract_sentence_table
+from semantic_ai_washing.data.reextract_tranche_slice import reextract_tranche_slice
 
 
 def _write_text(path: Path, text: str) -> None:
@@ -116,6 +119,51 @@ def test_sentence_filter_helpers_are_deterministic():
     assert "short_sentence" in flags
 
 
+def test_clean_extracted_sentence_removes_obvious_noise():
+    assert clean_extracted_sentence("Table of Contents | Artificial intelligence strategy.") == (
+        "Artificial intelligence strategy."
+    )
+    assert clean_extracted_sentence(
+        "FORM 10-K 12 Artificial intelligence supports workflows."
+    ) == ("Artificial intelligence supports workflows.")
+    assert clean_extracted_sentence(
+        "Business Overview Artificial intelligence supports workflows."
+    ) == ("Artificial intelligence supports workflows.")
+    assert clean_extracted_sentence("- Artificial intelligence") == ""
+    assert clean_extracted_sentence("N Artificial intelligence supports workflows.") == (
+        "Artificial intelligence supports workflows."
+    )
+    assert clean_extracted_sentence("Artificial intelligence ) supports workflows.") == (
+        "Artificial intelligence supports workflows."
+    )
+
+
+def test_filter_ai_sentences_with_sections_tags_common_10k_sections():
+    sentences = [
+        "Item 1. Business",
+        "Artificial intelligence supports current operating workflows.",
+        "Item 1A. Risk Factors",
+        "Artificial intelligence could expose us to cyber risks.",
+        "Item 7. Management's Discussion and Analysis",
+        "We expect artificial intelligence to improve future productivity.",
+    ]
+    tagged = filter_ai_sentences_with_sections(
+        sentences, ["artificial intelligence", "machine learning"]
+    )
+
+    assert tagged == [
+        (
+            "Artificial intelligence supports current operating workflows.",
+            "item_1_business",
+        ),
+        ("Artificial intelligence could expose us to cyber risks.", "item_1a_risk_factors"),
+        (
+            "We expect artificial intelligence to improve future productivity.",
+            "item_7_mda",
+        ),
+    ]
+
+
 def test_extract_sentence_table_writes_contract_outputs_and_report(tmp_path):
     source_root = tmp_path / "sec_root"
     filing_path = source_root / "2024" / "QTR1" / "20240101_10-K_edgar_data_1001_0001.txt"
@@ -197,6 +245,7 @@ def test_extract_sentence_table_writes_contract_outputs_and_report(tmp_path):
         "source_year",
         "source_quarter",
         "source_form",
+        "source_section",
         "source_cik",
         "sentence_index",
         "extractor_version",
@@ -208,6 +257,9 @@ def test_extract_sentence_table_writes_contract_outputs_and_report(tmp_path):
         "token_count",
     ]
     assert len(written) >= 2
+    assert set(written["source_section"]).issubset(
+        {"item_1_business", "item_1a_risk_factors", "item_7_mda", "other"}
+    )
     assert sample_output_path.exists()
     sample = pd.read_csv(sample_output_path)
     assert len(sample) == 1
@@ -217,3 +269,70 @@ def test_extract_sentence_table_writes_contract_outputs_and_report(tmp_path):
     assert report_payload["failure_summary"]["read_errors_count"] == 1
     assert report_payload["output_fingerprints"]["parquet_sha256"]
     assert report == report_payload
+
+
+def test_reextract_tranche_slice_rebuilds_rows_and_marks_unmatched(tmp_path):
+    source_root = tmp_path / "sec_root"
+    filing_path = source_root / "2024" / "QTR1" / "sample_10k.txt"
+    _write_text(
+        filing_path,
+        (
+            "Table of Contents\n"
+            "Item 1. Business\n"
+            "Business Overview Artificial intelligence supports workflows today.\n"
+            "Item 1A. Risk Factors\n"
+            "Artificial intelligence could expose us to cyber risks.\n"
+        ),
+    )
+
+    keywords_path = tmp_path / "keywords.txt"
+    _write_text(keywords_path, "artificial intelligence\nmachine learning\n")
+
+    slice_path = tmp_path / "slice40.csv"
+    pd.DataFrame(
+        [
+            {
+                "source_file": "2024/QTR1/sample_10k.txt",
+                "sentence_id": "s1",
+                "sentence_index": 1,
+                "sentence": "Business Overview Artificial intelligence supports workflows today.",
+                "assistive_label": "Actionable",
+                "label": "",
+                "is_uncertain": "",
+                "uncertainty_note": "",
+            },
+            {
+                "source_file": "2024/QTR1/sample_10k.txt",
+                "sentence_id": "s2",
+                "sentence_index": 2,
+                "sentence": "Artificial intelligence sentence never present in the filing.",
+                "assistive_label": "Speculative",
+                "label": "",
+                "is_uncertain": "",
+                "uncertainty_note": "",
+            },
+        ]
+    ).to_csv(slice_path, index=False)
+
+    output_path = tmp_path / "reextracted.csv"
+    report_path = tmp_path / "report.json"
+
+    report = reextract_tranche_slice(
+        input_csv=str(slice_path),
+        output_csv=str(output_path),
+        report_path=str(report_path),
+        source_root=str(source_root),
+        keywords_path=str(keywords_path),
+    )
+
+    rebuilt = pd.read_csv(output_path)
+
+    assert rebuilt.loc[0, "sentence"] == "Artificial intelligence supports workflows today."
+    assert rebuilt.loc[0, "source_section"] == "item_1_business"
+    assert rebuilt.loc[0, "match_status"] == "similarity"
+    assert rebuilt.loc[1, "match_status"] == "unmatched"
+    assert rebuilt["label"].fillna("").tolist() == ["", ""]
+    assert rebuilt["is_uncertain"].fillna("").tolist() == ["", ""]
+    assert rebuilt["uncertainty_note"].fillna("").tolist() == ["", ""]
+    assert report["counts"]["slice_rows"] == 2
+    assert report["counts"]["unmatched_rows"] == 1

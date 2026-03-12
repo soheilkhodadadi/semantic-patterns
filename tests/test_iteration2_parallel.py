@@ -9,9 +9,15 @@ from semantic_ai_washing.data.build_expanded_sentence_pool import build_expanded
 from semantic_ai_washing.data.combine_expanded_sentence_pool_batches import (
     combine_expanded_sentence_pool_batches,
 )
+from semantic_ai_washing.director.core.api_assistive import (
+    build_prompt_messages,
+    load_api_assistive_policy,
+)
 from semantic_ai_washing.director.core.cost import CostController
 from semantic_ai_washing.labeling.assistive_prelabel_batch import generate_assistive_prelabels
+from semantic_ai_washing.labeling.benchmark_prompt_variants import benchmark_prompt_variants
 from semantic_ai_washing.labeling.build_labeling_batch import build_labeling_batch
+from semantic_ai_washing.labeling.initialize_review_sheet import initialize_review_sheet
 from semantic_ai_washing.labeling.merge_labeling_batches import merge_labeling_batches
 
 
@@ -578,6 +584,75 @@ def test_generate_assistive_prelabels_returns_success_for_bounded_chunk_resume(
     assert output_2["assistive_label"].fillna("").astype(str).eq("Actionable").sum() == 2
 
 
+def test_initialize_review_sheet_creates_blank_canonical_columns_and_slice(tmp_path):
+    input_csv = _write_csv(
+        tmp_path / "prelabeled.csv",
+        [
+            {
+                "sentence_id": "s1",
+                "sentence": "We use artificial intelligence in operations today.",
+                "source_file": "2024/QTR1/f1.txt",
+                "sentence_index": 1,
+                "label": "Speculative",
+                "is_uncertain": "1",
+                "uncertainty_note": "old note",
+                "assistive_label": "Actionable",
+            },
+            {
+                "sentence_id": "s2",
+                "sentence": "We may use AI in the future.",
+                "source_file": "2024/QTR2/f2.txt",
+                "sentence_index": 2,
+                "label": "",
+                "is_uncertain": "",
+                "uncertainty_note": "",
+                "assistive_label": "Speculative",
+            },
+        ],
+    )
+    output_csv = tmp_path / "filled_v2_1.csv"
+    slice_csv = tmp_path / "filled_v2_1_slice40.csv"
+
+    total_rows, slice_rows = initialize_review_sheet(
+        input_csv=str(input_csv),
+        output_csv=str(output_csv),
+        slice_output_csv=str(slice_csv),
+        slice_size=1,
+    )
+
+    written = pd.read_csv(output_csv)
+    slice_written = pd.read_csv(slice_csv)
+
+    assert total_rows == 2
+    assert slice_rows == 1
+    assert written["label"].fillna("").tolist() == ["", ""]
+    assert written["is_uncertain"].fillna("").tolist() == ["", ""]
+    assert written["uncertainty_note"].fillna("").tolist() == ["", ""]
+    assert written["assistive_label"].tolist() == ["Actionable", "Speculative"]
+    assert len(slice_written) == 1
+
+
+def test_build_prompt_messages_includes_section_context_and_v22_rules():
+    policy, _ = load_api_assistive_policy(
+        "director/config/api_assistive_policy.yaml",
+        repo_root=".",
+    )
+
+    messages = build_prompt_messages(
+        policy,
+        "Artificial intelligence could expose us to cyber risks.",
+        source_section="item_1a_risk_factors",
+    )
+
+    system_text = messages[0]["content"][0]["text"]
+    user_text = messages[1]["content"][0]["text"]
+    combined = f"{system_text}\n{user_text}"
+
+    assert "verifiable or refutable" in combined.lower()
+    assert "generic risk language should default to Irrelevant" in combined
+    assert "Source section: item_1a_risk_factors" in user_text
+
+
 def test_build_labeling_batch_excludes_multiple_prior_batches(tmp_path):
     sentences_path = tmp_path / "sentences.parquet"
     manifest_path = tmp_path / "manifest.csv"
@@ -768,3 +843,419 @@ def test_merge_labeling_batches_writes_master_outputs(tmp_path):
     assert summary["quality"]["heldout_overlap_count"] == 0
     assert summary["quality"]["exact_duplicate_count"] == 0
     assert summary["assistive_provenance"]["rows_with_assistive_columns"] == 1
+
+
+def test_benchmark_prompt_variants_picks_best_eligible_variant(monkeypatch, tmp_path):
+    input_rows = []
+    benchmark_rows = []
+    manual_labels = ["Actionable"] * 5 + ["Speculative"] * 7 + ["Irrelevant"] * 28
+    for index, label in enumerate(manual_labels, start=1):
+        input_rows.append(
+            {
+                "sentence_id": f"s{index}",
+                "sentence": f"Sentence {index}",
+                "label": "",
+                "source_file": f"f{index}.txt",
+                "sentence_index": index,
+                "source_section": "item_1_business",
+            }
+        )
+        benchmark_rows.append({"sentence_id": f"s{index}", "label": label})
+    input_csv = _write_csv(tmp_path / "input.csv", input_rows)
+    benchmark_csv = _write_csv(tmp_path / "benchmark.csv", benchmark_rows)
+    base_policy = tmp_path / "policy.yaml"
+    base_policy.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0.0",
+                "mode": "assistive_only",
+                "provider": "openai",
+                "transport": "responses_api",
+                "env_var": "OPENAI_API_KEY",
+                "model": "gpt-5-mini",
+                "request": {"store": False, "timeout_seconds": 60, "max_output_tokens": 50},
+                "budget": {"max_live_requests_per_run": 1},
+                "selection": {
+                    "sample_input": "sample.csv",
+                    "min_tokens": 1,
+                    "max_tokens": 10,
+                    "require_fragment_score_max": 0.0,
+                },
+                "telemetry": {
+                    "usage_file": "director/runs/cost_usage.jsonl",
+                    "component": "assistive_prelabel_smoke",
+                    "cache_allowed": False,
+                },
+                "usage_policy": {
+                    "canonical": False,
+                    "allowed_use_cases": ["bounded_smoke_test"],
+                    "prohibited_use_cases": ["canonical_training_labels"],
+                },
+                "prompt_spec": {
+                    "reference_rubric_path": "docs/labeling_protocol.md",
+                    "label_set": ["Actionable", "Speculative", "Irrelevant"],
+                    "confidence_bands": ["high", "medium", "low"],
+                    "system_prompt": "base",
+                    "user_prompt_template": "base",
+                },
+                "smoke_output": {"report_path": "report.json"},
+            }
+        ),
+        encoding="utf-8",
+    )
+    variants = tmp_path / "variants.yaml"
+    variants.write_text(
+        """
+schema_version: "1.0.0"
+version_family: "v2.4"
+variants:
+  - variant_id: "v2_4a"
+    label: "weak"
+    description: "weak"
+    system_prompt: "variant a"
+    user_prompt_template: "variant a"
+  - variant_id: "v2_4b"
+    label: "strong"
+    description: "strong"
+    system_prompt: "variant b"
+    user_prompt_template: "variant b"
+""",
+        encoding="utf-8",
+    )
+
+    def fake_generate_assistive_prelabels(
+        *,
+        input_csv: str,
+        output_csv: str,
+        report_path: str,
+        policy_path: str,
+        **_: object,
+    ):
+        policy_text = Path(policy_path).read_text(encoding="utf-8")
+        rows = pd.read_csv(input_csv)
+        if "variant b" in policy_text:
+            labels = ["Actionable"] * 5 + ["Speculative"] * 5 + ["Irrelevant"] * 30
+        else:
+            labels = ["Irrelevant"] * 2 + ["Speculative"] * 10 + ["Irrelevant"] * 28
+        rows["assistive_label"] = labels
+        rows["assistive_confidence"] = "high"
+        rows["assistive_rationale"] = "test"
+        rows["assistive_model"] = "gpt-5-mini"
+        rows["assistive_generated_at"] = "2026-03-10T00:00:00Z"
+        rows["assistive_prompt_hash"] = "hash"
+        Path(output_csv).parent.mkdir(parents=True, exist_ok=True)
+        rows.to_csv(output_csv, index=False)
+        payload = {"status": "passed", "usage": {"request_count": len(rows)}}
+        Path(report_path).parent.mkdir(parents=True, exist_ok=True)
+        Path(report_path).write_text(json.dumps(payload), encoding="utf-8")
+        return payload, 0
+
+    monkeypatch.setattr(
+        "semantic_ai_washing.labeling.benchmark_prompt_variants.generate_assistive_prelabels",
+        fake_generate_assistive_prelabels,
+    )
+
+    result = benchmark_prompt_variants(
+        input_csv=str(input_csv),
+        benchmark_csv=str(benchmark_csv),
+        base_policy_path=str(base_policy),
+        variants_path=str(variants),
+        report_json=str(tmp_path / "benchmark.json"),
+        report_md=str(tmp_path / "benchmark.md"),
+        regenerate_full_on_success=False,
+    )
+
+    assert result["winner"]["variant_id"] == "v2_4b"
+    assert result["winner"]["gate_passed"] is True
+    assert result["variants"][0]["score"]["overall"]["matches"] == 35
+    assert result["variants"][1]["score"]["overall"]["matches"] == 38
+    assert result["variants"][1]["score"]["action_spec"]["matches"] == 10
+
+
+def test_benchmark_prompt_variants_reports_no_winner_when_gate_fails(monkeypatch, tmp_path):
+    input_csv = _write_csv(
+        tmp_path / "input.csv",
+        [
+            {
+                "sentence_id": "s1",
+                "sentence": "We offer AI-enabled products.",
+                "label": "",
+                "source_file": "f1.txt",
+                "sentence_index": 1,
+                "source_section": "item_1_business",
+            },
+            {
+                "sentence_id": "s2",
+                "sentence": "We may find opportunities by applying AI.",
+                "label": "",
+                "source_file": "f2.txt",
+                "sentence_index": 2,
+                "source_section": "item_1_business",
+            },
+        ],
+    )
+    benchmark_csv = _write_csv(
+        tmp_path / "benchmark.csv",
+        [
+            {"sentence_id": "s1", "label": "Actionable"},
+            {"sentence_id": "s2", "label": "Speculative"},
+        ],
+    )
+    base_policy = tmp_path / "policy.yaml"
+    base_policy.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0.0",
+                "mode": "assistive_only",
+                "provider": "openai",
+                "transport": "responses_api",
+                "env_var": "OPENAI_API_KEY",
+                "model": "gpt-5-mini",
+                "request": {"store": False, "timeout_seconds": 60, "max_output_tokens": 50},
+                "budget": {"max_live_requests_per_run": 1},
+                "selection": {
+                    "sample_input": "sample.csv",
+                    "min_tokens": 1,
+                    "max_tokens": 10,
+                    "require_fragment_score_max": 0.0,
+                },
+                "telemetry": {
+                    "usage_file": "director/runs/cost_usage.jsonl",
+                    "component": "assistive_prelabel_smoke",
+                    "cache_allowed": False,
+                },
+                "usage_policy": {
+                    "canonical": False,
+                    "allowed_use_cases": ["bounded_smoke_test"],
+                    "prohibited_use_cases": ["canonical_training_labels"],
+                },
+                "prompt_spec": {
+                    "reference_rubric_path": "docs/labeling_protocol.md",
+                    "label_set": ["Actionable", "Speculative", "Irrelevant"],
+                    "confidence_bands": ["high", "medium", "low"],
+                    "system_prompt": "base",
+                    "user_prompt_template": "base",
+                },
+                "smoke_output": {"report_path": "report.json"},
+            }
+        ),
+        encoding="utf-8",
+    )
+    variants = tmp_path / "variants.yaml"
+    variants.write_text(
+        """
+schema_version: "1.0.0"
+version_family: "v2.4"
+variants:
+  - variant_id: "v2_4a"
+    label: "weak"
+    description: "weak"
+    system_prompt: "variant a"
+    user_prompt_template: "variant a"
+""",
+        encoding="utf-8",
+    )
+
+    def fake_generate_assistive_prelabels(
+        *,
+        input_csv: str,
+        output_csv: str,
+        report_path: str,
+        **_: object,
+    ):
+        rows = pd.read_csv(input_csv)
+        rows["assistive_label"] = ["Irrelevant", "Irrelevant"]
+        rows["assistive_confidence"] = "high"
+        rows["assistive_rationale"] = "test"
+        rows["assistive_model"] = "gpt-5-mini"
+        rows["assistive_generated_at"] = "2026-03-10T00:00:00Z"
+        rows["assistive_prompt_hash"] = "hash"
+        Path(output_csv).parent.mkdir(parents=True, exist_ok=True)
+        rows.to_csv(output_csv, index=False)
+        payload = {"status": "passed", "usage": {"request_count": len(rows)}}
+        Path(report_path).parent.mkdir(parents=True, exist_ok=True)
+        Path(report_path).write_text(json.dumps(payload), encoding="utf-8")
+        return payload, 0
+
+    monkeypatch.setattr(
+        "semantic_ai_washing.labeling.benchmark_prompt_variants.generate_assistive_prelabels",
+        fake_generate_assistive_prelabels,
+    )
+
+    result = benchmark_prompt_variants(
+        input_csv=str(input_csv),
+        benchmark_csv=str(benchmark_csv),
+        base_policy_path=str(base_policy),
+        variants_path=str(variants),
+        report_json=str(tmp_path / "benchmark.json"),
+        report_md=str(tmp_path / "benchmark.md"),
+        regenerate_full_on_success=False,
+    )
+
+    assert result["winner"] is None or result["winner"]["gate_passed"] is False
+
+
+def test_benchmark_prompt_variants_regenerates_full_tranche_for_winner(monkeypatch, tmp_path):
+    input_rows = []
+    benchmark_rows = []
+    for idx in range(40):
+        sentence_id = f"s{idx + 1}"
+        input_rows.append(
+            {
+                "sentence_id": sentence_id,
+                "sentence": f"Sentence {idx + 1}",
+                "label": "",
+                "source_file": f"f{(idx % 4) + 1}.txt",
+                "sentence_index": idx + 1,
+                "source_section": "item_1_business",
+            }
+        )
+        benchmark_rows.append(
+            {
+                "sentence_id": sentence_id,
+                "label": (
+                    "Actionable" if idx < 5 else "Speculative" if idx < 12 else "Irrelevant"
+                ),
+            }
+        )
+    input_csv = _write_csv(tmp_path / "input.csv", input_rows)
+    benchmark_csv = _write_csv(tmp_path / "benchmark.csv", benchmark_rows)
+    full_input_csv = _write_csv(
+        tmp_path / "full_input.csv",
+        [
+            {
+                "sentence_id": "full1",
+                "sentence": "We offer AI-enabled services.",
+                "label": "",
+                "source_file": "full1.txt",
+                "sentence_index": 1,
+                "source_section": "item_1_business",
+            },
+            {
+                "sentence_id": "full2",
+                "sentence": "We may find opportunities with AI.",
+                "label": "",
+                "source_file": "full2.txt",
+                "sentence_index": 2,
+                "source_section": "item_1_business",
+            },
+        ],
+    )
+    base_policy = tmp_path / "policy.yaml"
+    base_policy.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0.0",
+                "mode": "assistive_only",
+                "provider": "openai",
+                "transport": "responses_api",
+                "env_var": "OPENAI_API_KEY",
+                "model": "gpt-5-mini",
+                "request": {"store": False, "timeout_seconds": 60, "max_output_tokens": 50},
+                "budget": {"max_live_requests_per_run": 1},
+                "selection": {
+                    "sample_input": "sample.csv",
+                    "min_tokens": 1,
+                    "max_tokens": 10,
+                    "require_fragment_score_max": 0.0,
+                },
+                "telemetry": {
+                    "usage_file": "director/runs/cost_usage.jsonl",
+                    "component": "assistive_prelabel_smoke",
+                    "cache_allowed": False,
+                },
+                "usage_policy": {
+                    "canonical": False,
+                    "allowed_use_cases": ["bounded_smoke_test"],
+                    "prohibited_use_cases": ["canonical_training_labels"],
+                },
+                "prompt_spec": {
+                    "reference_rubric_path": "docs/labeling_protocol.md",
+                    "label_set": ["Actionable", "Speculative", "Irrelevant"],
+                    "confidence_bands": ["high", "medium", "low"],
+                    "system_prompt": "base",
+                    "user_prompt_template": "base",
+                },
+                "smoke_output": {"report_path": "report.json"},
+            }
+        ),
+        encoding="utf-8",
+    )
+    variants = tmp_path / "variants.yaml"
+    variants.write_text(
+        """
+schema_version: "1.0.0"
+version_family: "v2.4"
+variants:
+  - variant_id: "v2_4a"
+    label: "weak"
+    description: "weak"
+    system_prompt: "variant a"
+    user_prompt_template: "variant a"
+  - variant_id: "v2_4b"
+    label: "strong"
+    description: "strong"
+    system_prompt: "variant b"
+    user_prompt_template: "variant b"
+""",
+        encoding="utf-8",
+    )
+
+    def fake_generate_assistive_prelabels(
+        *,
+        input_csv: str,
+        output_csv: str,
+        report_path: str,
+        policy_path: str,
+        **_: object,
+    ):
+        policy_text = Path(policy_path).read_text(encoding="utf-8")
+        rows = pd.read_csv(input_csv)
+        if "variant b" in policy_text:
+            if len(rows) == 40:
+                labels = ["Actionable"] * 5 + ["Speculative"] * 5 + ["Irrelevant"] * 30
+            else:
+                labels = ["Actionable", "Speculative"]
+        else:
+            labels = ["Irrelevant"] * len(rows)
+        rows["assistive_label"] = labels
+        rows["assistive_confidence"] = "high"
+        rows["assistive_rationale"] = "test"
+        rows["assistive_model"] = "gpt-5-mini"
+        rows["assistive_generated_at"] = "2026-03-10T00:00:00Z"
+        rows["assistive_prompt_hash"] = "hash"
+        Path(output_csv).parent.mkdir(parents=True, exist_ok=True)
+        rows.to_csv(output_csv, index=False)
+        payload = {"status": "passed", "usage": {"request_count": len(rows)}}
+        Path(report_path).parent.mkdir(parents=True, exist_ok=True)
+        Path(report_path).write_text(json.dumps(payload), encoding="utf-8")
+        return payload, 0
+
+    monkeypatch.setattr(
+        "semantic_ai_washing.labeling.benchmark_prompt_variants.generate_assistive_prelabels",
+        fake_generate_assistive_prelabels,
+    )
+
+    full_output = tmp_path / "full_prelabeled.csv"
+    full_filled = tmp_path / "full_filled.csv"
+    full_report = tmp_path / "full_report.json"
+    result = benchmark_prompt_variants(
+        input_csv=str(input_csv),
+        benchmark_csv=str(benchmark_csv),
+        base_policy_path=str(base_policy),
+        variants_path=str(variants),
+        report_json=str(tmp_path / "benchmark.json"),
+        report_md=str(tmp_path / "benchmark.md"),
+        full_input_csv=str(full_input_csv),
+        full_output_csv=str(full_output),
+        full_filled_csv=str(full_filled),
+        full_report_json=str(full_report),
+        regenerate_full_on_success=True,
+    )
+
+    assert result["winner"]["variant_id"] == "v2_4b"
+    assert result["full_tranche"]["generated"] is True
+    assert full_output.exists()
+    assert full_filled.exists()
+    generated = pd.read_csv(full_filled)
+    assert generated["label"].fillna("").eq("").all()

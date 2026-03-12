@@ -12,7 +12,7 @@ from typing import Any
 import pandas as pd
 
 from semantic_ai_washing.core.sentence_filter import (
-    filter_ai_sentences,
+    filter_ai_sentences_with_sections,
     get_sentence_integrity_flags,
     load_keywords,
     merge_page_fragments,
@@ -123,10 +123,10 @@ def _build_clean_sentence_rows(
     segmented = segment_sentences(filing_text)
     page_merged = merge_page_fragments(segmented, raw_text=filing_text)
     merged = merge_sentence_fragments(page_merged)
-    ai_sentences = filter_ai_sentences(merged, keywords)
+    ai_sentences = filter_ai_sentences_with_sections(merged, keywords)
 
     clean_rows: list[dict[str, Any]] = []
-    for sentence_index, sentence in enumerate(ai_sentences, start=1):
+    for sentence_index, (sentence, source_section) in enumerate(ai_sentences, start=1):
         sentence_norm = normalize_sentence_text(sentence)
         flags = get_sentence_integrity_flags(sentence, min_tokens=min_tokens)
         token_count = _token_count(sentence)
@@ -147,6 +147,7 @@ def _build_clean_sentence_rows(
                 "source_year": int(manifest_row["year"]),
                 "source_quarter": int(manifest_row["quarter"]),
                 "source_form": str(manifest_row["form"]),
+                "source_section": str(source_section),
                 "source_cik": str(manifest_row["cik"]),
                 "sentence_index": int(sentence_index),
                 "extractor_version": EXTRACTOR_VERSION,

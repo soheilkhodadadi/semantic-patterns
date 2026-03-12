@@ -1636,11 +1636,84 @@ Rules:
 
 - Committed proposal-alignment patch separately as `540347a` (`director: align roadmap and rubric with proposal methodology`).
 - Committed prelabel-resume fixes separately as `11be81c` (`labeling: harden tranche prelabel resume behavior`).
-- Patched `iteration2.rubric.regenerate_tranche1_assistive_prelabels_v2` to run as an automated resumable build task.
-- Updated `director/config/api_assistive_policy.yaml` so rubric-v2 semantics are injected directly into assistive labeling prompts.
-- Published tranche-1 rubric realignment note at `reports/labels/tranche1_rubric_realignment_v2.md`.
-- Generated tranche-1 rubric-v2 assistive prelabels in six resumable 40-row chunks.
-- Outputs: `data/labels/v1/labeling_batch_v1_prelabeled_v2.csv`, `reports/labels/assistive_prelabel_tranche1_v2_summary.json`.
-- Result: `assistive_label_nonempty = 240`, `status = passed`, `request_count = 240`.
-- Prepared canonical tranche-1 review sheet at `data/labels/v1/labeling_batch_v1_filled_v2.csv` with canonical review fields reset blank.
-- Legacy tranche-1 files remain diagnostic only: `data/labels/v1/labeling_batch_v1_prelabeled.csv`, `data/labels/v1/labeling_batch_v1_filled.csv`.
+- Refined the tranche-1 rubric to proposal-faithful `v2.1` with:
+  - generic AI risk/regulatory/cyber language defaulting to `Irrelevant`
+  - firm-specific strategic or intended-benefit language without operational proof staying `Speculative`
+  - present or past firm-specific AI deployment and real AI offerings allowed as `Actionable`
+- Patched `iteration2/rubric-realignment` so tranche-1 `v2.1` prelabel regeneration is an automated resumable build task and full tranche review stays blocked on manual calibration-slice sign-off.
+- Added light extraction cleanup and prospective section tagging support:
+  - `Table of Contents` contamination removal
+  - page header/footer cleanup
+  - glossary/bullet fragment rejection
+  - heading-prefix stripping
+  - future `source_section` tagging for `item_1_business`, `item_1a_risk_factors`, `item_7_mda`, `other`
+- Updated `director/config/api_assistive_policy.yaml` so the prompt injects rubric `v2.1` rules directly.
+- Published tranche-1 calibration note at `reports/labels/tranche1_rubric_calibration_v2_1.md`.
+- Generated tranche-1 `v2.1` assistive prelabels in six resumable 40-row chunks.
+- Outputs:
+  - `data/labels/v1/labeling_batch_v1_prelabeled_v2_1.csv`
+  - `reports/labels/assistive_prelabel_tranche1_v2_1_summary.json`
+- Result:
+  - `assistive_label_nonempty = 240`
+  - `status = passed`
+  - `request_count = 240`
+- Initialized new canonical tranche-1 review artifacts:
+  - `data/labels/v1/labeling_batch_v1_filled_v2_1.csv`
+  - `data/labels/v1/labeling_batch_v1_filled_v2_1_slice40.csv`
+- Calibration state after regeneration:
+  - `rubric-realignment` is satisfied except for the manual slice sign-off artifact `reports/labels/tranche1_calibration_slice_v2_1.md`
+  - `tranche1-labeling` remains correctly blocked on that manual calibration review
+- Diagnostic label mix comparison:
+  - old `v2` prelabels: `Irrelevant=148`, `Speculative=53`, `Actionable=39`
+  - new `v2.1` prelabels: `Irrelevant=142`, `Speculative=57`, `Actionable=41`
+  - first `40`-row calibration slice (`v2.1`): `Irrelevant=29`, `Speculative=9`, `Actionable=2`
+- Legacy tranche files remain diagnostic only:
+  - `data/labels/v1/labeling_batch_v1_prelabeled.csv`
+  - `data/labels/v1/labeling_batch_v1_filled.csv`
+  - `data/labels/v1/labeling_batch_v1_prelabeled_v2.csv`
+  - `data/labels/v1/labeling_batch_v1_filled_v2.csv`
+
+## 2026-03-10 - Iteration 2 Calibration Patch v2.2
+
+- Refined tranche-1 rubric from `v2.1` to `v2.2` around the checkable / verifiable-or-refutable criterion.
+- Updated `docs/labeling_protocol.md` and `director/config/api_assistive_policy.yaml` so:
+  - present-tense firm-specific AI investment, expertise, capability-building, and commercial offering claims can be `Actionable`
+  - firm-specific aspiration / intended-benefit language without current proof remains `Speculative`
+  - generic AI risk, regulatory, cyber, and boilerplate language defaults to `Irrelevant`
+- Added a slice-only raw re-extraction harness:
+  - `python -m semantic_ai_washing.data.reextract_tranche_slice`
+- Added light calibration-focused extraction cleanup:
+  - singleton heading-prefix stripping
+  - stronger table-of-contents removal
+  - parenthesis-noise cleanup
+  - raw-context fallback for prospective section tagging in rebuilt slice rows
+- Patched `iteration2/rubric-realignment` into a slice-first workflow under `v2.2`:
+  - manual rubric note
+  - rebuilt slice extraction
+  - rebuilt slice assistive prelabels
+  - initialized slice review sheet
+  - manual slice sign-off before any full tranche-1 `240`-row regeneration
+- Published calibration note:
+  - `reports/labels/tranche1_rubric_calibration_v2_2.md`
+- Rebuilt the current 40-row calibration slice from raw filings:
+  - `data/labels/v1/labeling_batch_v1_reextracted_v2_2_slice40.csv`
+  - `reports/labels/tranche1_reextraction_v2_2_summary.json`
+- Re-extraction result:
+  - `40` slice rows
+  - `18` unique source files
+  - `34` matched rows (`33` exact, `1` similarity)
+  - `6` rows remain explicit `unmatched` diagnostic cases
+  - section distribution: `item_1_business=15`, `item_1a_risk_factors=15`, `item_7_mda=1`, `other=9`
+- Generated rebuilt-slice assistive prelabels under rubric `v2.2`:
+  - `data/labels/v1/labeling_batch_v1_prelabeled_v2_2_slice40.csv`
+  - `reports/labels/assistive_prelabel_tranche1_v2_2_slice40_summary.json`
+- Slice prelabel result:
+  - `assistive_label_nonempty = 40`
+  - `status = passed`
+  - `request_count = 40`
+- Initialized the new canonical slice review sheet:
+  - `data/labels/v1/labeling_batch_v1_filled_v2_2_slice40.csv`
+- Truthful workflow state:
+  - `rubric-realignment` remains blocked on the manual sign-off artifact `reports/labels/tranche1_calibration_slice_v2_2.md`
+  - full tranche-1 `240`-row regeneration under `v2.2` is intentionally not run yet
+  - `tranche1-labeling` remains blocked until the rebuilt `slice40` is reviewed and signed off
