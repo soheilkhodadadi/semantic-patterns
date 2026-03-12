@@ -1717,3 +1717,44 @@ Rules:
   - `rubric-realignment` remains blocked on the manual sign-off artifact `reports/labels/tranche1_calibration_slice_v2_2.md`
   - full tranche-1 `240`-row regeneration under `v2.2` is intentionally not run yet
   - `tranche1-labeling` remains blocked until the rebuilt `slice40` is reviewed and signed off
+
+## 2026-03-12 - Playbook Merge and Extraction Micro-Cleanup
+
+- Merged `director/playbooks` into `main`, pushed `main`, then merged `main` back into `iteration2/integration` so the Playbook Library is part of the canonical base before continuing tranche work.
+- Applied the `extraction_micro_cleanup` playbook to the tranche-1 calibration slice rather than changing rubric, prompt, or classifier logic.
+- Extraction-only cleanup targeted these noisy slice rows:
+  - `bb7466928a4c7499`
+  - `e4b8b6dbec490f80`
+  - `1904b80dd2fe1a57`
+  - `e59ee2f288168a96`
+  - `b6d5079dbf6d7219`
+  - `d585b999ea5eaa56`
+  - `6fd59ad7f9a00747`
+  - `1f7cfc4e51903d17`
+  - `52515d9af8d976a1`
+- Patched shared extraction cleanup in `src/semantic_ai_washing/core/sentence_filter.py`:
+  - strips exact leading business-style headings when followed by a real sentence body
+  - strips inline `20xx Form 10-K <page> <section>` fragments without swallowing adjacent lowercase text
+  - strips inline `Table of Contents` fragments
+  - hard-drops glossary fragments like `AI/ML - Artificial Intelligence/Machine Learning`
+- Patched `src/semantic_ai_washing/data/reextract_tranche_slice.py`:
+  - uses the fast regex splitter for calibration-only slice rebuilds
+  - records `cleaned_rows` and `cleanup_hits`
+  - preserves cleaned unmatched rows explicitly instead of silently falling back to the dirty original text
+- Rebuilt the fixed 40-row slice:
+  - `data/labels/v1/labeling_batch_v1_reextracted_v2_2_slice40.csv`
+  - `reports/labels/tranche1_reextraction_v2_2_summary.json`
+- Cleanup result:
+  - counts: `slice_rows=40`, `matched_rows=35`, `exact_matches=34`, `similarity_matches=1`, `unmatched_rows=5`, `cleaned_rows=11`
+  - cleanup hits: `leading_section_title=4`, `table_of_contents=2`, `form_header=1`, `glossary_fragment=1`
+- Outcome on the 9 target rows:
+  - heading-prefix rows were cleaned to the underlying business sentence
+  - inline `Form 10-K` and `Table of Contents` fragments were removed
+  - glossary fragment rows were left explicitly unmatched with blank rebuilt sentence content
+  - no target row retained the contaminating fragment after cleanup
+- One additional unmatched non-target row remains in the slice:
+  - `349b4c7239a5efd0`
+  - this is now the leading candidate for the next extraction-only pass if tranche review still exposes text-noise issues
+- Playbook usage:
+  - `playbook_used = extraction_micro_cleanup`
+  - `playbook_outcome = worked`

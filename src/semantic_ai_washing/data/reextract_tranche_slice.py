@@ -12,12 +12,13 @@ import re
 import pandas as pd
 
 from semantic_ai_washing.core.sentence_filter import (
+    clean_extracted_sentence,
     filter_ai_sentences_with_sections,
     load_keywords,
     merge_page_fragments,
     merge_sentence_fragments,
     normalize_sentence_text,
-    segment_sentences,
+    segment_sentences_fast,
 )
 from semantic_ai_washing.data.index_sec_filings import SEC_SOURCE_HINT_FILE, resolve_sec_source
 
@@ -29,6 +30,22 @@ DEFAULT_MATCH_THRESHOLD = 0.65
 _CTX_ITEM_1A_RE = re.compile(r"\bitem\s*1a\b", re.I)
 _CTX_ITEM_1_RE = re.compile(r"\bitem\s*1\b(?!\s*a\b)", re.I)
 _CTX_ITEM_7_RE = re.compile(r"\bitem\s*7\b", re.I)
+_TABLE_OF_CONTENTS_RE = re.compile(r"\b\d*\s*table of contents\b", re.I)
+_FORM_HEADER_RE = re.compile(
+    r"(?:\b(?-i:[A-Z][A-Z0-9&.,' /\-]{2,})\s*\|\s*)?"
+    r"\b20\d{2}\s+Form\s+10-K\s+\d+\s+"
+    r"(?:Risk Factors|Business|Table of Contents|Management['’]s Discussion and Analysis)\b",
+    re.I,
+)
+_HEADING_PREFIX_RE = re.compile(
+    r"^\s*(?:Our Products and Suppliers|Business Overview|Executive Summary|"
+    r"Data,\s*Analytics\s+and\s+Artificial\s+Intelligence)\b",
+    re.I,
+)
+_GLOSSARY_RE = re.compile(
+    r"^(?:[A-Z0-9]\s+)?AI/ML\s*-\s*Artificial Intelligence/Machine Learning\.?$",
+    re.I,
+)
 
 
 def _resolve_path(path: str | Path) -> Path:
@@ -61,13 +78,33 @@ def _match_score(left: str, right: str) -> float:
     return round((0.55 * sequence) + (0.45 * overlap), 6)
 
 
+def _detect_cleanup_issues(text: str) -> list[str]:
+    candidate = "" if text is None else str(text)
+    issues: list[str] = []
+    lowered = candidate.lower()
+    if _TABLE_OF_CONTENTS_RE.search(candidate):
+        issues.append("table_of_contents")
+    if _FORM_HEADER_RE.search(candidate):
+        issues.append("form_header")
+    if _HEADING_PREFIX_RE.search(candidate):
+        issues.append("leading_section_title")
+    if (
+        _GLOSSARY_RE.match(candidate.strip())
+        or "ai/ml - artificial intelligence/machine learning" in lowered
+    ):
+        issues.append("glossary_fragment")
+    return issues
+
+
 def _build_candidate_frame(
     *,
     source_file: str,
     filing_text: str,
     keywords: list[str],
 ) -> pd.DataFrame:
-    segmented = segment_sentences(filing_text)
+    # Calibration loops should stay fast; use the regex splitter here rather
+    # than the heavier spaCy-backed path from the full extraction pipeline.
+    segmented = segment_sentences_fast(filing_text)
     page_merged = merge_page_fragments(segmented, raw_text=filing_text)
     merged = merge_sentence_fragments(page_merged)
     tagged = filter_ai_sentences_with_sections(merged, keywords)
@@ -126,7 +163,9 @@ def _best_match(
     if candidates.empty:
         return None, "unmatched", 0.0
 
-    original_norm = normalize_sentence_text(original_sentence)
+    cleaned_original = clean_extracted_sentence(original_sentence)
+    original_for_match = cleaned_original or original_sentence
+    original_norm = normalize_sentence_text(original_for_match)
     exact = candidates[candidates["sentence_norm"] == original_norm].copy()
     if not exact.empty:
         exact["index_distance"] = (
@@ -139,7 +178,7 @@ def _best_match(
 
     scored_rows: list[dict[str, Any]] = []
     for candidate in candidates.itertuples(index=False):
-        score = _match_score(original_sentence, str(candidate.sentence))
+        score = _match_score(original_for_match, str(candidate.sentence))
         scored_rows.append(
             {
                 "candidate": {
@@ -241,11 +280,20 @@ def reextract_tranche_slice(
     exact_matches = 0
     similarity_matches = 0
     unmatched = 0
+    cleaned_rows = 0
+    cleanup_hits = {
+        "table_of_contents": 0,
+        "form_header": 0,
+        "leading_section_title": 0,
+        "glossary_fragment": 0,
+    }
+    row_outcomes: list[dict[str, Any]] = []
 
     for original in frame.itertuples(index=False):
         original_sentence = str(original.sentence)
         source_file = str(original.source_file)
         candidates = candidates_by_file[source_file]
+        cleaned_original = clean_extracted_sentence(original_sentence)
         match, match_status, match_score = _best_match(
             original_sentence=original_sentence,
             original_index=int(original.sentence_index),
@@ -258,8 +306,8 @@ def reextract_tranche_slice(
         else:
             unmatched += 1
 
-        rebuilt_sentence = original_sentence
-        rebuilt_norm = normalize_sentence_text(original_sentence)
+        rebuilt_sentence = cleaned_original
+        rebuilt_norm = normalize_sentence_text(cleaned_original)
         source_section = "other"
         candidate_sentence_index = int(original.sentence_index)
         if match is not None:
@@ -267,6 +315,16 @@ def reextract_tranche_slice(
             rebuilt_norm = str(match["sentence_norm"])
             source_section = str(match["source_section"])
             candidate_sentence_index = int(match["candidate_sentence_index"])
+        issues_before = _detect_cleanup_issues(original_sentence)
+        issues_after = _detect_cleanup_issues(rebuilt_sentence)
+        row_cleaned = rebuilt_sentence != original_sentence or (
+            bool(issues_before) and len(issues_after) < len(issues_before)
+        )
+        if row_cleaned:
+            cleaned_rows += 1
+        for issue in issues_before:
+            if issue not in issues_after:
+                cleanup_hits[issue] += 1
 
         output_row = original._asdict()
         output_row["original_sentence"] = original_sentence
@@ -283,6 +341,17 @@ def reextract_tranche_slice(
         output_row["is_uncertain"] = ""
         output_row["uncertainty_note"] = ""
         rows.append(output_row)
+        row_outcomes.append(
+            {
+                "sentence_id": str(original.sentence_id),
+                "source_file": source_file,
+                "match_status": match_status,
+                "match_score": round(float(match_score), 6),
+                "issues_before": issues_before,
+                "issues_after": issues_after,
+                "row_cleaned": row_cleaned,
+            }
+        )
 
     rebuilt = pd.DataFrame(rows)
     rebuilt.sort_values(by=["source_file", "sentence_index", "sentence_id"], inplace=True)
@@ -301,6 +370,7 @@ def reextract_tranche_slice(
             "similarity_matches": int(similarity_matches),
             "unmatched_rows": int(unmatched),
             "file_read_failures": int(len(file_failures)),
+            "cleaned_rows": int(cleaned_rows),
         },
         "section_counts": {
             str(section): int(count)
@@ -310,11 +380,13 @@ def reextract_tranche_slice(
             .value_counts()
             .items()
         },
+        "cleanup_hits": cleanup_hits,
         "unmatched_sentence_ids": rebuilt.loc[
             rebuilt["match_status"].astype(str) == "unmatched", "sentence_id"
         ]
         .astype(str)
         .tolist(),
+        "row_outcomes": row_outcomes,
         "file_failures": file_failures,
     }
     report_file.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")

@@ -6,6 +6,7 @@ from plain-text SEC filings.
 Public API:
 - load_keywords(path: str) -> list[str]
 - segment_sentences(text: str) -> list[str]
+- segment_sentences_fast(text: str) -> list[str]
 - merge_page_fragments(sentences: list[str], raw_text: str | None = None) -> list[str]
 - merge_sentence_fragments(sentences: list[str]) -> list[str]
 - clean_extracted_sentence(text: str) -> str
@@ -140,6 +141,20 @@ def segment_sentences(text: str) -> List[str]:
     return [p.strip() for p in parts if p and p.strip()]
 
 
+def segment_sentences_fast(text: str) -> List[str]:
+    """
+    Fast sentence splitter used by calibration/re-extraction loops.
+
+    This intentionally skips spaCy and uses the regex fallback directly so
+    slice-level rebuilds stay responsive while preserving the same broad
+    sentence-boundary heuristic as the default fallback path.
+    """
+    text = text.replace("\u00a0", " ").replace("\t", " ")
+    text = re.sub(r"[ ]{2,}", " ", text)
+    parts = _SENT_END.split(text)
+    return [p.strip() for p in parts if p and p.strip()]
+
+
 # --- Post-processing --------------------------------------------------------
 
 _PUNCTUATION_END = re.compile(r"[\.\?!]$")
@@ -148,9 +163,16 @@ _PAGE_MARKER_LINE = re.compile(r"^\s*[\-\u2013\u2014]\s*\d+\s*[\-\u2013\u2014]\s
 _NON_WORD_RE = re.compile(r"[^\w\s]+", re.UNICODE)
 _WS_RE = re.compile(r"\s+")
 _TABLE_OF_CONTENTS_FRAGMENT = re.compile(r"\b\d*\s*table of contents\b", re.I)
+_TABLE_OF_CONTENTS_INLINE_FRAGMENT = re.compile(r"\b\d+\s+table of contents\b", re.I)
 _FORM_PAGE_FRAGMENT = re.compile(
-    r"\b[A-Z][A-Z0-9&.,' /\-]{2,}\|\s*20\d{2}\s+Form\s+10-K\s+\d+\s+"
+    r"\b(?-i:[A-Z][A-Z0-9&.,' /\-]{2,})\|\s*20\d{2}\s+Form\s+10-K\s+\d+\s+"
     r"(?:Risk Factors|Business|Table of Contents|Management['’]s Discussion and Analysis)?\b",
+    re.I,
+)
+_INLINE_FORM_PAGE_FRAGMENT = re.compile(
+    r"(?:\b(?-i:[A-Z][A-Z0-9&.,' /\-]{2,})\s*\|\s*)?"
+    r"\b20\d{2}\s+Form\s+10-K\s+\d+\s+"
+    r"(?:Risk Factors|Business|Table of Contents|Management['’]s Discussion and Analysis)\b",
     re.I,
 )
 _FORM_PAGE_PREFIX_RE = re.compile(r"^\s*FORM\s+10-K\s+\d+\s+", re.I)
@@ -163,6 +185,15 @@ _LEADING_SINGLETON_PREFIX_RE = re.compile(
 _HEADING_PREFIX_RE = re.compile(
     r"^(?P<prefix>(?:[A-Z][A-Za-z0-9,&/\-]+(?:\s+[A-Z][A-Za-z0-9,&/\-]+){0,7}))\s+"
     r"(?P<body>(?:We|Our|The|This|These|With|In|By|As|At|From|EPAM|Artificial|Machine)\b.*)$"
+)
+_KNOWN_HEADING_PREFIX_RE = re.compile(
+    r"^\s*(?P<prefix>"
+    r"Our Products and Suppliers|"
+    r"Business Overview|"
+    r"Executive Summary|"
+    r"Data,\s*Analytics\s+and\s+Artificial\s+Intelligence"
+    r")\s+(?P<body>.+)$",
+    re.I,
 )
 _ITEM_1A_RE = re.compile(r"^\s*item\s*1a\b", re.I)
 _ITEM_1_RE = re.compile(r"^\s*item\s*1\b(?!\s*a\b)", re.I)
@@ -186,8 +217,10 @@ def clean_extracted_sentence(text: str) -> str:
     cleaned = cleaned.replace("\u00a0", " ")
     cleaned = _LEADING_SINGLETON_PREFIX_RE.sub("", cleaned)
     cleaned = _FORM_PAGE_FRAGMENT.sub(" ", cleaned)
+    cleaned = _INLINE_FORM_PAGE_FRAGMENT.sub(" ", cleaned)
     cleaned = _FORM_PAGE_PREFIX_RE.sub(" ", cleaned)
     cleaned = _TABLE_OF_CONTENTS_FRAGMENT.sub(" ", cleaned)
+    cleaned = _TABLE_OF_CONTENTS_INLINE_FRAGMENT.sub(" ", cleaned)
     cleaned = _PAGE_MARKER.sub(" ", cleaned)
     cleaned = re.sub(r"^[\s|:;\-–—]+", " ", cleaned)
     if cleaned.count(")") != cleaned.count("("):
@@ -195,6 +228,10 @@ def clean_extracted_sentence(text: str) -> str:
     cleaned = re.sub(r"\s+\)", ")", cleaned)
     cleaned = re.sub(r"\(\s+", "(", cleaned)
     cleaned = _WS_RE.sub(" ", cleaned).strip(" ;,-")
+
+    known_heading_match = _KNOWN_HEADING_PREFIX_RE.match(cleaned)
+    if known_heading_match is not None:
+        cleaned = known_heading_match.group("body").strip()
 
     heading_match = _HEADING_PREFIX_RE.match(cleaned)
     if heading_match is not None:

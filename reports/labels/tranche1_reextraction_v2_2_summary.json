@@ -1,30 +1,414 @@
 {
+  "cleanup_hits": {
+    "form_header": 1,
+    "glossary_fragment": 1,
+    "leading_section_title": 4,
+    "table_of_contents": 2
+  },
   "counts": {
-    "candidate_sentence_count": 83,
-    "exact_matches": 33,
+    "candidate_sentence_count": 82,
+    "cleaned_rows": 11,
+    "exact_matches": 34,
     "file_read_failures": 0,
-    "matched_rows": 34,
+    "matched_rows": 35,
     "similarity_matches": 1,
     "slice_rows": 40,
     "unique_source_files": 18,
-    "unmatched_rows": 6
+    "unmatched_rows": 5
   },
   "file_failures": [],
   "input_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/labels/v1/labeling_batch_v1_filled_v2_1_slice40.csv",
   "output_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/labels/v1/labeling_batch_v1_reextracted_v2_2_slice40.csv",
+  "row_outcomes": [
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": false,
+      "sentence_id": "8a565a36583fdb5d",
+      "source_file": "2024/QTR1/20240126_10-K_edgar_data_1177394_0001177394-24-000014.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [
+        "leading_section_title"
+      ],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": true,
+      "sentence_id": "bb7466928a4c7499",
+      "source_file": "2024/QTR1/20240126_10-K_edgar_data_1177394_0001177394-24-000014.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": false,
+      "sentence_id": "de0db4e35d53c11e",
+      "source_file": "2024/QTR1/20240209_10-K_edgar_data_100122_0000100122-24-000002.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": true,
+      "sentence_id": "e4b8b6dbec490f80",
+      "source_file": "2024/QTR1/20240214_10-K_edgar_data_1026214_0001026214-24-000025.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [
+        "form_header"
+      ],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": true,
+      "sentence_id": "1904b80dd2fe1a57",
+      "source_file": "2024/QTR1/20240214_10-K_edgar_data_1026214_0001026214-24-000025.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [
+        "glossary_fragment"
+      ],
+      "match_score": 0.192098,
+      "match_status": "unmatched",
+      "row_cleaned": true,
+      "sentence_id": "e59ee2f288168a96",
+      "source_file": "2024/QTR1/20240214_10-K_edgar_data_1026214_0001026214-24-000025.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": true,
+      "sentence_id": "4242b9a10b4ff277",
+      "source_file": "2024/QTR1/20240216_10-K_edgar_data_1004434_0001004434-24-000010.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": false,
+      "sentence_id": "3dd04eecfc20c3ba",
+      "source_file": "2024/QTR1/20240216_10-K_edgar_data_1004434_0001004434-24-000010.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": false,
+      "sentence_id": "4d60a30db86bb743",
+      "source_file": "2024/QTR1/20240216_10-K_edgar_data_1004434_0001004434-24-000010.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": false,
+      "sentence_id": "c45311384e048d97",
+      "source_file": "2024/QTR1/20240221_10-K_edgar_data_1004036_0000899715-24-000044.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [
+        "leading_section_title"
+      ],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": true,
+      "sentence_id": "b6d5079dbf6d7219",
+      "source_file": "2024/QTR1/20240222_10-K_edgar_data_1352010_0001352010-24-000008.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [
+        "leading_section_title"
+      ],
+      "match_score": 0.331248,
+      "match_status": "unmatched",
+      "row_cleaned": true,
+      "sentence_id": "d585b999ea5eaa56",
+      "source_file": "2024/QTR1/20240222_10-K_edgar_data_1352010_0001352010-24-000008.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [
+        "leading_section_title"
+      ],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": true,
+      "sentence_id": "6fd59ad7f9a00747",
+      "source_file": "2024/QTR1/20240222_10-K_edgar_data_1352010_0001352010-24-000008.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [
+        "table_of_contents"
+      ],
+      "match_score": 0.171502,
+      "match_status": "unmatched",
+      "row_cleaned": true,
+      "sentence_id": "1f7cfc4e51903d17",
+      "source_file": "2024/QTR1/20240223_10-K_edgar_data_894405_0001558370-24-001622.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": false,
+      "sentence_id": "ee327529092f6184",
+      "source_file": "2024/QTR1/20240228_10-K_edgar_data_1000694_0001000694-24-000007.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 0.849752,
+      "match_status": "similarity",
+      "row_cleaned": true,
+      "sentence_id": "bb47cd599da87e48",
+      "source_file": "2024/QTR1/20240229_10-K_edgar_data_1000623_0001000623-24-000009.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": false,
+      "sentence_id": "56c4d36f2c8584d2",
+      "source_file": "2024/QTR1/20240229_10-K_edgar_data_1001838_0001558370-24-002119.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": false,
+      "sentence_id": "e8e83c9072dbe69d",
+      "source_file": "2024/QTR1/20240229_10-K_edgar_data_1001838_0001558370-24-002119.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": false,
+      "sentence_id": "f8276926a94d6f5c",
+      "source_file": "2024/QTR1/20240229_10-K_edgar_data_1001838_0001558370-24-002119.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": false,
+      "sentence_id": "359aa6023eaf64c6",
+      "source_file": "2024/QTR1/20240229_10-K_edgar_data_1001838_0001558370-24-002119.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": false,
+      "sentence_id": "4b873d84bdc19408",
+      "source_file": "2024/QTR1/20240229_10-K_edgar_data_1001838_0001558370-24-002119.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": false,
+      "sentence_id": "c93d40aa23b5aef2",
+      "source_file": "2024/QTR1/20240229_10-K_edgar_data_1002910_0001002910-24-000056.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": false,
+      "sentence_id": "638fb54699bbe41a",
+      "source_file": "2024/QTR1/20240306_10-K_edgar_data_1001614_0001001614-24-000010.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": false,
+      "sentence_id": "c84ad991b2421175",
+      "source_file": "2024/QTR1/20240307_10-K_edgar_data_1000209_0000950170-24-027942.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": false,
+      "sentence_id": "203d3d4b98263e0b",
+      "source_file": "2024/QTR1/20240307_10-K_edgar_data_1000209_0000950170-24-027942.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": false,
+      "sentence_id": "9bf1cfde30d910a5",
+      "source_file": "2024/QTR1/20240307_10-K_edgar_data_1000209_0000950170-24-027942.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": false,
+      "sentence_id": "eb3177dbc1005f1d",
+      "source_file": "2024/QTR1/20240307_10-K_edgar_data_1000209_0000950170-24-027942.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": false,
+      "sentence_id": "56525e396d7dc01f",
+      "source_file": "2024/QTR1/20240307_10-K_edgar_data_1000209_0000950170-24-027942.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": false,
+      "sentence_id": "66f7a1c49bf35fd7",
+      "source_file": "2024/QTR1/20240307_10-K_edgar_data_1000209_0000950170-24-027942.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": false,
+      "sentence_id": "a522c8a07bf2d70a",
+      "source_file": "2024/QTR1/20240307_10-K_edgar_data_1000209_0000950170-24-027942.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": false,
+      "sentence_id": "f7c7843cee66954d",
+      "source_file": "2024/QTR1/20240307_10-K_edgar_data_1000209_0000950170-24-027942.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 0.594401,
+      "match_status": "unmatched",
+      "row_cleaned": false,
+      "sentence_id": "349b4c7239a5efd0",
+      "source_file": "2024/QTR1/20240307_10-K_edgar_data_1000209_0000950170-24-027942.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": false,
+      "sentence_id": "69bd158513daeab6",
+      "source_file": "2024/QTR1/20240307_10-K_edgar_data_1000209_0000950170-24-027942.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": false,
+      "sentence_id": "6eec5664f069e029",
+      "source_file": "2024/QTR1/20240313_10-K_edgar_data_1001233_0001628280-24-010788.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [
+        "table_of_contents"
+      ],
+      "match_score": 0.066101,
+      "match_status": "unmatched",
+      "row_cleaned": true,
+      "sentence_id": "52515d9af8d976a1",
+      "source_file": "2024/QTR1/20240313_10-K_edgar_data_1001233_0001628280-24-010788.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": false,
+      "sentence_id": "9ee2d8f8a21a2fc3",
+      "source_file": "2024/QTR1/20240322_10-K_edgar_data_1003815_0001410578-24-000276.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": false,
+      "sentence_id": "31067261366384f7",
+      "source_file": "2024/QTR1/20240329_10-K_edgar_data_1001082_0001558370-24-004386.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": false,
+      "sentence_id": "391ba078e069766d",
+      "source_file": "2024/QTR2/20240401_10-K_edgar_data_1018840_0001018840-24-000019.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": false,
+      "sentence_id": "fbf1e648f8dce257",
+      "source_file": "2024/QTR2/20240401_10-K_edgar_data_1018840_0001018840-24-000019.txt"
+    },
+    {
+      "issues_after": [],
+      "issues_before": [],
+      "match_score": 1.0,
+      "match_status": "exact",
+      "row_cleaned": false,
+      "sentence_id": "2785fb0f732b8c95",
+      "source_file": "2024/QTR2/20240401_10-K_edgar_data_1040896_0001628280-24-013949.txt"
+    }
+  ],
   "section_counts": {
-    "item_1_business": 15,
+    "item_1_business": 17,
     "item_1a_risk_factors": 15,
     "item_7_mda": 1,
-    "other": 9
+    "other": 7
   },
   "source_root": "/Users/soheilkhodadadi/DataWork/10-X_C_2021-2124",
   "unmatched_sentence_ids": [
-    "1904b80dd2fe1a57",
     "e59ee2f288168a96",
-    "b6d5079dbf6d7219",
-    "6fd59ad7f9a00747",
+    "d585b999ea5eaa56",
     "1f7cfc4e51903d17",
+    "349b4c7239a5efd0",
     "52515d9af8d976a1"
   ]
 }

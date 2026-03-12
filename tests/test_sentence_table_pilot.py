@@ -136,6 +136,28 @@ def test_clean_extracted_sentence_removes_obvious_noise():
     assert clean_extracted_sentence("Artificial intelligence ) supports workflows.") == (
         "Artificial intelligence supports workflows."
     )
+    assert clean_extracted_sentence(
+        "Our Products and Suppliers We offer AI-enabled services."
+    ) == ("We offer AI-enabled services.")
+    assert clean_extracted_sentence(
+        "Business Overview EPAM has used AI expertise to deliver services."
+    ) == ("EPAM has used AI expertise to deliver services.")
+    assert clean_extracted_sentence(
+        "Executive Summary We have used AI expertise to deliver services."
+    ) == ("We have used AI expertise to deliver services.")
+    assert clean_extracted_sentence(
+        "Data, Analytics and Artificial Intelligence With deep expertise, we build data tools."
+    ) == ("With deep expertise, we build data tools.")
+    assert clean_extracted_sentence(
+        "The pace of FREDDIE MAC | 2023 Form 10-K 128 Risk Factors technological change matters."
+    ) == ("The pace of technological change matters.")
+    assert clean_extracted_sentence(
+        "Our systems are vulnerable to disruptions, including 20 Table of Contents computer viruses."
+    ) == ("Our systems are vulnerable to disruptions, including computer viruses.")
+    assert clean_extracted_sentence(
+        "Additionally, our information could be leaked, 89 Table of Contents disclosed or revealed."
+    ) == ("Additionally, our information could be leaked, disclosed or revealed.")
+    assert clean_extracted_sentence("N AI/ML - Artificial Intelligence/Machine Learning.") == ""
 
 
 def test_filter_ai_sentences_with_sections_tags_common_10k_sections():
@@ -305,8 +327,21 @@ def test_reextract_tranche_slice_rebuilds_rows_and_marks_unmatched(tmp_path):
                 "source_file": "2024/QTR1/sample_10k.txt",
                 "sentence_id": "s2",
                 "sentence_index": 2,
-                "sentence": "Artificial intelligence sentence never present in the filing.",
+                "sentence": "N AI/ML - Artificial Intelligence/Machine Learning.",
                 "assistive_label": "Speculative",
+                "label": "",
+                "is_uncertain": "",
+                "uncertainty_note": "",
+            },
+            {
+                "source_file": "2024/QTR1/sample_10k.txt",
+                "sentence_id": "s3",
+                "sentence_index": 3,
+                "sentence": (
+                    "Our IT systems are vulnerable to disruptions, including 20 Table of "
+                    "Contents computer viruses and attacks enabled by AI."
+                ),
+                "assistive_label": "Irrelevant",
                 "label": "",
                 "is_uncertain": "",
                 "uncertainty_note": "",
@@ -325,14 +360,20 @@ def test_reextract_tranche_slice_rebuilds_rows_and_marks_unmatched(tmp_path):
         keywords_path=str(keywords_path),
     )
 
-    rebuilt = pd.read_csv(output_path)
+    rebuilt = pd.read_csv(output_path, keep_default_na=False)
 
     assert rebuilt.loc[0, "sentence"] == "Artificial intelligence supports workflows today."
     assert rebuilt.loc[0, "source_section"] == "item_1_business"
-    assert rebuilt.loc[0, "match_status"] == "similarity"
+    assert rebuilt.loc[0, "match_status"] == "exact"
     assert rebuilt.loc[1, "match_status"] == "unmatched"
-    assert rebuilt["label"].fillna("").tolist() == ["", ""]
-    assert rebuilt["is_uncertain"].fillna("").tolist() == ["", ""]
-    assert rebuilt["uncertainty_note"].fillna("").tolist() == ["", ""]
-    assert report["counts"]["slice_rows"] == 2
-    assert report["counts"]["unmatched_rows"] == 1
+    assert rebuilt.loc[1, "sentence"] == ""
+    assert "Table of Contents" not in rebuilt.loc[2, "sentence"]
+    assert rebuilt.loc[2, "match_status"] in {"unmatched", "similarity", "exact"}
+    assert rebuilt["label"].fillna("").tolist() == ["", "", ""]
+    assert rebuilt["is_uncertain"].fillna("").tolist() == ["", "", ""]
+    assert rebuilt["uncertainty_note"].fillna("").tolist() == ["", "", ""]
+    assert report["counts"]["slice_rows"] == 3
+    assert report["counts"]["unmatched_rows"] == 2
+    assert report["counts"]["cleaned_rows"] >= 2
+    assert report["cleanup_hits"]["glossary_fragment"] == 1
+    assert report["cleanup_hits"]["table_of_contents"] >= 1
