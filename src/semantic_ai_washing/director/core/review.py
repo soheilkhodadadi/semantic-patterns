@@ -20,6 +20,7 @@ from semantic_ai_washing.director.core.branching import (
     review_artifact_paths,
 )
 from semantic_ai_washing.director.core.config import DirectorPaths
+from semantic_ai_washing.director.core.playbooks import recommend_playbooks
 from semantic_ai_washing.director.core.readiness import ReadinessEvaluator
 from semantic_ai_washing.director.core.render import (
     render_branch_plan_markdown,
@@ -771,6 +772,9 @@ class ReviewEngine:
         roadmap_changes, patch = self._roadmap_changes(
             iteration_id, blocker_findings + quality_findings, focus_phase=phase_id
         )
+        recommended_playbooks = recommend_playbooks(
+            blocker_findings + quality_findings, self.repo_root
+        )
         branch_closeout = self._branch_closeout(iteration_id)
         artifacts = review_artifact_paths(self.paths.reviews_dir, iteration_id, phase_id=phase_id)
         prompt_markdown = render_starter_prompt_markdown(starter)
@@ -831,6 +835,10 @@ class ReviewEngine:
             predictive_validity_gate_status=predictive_validity_gate_status,
             publication_readiness_blockers=publication_readiness_blockers,
             findings=blocker_findings + quality_findings,
+            recommended_playbooks=recommended_playbooks,
+            playbooks_used=[],
+            playbook_outcomes=[],
+            promotion_candidates=[],
             roadmap_changes=roadmap_changes,
             carryover_blockers=self._carryover_blockers(iteration_id),
             branch_closeout=branch_closeout,

@@ -17,6 +17,7 @@ class DirectorPaths:
     director_root: Path
     config_dir: Path
     model_dir: Path
+    playbooks_dir: Path
     snapshots_dir: Path
     plans_dir: Path
     optimization_dir: Path
@@ -96,6 +97,7 @@ def get_director_paths(repo_root: str = ".") -> DirectorPaths:
         director_root=director_root,
         config_dir=director_root / "config",
         model_dir=director_root / "model",
+        playbooks_dir=director_root / "playbooks",
         snapshots_dir=director_root / "snapshots",
         plans_dir=director_root / "plans",
         optimization_dir=director_root / "optimization",
@@ -110,6 +112,7 @@ def ensure_director_dirs(paths: DirectorPaths) -> None:
     ensure_dir(paths.director_root)
     ensure_dir(paths.config_dir)
     ensure_dir(paths.model_dir)
+    ensure_dir(paths.playbooks_dir)
     ensure_dir(paths.snapshots_dir)
     ensure_dir(paths.plans_dir)
     ensure_dir(paths.optimization_dir)

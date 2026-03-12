@@ -57,3 +57,19 @@ For any code contribution or task in this repository, the following criteria def
   - After implementing changes, review the diff to ensure only the expected files and lines were changed. (Automated agents should always present diffs for verification before finalizing any commit.)
 
 By fulfilling the above criteria, the project maintains both code quality and functional integrity. Codex (and other AI agents) should use these guidelines to autonomously run checks (linting, evaluation) and to decide when a code-editing task is complete.
+
+## Director Playbook Library
+
+Director includes a curated **Playbook Library** under `director/playbooks/`.
+Playbooks are reusable intervention procedures for recurring blockers or weak
+results. They are not generic notes; they are scoped, low-blast-radius response
+patterns that can be suggested and tracked deterministically.
+
+Agent expectations:
+- Consult the Playbook Library after the first meaningful blocker or after a repeated quality failure.
+- Prefer the smallest blast-radius applicable playbook first.
+- Record the selected playbook and its outcome in review artifacts rather than inventing ad hoc recovery steps without traceability.
+- Only auto-run playbooks marked `automation_level: auto`. The initial curated library is suggestive / semi-auto only.
+- Keep reusable playbooks separate from project-local lessons:
+  - curated reusable playbooks live in `director/playbooks/`
+  - project-specific outcomes belong in review artifacts until they are deliberately promoted into the library

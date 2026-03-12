@@ -1,0 +1,55 @@
+schema_version: "1.0.0"
+playbook_id: extraction_micro_cleanup
+title: "Extraction Micro Cleanup"
+summary: "Use a small noisy subset to add one cleanup rule at a time and measure before/after extraction quality without rerunning a full corpus."
+category: extraction_data_quality
+applies_to:
+  - sentence extraction
+  - slice re-extraction
+  - noisy row cleanup
+trigger_signals:
+  - repeated contamination from headers, footers, or section-title fragments
+  - unmatched or corrupted rows in a reviewed slice
+  - extraction noise is blocking reviewer trust
+finding_categories:
+  - data_quality
+  - artifact_schema
+  - runtime_contract
+keywords:
+  - table of contents
+  - header
+  - footer
+  - fragment
+  - noisy
+  - unmatched
+  - section
+  - extraction
+preconditions:
+  - 5 to 10 noisy rows are identified
+  - raw source files for those rows are accessible
+  - cleanup can be tested on a micro-slice before full reruns
+recommended_inputs:
+  - noisy row list
+  - raw filing paths
+  - current cleanup rules
+expected_outputs:
+  - updated cleanup rule set
+  - rebuilt micro-slice
+  - before/after cleanup report
+success_metrics:
+  - targeted noise is removed
+  - no silent row loss or broad collateral damage is introduced
+failure_or_stop_conditions:
+  - cleanup rules distort clean rows
+  - cleanup removes valid sentence content
+automation_level: semi_auto
+cost_estimate: low
+blast_radius: low
+related_lessons:
+  - extraction cleanup should be isolated from rubric calibration when possible
+follow_up_playbooks:
+  - prompt_boundary_benchmark
+standards_refs:
+  - sre_runbooks
+  - continuous_improvement
+  - data_science_lifecycle

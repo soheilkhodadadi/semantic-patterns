@@ -1,0 +1,46 @@
+schema_version: "1.0.0"
+library_name: "Director Playbook Library"
+pillars:
+  - Continuous Planning
+  - Controlled Execution
+  - Iteration Review
+  - Playbook Library
+  - Continuous Learning
+standards:
+  - standard_id: sre_runbooks
+    title: "SRE runbooks, playbooks, and postmortems"
+    url: "https://sre.google/sre-book/postmortem-culture/"
+    relevance: "Structured incident response and postmortem-driven learning."
+  - standard_id: pmi_lessons_learned
+    title: "PMI lessons learned and knowledge capture"
+    url: "https://www.pmi.org/learning/library/gathering-using-lessons-learned-5116"
+    relevance: "Capture reusable lessons and carry them into later project phases."
+  - standard_id: continuous_improvement
+    title: "Continuous improvement and operational excellence"
+    url: "https://cloud.google.com/architecture/framework/operational-excellence/continuously-improve-and-innovate"
+    relevance: "Use repeated feedback loops to improve delivery behavior over time."
+  - standard_id: data_science_lifecycle
+    title: "Data science and ML lifecycle"
+    url: "https://developers.google.com/machine-learning/guides/rules-of-ml/"
+    relevance: "Prefer small controlled evaluations and low-blast-radius experiments before scaling."
+  - standard_id: mape_k
+    title: "MAPE-K control loop"
+    url: "https://research.ibm.com/publications/automated-management-and-service-provisioning-model-for-distributed-devices"
+    relevance: "Ground Director in monitor-analyze-plan-execute-knowledge behavior."
+categories:
+  - category_id: labeling_evaluation
+    title: "Labeling and Evaluation"
+    description: "Playbooks for calibration, benchmarking, and disagreement analysis."
+  - category_id: extraction_data_quality
+    title: "Extraction and Data Quality"
+    description: "Playbooks for targeted cleanup of noisy extraction outputs."
+  - category_id: project_control
+    title: "Project Control"
+    description: "Playbooks for blocker response and iteration learning."
+playbooks:
+  - playbook_id: prompt_boundary_benchmark
+    metadata_path: prompt_boundary_benchmark.yaml
+    procedure_path: prompt_boundary_benchmark.md
+  - playbook_id: extraction_micro_cleanup
+    metadata_path: extraction_micro_cleanup.yaml
+    procedure_path: extraction_micro_cleanup.md

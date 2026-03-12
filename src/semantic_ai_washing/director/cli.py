@@ -19,6 +19,7 @@ from semantic_ai_washing.director.core.branching import validate_iteration_bound
 from semantic_ai_washing.director.core.cost import CostController
 from semantic_ai_washing.director.core.decision import DecisionEngine
 from semantic_ai_washing.director.core.optimizer import DirectorOptimizer
+from semantic_ai_washing.director.core.playbooks import list_playbooks, show_playbook
 from semantic_ai_washing.director.core.executor import RunbookExecutor
 from semantic_ai_washing.director.core.planner import PlannerEngine, write_plan_manifest
 from semantic_ai_washing.director.core.review import ReviewEngine, load_approved_review_summaries
@@ -369,6 +370,16 @@ def _kickoff_command(args: argparse.Namespace) -> int:
     return 0 if report.status == "ready" else 2
 
 
+def _playbooks_command(args: argparse.Namespace) -> int:
+    repo_root = repository_root(args.repo_root)
+    if args.show:
+        payload = show_playbook(repo_root, args.show)
+    else:
+        payload = {"playbooks": list_playbooks(repo_root)}
+    print(json.dumps(payload, indent=2))
+    return 0
+
+
 def _status_command(args: argparse.Namespace) -> int:
     repo_root = repository_root(args.repo_root)
     paths = get_director_paths(repo_root)
@@ -450,6 +461,9 @@ def _status_command(args: argparse.Namespace) -> int:
         "latest_predictive_validity_gate_status": latest_review_payload.get(
             "predictive_validity_gate_status", ""
         ),
+        "latest_recommended_playbooks": latest_review_payload.get("recommended_playbooks", []),
+        "latest_playbook_outcomes": latest_review_payload.get("playbook_outcomes", []),
+        "latest_promotion_candidates": latest_review_payload.get("promotion_candidates", []),
         "branching_policy": branch_policy_summary,
         "active_deferred_blockers": active_deferred,
     }
@@ -760,6 +774,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     kickoff_cmd.add_argument("--iteration", required=True)
     kickoff_cmd.set_defaults(func=_kickoff_command)
+
+    playbooks_cmd = subparsers.add_parser(
+        "playbooks", help="List playbooks or show one playbook from the Director library"
+    )
+    playbooks_cmd.add_argument("--list", action="store_true")
+    playbooks_cmd.add_argument("--show")
+    playbooks_cmd.set_defaults(func=_playbooks_command)
 
     decide_cmd = subparsers.add_parser("decide", help="Rank recovery options for a blocker")
     decide_cmd.add_argument("--blocker-file")

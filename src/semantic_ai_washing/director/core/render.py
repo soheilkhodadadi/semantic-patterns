@@ -458,6 +458,28 @@ def render_review_markdown(review: IterationReview | PhaseReview) -> str:
     lines.append(
         f"- Predictive-validity gate status: `{review.predictive_validity_gate_status or 'none'}`"
     )
+    lines.extend(["", "## Recommended Playbooks"])
+    if review.recommended_playbooks:
+        for playbook in review.recommended_playbooks:
+            lines.append(
+                f"- `{playbook.playbook_id}` category=`{playbook.category}` blast_radius=`{playbook.blast_radius}` score={playbook.match_score}: {playbook.reason}"
+            )
+    else:
+        lines.append("- none")
+    lines.extend(["", "## Playbook Outcomes"])
+    if review.playbook_outcomes:
+        for outcome in review.playbook_outcomes:
+            lines.append(
+                f"- `{outcome.playbook_id}` status=`{outcome.status}` promotion_candidate=`{str(outcome.promotion_candidate).lower()}`: {outcome.outcome_summary or 'none'}"
+            )
+    else:
+        lines.append("- none")
+    lines.append(
+        f"- Playbooks used: {', '.join(review.playbooks_used) if review.playbooks_used else 'none'}"
+    )
+    lines.append(
+        f"- Promotion candidates: {', '.join(review.promotion_candidates) if review.promotion_candidates else 'none'}"
+    )
     lines.extend(["", "## Roadmap Changes"])
     if review.roadmap_changes:
         for change in review.roadmap_changes:

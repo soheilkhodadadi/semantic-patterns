@@ -125,6 +125,49 @@ class BranchingPolicySpec(DeterministicModel):
     closeout_validation_commands: list[str] = Field(default_factory=list)
 
 
+class PlaybookSpec(DeterministicModel):
+    playbook_id: str
+    title: str
+    summary: str
+    category: str
+    applies_to: list[str] = Field(default_factory=list)
+    trigger_signals: list[str] = Field(default_factory=list)
+    finding_categories: list[str] = Field(default_factory=list)
+    keywords: list[str] = Field(default_factory=list)
+    preconditions: list[str] = Field(default_factory=list)
+    recommended_inputs: list[str] = Field(default_factory=list)
+    expected_outputs: list[str] = Field(default_factory=list)
+    success_metrics: list[str] = Field(default_factory=list)
+    failure_or_stop_conditions: list[str] = Field(default_factory=list)
+    automation_level: Literal["suggest", "semi_auto", "auto"] = "suggest"
+    cost_estimate: Literal["low", "medium", "high"] = "low"
+    blast_radius: Literal["low", "medium", "high"] = "low"
+    related_lessons: list[str] = Field(default_factory=list)
+    follow_up_playbooks: list[str] = Field(default_factory=list)
+    standards_refs: list[str] = Field(default_factory=list)
+    metadata_path: str = ""
+    procedure_path: str = ""
+
+
+class PlaybookRecommendation(DeterministicModel):
+    playbook_id: str
+    title: str
+    category: str
+    reason: str
+    match_score: int = 0
+    blast_radius: Literal["low", "medium", "high"] = "low"
+    automation_level: Literal["suggest", "semi_auto", "auto"] = "suggest"
+    procedure_path: str = ""
+
+
+class PlaybookUsageSummary(DeterministicModel):
+    playbook_id: str
+    status: Literal["suggested", "used", "worked", "failed", "promoted"] = "suggested"
+    outcome_summary: str = ""
+    evidence_refs: list[str] = Field(default_factory=list)
+    promotion_candidate: bool = False
+
+
 class StakeholderRequirementSpec(DeterministicModel):
     schema_version: str = Field(default=ROADMAP_SCHEMA_VERSION)
     requirement_id: str
@@ -524,6 +567,10 @@ class IterationReview(DeterministicModel):
     predictive_validity_gate_status: str = ""
     publication_readiness_blockers: list[str] = Field(default_factory=list)
     findings: list[ReviewFinding] = Field(default_factory=list)
+    recommended_playbooks: list[PlaybookRecommendation] = Field(default_factory=list)
+    playbooks_used: list[str] = Field(default_factory=list)
+    playbook_outcomes: list[PlaybookUsageSummary] = Field(default_factory=list)
+    promotion_candidates: list[str] = Field(default_factory=list)
     roadmap_changes: list[ReviewChangeProposal] = Field(default_factory=list)
     carryover_blockers: list[dict[str, Any]] = Field(default_factory=list)
     branch_closeout: dict[str, Any] = Field(default_factory=dict)
@@ -556,6 +603,10 @@ class PhaseReview(DeterministicModel):
     predictive_validity_gate_status: str = ""
     publication_readiness_blockers: list[str] = Field(default_factory=list)
     findings: list[ReviewFinding] = Field(default_factory=list)
+    recommended_playbooks: list[PlaybookRecommendation] = Field(default_factory=list)
+    playbooks_used: list[str] = Field(default_factory=list)
+    playbook_outcomes: list[PlaybookUsageSummary] = Field(default_factory=list)
+    promotion_candidates: list[str] = Field(default_factory=list)
     roadmap_changes: list[ReviewChangeProposal] = Field(default_factory=list)
     carryover_blockers: list[dict[str, Any]] = Field(default_factory=list)
     branch_closeout: dict[str, Any] = Field(default_factory=dict)

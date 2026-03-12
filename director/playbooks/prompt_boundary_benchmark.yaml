@@ -1,0 +1,55 @@
+schema_version: "1.0.0"
+playbook_id: prompt_boundary_benchmark
+title: "Prompt Boundary Benchmark"
+summary: "Benchmark a small set of prompt variants against a fixed reviewed slice when the boundary between two labels is underperforming."
+category: labeling_evaluation
+applies_to:
+  - sentence labeling
+  - rubric calibration
+  - assistive prelabel generation
+trigger_signals:
+  - acceptable overall agreement but weak subgroup boundary accuracy
+  - repeated mismatch pattern on a fixed reviewed slice
+  - prompt or rubric changes are cheaper than full extraction rework
+finding_categories:
+  - gate_weakness
+  - data_quality
+  - manual_workflow
+keywords:
+  - accuracy
+  - agreement
+  - actionable
+  - speculative
+  - boundary
+  - prompt
+  - rubric
+  - subgroup
+preconditions:
+  - a fixed reviewed slice exists
+  - manual benchmark labels exist for that slice
+  - extraction text is held constant for the benchmark
+recommended_inputs:
+  - fixed slice CSV
+  - reviewed benchmark labels
+  - prompt variant definitions
+expected_outputs:
+  - one prelabel CSV per prompt variant
+  - one report per prompt variant
+  - one benchmark comparison report
+success_metrics:
+  - subgroup accuracy improves without overall regression
+  - winner selection is deterministic
+failure_or_stop_conditions:
+  - no variant clears the subgroup gate
+  - prompt-only changes create overall regression
+automation_level: semi_auto
+cost_estimate: medium
+blast_radius: low
+related_lessons:
+  - iterative calibration should happen on a fixed slice before scaling to a tranche
+follow_up_playbooks:
+  - extraction_micro_cleanup
+standards_refs:
+  - sre_runbooks
+  - pmi_lessons_learned
+  - data_science_lifecycle
