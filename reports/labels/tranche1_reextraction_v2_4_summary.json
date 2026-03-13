@@ -7,7 +7,7 @@
   },
   "counts": {
     "candidate_sentence_count": 1046,
-    "cleaned_rows": 32,
+    "cleaned_rows": 42,
     "exact_matches": 219,
     "file_read_failures": 0,
     "matched_rows": 235,
@@ -87,7 +87,7 @@
       "match_score": 1.0,
       "match_status": "exact",
       "prelabel_eligible": true,
-      "row_cleaned": false,
+      "row_cleaned": true,
       "sentence_id": "c45311384e048d97",
       "skip_reason": "",
       "source_file": "2024/QTR1/20240221_10-K_edgar_data_1004036_0000899715-24-000044.txt"
@@ -521,7 +521,7 @@
       "match_score": 1.0,
       "match_status": "exact",
       "prelabel_eligible": true,
-      "row_cleaned": false,
+      "row_cleaned": true,
       "sentence_id": "fd6440aa49291c7d",
       "skip_reason": "",
       "source_file": "2024/QTR2/20240404_10-K_edgar_data_1070235_0001070235-24-000057.txt"
@@ -532,7 +532,7 @@
       "match_score": 1.0,
       "match_status": "exact",
       "prelabel_eligible": true,
-      "row_cleaned": false,
+      "row_cleaned": true,
       "sentence_id": "b4752574b89acd9d",
       "skip_reason": "",
       "source_file": "2024/QTR2/20240404_10-K_edgar_data_1070235_0001070235-24-000057.txt"
@@ -543,7 +543,7 @@
       "match_score": 1.0,
       "match_status": "exact",
       "prelabel_eligible": true,
-      "row_cleaned": false,
+      "row_cleaned": true,
       "sentence_id": "23ea0c95926e4359",
       "skip_reason": "",
       "source_file": "2024/QTR2/20240404_10-K_edgar_data_1070235_0001070235-24-000057.txt"
@@ -620,7 +620,7 @@
       "match_score": 1.0,
       "match_status": "exact",
       "prelabel_eligible": true,
-      "row_cleaned": false,
+      "row_cleaned": true,
       "sentence_id": "f8655366c699cfa2",
       "skip_reason": "",
       "source_file": "2024/QTR2/20240417_10-K_edgar_data_1064722_0001493152-24-015016.txt"
@@ -642,7 +642,7 @@
       "match_score": 1.0,
       "match_status": "exact",
       "prelabel_eligible": true,
-      "row_cleaned": false,
+      "row_cleaned": true,
       "sentence_id": "8d93bbce40644c0c",
       "skip_reason": "",
       "source_file": "2024/QTR2/20240417_10-K_edgar_data_1068689_0001493152-24-014964.txt"
@@ -884,7 +884,7 @@
       "match_score": 1.0,
       "match_status": "exact",
       "prelabel_eligible": true,
-      "row_cleaned": false,
+      "row_cleaned": true,
       "sentence_id": "4f9dddb9d5546e62",
       "skip_reason": "",
       "source_file": "2024/QTR2/20240523_10-K_edgar_data_103379_0000103379-24-000008.txt"
@@ -1744,7 +1744,7 @@
       "match_score": 1.0,
       "match_status": "exact",
       "prelabel_eligible": true,
-      "row_cleaned": false,
+      "row_cleaned": true,
       "sentence_id": "7f52d7c1fc8f7d9b",
       "skip_reason": "",
       "source_file": "2024/QTR3/20240830_10-K_edgar_data_1165320_0001437749-24-028160.txt"
@@ -2085,7 +2085,7 @@
       "match_score": 1.0,
       "match_status": "exact",
       "prelabel_eligible": true,
-      "row_cleaned": false,
+      "row_cleaned": true,
       "sentence_id": "e76d9a50ad104e61",
       "skip_reason": "",
       "source_file": "2024/QTR4/20241024_10-K_edgar_data_1003078_0001003078-24-000107.txt"
@@ -2481,7 +2481,7 @@
       "match_score": 1.0,
       "match_status": "exact",
       "prelabel_eligible": true,
-      "row_cleaned": false,
+      "row_cleaned": true,
       "sentence_id": "5473129aad8b933a",
       "skip_reason": "",
       "source_file": "2024/QTR4/20241127_10-K_edgar_data_1005210_0000950170-24-131309.txt"
@@ -2697,10 +2697,10 @@
     }
   ],
   "section_counts": {
-    "item_1_business": 76,
-    "item_1a_risk_factors": 106,
+    "item_1_business": 73,
+    "item_1a_risk_factors": 105,
     "item_7_mda": 19,
-    "other": 39
+    "other": 43
   },
   "source_root": "/Users/soheilkhodadadi/DataWork/10-X_C_2021-2124",
   "unmatched_sentence_ids": [

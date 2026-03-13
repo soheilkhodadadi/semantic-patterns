@@ -158,6 +158,15 @@ def test_clean_extracted_sentence_removes_obvious_noise():
         "Additionally, our information could be leaked, 89 Table of Contents disclosed or revealed."
     ) == ("Additionally, our information could be leaked, disclosed or revealed.")
     assert clean_extracted_sentence("N AI/ML - Artificial Intelligence/Machine Learning.") == ""
+    assert clean_extracted_sentence("Cyren s technology uses artificial intelligence.") == (
+        "Cyren's technology uses artificial intelligence."
+    )
+    assert clean_extracted_sentence("The Company s platform includes AI tools.") == (
+        "The Company's platform includes AI tools."
+    )
+    assert clean_extracted_sentence("our customers employees s data is protected.") == (
+        "our customers employees' data is protected."
+    )
 
 
 def test_filter_ai_sentences_with_sections_tags_common_10k_sections():

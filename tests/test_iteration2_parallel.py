@@ -717,6 +717,60 @@ def test_initialize_review_sheet_creates_blank_canonical_columns_and_slice(tmp_p
     assert len(slice_written) == 1
 
 
+def test_initialize_review_sheet_can_carry_forward_existing_review_labels(tmp_path):
+    input_csv = _write_csv(
+        tmp_path / "prelabeled.csv",
+        [
+            {
+                "sentence_id": "s1",
+                "sentence": "We use artificial intelligence in operations today.",
+                "assistive_label": "Actionable",
+            },
+            {
+                "sentence_id": "s2",
+                "sentence": "We may use AI in the future.",
+                "assistive_label": "Speculative",
+            },
+        ],
+    )
+    existing_review_csv = _write_csv(
+        tmp_path / "existing_review.csv",
+        [
+            {
+                "sentence_id": "s1",
+                "label": "Actionable",
+                "is_uncertain": "",
+                "uncertainty_note": "",
+            },
+            {
+                "sentence_id": "s2",
+                "label": "",
+                "is_uncertain": "1",
+                "uncertainty_note": "needs follow-up",
+            },
+        ],
+    )
+    output_csv = tmp_path / "filled_v2_4.csv"
+
+    total_rows, slice_rows = initialize_review_sheet(
+        input_csv=str(input_csv),
+        output_csv=str(output_csv),
+        existing_review_csv=str(existing_review_csv),
+    )
+
+    written = pd.read_csv(output_csv)
+
+    assert total_rows == 2
+    assert slice_rows == 0
+    assert written["label"].fillna("").tolist() == ["Actionable", ""]
+    assert written["is_uncertain"].fillna("").astype(str).replace("nan", "").tolist() == [
+        "",
+        "1.0",
+    ]
+    assert written["uncertainty_note"].fillna("").tolist() == ["", "needs follow-up"]
+    assert written["assistive_label"].tolist() == ["Actionable", "Speculative"]
+
+
 def test_build_prompt_messages_includes_section_context_and_v24_rules():
     policy, _ = load_api_assistive_policy(
         "director/config/api_assistive_policy.yaml",

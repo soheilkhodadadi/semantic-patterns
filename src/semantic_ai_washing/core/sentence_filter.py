@@ -198,6 +198,23 @@ _KNOWN_HEADING_PREFIX_RE = re.compile(
 _ITEM_1A_RE = re.compile(r"^\s*item\s*1a\b", re.I)
 _ITEM_1_RE = re.compile(r"^\s*item\s*1\b(?!\s*a\b)", re.I)
 _ITEM_7_RE = re.compile(r"^\s*item\s*7\b", re.I)
+_APOSTROPHE_SPLIT_RE = re.compile(
+    r"\b(?P<stem>[A-Za-z0-9][A-Za-z0-9.&/\-]{1,})\s+s\b(?=(?:\s+[A-Za-z0-9(]|[,.;:)]|$))"
+)
+
+
+def _repair_apostrophe_splits(text: str) -> str:
+    """Repair conservative possessive splits like ``Company s`` -> ``Company's``."""
+
+    def _replace(match: re.Match[str]) -> str:
+        stem = match.group("stem")
+        if stem.endswith("'"):
+            return stem
+        if stem.lower().endswith("s"):
+            return f"{stem}'"
+        return f"{stem}'s"
+
+    return _APOSTROPHE_SPLIT_RE.sub(_replace, text)
 
 
 def normalize_sentence_text(text: str) -> str:
@@ -222,6 +239,7 @@ def clean_extracted_sentence(text: str) -> str:
     cleaned = _TABLE_OF_CONTENTS_FRAGMENT.sub(" ", cleaned)
     cleaned = _TABLE_OF_CONTENTS_INLINE_FRAGMENT.sub(" ", cleaned)
     cleaned = _PAGE_MARKER.sub(" ", cleaned)
+    cleaned = _repair_apostrophe_splits(cleaned)
     cleaned = re.sub(r"^[\s|:;\-–—]+", " ", cleaned)
     if cleaned.count(")") != cleaned.count("("):
         cleaned = cleaned.replace("(", " ").replace(")", " ")

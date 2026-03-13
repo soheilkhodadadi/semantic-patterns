@@ -1810,3 +1810,27 @@ Rules:
 - Next truthful step:
   - human review of `data/labels/v1/labeling_batch_v1_filled_v2_4.csv`
   - only after `237` eligible canonical labels are filled should `iteration2/sentence-pool-expansion-2024` batch 01 begin
+
+## 2026-03-13 - Tranche 1 Accepted Under v2.4a
+
+- Applied a conservative apostrophe-normalization repair in the cleaned extraction path and refreshed tranche 1 text outputs without reopening any label decisions.
+- Refreshed tranche lineage:
+  - `data/labels/v1/labeling_batch_v1_reextracted_v2_4.csv`
+  - `data/labels/v1/labeling_batch_v1_prelabeled_v2_4.csv`
+  - `data/labels/v1/labeling_batch_v1_filled_v2_4.csv`
+  - `reports/labels/tranche1_reextraction_v2_4_summary.json`
+- Canonical completion outcome:
+  - tranche 1 accepted under prompt winner `v2.4a`
+  - `237` eligible labels complete
+  - `3` unmatched-noise rows excluded by design
+  - excluded sentence IDs:
+    - `e59ee2f288168a96`
+    - `52515d9af8d976a1`
+    - `00e8beaa30982b03`
+- Playbook usage:
+  - `playbook_used = extraction_micro_cleanup`
+  - `playbook_outcome = worked`
+- Completion note published:
+  - `reports/labels/tranche1_completion_v2_4.md`
+- Next truthful substantive step:
+  - `iteration2/sentence-pool-expansion-2024` batch 01

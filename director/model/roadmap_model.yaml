@@ -2059,6 +2059,7 @@ iterations:
       commands:
       - .venv/bin/python -m semantic_ai_washing.labeling.initialize_review_sheet --input-csv
         data/labels/v1/labeling_batch_v1_prelabeled_v2_4.csv --output-csv data/labels/v1/labeling_batch_v1_filled_v2_4.csv
+        --existing-review-csv data/labels/v1/labeling_batch_v1_filled_v2_4.csv
       manual_handoff: false
       risks:
       - R1
