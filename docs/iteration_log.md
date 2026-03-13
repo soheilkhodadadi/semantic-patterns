@@ -1857,3 +1857,28 @@ Rules:
 - No new playbook was added for this step.
 - Next truthful substantive step:
   - continue `iteration2/sentence-pool-expansion-2024` with batch 02
+
+## 2026-03-13 - Expansion Batch 02 Completed
+
+- Executed `iteration2/sentence-pool-expansion-2024` batch 02 using the roadmap-wired command with batch-01 exclusion.
+- Generated batch-02 artifacts:
+  - `data/manifests/filings/expansion_2024_batch_02.csv`
+  - `data/processed/sentences/year=2024/expanded_ai_sentences_batch_02.parquet`
+  - `reports/labels/sentence_pool_expansion_2024_batch_02_summary.json`
+- Batch-02 outcome:
+  - `firm_count = 125`
+  - `filing_count = 125`
+  - `clean_sentence_count = 1298`
+  - `read_errors_count = 0`
+  - quarter distribution:
+    - `Q1 = 40`
+    - `Q2 = 22`
+    - `Q3 = 32`
+    - `Q4 = 31`
+- Cross-batch integrity:
+  - `125` unique firms in batch 02
+  - `0` firm overlap with batch 01
+  - deterministic exclusion of all batch-01 firms confirmed
+- No rubric, prompt, classifier, or extraction-calibration changes were made in this step.
+- Next truthful substantive step:
+  - continue `iteration2/sentence-pool-expansion-2024` with batch 03
