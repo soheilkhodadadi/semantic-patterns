@@ -1834,3 +1834,26 @@ Rules:
   - `reports/labels/tranche1_completion_v2_4.md`
 - Next truthful substantive step:
   - `iteration2/sentence-pool-expansion-2024` batch 01
+
+## 2026-03-13 - Expansion Batch 01 Completed
+
+- Executed `iteration2/sentence-pool-expansion-2024` batch 01 under the current tranche-based Iteration 2 workflow.
+- Generated batch-01 artifacts:
+  - `data/manifests/filings/expansion_2024_batch_01.csv`
+  - `data/processed/sentences/year=2024/expanded_ai_sentences_batch_01.parquet`
+  - `reports/labels/sentence_pool_expansion_2024_batch_01_summary.json`
+- Batch-01 outcome:
+  - `firm_count = 125`
+  - `filing_count = 125`
+  - `clean_sentence_count = 1170`
+  - quarter distribution:
+    - `Q1 = 34`
+    - `Q2 = 25`
+    - `Q3 = 36`
+    - `Q4 = 30`
+- Tranche 1 remains accepted and unchanged:
+  - `237` eligible labels complete
+  - `3` unmatched-noise rows excluded by design
+- No new playbook was added for this step.
+- Next truthful substantive step:
+  - continue `iteration2/sentence-pool-expansion-2024` with batch 02
