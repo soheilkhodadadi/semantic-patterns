@@ -81,6 +81,14 @@ def _build_cost_controller(cost_policy_path: str) -> tuple[CostController, dict[
     return controller, policy
 
 
+def _to_bool_series(series: pd.Series) -> pd.Series:
+    return (
+        series.fillna(True)
+        .map(lambda value: str(value).strip().lower() not in {"false", "0", "no", "n", ""})
+        .astype(bool)
+    )
+
+
 def _flush_progress(
     frame: pd.DataFrame,
     output_path: Path,
@@ -156,7 +164,21 @@ def generate_assistive_prelabels(
     )
     canonical_labeled_mask = frame["label"].fillna("").astype(str).map(str.strip).ne("")
     existing_assistive_mask = frame["assistive_label"].fillna("").astype(str).map(str.strip).ne("")
-    pending = frame[~canonical_labeled_mask & ~existing_assistive_mask].copy()
+    sentence_blank_mask = frame["sentence"].fillna("").astype(str).map(str.strip).eq("")
+    if "prelabel_eligible" in frame.columns:
+        prelabel_eligible_mask = _to_bool_series(frame["prelabel_eligible"])
+    else:
+        prelabel_eligible_mask = pd.Series(True, index=frame.index, dtype=bool)
+
+    skipped_unmatched_noise_rows = int((~prelabel_eligible_mask).sum())
+    skipped_blank_sentence_rows = int((prelabel_eligible_mask & sentence_blank_mask).sum())
+
+    pending = frame[
+        ~canonical_labeled_mask
+        & ~existing_assistive_mask
+        & prelabel_eligible_mask
+        & ~sentence_blank_mask
+    ].copy()
     if max_rows > 0:
         pending = pending.head(max_rows).copy()
 
@@ -179,6 +201,8 @@ def generate_assistive_prelabels(
             "input_rows": int(len(frame)),
             "skipped_canonical_labeled_rows": int(canonical_labeled_mask.sum()),
             "skipped_existing_assistive_rows": int(existing_assistive_mask.sum()),
+            "skipped_unmatched_noise_rows": int(skipped_unmatched_noise_rows),
+            "skipped_blank_sentence_rows": int(skipped_blank_sentence_rows),
             "pending_rows_before_run": int(len(pending)),
             "processed_rows": 0,
             "failed_rows": 0,

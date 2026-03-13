@@ -46,6 +46,28 @@ _GLOSSARY_RE = re.compile(
     r"^(?:[A-Z0-9]\s+)?AI/ML\s*-\s*Artificial Intelligence/Machine Learning\.?$",
     re.I,
 )
+_PAGE_NUMBER_PREFIX_RE = re.compile(r"^\s*\d+\s+")
+_PRESENT_FACT_RE = re.compile(
+    r"^\s*(?:we|our|[A-Z][A-Za-z0-9&.'-]+)\s+"
+    r"(?:offer|offers|provide|provides|use|uses|have used|has used|invest|invests|"
+    r"have invested|has invested|have expertise|has expertise|are|is|become|became)\b",
+    re.I,
+)
+_AI_MARKER_RE = re.compile(
+    r"\b(?:ai|artificial intelligence|machine learning|generative ai|ai-enabled|"
+    r"artificial intelligence-enabled)\b",
+    re.I,
+)
+
+_NOISE_ISSUES = {"glossary_fragment", "table_of_contents", "form_header"}
+_ASSISTIVE_COLUMNS = (
+    "assistive_label",
+    "assistive_confidence",
+    "assistive_rationale",
+    "assistive_model",
+    "assistive_generated_at",
+    "assistive_prompt_hash",
+)
 
 
 def _resolve_path(path: str | Path) -> Path:
@@ -94,6 +116,180 @@ def _detect_cleanup_issues(text: str) -> list[str]:
     ):
         issues.append("glossary_fragment")
     return issues
+
+
+def _classify_unmatched_row(*, original_sentence: str, cleaned_sentence: str) -> tuple[bool, str]:
+    issues = set(_detect_cleanup_issues(original_sentence)) | set(
+        _detect_cleanup_issues(cleaned_sentence)
+    )
+    if issues & _NOISE_ISSUES:
+        return False, "unmatched_noise"
+    if "leading_section_title" in issues and not cleaned_sentence.strip():
+        return False, "unmatched_noise"
+    return True, ""
+
+
+def _strip_page_number_prefix(text: str) -> str:
+    return _PAGE_NUMBER_PREFIX_RE.sub("", text or "").strip()
+
+
+def _looks_like_present_fact(text: str) -> bool:
+    return bool(_PRESENT_FACT_RE.search(text or ""))
+
+
+def _contains_ai_marker(text: str) -> bool:
+    return bool(_AI_MARKER_RE.search(text or ""))
+
+
+def _rescue_clause(
+    *,
+    original_sentence: str,
+    candidates: pd.DataFrame,
+    original_index: int,
+) -> tuple[dict[str, Any] | None, str, float]:
+    cleaned_original = clean_extracted_sentence(original_sentence)
+    stripped_original = _strip_page_number_prefix(cleaned_original)
+    if not stripped_original:
+        return None, "unmatched", 0.0
+
+    rescued_rows: list[dict[str, Any]] = []
+    for candidate in candidates.itertuples(index=False):
+        candidate_clean = clean_extracted_sentence(str(candidate.sentence))
+        if not candidate_clean:
+            continue
+        search_targets = [cleaned_original.strip(), stripped_original]
+        for target in search_targets:
+            if not target:
+                continue
+            position = candidate_clean.find(target)
+            if position < 0:
+                continue
+            rescued_sentence = _strip_page_number_prefix(candidate_clean[position:])
+            if not rescued_sentence or rescued_sentence == candidate_clean:
+                continue
+            score = _match_score(stripped_original, rescued_sentence)
+            rescued_rows.append(
+                {
+                    "candidate": {
+                        "source_file": str(candidate.source_file),
+                        "candidate_sentence_index": int(candidate.candidate_sentence_index),
+                        "sentence": rescued_sentence,
+                        "sentence_norm": normalize_sentence_text(rescued_sentence),
+                        "source_section": str(candidate.source_section),
+                    },
+                    "score": score,
+                    "index_distance": abs(
+                        int(candidate.candidate_sentence_index) - int(original_index)
+                    ),
+                }
+            )
+            break
+    if not rescued_rows:
+        return None, "unmatched", 0.0
+    rescued_rows.sort(
+        key=lambda item: (
+            -float(item["score"]),
+            int(item["index_distance"]),
+            item["candidate"]["sentence"],
+        )
+    )
+    best = rescued_rows[0]
+    if float(best["score"]) < DEFAULT_MATCH_THRESHOLD:
+        return None, "unmatched", float(best["score"])
+    return best["candidate"], "rescued_clause", float(best["score"])
+
+
+def _rescue_similarity(
+    *,
+    original_sentence: str,
+    candidates: pd.DataFrame,
+) -> tuple[dict[str, Any] | None, str, float]:
+    cleaned_original = clean_extracted_sentence(original_sentence)
+    original_norm = normalize_sentence_text(cleaned_original)
+    original_tokens = set(original_norm.split())
+    anchor_tokens = {
+        token
+        for token in original_tokens
+        if token
+        in {
+            "expertise",
+            "provider",
+            "service",
+            "services",
+            "capability",
+            "capabilities",
+            "data",
+            "analytics",
+            "cloud",
+            "platform",
+            "development",
+            "investment",
+            "invest",
+        }
+    }
+    if not anchor_tokens:
+        return None, "unmatched", 0.0
+
+    scored_rows: list[dict[str, Any]] = []
+    for candidate in candidates.itertuples(index=False):
+        candidate_sentence = clean_extracted_sentence(str(candidate.sentence))
+        if not candidate_sentence or not _contains_ai_marker(candidate_sentence):
+            continue
+        candidate_norm = normalize_sentence_text(candidate_sentence)
+        candidate_tokens = set(candidate_norm.split())
+        overlap = len(anchor_tokens & candidate_tokens)
+        if overlap == 0:
+            continue
+        provider_bonus = (
+            1.0
+            if re.search(
+                r"\b(provider|offer|offers|provide|provides|service|services)\b", candidate_norm
+            )
+            else 0.0
+        )
+        ai_bonus = 1.0
+        fact_bonus = 1.0 if _looks_like_present_fact(candidate_sentence) else 0.0
+        first_person_bonus = (
+            0.25 if candidate_sentence.lower().startswith(("we ", "our ")) else 0.0
+        )
+        base_score = _match_score(cleaned_original, candidate_sentence)
+        rescue_score = (
+            (2.0 * overlap)
+            + provider_bonus
+            + ai_bonus
+            + fact_bonus
+            + first_person_bonus
+            + (0.25 * base_score)
+        )
+        scored_rows.append(
+            {
+                "candidate": {
+                    "source_file": str(candidate.source_file),
+                    "candidate_sentence_index": int(candidate.candidate_sentence_index),
+                    "sentence": candidate_sentence,
+                    "sentence_norm": normalize_sentence_text(candidate_sentence),
+                    "source_section": str(candidate.source_section),
+                },
+                "rescue_score": rescue_score,
+                "match_score": base_score,
+            }
+        )
+    if not scored_rows:
+        return None, "unmatched", 0.0
+    scored_rows.sort(
+        key=lambda item: (
+            -float(item["rescue_score"]),
+            -float(item["match_score"]),
+            item["candidate"]["sentence"],
+        )
+    )
+    best = scored_rows[0]
+    runner_up_score = float(scored_rows[1]["rescue_score"]) if len(scored_rows) > 1 else 0.0
+    if float(best["rescue_score"]) < 3.0:
+        return None, "unmatched", float(best["match_score"])
+    if (float(best["rescue_score"]) - runner_up_score) < 0.2:
+        return None, "unmatched", float(best["match_score"])
+    return best["candidate"], "rescued_similarity", float(best["match_score"])
 
 
 def _build_candidate_frame(
@@ -279,8 +475,14 @@ def reextract_tranche_slice(
     rows: list[dict[str, Any]] = []
     exact_matches = 0
     similarity_matches = 0
+    rescued_clause_rows = 0
+    rescued_similarity_rows = 0
+    rescued_sentence_ids: list[str] = []
     unmatched = 0
     cleaned_rows = 0
+    unmatched_noise_rows = 0
+    unmatched_meaningful_rows = 0
+    prelabel_ineligible_rows = 0
     cleanup_hits = {
         "table_of_contents": 0,
         "form_header": 0,
@@ -299,10 +501,31 @@ def reextract_tranche_slice(
             original_index=int(original.sentence_index),
             candidates=candidates,
         )
+        if match_status != "exact":
+            clause_match, clause_status, clause_score = _rescue_clause(
+                original_sentence=original_sentence,
+                candidates=candidates,
+                original_index=int(original.sentence_index),
+            )
+            if clause_status == "rescued_clause" and (
+                match_status == "unmatched" or float(clause_score) >= float(match_score)
+            ):
+                match, match_status, match_score = clause_match, clause_status, clause_score
+        if match_status == "unmatched":
+            match, match_status, match_score = _rescue_similarity(
+                original_sentence=original_sentence,
+                candidates=candidates,
+            )
         if match_status == "exact":
             exact_matches += 1
         elif match_status == "similarity":
             similarity_matches += 1
+        elif match_status == "rescued_clause":
+            rescued_clause_rows += 1
+            rescued_sentence_ids.append(str(original.sentence_id))
+        elif match_status == "rescued_similarity":
+            rescued_similarity_rows += 1
+            rescued_sentence_ids.append(str(original.sentence_id))
         else:
             unmatched += 1
 
@@ -326,6 +549,23 @@ def reextract_tranche_slice(
             if issue not in issues_after:
                 cleanup_hits[issue] += 1
 
+        prelabel_eligible = True
+        skip_reason = ""
+        if match_status == "unmatched":
+            prelabel_eligible, skip_reason = _classify_unmatched_row(
+                original_sentence=original_sentence,
+                cleaned_sentence=cleaned_original,
+            )
+            if prelabel_eligible:
+                unmatched_meaningful_rows += 1
+            else:
+                unmatched_noise_rows += 1
+                prelabel_ineligible_rows += 1
+                rebuilt_sentence = ""
+                rebuilt_norm = ""
+        if not prelabel_eligible:
+            source_section = "other"
+
         output_row = original._asdict()
         output_row["original_sentence"] = original_sentence
         output_row["original_sentence_index"] = int(original.sentence_index)
@@ -337,9 +577,14 @@ def reextract_tranche_slice(
         output_row["match_status"] = match_status
         output_row["match_score"] = round(float(match_score), 6)
         output_row["candidate_sentence_index"] = candidate_sentence_index
+        output_row["prelabel_eligible"] = bool(prelabel_eligible)
+        output_row["skip_reason"] = skip_reason
         output_row["label"] = ""
         output_row["is_uncertain"] = ""
         output_row["uncertainty_note"] = ""
+        for column in _ASSISTIVE_COLUMNS:
+            if column in output_row:
+                output_row[column] = ""
         rows.append(output_row)
         row_outcomes.append(
             {
@@ -350,6 +595,8 @@ def reextract_tranche_slice(
                 "issues_before": issues_before,
                 "issues_after": issues_after,
                 "row_cleaned": row_cleaned,
+                "prelabel_eligible": bool(prelabel_eligible),
+                "skip_reason": skip_reason,
             }
         )
 
@@ -365,10 +612,17 @@ def reextract_tranche_slice(
             "slice_rows": int(len(frame)),
             "unique_source_files": int(len(unique_files)),
             "candidate_sentence_count": int(total_candidates),
-            "matched_rows": int(exact_matches + similarity_matches),
+            "matched_rows": int(
+                exact_matches + similarity_matches + rescued_clause_rows + rescued_similarity_rows
+            ),
             "exact_matches": int(exact_matches),
             "similarity_matches": int(similarity_matches),
+            "rescued_clause_rows": int(rescued_clause_rows),
+            "rescued_similarity_rows": int(rescued_similarity_rows),
             "unmatched_rows": int(unmatched),
+            "unmatched_noise_rows": int(unmatched_noise_rows),
+            "unmatched_meaningful_rows": int(unmatched_meaningful_rows),
+            "prelabel_ineligible_rows": int(prelabel_ineligible_rows),
             "file_read_failures": int(len(file_failures)),
             "cleaned_rows": int(cleaned_rows),
         },
@@ -386,6 +640,7 @@ def reextract_tranche_slice(
         ]
         .astype(str)
         .tolist(),
+        "rescued_sentence_ids": rescued_sentence_ids,
         "row_outcomes": row_outcomes,
         "file_failures": file_failures,
     }

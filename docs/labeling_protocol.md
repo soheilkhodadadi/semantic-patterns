@@ -70,9 +70,11 @@ Prefer `Irrelevant` when the sentence is:
 ## Borderline Rules
 
 - Generic AI regulatory, cyber, or market-risk language is `Irrelevant` unless the sentence also reveals current firm AI deployment.
+- If the primary function of a sentence is to disclose risk, vulnerability, exposure, dependence, threat, or compliance concern, default to `Irrelevant` even when the sentence mentions current AI use or third-party AI use.
 - If a sentence only says AI may matter, could matter, or creates generic risks/opportunities, it is usually `Irrelevant`.
 - If a sentence says the firm plans, expects, explores, or intends to use AI but does not show current operational evidence, it is `Speculative`.
 - If a sentence shows a current or past factual firm claim about AI deployment, capability-building, expertise, investment, or a current AI offering, it is `Actionable` even if it does not include technical detail.
+- Risk-section language is only `Actionable` when it reveals a standalone current firm AI offering, present investment, or current capability rather than mainly disclosing risk.
 - If both action and aspiration appear, prefer:
   - `Actionable` when present or realized execution is explicit
   - `Speculative` when future intent dominates and current execution evidence is absent

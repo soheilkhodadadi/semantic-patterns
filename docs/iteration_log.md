@@ -1758,3 +1758,55 @@ Rules:
 - Playbook usage:
   - `playbook_used = extraction_micro_cleanup`
   - `playbook_outcome = worked`
+
+
+## 2026-03-12 - Iteration 2 Cleaned Slice v2.4 Confirmation
+
+- Synced `iteration2/rubric-realignment` to the active `v2.4` lineage so tranche review no longer depends on stale `v2.2` calibration artifacts.
+- Promoted the accepted `v2_4a` factual-claim prompt into the active assistive policy and reran the cleaned 40-row slice on fixed text only:
+  - `data/labels/v1/labeling_batch_v1_prelabeled_v2_4_clean_slice40.csv`
+  - `data/labels/v1/labeling_batch_v1_filled_v2_4_clean_slice40.csv`
+  - `reports/labels/assistive_prelabel_tranche1_v2_4_clean_slice40_summary.json`
+  - `reports/labels/tranche1_clean_slice_v2_4_check.json`
+  - `reports/labels/tranche1_clean_slice_v2_4_check.md`
+- Result: the cleaned-slice confirmation did **not** clear the post-cleanup gate.
+  - Overall agreement remained `35/40`
+  - `Actionable/Speculative` subset agreement remained `8/12`
+- Because the gate failed, the full 240-row tranche was **not** rebuilt and full tranche review did **not** resume.
+- Inspection shows two distinct remaining issues:
+  - the four known `Actionable` vs `Speculative` boundary mismatches persisted even after extraction cleanup
+  - one glossary fragment row (`sentence_id=e59ee2f288168a96`) remains unmatched in the re-extraction summary but is still preserved as sentence text in the cleaned-slice prelabel sheet, which indicates a remaining handoff bug between re-extraction output and downstream prelabel input
+- Applied playbook remains `extraction_micro_cleanup`, with outcome currently `partially_worked`.
+- Next step is **not** tranche expansion. The next patch should fix the residual extraction handoff on the noisiest 5-10 rows before another cleaned-slice confirmation run.
+
+## 2026-03-12 - Full Tranche v2.4 Rebuild and Review Resumption
+
+- Synced `iteration2/rubric-realignment` to the repaired slice outcome on eligible-row scoring:
+  - `reports/labels/tranche1_clean_slice_v2_4_check.json`
+  - accepted basis: `score.overall = 34/37`, `score.action_spec = 12/12`
+- Rebuilt the full 240-row tranche through the cleaned extraction path:
+  - `data/labels/v1/labeling_batch_v1_reextracted_v2_4.csv`
+  - `reports/labels/tranche1_reextraction_v2_4_summary.json`
+- Full-tranche rebuild result:
+  - `rows = 240`
+  - `matched_rows = 235`
+  - `unmatched_rows = 5`
+  - `unmatched_noise_rows = 3`
+  - `unmatched_meaningful_rows = 2`
+  - `prelabel_ineligible_rows = 3`
+  - `rescued_clause_rows = 6`
+  - `rescued_similarity_rows = 4`
+- Regenerated full-tranche rubric-`v2.4` assistive prelabels from rebuilt text:
+  - `data/labels/v1/labeling_batch_v1_prelabeled_v2_4.csv`
+  - `reports/labels/assistive_prelabel_tranche1_v2_4_summary.json`
+- Current prelabel state:
+  - `assistive_label` nonempty count = `237`
+  - `3` unmatched-noise rows remain present in the CSV with blank rebuilt sentence text and blank assistive columns
+- Reinitialized the canonical tranche-1 review sheet from the rebuilt `v2.4` prelabels:
+  - `data/labels/v1/labeling_batch_v1_filled_v2_4.csv`
+- Control-plane outcome:
+  - `iteration2/tranche1-labeling` now truthfully points at the rebuilt full-tranche review sheet
+  - completion gate is `237` eligible labels, with `3` unmatched-noise rows explicitly excluded
+- Next truthful step:
+  - human review of `data/labels/v1/labeling_batch_v1_filled_v2_4.csv`
+  - only after `237` eligible canonical labels are filled should `iteration2/sentence-pool-expansion-2024` batch 01 begin

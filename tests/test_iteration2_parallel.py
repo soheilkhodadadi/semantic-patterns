@@ -19,6 +19,7 @@ from semantic_ai_washing.labeling.benchmark_prompt_variants import benchmark_pro
 from semantic_ai_washing.labeling.build_labeling_batch import build_labeling_batch
 from semantic_ai_washing.labeling.initialize_review_sheet import initialize_review_sheet
 from semantic_ai_washing.labeling.merge_labeling_batches import merge_labeling_batches
+from semantic_ai_washing.labeling.score_prelabel_sheet import score_prelabel_sheet
 
 
 def _write_csv(path: Path, rows: list[dict]) -> Path:
@@ -401,6 +402,90 @@ def test_generate_assistive_prelabels_keeps_canonical_label_blank(monkeypatch, t
     assert usage_file.exists()
 
 
+def test_generate_assistive_prelabels_skips_ineligible_unmatched_noise_rows(monkeypatch, tmp_path):
+    input_csv = _write_csv(
+        tmp_path / "labeling_batch.csv",
+        [
+            {
+                "sentence_id": "noise",
+                "sentence": "",
+                "source_file": "2024/QTR1/f1.txt",
+                "sentence_index": 1,
+                "label": "",
+                "prelabel_eligible": False,
+                "skip_reason": "unmatched_noise",
+            },
+            {
+                "sentence_id": "s1",
+                "sentence": "We offer artificial intelligence enabled products today.",
+                "source_file": "2024/QTR1/f1.txt",
+                "sentence_index": 2,
+                "label": "",
+                "prelabel_eligible": True,
+                "skip_reason": "",
+            },
+        ],
+    )
+    output_csv = tmp_path / "labeling_batch_prelabeled.csv"
+    report_path = tmp_path / "assistive_prelabel_summary.json"
+    usage_file = tmp_path / "cost_usage.jsonl"
+
+    def _fake_call_responses_api(**_: object) -> dict[str, object]:
+        return {"usage": {"input_tokens": 12, "output_tokens": 8, "total_tokens": 20}}
+
+    def _fake_extract_response_text(_: dict[str, object]) -> str:
+        return json.dumps(
+            {
+                "label": "Actionable",
+                "confidence": "high",
+                "rationale": "Present-tense offering claim is factual.",
+                "assistive_only": True,
+            }
+        )
+
+    def _fake_cost_controller(_: str):
+        controller = CostController(
+            policy={},
+            usage_file=usage_file,
+            cache_dir=tmp_path / "cache",
+        )
+        return controller, {}
+
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    monkeypatch.setattr(
+        "semantic_ai_washing.labeling.assistive_prelabel_batch.call_responses_api",
+        _fake_call_responses_api,
+    )
+    monkeypatch.setattr(
+        "semantic_ai_washing.labeling.assistive_prelabel_batch.extract_response_text",
+        _fake_extract_response_text,
+    )
+    monkeypatch.setattr(
+        "semantic_ai_washing.labeling.assistive_prelabel_batch._build_cost_controller",
+        _fake_cost_controller,
+    )
+
+    report, exit_code = generate_assistive_prelabels(
+        input_csv=str(input_csv),
+        output_csv=str(output_csv),
+        report_path=str(report_path),
+        policy_path="director/config/api_assistive_policy.yaml",
+        mode="live",
+    )
+
+    output = pd.read_csv(output_csv)
+
+    assert exit_code == 0
+    assert report["status"] == "passed"
+    assert report["counts"]["skipped_unmatched_noise_rows"] == 1
+    assert report["counts"]["skipped_blank_sentence_rows"] == 0
+    assert report["usage"]["request_count"] == 1
+    assert output.loc[0, "assistive_label"] in ("", None) or pd.isna(
+        output.loc[0, "assistive_label"]
+    )
+    assert output.loc[1, "assistive_label"] == "Actionable"
+
+
 def test_generate_assistive_prelabels_flushes_checkpoint_progress(monkeypatch, tmp_path):
     input_csv = _write_csv(
         tmp_path / "labeling_batch.csv",
@@ -632,7 +717,7 @@ def test_initialize_review_sheet_creates_blank_canonical_columns_and_slice(tmp_p
     assert len(slice_written) == 1
 
 
-def test_build_prompt_messages_includes_section_context_and_v22_rules():
+def test_build_prompt_messages_includes_section_context_and_v24_rules():
     policy, _ = load_api_assistive_policy(
         "director/config/api_assistive_policy.yaml",
         repo_root=".",
@@ -648,8 +733,8 @@ def test_build_prompt_messages_includes_section_context_and_v22_rules():
     user_text = messages[1]["content"][0]["text"]
     combined = f"{system_text}\n{user_text}"
 
-    assert "verifiable or refutable" in combined.lower()
-    assert "generic risk language should default to Irrelevant" in combined
+    assert "present or past factual claim" in combined
+    assert "primary function of the sentence is risk disclosure" in combined
     assert "Source section: item_1a_risk_factors" in user_text
 
 
@@ -1093,6 +1178,64 @@ variants:
     )
 
     assert result["winner"] is None or result["winner"]["gate_passed"] is False
+
+
+def test_score_prelabel_sheet_reports_raw_and_eligible_scores(tmp_path):
+    benchmark_csv = _write_csv(
+        tmp_path / "benchmark.csv",
+        [
+            {"sentence_id": "s1", "label": "Actionable"},
+            {"sentence_id": "s2", "label": "Irrelevant"},
+            {"sentence_id": "s3", "label": "Irrelevant"},
+        ],
+    )
+    assistive_csv = _write_csv(
+        tmp_path / "assistive.csv",
+        [
+            {
+                "sentence_id": "s1",
+                "assistive_label": "Actionable",
+                "assistive_confidence": "high",
+                "assistive_rationale": "fact",
+                "source_section": "item_1_business",
+                "sentence": "We offer AI-enabled services.",
+                "prelabel_eligible": True,
+                "skip_reason": "",
+            },
+            {
+                "sentence_id": "s2",
+                "assistive_label": "",
+                "assistive_confidence": "",
+                "assistive_rationale": "",
+                "source_section": "other",
+                "sentence": "",
+                "prelabel_eligible": False,
+                "skip_reason": "unmatched_noise",
+            },
+            {
+                "sentence_id": "s3",
+                "assistive_label": "Speculative",
+                "assistive_confidence": "medium",
+                "assistive_rationale": "future",
+                "source_section": "item_1_business",
+                "sentence": "We may find opportunities with AI.",
+                "prelabel_eligible": True,
+                "skip_reason": "",
+            },
+        ],
+    )
+
+    payload = score_prelabel_sheet(
+        benchmark_csv=str(benchmark_csv),
+        assistive_csv=str(assistive_csv),
+    )
+
+    assert payload["score"]["gate_basis"] == "eligible"
+    assert payload["score"]["raw_overall"] == {"matches": 1, "total": 3}
+    assert payload["score"]["eligible_overall"] == {"matches": 1, "total": 2}
+    assert payload["score"]["overall"] == {"matches": 1, "total": 2}
+    assert payload["score"]["excluded_from_gate"]["count"] == 1
+    assert payload["score"]["excluded_from_gate"]["sentence_ids"] == ["s2"]
 
 
 def test_benchmark_prompt_variants_regenerates_full_tranche_for_winner(monkeypatch, tmp_path):

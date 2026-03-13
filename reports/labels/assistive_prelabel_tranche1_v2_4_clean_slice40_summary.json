@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-03-13T00:15:31.628340+00:00",
+  "generated_at": "2026-03-12T23:44:56.302400+00:00",
   "status": "passed",
   "mode": "live",
   "policy_path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/config/api_assistive_policy.yaml",
-  "input_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/labels/v1/labeling_batch_v1_reextracted_v2_4.csv",
-  "output_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/labels/v1/labeling_batch_v1_prelabeled_v2_4.csv",
-  "report_path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/reports/labels/assistive_prelabel_tranche1_v2_4_summary.json",
+  "input_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/labels/v1/labeling_batch_v1_reextracted_v2_2_slice40.csv",
+  "output_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/labels/v1/labeling_batch_v1_prelabeled_v2_4_clean_slice40.csv",
+  "report_path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/reports/labels/assistive_prelabel_tranche1_v2_4_clean_slice40_summary.json",
   "model": "gpt-5-mini",
   "resumed_existing_output": true,
   "parameters": {
@@ -14,9 +14,9 @@
     "checkpoint_every": 10
   },
   "counts": {
-    "input_rows": 240,
+    "input_rows": 40,
     "skipped_canonical_labeled_rows": 0,
-    "skipped_existing_assistive_rows": 237,
+    "skipped_existing_assistive_rows": 37,
     "skipped_unmatched_noise_rows": 3,
     "skipped_blank_sentence_rows": 0,
     "pending_rows_before_run": 0,
@@ -25,7 +25,7 @@
     "pending_rows_after_run": 3
   },
   "usage": {
-    "request_count": 237,
+    "request_count": 37,
     "prompt_tokens": 0,
     "completion_tokens": 0,
     "total_tokens": 0,

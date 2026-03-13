@@ -1,0 +1,164 @@
+{
+  "generated_at": "2026-03-12T23:45:05.464920+00:00",
+  "benchmark_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/labels/v1/labeling_batch_v1_filled_v2_4_calibration_slice40.csv",
+  "assistive_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/labels/v1/labeling_batch_v1_prelabeled_v2_4_clean_slice40.csv",
+  "score": {
+    "gate_basis": "eligible",
+    "overall": {
+      "matches": 34,
+      "total": 37
+    },
+    "action_spec": {
+      "matches": 12,
+      "total": 12
+    },
+    "raw_overall": {
+      "matches": 34,
+      "total": 40
+    },
+    "raw_action_spec": {
+      "matches": 12,
+      "total": 12
+    },
+    "eligible_overall": {
+      "matches": 34,
+      "total": 37
+    },
+    "eligible_action_spec": {
+      "matches": 12,
+      "total": 12
+    },
+    "excluded_from_gate": {
+      "count": 3,
+      "sentence_ids": [
+        "e59ee2f288168a96",
+        "1f7cfc4e51903d17",
+        "52515d9af8d976a1"
+      ]
+    },
+    "manual_distribution": {
+      "Irrelevant": 28,
+      "Speculative": 6,
+      "Actionable": 6
+    },
+    "assistive_distribution": {
+      "Irrelevant": 22,
+      "Actionable": 8,
+      "Speculative": 7,
+      "": 3
+    },
+    "confusion": {
+      "": {
+        "Actionable": 0,
+        "Irrelevant": 3,
+        "Speculative": 0
+      },
+      "Actionable": {
+        "Actionable": 6,
+        "Irrelevant": 2,
+        "Speculative": 0
+      },
+      "Irrelevant": {
+        "Actionable": 0,
+        "Irrelevant": 22,
+        "Speculative": 0
+      },
+      "Speculative": {
+        "Actionable": 0,
+        "Irrelevant": 1,
+        "Speculative": 6
+      }
+    },
+    "eligible_confusion": {
+      "Actionable": {
+        "Actionable": 6,
+        "Irrelevant": 2,
+        "Speculative": 0
+      },
+      "Irrelevant": {
+        "Actionable": 0,
+        "Irrelevant": 22,
+        "Speculative": 0
+      },
+      "Speculative": {
+        "Actionable": 0,
+        "Irrelevant": 1,
+        "Speculative": 6
+      }
+    },
+    "mismatch_rows": [
+      {
+        "sentence_id": "e59ee2f288168a96",
+        "manual_label": "Irrelevant",
+        "assistive_label": "",
+        "source_section": "other",
+        "assistive_confidence": "nan",
+        "assistive_rationale": "nan",
+        "sentence": "nan",
+        "eligible_for_gate": false,
+        "skip_reason": "unmatched_noise"
+      },
+      {
+        "sentence_id": "3dd04eecfc20c3ba",
+        "manual_label": "Irrelevant",
+        "assistive_label": "Actionable",
+        "source_section": "item_1_business",
+        "assistive_confidence": "high",
+        "assistive_rationale": "States present use of generative AI by firm, affiliates, or third-party providers (current factual claim).",
+        "sentence": "For example, the use of generative AI technologies by us, our Affiliates, or our respective third-party service providers could result in new and expanded risks.",
+        "eligible_for_gate": true,
+        "skip_reason": "nan"
+      },
+      {
+        "sentence_id": "1f7cfc4e51903d17",
+        "manual_label": "Irrelevant",
+        "assistive_label": "",
+        "source_section": "other",
+        "assistive_confidence": "nan",
+        "assistive_rationale": "nan",
+        "sentence": "nan",
+        "eligible_for_gate": false,
+        "skip_reason": "unmatched_noise"
+      },
+      {
+        "sentence_id": "f7c7843cee66954d",
+        "manual_label": "Irrelevant",
+        "assistive_label": "Speculative",
+        "source_section": "item_1a_risk_factors",
+        "assistive_confidence": "high",
+        "assistive_rationale": "Discusses potential reliance/dependence and risks, framed as possibility not present factual use.",
+        "sentence": "Further, we may rely on AI models developed by third parties, and, to that extent, would be dependent in part on the manner in which those third parties develop and train their models, including risks arising from the inclusion of any unauthorized material in the training data for their models, and the effectiveness of the steps these third parties have taken to limit the risks associated with the output of their models, matters over which we may have limited visibility.",
+        "eligible_for_gate": true,
+        "skip_reason": "nan"
+      },
+      {
+        "sentence_id": "349b4c7239a5efd0",
+        "manual_label": "Irrelevant",
+        "assistive_label": "Actionable",
+        "source_section": "other",
+        "assistive_confidence": "high",
+        "assistive_rationale": "Explicitly states the firm's present use of AI technologies and exposure to risks from others' AI use.",
+        "sentence": "29 In addition to our use of AI technologies, we are exposed to risks arising from the use of AI technologies by bad actors to commit fraud and misappropriate funds and to facilitate cyberattacks.",
+        "eligible_for_gate": true,
+        "skip_reason": "nan"
+      },
+      {
+        "sentence_id": "52515d9af8d976a1",
+        "manual_label": "Irrelevant",
+        "assistive_label": "",
+        "source_section": "other",
+        "assistive_confidence": "nan",
+        "assistive_rationale": "nan",
+        "sentence": "nan",
+        "eligible_for_gate": false,
+        "skip_reason": "unmatched_noise"
+      }
+    ]
+  },
+  "cleaned_text_checks": {
+    "table_of_contents_present": false,
+    "form_10k_present": false,
+    "heading_prefix_present": false,
+    "glossary_fragment_present": false
+  }
+}

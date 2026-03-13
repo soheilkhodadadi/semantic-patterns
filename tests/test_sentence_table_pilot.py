@@ -365,15 +365,109 @@ def test_reextract_tranche_slice_rebuilds_rows_and_marks_unmatched(tmp_path):
     assert rebuilt.loc[0, "sentence"] == "Artificial intelligence supports workflows today."
     assert rebuilt.loc[0, "source_section"] == "item_1_business"
     assert rebuilt.loc[0, "match_status"] == "exact"
+    assert rebuilt.loc[0, "prelabel_eligible"] in (True, "True")
+    assert rebuilt.loc[0, "skip_reason"] in ("", None)
     assert rebuilt.loc[1, "match_status"] == "unmatched"
     assert rebuilt.loc[1, "sentence"] == ""
+    assert rebuilt.loc[1, "prelabel_eligible"] in (False, "False")
+    assert rebuilt.loc[1, "skip_reason"] == "unmatched_noise"
     assert "Table of Contents" not in rebuilt.loc[2, "sentence"]
     assert rebuilt.loc[2, "match_status"] in {"unmatched", "similarity", "exact"}
     assert rebuilt["label"].fillna("").tolist() == ["", "", ""]
     assert rebuilt["is_uncertain"].fillna("").tolist() == ["", "", ""]
     assert rebuilt["uncertainty_note"].fillna("").tolist() == ["", "", ""]
+    assert rebuilt["assistive_label"].fillna("").tolist() == ["", "", ""]
     assert report["counts"]["slice_rows"] == 3
     assert report["counts"]["unmatched_rows"] == 2
+    assert report["counts"]["unmatched_noise_rows"] == 2
+    assert report["counts"]["unmatched_meaningful_rows"] == 0
+    assert report["counts"]["prelabel_ineligible_rows"] == 2
     assert report["counts"]["cleaned_rows"] >= 2
     assert report["cleanup_hits"]["glossary_fragment"] == 1
     assert report["cleanup_hits"]["table_of_contents"] >= 1
+
+
+def test_reextract_tranche_slice_rescues_meaningful_unmatched_rows(tmp_path):
+    source_root = tmp_path / "sec-root"
+    keywords_path = tmp_path / "keywords.txt"
+    keywords_path.write_text("artificial intelligence\nai\nmachine learning\n", encoding="utf-8")
+
+    filing_path = (
+        source_root / "2024/QTR1/20240222_10-K_edgar_data_1352010_0001352010-24-000008.txt"
+    )
+    _write_text(
+        filing_path,
+        (
+            "Item 1. Business. We have used our software engineering expertise to become "
+            "a leading global provider of digital engineering, cloud and AI-enabled "
+            "transformation services. "
+            "Item 1A. Risk Factors. Any of these risks could expose us to liability or "
+            "adverse legal or regulatory consequences. 29 In addition to our use of AI "
+            "technologies, we are exposed to risks arising from the use of AI technologies "
+            "by bad actors to commit fraud and misappropriate funds and to facilitate cyberattacks."
+        ),
+    )
+
+    slice_path = tmp_path / "slice.csv"
+    pd.DataFrame(
+        [
+            {
+                "source_file": "2024/QTR1/20240222_10-K_edgar_data_1352010_0001352010-24-000008.txt",
+                "sentence_id": "d585b999ea5eaa56",
+                "sentence_index": 3,
+                "sentence": (
+                    "Data, Analytics and Artificial Intelligence With deep expertise in "
+                    "data and analytics, business intelligence and cloud platform "
+                    "development, we navigate the complexities of building and scaling "
+                    "new data capabilities necessary for the evolving environment."
+                ),
+                "label": "",
+                "is_uncertain": "",
+                "uncertainty_note": "",
+                "assistive_label": "",
+            },
+            {
+                "source_file": "2024/QTR1/20240222_10-K_edgar_data_1352010_0001352010-24-000008.txt",
+                "sentence_id": "349b4c7239a5efd0",
+                "sentence_index": 9,
+                "sentence": (
+                    "29 In addition to our use of AI technologies, we are exposed to risks "
+                    "arising from the use of AI technologies by bad actors to commit fraud "
+                    "and misappropriate funds and to facilitate cyberattacks."
+                ),
+                "label": "",
+                "is_uncertain": "",
+                "uncertainty_note": "",
+                "assistive_label": "",
+            },
+        ]
+    ).to_csv(slice_path, index=False)
+
+    output_path = tmp_path / "reextracted.csv"
+    report_path = tmp_path / "report.json"
+    report = reextract_tranche_slice(
+        input_csv=str(slice_path),
+        output_csv=str(output_path),
+        report_path=str(report_path),
+        source_root=str(source_root),
+        keywords_path=str(keywords_path),
+    )
+
+    rebuilt = pd.read_csv(output_path, keep_default_na=False)
+
+    provider_row = rebuilt.loc[rebuilt["sentence_id"] == "d585b999ea5eaa56"].iloc[0]
+    assert provider_row["match_status"] == "rescued_similarity"
+    assert "provider of digital engineering" in provider_row["sentence"]
+    assert provider_row["prelabel_eligible"] in (True, "True")
+
+    clause_row = rebuilt.loc[rebuilt["sentence_id"] == "349b4c7239a5efd0"].iloc[0]
+    assert clause_row["match_status"] == "rescued_clause"
+    assert clause_row["sentence"].startswith("In addition to our use of AI technologies")
+    assert not clause_row["sentence"].startswith("29 ")
+
+    assert report["counts"]["rescued_similarity_rows"] == 1
+    assert report["counts"]["rescued_clause_rows"] == 1
+    assert set(report["rescued_sentence_ids"]) == {
+        "d585b999ea5eaa56",
+        "349b4c7239a5efd0",
+    }
