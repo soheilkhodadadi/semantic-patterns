@@ -1,0 +1,80 @@
+{
+  "generated_at_utc": "2026-03-14T01:03:18.689938+00:00",
+  "git_commit": "3bc8bb7f8e1f01da1171091bb017ad8664054642",
+  "inputs": {
+    "sentences": "data/processed/sentences/year=2024/expanded_ai_sentences.parquet",
+    "manifest": "data/manifests/filings/expansion_2024_500_firms_v1.csv",
+    "held_out": "data/validation/held_out_sentences.csv",
+    "exclude_existing_csvs": [
+      "data/labels/v1/labeling_batch_v1.csv"
+    ]
+  },
+  "parameters": {
+    "batch_id": "labeling_batch_v2",
+    "target_size": 160,
+    "base_quarter_quota": 40,
+    "min_tokens": 6,
+    "max_tokens": 120,
+    "seed": 20260311
+  },
+  "candidate_stats": {
+    "source_rows": 4520,
+    "rows_after_clean_filters": 4520,
+    "heldout_overlap_removed": 87,
+    "existing_batch_excluded": 228,
+    "exact_text_duplicates_removed": 0,
+    "rows_after_filters": 4205,
+    "available_quarter_counts": {
+      "1": 795,
+      "2": 707,
+      "3": 1630,
+      "4": 1073
+    },
+    "available_file_counts": {
+      "total_unique_files": 430,
+      "quarter_unique_file_counts": {
+        "1": 123,
+        "2": 82,
+        "3": 120,
+        "4": 105
+      }
+    }
+  },
+  "selection": {
+    "batch_row_count": 160,
+    "target_size": 160,
+    "quota_satisfied": true,
+    "quarter_quotas_used": {
+      "1": 40,
+      "2": 40,
+      "3": 40,
+      "4": 40
+    },
+    "selected_quarter_counts": {
+      "1": 40,
+      "2": 40,
+      "3": 40,
+      "4": 40
+    },
+    "selected_file_count": 160,
+    "selected_ff12_counts": {
+      "11": 1,
+      "12": 159
+    },
+    "selected_known_ff12_count": 1,
+    "selected_unknown_ff12_count": 159,
+    "selected_length_counts": {
+      "long": 46,
+      "medium": 114
+    },
+    "selected_edge_case_count": 160
+  },
+  "quality": {
+    "heldout_overlap_count": 0,
+    "exact_duplicate_count": 0
+  },
+  "artifacts": {
+    "parquet": "data/labels/v1/labeling_batch_v2.parquet",
+    "csv": "data/labels/v1/labeling_batch_v2.csv"
+  }
+}
