@@ -1,0 +1,80 @@
+{
+  "generated_at_utc": "2026-03-14T17:16:47.193633+00:00",
+  "git_commit": "ed02f7fe08019270c4817d0bd4b6a5a6dee8efa8",
+  "inputs": {
+    "sentences": "data/processed/sentences/year=2024/expanded_ai_sentences.parquet",
+    "manifest": "data/manifests/filings/expansion_2024_500_firms_v1.csv",
+    "held_out": "data/validation/held_out_sentences.csv",
+    "exclude_existing_csvs": [
+      "data/labels/v1/labeling_batch_v1.csv",
+      "data/labels/v1/labeling_batch_v2.csv"
+    ]
+  },
+  "parameters": {
+    "batch_id": "labeling_batch_v3",
+    "target_size": 160,
+    "base_quarter_quota": 40,
+    "min_tokens": 6,
+    "max_tokens": 120,
+    "seed": 20260312
+  },
+  "candidate_stats": {
+    "source_rows": 4520,
+    "rows_after_clean_filters": 4520,
+    "heldout_overlap_removed": 87,
+    "existing_batch_excluded": 388,
+    "exact_text_duplicates_removed": 0,
+    "rows_after_filters": 4045,
+    "available_quarter_counts": {
+      "1": 755,
+      "2": 667,
+      "3": 1590,
+      "4": 1033
+    },
+    "available_file_counts": {
+      "total_unique_files": 417,
+      "quarter_unique_file_counts": {
+        "1": 120,
+        "2": 76,
+        "3": 119,
+        "4": 102
+      }
+    }
+  },
+  "selection": {
+    "batch_row_count": 160,
+    "target_size": 160,
+    "quota_satisfied": true,
+    "quarter_quotas_used": {
+      "1": 40,
+      "2": 40,
+      "3": 40,
+      "4": 40
+    },
+    "selected_quarter_counts": {
+      "1": 40,
+      "2": 40,
+      "3": 40,
+      "4": 40
+    },
+    "selected_file_count": 160,
+    "selected_ff12_counts": {
+      "12": 160
+    },
+    "selected_known_ff12_count": 0,
+    "selected_unknown_ff12_count": 160,
+    "selected_length_counts": {
+      "long": 84,
+      "medium": 76
+    },
+    "selected_edge_case_count": 152
+  },
+  "quality": {
+    "heldout_overlap_count": 0,
+    "exact_duplicate_count": 0
+  },
+  "artifacts": {
+    "parquet": "data/labels/v1/labeling_batch_v3.parquet",
+    "csv": "data/labels/v1/labeling_batch_v3.csv"
+  }
+}

@@ -2039,3 +2039,32 @@ Rules:
 - No prompt, rubric, classifier, extraction, or roadmap-model changes were made in this step.
 - Next truthful substantive step:
   - `iteration2.labels.prepare_tranche3_labeling_batch`
+
+## 2026-03-14 - Tranche 3 Labeling Batch Prepared
+
+- Executed `iteration2.labels.prepare_tranche3_labeling_batch` using the roadmap-wired batch builder over the combined 500-firm sentence pool while excluding tranche 1 and tranche 2 sentence texts.
+- Command executed:
+  - `.venv/bin/python -m semantic_ai_washing.labeling.build_labeling_batch --sentences data/processed/sentences/year=2024/expanded_ai_sentences.parquet --manifest data/manifests/filings/expansion_2024_500_firms_v1.csv --held-out data/validation/held_out_sentences.csv --output-parquet data/labels/v1/labeling_batch_v3.parquet --output-csv data/labels/v1/labeling_batch_v3.csv --report reports/labels/labeling_batch_v3_summary.json --batch-id labeling_batch_v3 --target-size 160 --base-quarter-quota 40 --min-tokens 6 --max-tokens 120 --seed 20260312 --exclude-existing-csv data/labels/v1/labeling_batch_v1.csv data/labels/v1/labeling_batch_v2.csv`
+- Generated tranche-3 artifacts:
+  - `data/labels/v1/labeling_batch_v3.parquet`
+  - `data/labels/v1/labeling_batch_v3.csv`
+  - `reports/labels/labeling_batch_v3_summary.json`
+- Tranche-3 outcome:
+  - `batch_row_count = 160`
+  - `heldout_overlap_count = 0`
+  - `exact_duplicate_count = 0`
+  - quarter distribution:
+    - `Q1 = 40`
+    - `Q2 = 40`
+    - `Q3 = 40`
+    - `Q4 = 40`
+- Selection and exclusion checks:
+  - `existing_batch_excluded = 388`
+  - `heldout_overlap_removed = 87`
+  - `0` `sentence_text_id` overlap with tranche 1
+  - `0` `sentence_text_id` overlap with tranche 2
+  - `160` unique `batch_row_id` values
+  - canonical review columns initialized blank for all rows
+- No prompt, rubric, classifier, extraction, or roadmap-model changes were made in this step.
+- Next truthful substantive step:
+  - `iteration2.labels.generate_tranche3_assistive_prelabels`
