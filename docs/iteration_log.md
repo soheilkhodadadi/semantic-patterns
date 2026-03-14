@@ -1993,3 +1993,32 @@ Rules:
 - No prompt, rubric, classifier, extraction, or roadmap-model changes were made in this step.
 - Next truthful substantive step:
   - `iteration2.labels.generate_tranche2_assistive_prelabels`
+
+## 2026-03-13 - Tranche 2 Assistive Prelabels Generated
+
+- Executed `iteration2.labels.generate_tranche2_assistive_prelabels` in resumable live chunks using the existing assistive prelabel runner.
+- Command used for each pass:
+  - `.venv/bin/python -m semantic_ai_washing.labeling.assistive_prelabel_batch --input-csv data/labels/v1/labeling_batch_v2.csv --output-csv data/labels/v1/labeling_batch_v2_prelabeled.csv --report reports/labels/assistive_prelabel_tranche2_summary.json --policy director/config/api_assistive_policy.yaml --mode live --checkpoint-every 10 --max-rows 20`
+- Generated tranche-2 assistive artifacts:
+  - `data/labels/v1/labeling_batch_v2_prelabeled.csv`
+  - `reports/labels/assistive_prelabel_tranche2_summary.json`
+- Final tranche-2 assistive outcome:
+  - `status = passed`
+  - `mode = live`
+  - `usage.request_count = 160`
+  - `input_rows = 160`
+  - `pending_rows_after_run = 0`
+  - `failed_rows = 0`
+- Output integrity checks:
+  - `160` nonblank `assistive_label` values
+  - `160` nonblank `assistive_confidence` values
+  - `160` nonblank `assistive_rationale` values
+  - `160` nonblank `assistive_model` values
+  - `160` nonblank `assistive_generated_at` values
+  - `160` nonblank `assistive_prompt_hash` values
+  - canonical `label`, `is_uncertain`, and `uncertainty_note` remained blank for all rows
+- Operational note:
+  - one intermediate malformed JSON response caused a `request_failed` checkpoint during chunked execution, but the resumable rerun path recovered cleanly without mutating canonical columns or losing prior assistive progress
+- No prompt, rubric, classifier, extraction, or roadmap-model changes were made in this step.
+- Next truthful substantive step:
+  - `iteration2.labels.verify_tranche2_labels`
