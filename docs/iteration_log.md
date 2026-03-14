@@ -2022,3 +2022,20 @@ Rules:
 - No prompt, rubric, classifier, extraction, or roadmap-model changes were made in this step.
 - Next truthful substantive step:
   - `iteration2.labels.verify_tranche2_labels`
+
+## 2026-03-14 - Tranche 2 Verification Completed
+
+- Promoted the reviewed tranche-2 export into the canonical filled artifact:
+  - source: `data/labels/v1/labeling_batch_v2_prelabeled_Verified.csv`
+  - canonical output: `data/labels/v1/labeling_batch_v2_filled.csv`
+- Validation before promotion:
+  - `160` rows
+  - same `sentence_id` set as `data/labels/v1/labeling_batch_v2_prelabeled.csv`
+  - same row order as `data/labels/v1/labeling_batch_v2_prelabeled.csv`
+  - `160` nonblank canonical `label` values
+  - `3` nonblank `is_uncertain` values
+  - `3` nonblank `uncertainty_note` values
+- Preserved existing `assistive_*` columns from the prelabel workflow and treated the reviewed export as authoritative without reopening tranche-2 labeling.
+- No prompt, rubric, classifier, extraction, or roadmap-model changes were made in this step.
+- Next truthful substantive step:
+  - `iteration2.labels.prepare_tranche3_labeling_batch`
