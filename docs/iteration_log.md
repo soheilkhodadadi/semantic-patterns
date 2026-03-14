@@ -1908,3 +1908,31 @@ Rules:
 - No rubric, prompt, classifier, or extraction-calibration changes were made in this step.
 - Next truthful substantive step:
   - continue `iteration2/sentence-pool-expansion-2024` with batch 04
+
+## 2026-03-13 - Expansion Batch 04 Completed
+
+- Executed `iteration2/sentence-pool-expansion-2024` batch 04 using the roadmap-wired command with batch-01, batch-02, and batch-03 exclusions.
+- Generated batch-04 artifacts:
+  - `data/manifests/filings/expansion_2024_batch_04.csv`
+  - `data/processed/sentences/year=2024/expanded_ai_sentences_batch_04.parquet`
+  - `reports/labels/sentence_pool_expansion_2024_batch_04_summary.json`
+- Batch-04 outcome:
+  - `firm_count = 125`
+  - `filing_count = 125`
+  - `clean_sentence_count = 906`
+  - `read_errors_count = 0`
+  - quarter distribution:
+    - `Q1 = 38`
+    - `Q2 = 30`
+    - `Q3 = 29`
+    - `Q4 = 28`
+- Cross-batch integrity:
+  - `125` unique firms in batch 04
+  - `0` firm overlap with batch 01
+  - `0` firm overlap with batch 02
+  - `0` firm overlap with batch 03
+  - deterministic exclusion of all batch-01, batch-02, and batch-03 firms confirmed
+- No rubric, prompt, classifier, or extraction-calibration changes were made in this step.
+- Next truthful substantive step:
+  - `iteration2.pool.combine_candidate_pool_batches`
+  - then `iteration2.pool.verify_candidate_pool_targets`
