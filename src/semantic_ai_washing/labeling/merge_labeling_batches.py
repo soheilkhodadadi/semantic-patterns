@@ -79,10 +79,10 @@ def merge_labeling_batches(
 
     frames = [_read_verified_csv(path) for path in input_csvs]
     combined = pd.concat(frames, ignore_index=True)
+    raw_label_present = combined["label"].fillna("").astype(str).str.strip().ne("")
     combined["label"] = combined["label"].map(ensure_allowed_label)
-    invalid_label_count = int(combined["label"].isna().sum())
-    if invalid_label_count:
-        combined["label"] = combined["label"].fillna("")
+    invalid_label_count = int((raw_label_present & combined["label"].isna()).sum())
+    combined["label"] = combined["label"].fillna("")
 
     combined["is_uncertain"] = combined["is_uncertain"].map(parse_uncertain_flag)
     combined["sentence_norm"] = combined["sentence_norm"].fillna("").astype(str)
@@ -99,10 +99,21 @@ def merge_labeling_batches(
     )
     combined.reset_index(drop=True, inplace=True)
 
-    source_duplicate_count = int(combined["sentence_text_id"].duplicated().sum())
+    blank_label_excluded_count = int((~raw_label_present).sum())
+    canonical = combined[combined["label"].astype(str).str.strip().ne("")].copy()
     heldout_norms = _load_heldout_norms(held_out_path)
-    heldout_overlap_count = int(combined["sentence_norm"].isin(heldout_norms).sum())
-    nonempty_label_count = int(combined["label"].fillna("").astype(str).str.strip().ne("").sum())
+    heldout_overlap_mask = canonical["sentence_norm"].isin(heldout_norms)
+    heldout_overlap_removed_count = int(heldout_overlap_mask.sum())
+    if heldout_overlap_removed_count:
+        canonical = canonical.loc[~heldout_overlap_mask].copy()
+    canonical.sort_values(
+        ["source_quarter", "source_file", "sentence_index", "sentence_id"], inplace=True
+    )
+    canonical.reset_index(drop=True, inplace=True)
+
+    source_duplicate_count = int(canonical["sentence_text_id"].duplicated().sum())
+    heldout_overlap_count = int(canonical["sentence_norm"].isin(heldout_norms).sum())
+    nonempty_label_count = int(len(canonical))
 
     summary = {
         "generated_at_utc": pd.Timestamp.utcnow().isoformat(),
@@ -114,24 +125,19 @@ def merge_labeling_batches(
         "summary": {
             "total_input_rows": int(len(combined)),
             "total_canonical_labeled_rows": int(nonempty_label_count),
-            "min_class_count": int(
-                combined[combined["label"].astype(str).str.strip().ne("")]["label"]
-                .value_counts()
-                .min()
-            )
+            "blank_label_rows_excluded": blank_label_excluded_count,
+            "heldout_overlap_rows_removed": heldout_overlap_removed_count,
+            "min_class_count": int(canonical["label"].value_counts().min())
             if nonempty_label_count
             else 0,
         },
         "class_counts": {
             str(label): int(count)
-            for label, count in combined[combined["label"].astype(str).str.strip().ne("")]["label"]
-            .value_counts()
-            .sort_index()
-            .items()
+            for label, count in canonical["label"].value_counts().sort_index().items()
         },
         "tranche_counts": {
             str(batch_id): int(count)
-            for batch_id, count in combined["batch_id"]
+            for batch_id, count in canonical["batch_id"]
             .astype(str)
             .value_counts()
             .sort_index()
@@ -139,13 +145,14 @@ def merge_labeling_batches(
         },
         "quality": {
             "heldout_overlap_count": heldout_overlap_count,
+            "heldout_overlap_removed_count": heldout_overlap_removed_count,
             "exact_duplicate_count": int(source_duplicate_count),
             "invalid_label_count": invalid_label_count,
             "nonempty_label_count": nonempty_label_count,
         },
         "assistive_provenance": {
-            "rows_with_assistive_columns": int(combined["assistive_present"].sum()),
-            "rows_without_assistive_columns": int((~combined["assistive_present"]).sum()),
+            "rows_with_assistive_columns": int(canonical["assistive_present"].sum()),
+            "rows_without_assistive_columns": int((~canonical["assistive_present"]).sum()),
         },
         "artifacts": {
             "labels_master_parquet": output_parquet_path,
@@ -160,7 +167,6 @@ def merge_labeling_batches(
     if invalid_label_count or heldout_overlap_count or source_duplicate_count:
         return summary, 1
 
-    canonical = combined[combined["label"].astype(str).str.strip().ne("")].copy()
     output_parquet = Path(output_parquet_path)
     output_parquet.parent.mkdir(parents=True, exist_ok=True)
     canonical.to_parquet(output_parquet, index=False, engine="pyarrow", compression="snappy")

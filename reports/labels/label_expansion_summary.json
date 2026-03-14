@@ -1,0 +1,44 @@
+{
+  "generated_at_utc": "2026-03-14T19:11:26.621638+00:00",
+  "git_commit": "4a7295a40751c192524fb74cd0b9158de41a7fcd",
+  "inputs": {
+    "verified_tranche_csvs": [
+      "data/labels/v1/labeling_batch_v1_filled_v2_4.csv",
+      "data/labels/v1/labeling_batch_v2_filled.csv",
+      "data/labels/v1/labeling_batch_v3_filled.csv"
+    ],
+    "held_out": "data/validation/held_out_sentences.csv"
+  },
+  "summary": {
+    "total_input_rows": 560,
+    "total_canonical_labeled_rows": 551,
+    "blank_label_rows_excluded": 3,
+    "heldout_overlap_rows_removed": 6,
+    "min_class_count": 99
+  },
+  "class_counts": {
+    "Actionable": 108,
+    "Irrelevant": 344,
+    "Speculative": 99
+  },
+  "tranche_counts": {
+    "labeling_batch_v1": 231,
+    "labeling_batch_v2": 160,
+    "labeling_batch_v3": 160
+  },
+  "quality": {
+    "heldout_overlap_count": 0,
+    "heldout_overlap_removed_count": 6,
+    "exact_duplicate_count": 0,
+    "invalid_label_count": 0,
+    "nonempty_label_count": 551
+  },
+  "assistive_provenance": {
+    "rows_with_assistive_columns": 551,
+    "rows_without_assistive_columns": 0
+  },
+  "artifacts": {
+    "labels_master_parquet": "data/labels/v1/labels_master.parquet",
+    "labels_master_review_csv": "data/labels/v1/labels_master_review.csv"
+  }
+}

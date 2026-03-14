@@ -984,6 +984,92 @@ def test_merge_labeling_batches_writes_master_outputs(tmp_path):
     assert summary["assistive_provenance"]["rows_with_assistive_columns"] == 1
 
 
+def test_merge_labeling_batches_excludes_blank_and_heldout_rows(tmp_path):
+    tranche = _write_csv(
+        tmp_path / "tranche.csv",
+        [
+            {
+                "batch_id": "labeling_batch_v1",
+                "sentence_id": "s1",
+                "sentence_text_id": "t1",
+                "sentence": "We use artificial intelligence in operations.",
+                "sentence_norm": "we use artificial intelligence in operations",
+                "label": "Actionable",
+                "is_uncertain": "",
+                "uncertainty_note": "",
+                "source_file": "2024/QTR1/f1.txt",
+                "source_year": 2024,
+                "source_quarter": 1,
+                "source_form": "10-K",
+                "source_cik": "1001",
+                "sentence_index": 1,
+                "assistive_label": "Actionable",
+            },
+            {
+                "batch_id": "labeling_batch_v1",
+                "sentence_id": "s2",
+                "sentence_text_id": "t2",
+                "sentence": "",
+                "sentence_norm": "",
+                "label": "",
+                "is_uncertain": "",
+                "uncertainty_note": "",
+                "source_file": "2024/QTR1/f1.txt",
+                "source_year": 2024,
+                "source_quarter": 1,
+                "source_form": "10-K",
+                "source_cik": "1001",
+                "sentence_index": 2,
+                "assistive_label": "",
+            },
+            {
+                "batch_id": "labeling_batch_v2",
+                "sentence_id": "s3",
+                "sentence_text_id": "t3",
+                "sentence": "We may use AI in the future.",
+                "sentence_norm": "we may use ai in the future",
+                "label": "Speculative",
+                "is_uncertain": "",
+                "uncertainty_note": "",
+                "source_file": "2024/QTR2/f2.txt",
+                "source_year": 2024,
+                "source_quarter": 2,
+                "source_form": "10-K",
+                "source_cik": "1002",
+                "sentence_index": 3,
+                "assistive_label": "Speculative",
+            },
+        ],
+    )
+    held_out = _write_csv(
+        tmp_path / "held_out.csv",
+        [{"sentence": "We may use AI in the future."}],
+    )
+    output_parquet = tmp_path / "labels_master.parquet"
+    output_review_csv = tmp_path / "labels_master_review.csv"
+    report_path = tmp_path / "label_expansion_summary.json"
+
+    summary, exit_code = merge_labeling_batches(
+        input_csvs=[str(tranche)],
+        held_out_path=str(held_out),
+        output_parquet_path=str(output_parquet),
+        output_review_csv_path=str(output_review_csv),
+        report_path=str(report_path),
+    )
+
+    assert exit_code == 0
+    assert output_parquet.exists()
+    assert output_review_csv.exists()
+    assert summary["summary"]["total_input_rows"] == 3
+    assert summary["summary"]["total_canonical_labeled_rows"] == 1
+    assert summary["summary"]["blank_label_rows_excluded"] == 1
+    assert summary["summary"]["heldout_overlap_rows_removed"] == 1
+    assert summary["quality"]["heldout_overlap_count"] == 0
+    assert summary["quality"]["heldout_overlap_removed_count"] == 1
+    assert summary["quality"]["invalid_label_count"] == 0
+    assert summary["assistive_provenance"]["rows_with_assistive_columns"] == 1
+
+
 def test_benchmark_prompt_variants_picks_best_eligible_variant(monkeypatch, tmp_path):
     input_rows = []
     benchmark_rows = []

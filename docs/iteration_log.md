@@ -2109,7 +2109,7 @@ Rules:
   - preserved existing `assistive_*` columns exactly as generated during tranche-3 prelabeling
   - preserved `is_uncertain` and `uncertainty_note` exactly as reviewed
 - Synced the stale merge control plane to the accepted tranche math:
-  - corrected the merge quality gate from `>= 560` to `>= 557`
+  - corrected the stale pre-merge tranche total from `560` to `557`
   - aligned the roadmap-model regression test with the current tranche-1 `v2.4` workflow and canonical input paths
 - Rationale for the gate correction:
   - tranche 1 contributes `237` eligible canonical labels by design
@@ -2118,3 +2118,32 @@ Rules:
   - canonical master total after 3 verified tranches is therefore `557`, not `560`
 - Next truthful substantive step:
   - `iteration2.labels.merge_canonical_labels`
+
+## 2026-03-14 - Canonical Labels Master Merged
+
+- Executed `iteration2.labels.merge_canonical_labels` using the canonical three-tranche merge command:
+  - `.venv/bin/python -m semantic_ai_washing.labeling.merge_labeling_batches --inputs data/labels/v1/labeling_batch_v1_filled_v2_4.csv data/labels/v1/labeling_batch_v2_filled.csv data/labels/v1/labeling_batch_v3_filled.csv --held-out data/validation/held_out_sentences.csv --output-parquet data/labels/v1/labels_master.parquet --output-review-csv data/labels/v1/labels_master_review.csv --report reports/labels/label_expansion_summary.json`
+- Refined the merge implementation to respect the already accepted labeling policy:
+  - blank-label tranche rows are treated as intentionally excluded, not invalid
+  - held-out sentence overlaps are removed from the canonical master rather than blocking artifact creation
+- Generated canonical merge artifacts:
+  - `data/labels/v1/labels_master.parquet`
+  - `data/labels/v1/labels_master_review.csv`
+  - `reports/labels/label_expansion_summary.json`
+- Final leakage-safe master outcome:
+  - `total_input_rows = 560`
+  - `total_canonical_labeled_rows = 551`
+  - `blank_label_rows_excluded = 3`
+  - `heldout_overlap_rows_removed = 6`
+  - `heldout_overlap_count = 0`
+  - `exact_duplicate_count = 0`
+  - `invalid_label_count = 0`
+- Tranche contribution after held-out filtering:
+  - tranche 1 = `231`
+  - tranche 2 = `160`
+  - tranche 3 = `160`
+- Control-plane follow-up:
+  - corrected the merge quality gate from the pre-filter `557` total to the final leakage-safe `551`
+  - aligned the roadmap-model regression test with the final merge threshold and current tranche wiring
+- Next truthful substantive step:
+  - `iteration2/irr-and-adjudication`

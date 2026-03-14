@@ -1133,7 +1133,7 @@ def test_actual_iteration2_tranche_workflow_is_wired():
         condition.kind == "json_field_compare"
         and condition.target
         == "reports/labels/label_expansion_summary.json::summary.total_canonical_labeled_rows"
-        and condition.expected == 557
+        and condition.expected == 551
         for condition in merge_task.quality_checks
     )
 
