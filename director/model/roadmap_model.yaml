@@ -3053,13 +3053,13 @@ iterations:
         message: Verified tranche 3 CSV is required before label merge.
         reroute_to: []
       quality_checks:
-      - condition_id: labels_master_total_gte_560
+      - condition_id: labels_master_total_gte_557
         kind: json_field_compare
         target: reports/labels/label_expansion_summary.json::summary.total_canonical_labeled_rows
         operator: '>='
-        expected: 560
+        expected: 557
         on_fail: block
-        message: Canonical labels summary must contain at least 560 labeled rows after
+        message: Canonical labels summary must contain at least 557 labeled rows after
           3 tranches.
         reroute_to: []
       - condition_id: labels_master_heldout_zero

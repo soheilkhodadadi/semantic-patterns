@@ -2095,3 +2095,26 @@ Rules:
 - No prompt, rubric, classifier, extraction, or roadmap-model changes were made in this step.
 - Next truthful substantive step:
   - `iteration2.labels.verify_tranche3_labels`
+
+## 2026-03-14 - Tranche 3 Verification Completed and Merge Gate Synced
+
+- Promoted the reviewed tranche-3 export into the canonical filled artifact:
+  - source: `data/labels/v1/labeling_batch_v3_prelabeled_filled.csv`
+  - canonical output: `data/labels/v1/labeling_batch_v3_filled.csv`
+- Validation before promotion:
+  - `160` rows
+  - same `sentence_id` set as `data/labels/v1/labeling_batch_v3_prelabeled.csv`
+  - same row order as `data/labels/v1/labeling_batch_v3_prelabeled.csv`
+  - `160` nonblank canonical `label` values
+  - preserved existing `assistive_*` columns exactly as generated during tranche-3 prelabeling
+  - preserved `is_uncertain` and `uncertainty_note` exactly as reviewed
+- Synced the stale merge control plane to the accepted tranche math:
+  - corrected the merge quality gate from `>= 560` to `>= 557`
+  - aligned the roadmap-model regression test with the current tranche-1 `v2.4` workflow and canonical input paths
+- Rationale for the gate correction:
+  - tranche 1 contributes `237` eligible canonical labels by design
+  - tranche 2 contributes `160`
+  - tranche 3 contributes `160`
+  - canonical master total after 3 verified tranches is therefore `557`, not `560`
+- Next truthful substantive step:
+  - `iteration2.labels.merge_canonical_labels`

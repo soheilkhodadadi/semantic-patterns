@@ -931,46 +931,33 @@ def test_actual_iteration2_tranche_workflow_is_wired():
     assert rubric_phase is not None
     rubric_task_ids = [task.task_id for task in rubric_phase.tasks]
     assert rubric_task_ids == [
-        "iteration2.rubric.review_tranche1_error_patterns_v2_2",
-        "iteration2.rubric.publish_protocol_v2_2",
-        "iteration2.rubric.reextract_tranche1_slice_v2_2",
-        "iteration2.rubric.generate_tranche1_slice_prelables_v2_2",
-        "iteration2.rubric.initialize_tranche1_slice_review_v2_2",
-        "iteration2.rubric.review_calibration_slice_v2_2",
-        "iteration2.rubric.regenerate_tranche1_assistive_prelabels_v2_2",
-        "iteration2.rubric.initialize_tranche1_review_v2_2",
+        "iteration2.rubric.review_tranche1_error_patterns_v2_4",
+        "iteration2.rubric.publish_protocol_v2_4",
+        "iteration2.rubric.generate_tranche1_clean_slice_prelables_v2_4",
+        "iteration2.rubric.initialize_tranche1_clean_slice_review_v2_4",
+        "iteration2.rubric.confirm_tranche1_clean_slice_v2_4",
+        "iteration2.rubric.rebuild_tranche1_text_v2_4",
+        "iteration2.rubric.regenerate_tranche1_assistive_prelabels_v2_4",
+        "iteration2.rubric.initialize_tranche1_review_v2_4",
     ]
-    reextract_slice = next(
-        task
-        for task in rubric_phase.tasks
-        if task.task_id == "iteration2.rubric.reextract_tranche1_slice_v2_2"
-    )
-    assert reextract_slice.manual_handoff is False
-    assert reextract_slice.kind == "build"
-    assert any(
-        "semantic_ai_washing.data.reextract_tranche_slice" in command
-        and "labeling_batch_v1_reextracted_v2_2_slice40.csv" in command
-        for command in reextract_slice.commands
-    )
-
     generate_slice = next(
         task
         for task in rubric_phase.tasks
-        if task.task_id == "iteration2.rubric.generate_tranche1_slice_prelables_v2_2"
+        if task.task_id == "iteration2.rubric.generate_tranche1_clean_slice_prelables_v2_4"
     )
     assert generate_slice.manual_handoff is False
     assert generate_slice.kind == "build"
     assert any(
         condition.kind == "json_field_compare"
         and condition.target
-        == "reports/labels/assistive_prelabel_tranche1_v2_2_slice40_summary.json::status"
+        == "reports/labels/assistive_prelabel_tranche1_v2_4_clean_slice40_summary.json::status"
         and condition.expected == "passed"
         for condition in generate_slice.quality_checks
     )
     assert any(
         condition.kind == "json_field_compare"
         and condition.target
-        == "reports/labels/assistive_prelabel_tranche1_v2_2_slice40_summary.json::usage.request_count"
+        == "reports/labels/assistive_prelabel_tranche1_v2_4_clean_slice40_summary.json::usage.request_count"
         and condition.expected == 1
         and condition.operator == ">="
         for condition in generate_slice.quality_checks
@@ -979,45 +966,56 @@ def test_actual_iteration2_tranche_workflow_is_wired():
     initialize_slice = next(
         task
         for task in rubric_phase.tasks
-        if task.task_id == "iteration2.rubric.initialize_tranche1_slice_review_v2_2"
+        if task.task_id == "iteration2.rubric.initialize_tranche1_clean_slice_review_v2_4"
     )
     assert "semantic_ai_washing.labeling.initialize_review_sheet" in initialize_slice.commands[0]
-    assert "labeling_batch_v1_filled_v2_2_slice40.csv" in initialize_slice.commands[0]
+    assert "labeling_batch_v1_filled_v2_4_clean_slice40.csv" in initialize_slice.commands[0]
 
     review_slice = next(
         task
         for task in rubric_phase.tasks
-        if task.task_id == "iteration2.rubric.review_calibration_slice_v2_2"
+        if task.task_id == "iteration2.rubric.confirm_tranche1_clean_slice_v2_4"
     )
-    assert review_slice.manual_handoff is True
+    assert review_slice.manual_handoff is False
     assert (
-        review_slice.inputs[0].path == "data/labels/v1/labeling_batch_v1_filled_v2_2_slice40.csv"
+        review_slice.inputs[0].path == "data/labels/v1/labeling_batch_v1_filled_v2_1_slice40.csv"
     )
 
-    regenerate_tranche1_v2_2 = next(
+    rebuild_tranche1_v2_4 = next(
         task
         for task in rubric_phase.tasks
-        if task.task_id == "iteration2.rubric.regenerate_tranche1_assistive_prelabels_v2_2"
+        if task.task_id == "iteration2.rubric.rebuild_tranche1_text_v2_4"
+    )
+    assert any(
+        "semantic_ai_washing.data.reextract_tranche_slice" in command
+        and "labeling_batch_v1_reextracted_v2_4.csv" in command
+        for command in rebuild_tranche1_v2_4.commands
+    )
+
+    regenerate_tranche1_v2_4 = next(
+        task
+        for task in rubric_phase.tasks
+        if task.task_id == "iteration2.rubric.regenerate_tranche1_assistive_prelabels_v2_4"
     )
     assert any(
         "assistive_prelabel_batch" in command
-        and "labeling_batch_v1_prelabeled_v2_2.csv" in command
-        for command in regenerate_tranche1_v2_2.commands
+        and "labeling_batch_v1_prelabeled_v2_4.csv" in command
+        for command in regenerate_tranche1_v2_4.commands
     )
     assert any(
         condition.kind == "json_field_compare"
         and condition.target
-        == "reports/labels/assistive_prelabel_tranche1_v2_2_summary.json::status"
+        == "reports/labels/assistive_prelabel_tranche1_v2_4_summary.json::status"
         and condition.expected == "passed"
-        for condition in regenerate_tranche1_v2_2.quality_checks
+        for condition in regenerate_tranche1_v2_4.quality_checks
     )
 
     initialize_full = next(
         task
         for task in rubric_phase.tasks
-        if task.task_id == "iteration2.rubric.initialize_tranche1_review_v2_2"
+        if task.task_id == "iteration2.rubric.initialize_tranche1_review_v2_4"
     )
-    assert "labeling_batch_v1_filled_v2_2.csv" in initialize_full.commands[0]
+    assert "labeling_batch_v1_filled_v2_4.csv" in initialize_full.commands[0]
 
     tranche1_phase = find_phase(model, iteration_id="2", phase_name="tranche1-labeling")
     assert tranche1_phase is not None
@@ -1030,8 +1028,8 @@ def test_actual_iteration2_tranche_workflow_is_wired():
     )
     assert any(
         condition.kind == "csv_nonempty_count_gte"
-        and condition.target == "data/labels/v1/labeling_batch_v1_filled_v2_2.csv::label"
-        and condition.expected == 240
+        and condition.target == "data/labels/v1/labeling_batch_v1_filled_v2_4.csv::label"
+        and condition.expected == 237
         for condition in verify_tranche1.quality_checks
     )
 
@@ -1130,12 +1128,12 @@ def test_actual_iteration2_tranche_workflow_is_wired():
     )
     assert "semantic_ai_washing.labeling.merge_labeling_batches" in merge_task.commands[0]
     assert "data/labels/v1/labeling_batch_v3_filled.csv" in merge_task.commands[0]
-    assert "data/labels/v1/labeling_batch_v1_filled_v2_2.csv" in merge_task.commands[0]
+    assert "data/labels/v1/labeling_batch_v1_filled_v2_4.csv" in merge_task.commands[0]
     assert any(
         condition.kind == "json_field_compare"
         and condition.target
         == "reports/labels/label_expansion_summary.json::summary.total_canonical_labeled_rows"
-        and condition.expected == 560
+        and condition.expected == 557
         for condition in merge_task.quality_checks
     )
 
