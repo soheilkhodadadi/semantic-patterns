@@ -1936,3 +1936,32 @@ Rules:
 - Next truthful substantive step:
   - `iteration2.pool.combine_candidate_pool_batches`
   - then `iteration2.pool.verify_candidate_pool_targets`
+
+## 2026-03-13 - Combined 500-Firm Candidate Pool Verified
+
+- Executed `iteration2.pool.combine_candidate_pool_batches` using the roadmap-wired command across batch manifests 01-04 and their corresponding sentence parquet outputs.
+- Generated cumulative candidate-pool artifacts:
+  - `data/manifests/filings/expansion_2024_500_firms_v1.csv`
+  - `data/processed/sentences/year=2024/expanded_ai_sentences.parquet`
+  - `reports/labels/sentence_pool_expansion_2024_summary.json`
+- Combined candidate-pool outcome:
+  - `firm_count = 500`
+  - `filing_count = 500`
+  - `clean_sentence_count = 4520`
+  - quarter distribution:
+    - `Q1 = 155`
+    - `Q2 = 102`
+    - `Q3 = 129`
+    - `Q4 = 114`
+- Quality and integrity checks:
+  - `duplicate_firm_count = 0`
+  - combined manifest contains `500` unique `cik` values
+  - `duplicate_sentence_text_count_removed = 354`
+  - `post_combine_duplicate_sentence_text_count = 0`
+  - manifest and sentence parquet SHA256 hashes recorded in the summary artifact
+- Verified `iteration2.pool.verify_candidate_pool_targets` against the combined summary JSON:
+  - `candidate_pool.firm_count >= 500` -> pass
+  - `candidate_pool.clean_sentence_count >= 1000` -> pass
+- No prompt, rubric, classifier, extraction, or roadmap-model changes were made in this step.
+- Next truthful substantive step:
+  - `iteration2.labels.prepare_tranche2_labeling_batch`

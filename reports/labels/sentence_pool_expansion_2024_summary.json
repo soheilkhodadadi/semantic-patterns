@@ -1,0 +1,42 @@
+{
+  "manifest": {
+    "input_manifest_paths": [
+      "data/manifests/filings/expansion_2024_batch_01.csv",
+      "data/manifests/filings/expansion_2024_batch_02.csv",
+      "data/manifests/filings/expansion_2024_batch_03.csv",
+      "data/manifests/filings/expansion_2024_batch_04.csv"
+    ],
+    "input_sentence_paths": [
+      "data/processed/sentences/year=2024/expanded_ai_sentences_batch_01.parquet",
+      "data/processed/sentences/year=2024/expanded_ai_sentences_batch_02.parquet",
+      "data/processed/sentences/year=2024/expanded_ai_sentences_batch_03.parquet",
+      "data/processed/sentences/year=2024/expanded_ai_sentences_batch_04.parquet"
+    ],
+    "combined_filing_count": 500,
+    "combined_batch_count": 4
+  },
+  "candidate_pool": {
+    "firm_count": 500,
+    "filing_count": 500,
+    "clean_sentence_count": 4520,
+    "quarter_counts": {
+      "1": 155,
+      "2": 102,
+      "3": 129,
+      "4": 114
+    },
+    "ff12_known_filing_count": 20,
+    "ff12_unknown_filing_count": 480
+  },
+  "quality": {
+    "duplicate_firm_count": 0,
+    "duplicate_sentence_text_count_removed": 354,
+    "post_combine_duplicate_sentence_text_count": 0
+  },
+  "artifacts": {
+    "manifest": "data/manifests/filings/expansion_2024_500_firms_v1.csv",
+    "expanded_sentence_table": "data/processed/sentences/year=2024/expanded_ai_sentences.parquet",
+    "manifest_sha256": "af4bc4d2daa655726ff3311f43e7f8e903b126eccb5d14dff7db09b8b9708811",
+    "expanded_sentence_table_sha256": "badb80bbeaa5b66084c2ab508c328245dc9068dbbc1c79f7216d2d17923ae8a5"
+  }
+}
