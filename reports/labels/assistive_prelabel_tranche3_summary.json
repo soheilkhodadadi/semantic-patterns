@@ -1,0 +1,36 @@
+{
+  "generated_at": "2026-03-14T17:25:19.966364+00:00",
+  "status": "passed",
+  "mode": "live",
+  "policy_path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/config/api_assistive_policy.yaml",
+  "input_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/labels/v1/labeling_batch_v3.csv",
+  "output_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/labels/v1/labeling_batch_v3_prelabeled.csv",
+  "report_path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/reports/labels/assistive_prelabel_tranche3_summary.json",
+  "model": "gpt-5-mini",
+  "resumed_existing_output": true,
+  "parameters": {
+    "max_rows": 20,
+    "sleep_seconds": 0.0,
+    "checkpoint_every": 10
+  },
+  "counts": {
+    "input_rows": 160,
+    "skipped_canonical_labeled_rows": 0,
+    "skipped_existing_assistive_rows": 140,
+    "skipped_unmatched_noise_rows": 0,
+    "skipped_blank_sentence_rows": 0,
+    "pending_rows_before_run": 20,
+    "processed_rows": 20,
+    "failed_rows": 0,
+    "pending_rows_after_run": 0
+  },
+  "usage": {
+    "request_count": 160,
+    "prompt_tokens": 11727,
+    "completion_tokens": 1206,
+    "total_tokens": 12933,
+    "estimated_cost_usd": 0.0,
+    "cost_estimation_status": "pricing_unconfigured"
+  },
+  "errors": []
+}
