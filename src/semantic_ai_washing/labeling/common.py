@@ -4,7 +4,10 @@ from __future__ import annotations
 
 import hashlib
 import re
+from pathlib import Path
 from typing import Iterable
+
+import pandas as pd
 
 ALLOWED_LABELS = ("Actionable", "Speculative", "Irrelevant")
 
@@ -88,3 +91,23 @@ def row_sha256(rows: Iterable[str]) -> str:
     for row in rows:
         hasher.update(row.encode("utf-8"))
     return hasher.hexdigest()
+
+
+def load_table(path: str | Path) -> pd.DataFrame:
+    """Load CSV, parquet, or Excel data from a local path."""
+    resolved = Path(path)
+    suffix = resolved.suffix.lower()
+    if suffix == ".csv":
+        return pd.read_csv(resolved)
+    if suffix == ".parquet":
+        return pd.read_parquet(resolved)
+    if suffix in {".xlsx", ".xls"}:
+        return pd.read_excel(resolved)
+    raise ValueError(f"Unsupported table format: {resolved}")
+
+
+def write_excel(path: str | Path, frame: pd.DataFrame, *, sheet_name: str = "Sheet1") -> None:
+    """Write a spreadsheet-friendly XLSX handoff."""
+    resolved = Path(path)
+    resolved.parent.mkdir(parents=True, exist_ok=True)
+    frame.to_excel(resolved, index=False, sheet_name=sheet_name)

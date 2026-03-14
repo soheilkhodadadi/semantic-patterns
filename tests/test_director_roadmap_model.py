@@ -1137,6 +1137,61 @@ def test_actual_iteration2_tranche_workflow_is_wired():
         for condition in merge_task.quality_checks
     )
 
+    irr_phase = find_phase(model, iteration_id="2", phase_name="irr-and-adjudication")
+    assert irr_phase is not None
+    irr_prepare = next(
+        task for task in irr_phase.tasks if task.task_id == "iteration2.irr.prepare_subset_handoff"
+    )
+    assert "semantic_ai_washing.labeling.prepare_irr_subset" in irr_prepare.commands[0]
+    assert "--target-size 120" in irr_prepare.commands[0]
+    assert "--class-quota 40" in irr_prepare.commands[0]
+    assert "--min-unique-firms 100" in irr_prepare.commands[0]
+    assert any(
+        condition.kind == "json_field_compare"
+        and condition.target
+        == "reports/labels/irr_subset_sampling_report.json::summary.unique_firms"
+        and condition.expected == 100
+        for condition in irr_prepare.quality_checks
+    )
+
+    irr_collect = next(
+        task for task in irr_phase.tasks if task.task_id == "iteration2.irr.collect_rater2_labels"
+    )
+    assert irr_collect.manual_handoff is True
+    assert irr_collect.outputs[0].path == "data/labels/v1/irr_subset_rater2_completed.xlsx"
+
+    irr_compute = next(
+        task
+        for task in irr_phase.tasks
+        if task.task_id == "iteration2.irr.compute_and_seed_adjudication"
+    )
+    assert "semantic_ai_washing.labeling.adjudicate_irr_labels" in irr_compute.commands[0]
+    assert "semantic_ai_washing.labeling.compute_irr_metrics" in irr_compute.commands[1]
+    assert any(
+        condition.kind == "json_field_compare"
+        and condition.target == "reports/labels/irr_report.json::summary.status"
+        and condition.operator == "in"
+        for condition in irr_compute.quality_checks
+    )
+
+    irr_finalize = next(
+        task
+        for task in irr_phase.tasks
+        if task.task_id == "iteration2.irr.finalize_adjudication_and_report"
+    )
+    assert "data/labels/v1/irr_adjudication_completed.xlsx" in irr_finalize.commands[0]
+    assert any(
+        condition.kind == "manual_artifact_present"
+        and condition.target == "data/labels/v1/irr_adjudication_completed.xlsx"
+        for condition in irr_finalize.preconditions
+    )
+    assert any(
+        condition.kind == "json_field_compare"
+        and condition.target == "reports/labels/irr_report.json::summary.status"
+        and condition.expected == "passed"
+        for condition in irr_finalize.quality_checks
+    )
+
     freeze_phase = find_phase(
         model, iteration_id="2", phase_name="provisional-rubric-freeze-and-split-registry"
     )

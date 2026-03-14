@@ -1,0 +1,52 @@
+{
+  "generated_at_utc": "2026-03-14T20:05:12.294838+00:00",
+  "git_commit": "b3fd841cb56b4ef00b11e6ac71f3a9c8f3736425",
+  "inputs": {
+    "master": "data/labels/v1/irr_subset_master.csv",
+    "rater2": "data/labels/v1/irr_subset_rater2_completed.xlsx",
+    "adjudication": "data/labels/v1/adjudication.parquet",
+    "sampling_report": "reports/labels/irr_subset_sampling_report.json",
+    "attestation": "reports/labels/irr_attestation.json",
+    "master_sha256": "11dea3d01311582709d53d65b0731edbc8b10cd76acdf803ff1e20fac57fc3be",
+    "rater2_sha256": "",
+    "adjudication_sha256": "2ec1f9d7b637032be2d21d3cb5ef649130aea785c59f94f32123878f80387b48",
+    "sampling_report_sha256": "a178854f58126ecf57fdd0fbf8d4d60543668f75357871e21d8caa01b062852e",
+    "attestation_sha256": "8198b5d0657576cb67b8be455bbebcd6ed8d3f09691a26b09861cc4f325ce61e"
+  },
+  "parameters": {
+    "min_kappa": 0.7,
+    "gate_mode": "infrastructure"
+  },
+  "summary": {
+    "status": "pending_rater2",
+    "reviewed_items": 0,
+    "kappa": null,
+    "human_human_only": true,
+    "stratified_100_firms_min": true,
+    "industry_year_balanced": true,
+    "by_class_kappa_reported": false,
+    "third_adjudicator_used": false,
+    "firms_reviewed": 0,
+    "rows_disagreement": 0,
+    "rows_master": 120,
+    "transition_counts": {
+      "A->S": 0,
+      "A->I": 0,
+      "S->A": 0,
+      "S->I": 0,
+      "I->A": 0,
+      "I->S": 0
+    },
+    "by_class_kappa": {
+      "Actionable": null,
+      "Speculative": null,
+      "Irrelevant": null
+    },
+    "pending_reason": "rater2_file_missing_or_invalid"
+  },
+  "artifacts": {
+    "confusion_matrix": "reports/labels/irr_confusion_matrix.csv",
+    "transition_counts": "reports/labels/irr_transition_counts.csv",
+    "status_file": "reports/labels/irr_status.json"
+  }
+}

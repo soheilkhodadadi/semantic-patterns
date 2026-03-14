@@ -3144,17 +3144,18 @@ iterations:
         message: Review CSV is missing for IRR sentence audit.
         reroute_to: []
       quality_checks:
-      - condition_id: irr_sentence_fragment_threshold
-        kind: sentence_fragment_rate_lte
-        target: data/labels/v1/labels_master_review.csv
-        operator: <=
-        expected: 0.15
+      - condition_id: irr_sentence_quality_report_passed
+        kind: json_field_compare
+        target: reports/labels/irr_sentence_quality.json::passed
+        operator: ==
+        expected: true
         on_fail: reroute
         message: IRR source quality is too low for reliable human rating.
         reroute_to:
         - common.remediate_fragmented_sentences
         - common.resample_from_clean_sentence_pool
-      commands: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.labeling.audit_sentence_integrity --input-csv data/labels/v1/labels_master_review.csv --output-report reports/labels/irr_sentence_quality.json --threshold 0.15
       manual_handoff: false
       risks:
       - R1
@@ -3170,26 +3171,263 @@ iterations:
       tags:
       - sentence_quality_gate
       gate_class: data
-    - task_id: iteration2.irr.prepare_and_collect
-      title: Prepare and collect blinded IRR labels
-      description: Prepare a stratified and blinded IRR subset, collect second-rater
-        labels, publish by-class diagnostics, and adjudicate disagreements with a
-        third adjudicator.
+    - task_id: iteration2.irr.prepare_subset_handoff
+      title: Prepare blinded IRR subset handoff
+      description: Prepare a stratified, text-only IRR subset with spreadsheet-friendly
+        second-rater handoff artifacts.
       iteration_id: '2'
       phase_id: iteration2/irr-and-adjudication
-      kind: manual
+      kind: build
       depends_on:
       - iteration2.shared.audit_sentence_integrity
       inputs:
-      - artifact_id: labels_master
-        path: data/labels/v1/labels_master.parquet
-        kind: parquet
+      - artifact_id: labels_master_review
+        path: data/labels/v1/labels_master_review.csv
+        kind: csv
         required: true
       outputs:
       - artifact_id: irr_subset
         path: data/labels/v1/irr_subset.parquet
         kind: parquet
         required: true
+      - artifact_id: irr_subset_master
+        path: data/labels/v1/irr_subset_master.csv
+        kind: csv
+        required: true
+      - artifact_id: irr_subset_rater2_blinded_csv
+        path: data/labels/v1/irr_subset_rater2_blinded.csv
+        kind: csv
+        required: true
+      - artifact_id: irr_subset_rater2_blinded_xlsx
+        path: data/labels/v1/irr_subset_rater2_blinded.xlsx
+        kind: file
+        required: true
+      - artifact_id: irr_subset_sampling_report
+        path: reports/labels/irr_subset_sampling_report.json
+        kind: json
+        required: true
+      - artifact_id: irr_attestation
+        path: reports/labels/irr_attestation.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: labels_master_review_exists_for_irr
+        kind: artifact_exists
+        target: data/labels/v1/labels_master_review.csv
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Canonical review labels must exist before IRR subset prep.
+        reroute_to: []
+      quality_checks:
+      - condition_id: irr_subset_rows_selected
+        kind: json_field_compare
+        target: reports/labels/irr_subset_sampling_report.json::summary.rows_selected
+        operator: ==
+        expected: 120
+        on_fail: block
+        message: IRR subset prep must materialize exactly 120 rows.
+        reroute_to: []
+      - condition_id: irr_subset_actionable_quota
+        kind: json_field_compare
+        target: reports/labels/irr_subset_sampling_report.json::summary.selected_class_counts.Actionable
+        operator: ==
+        expected: 40
+        on_fail: block
+        message: IRR subset must include 40 Actionable rows.
+        reroute_to: []
+      - condition_id: irr_subset_speculative_quota
+        kind: json_field_compare
+        target: reports/labels/irr_subset_sampling_report.json::summary.selected_class_counts.Speculative
+        operator: ==
+        expected: 40
+        on_fail: block
+        message: IRR subset must include 40 Speculative rows.
+        reroute_to: []
+      - condition_id: irr_subset_irrelevant_quota
+        kind: json_field_compare
+        target: reports/labels/irr_subset_sampling_report.json::summary.selected_class_counts.Irrelevant
+        operator: ==
+        expected: 40
+        on_fail: block
+        message: IRR subset must include 40 Irrelevant rows.
+        reroute_to: []
+      - condition_id: irr_subset_unique_firms_min
+        kind: json_field_compare
+        target: reports/labels/irr_subset_sampling_report.json::summary.unique_firms
+        operator: '>='
+        expected: 100
+        on_fail: block
+        message: IRR subset must cover at least 100 firms.
+        reroute_to: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.labeling.prepare_irr_subset --input data/labels/v1/labels_master_review.csv --output-parquet data/labels/v1/irr_subset.parquet --output-master-csv data/labels/v1/irr_subset_master.csv --output-blinded-csv data/labels/v1/irr_subset_rater2_blinded.csv --output-blinded-xlsx data/labels/v1/irr_subset_rater2_blinded.xlsx --output-report reports/labels/irr_subset_sampling_report.json --attestation-output reports/labels/irr_attestation.json --target-size 120 --class-quota 40 --min-unique-firms 100 --seed 20260314 --blind-mode text_only
+      manual_handoff: false
+      risks:
+      - R1
+      - R3
+      estimated_effort: 3
+      risk_reduction: 9
+      automation_level: full
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - human_irr
+      - sampling
+      gate_class: data
+    - task_id: iteration2.irr.collect_rater2_labels
+      title: Collect blinded second-rater labels
+      description: A second human rater completes the blinded text-only XLSX handoff.
+      iteration_id: '2'
+      phase_id: iteration2/irr-and-adjudication
+      kind: manual
+      depends_on:
+      - iteration2.irr.prepare_subset_handoff
+      inputs:
+      - artifact_id: irr_subset_rater2_blinded_xlsx
+        path: data/labels/v1/irr_subset_rater2_blinded.xlsx
+        kind: file
+        required: true
+      outputs:
+      - artifact_id: irr_subset_rater2_completed_xlsx
+        path: data/labels/v1/irr_subset_rater2_completed.xlsx
+        kind: file
+        required: true
+      preconditions:
+      - condition_id: irr_subset_rater2_blinded_exists
+        kind: artifact_exists
+        target: data/labels/v1/irr_subset_rater2_blinded.xlsx
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Blinded IRR handoff must exist before second-rater collection.
+        reroute_to: []
+      quality_checks: []
+      commands: []
+      manual_handoff: true
+      risks:
+      - R1
+      - R3
+      estimated_effort: 5
+      risk_reduction: 8
+      automation_level: manual
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - human_irr
+      - rater2
+      gate_class: manual
+    - task_id: iteration2.irr.compute_and_seed_adjudication
+      title: Compute IRR status and seed adjudication
+      description: Publish a truthful pending or complete IRR report and seed disagreement
+        adjudication artifacts.
+      iteration_id: '2'
+      phase_id: iteration2/irr-and-adjudication
+      kind: analysis
+      depends_on:
+      - iteration2.irr.prepare_subset_handoff
+      inputs:
+      - artifact_id: irr_subset_master
+        path: data/labels/v1/irr_subset_master.csv
+        kind: csv
+        required: true
+      - artifact_id: irr_attestation
+        path: reports/labels/irr_attestation.json
+        kind: json
+        required: true
+      - artifact_id: irr_subset_sampling_report
+        path: reports/labels/irr_subset_sampling_report.json
+        kind: json
+        required: true
+      outputs:
+      - artifact_id: irr_report
+        path: reports/labels/irr_report.json
+        kind: json
+        required: true
+      - artifact_id: irr_adjudication_sheet_csv
+        path: data/labels/v1/irr_adjudication_sheet.csv
+        kind: csv
+        required: true
+      - artifact_id: irr_adjudication_sheet_xlsx
+        path: data/labels/v1/irr_adjudication_sheet.xlsx
+        kind: file
+        required: true
+      - artifact_id: adjudication
+        path: data/labels/v1/adjudication.parquet
+        kind: parquet
+        required: true
+      preconditions:
+      - condition_id: irr_subset_master_exists
+        kind: artifact_exists
+        target: data/labels/v1/irr_subset_master.csv
+        operator: ==
+        expected: true
+        on_fail: block
+        message: IRR subset master must exist before IRR metrics can run.
+        reroute_to: []
+      quality_checks:
+      - condition_id: irr_report_status_seeded
+        kind: json_field_compare
+        target: reports/labels/irr_report.json::summary.status
+        operator: in
+        expected:
+        - pending_rater2
+        - pending_adjudication
+        - passed
+        - failed
+        on_fail: block
+        message: IRR report must publish a truthful workflow status.
+        reroute_to: []
+      - condition_id: irr_adjudication_status_seeded
+        kind: json_field_compare
+        target: reports/labels/irr_adjudication_status.json::summary.status
+        operator: in
+        expected:
+        - pending_rater2
+        - pending_adjudication
+        - finalized
+        on_fail: block
+        message: Adjudication scaffold must publish a truthful workflow status.
+        reroute_to: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.labeling.adjudicate_irr_labels --master data/labels/v1/irr_subset_master.csv --rater2 data/labels/v1/irr_subset_rater2_completed.xlsx --adjudication-input data/labels/v1/irr_adjudication_completed.xlsx --output-sheet-csv data/labels/v1/irr_adjudication_sheet.csv --output-sheet-xlsx data/labels/v1/irr_adjudication_sheet.xlsx --output-parquet data/labels/v1/adjudication.parquet --output-status reports/labels/irr_adjudication_status.json --allow-pending
+      - .venv/bin/python -m semantic_ai_washing.labeling.compute_irr_metrics --master data/labels/v1/irr_subset_master.csv --rater2 data/labels/v1/irr_subset_rater2_completed.xlsx --adjudication data/labels/v1/adjudication.parquet --sampling-report reports/labels/irr_subset_sampling_report.json --attestation reports/labels/irr_attestation.json --output-report reports/labels/irr_report.json --output-confusion reports/labels/irr_confusion_matrix.csv --output-transitions reports/labels/irr_transition_counts.csv --output-status reports/labels/irr_status.json --min-kappa 0.70 --gate-mode infrastructure
+      manual_handoff: false
+      risks:
+      - R1
+      - R3
+      estimated_effort: 4
+      risk_reduction: 9
+      automation_level: full
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - human_irr
+      - adjudication
+      gate_class: data
+    - task_id: iteration2.irr.finalize_adjudication_and_report
+      title: Finalize adjudication and publish final IRR report
+      description: After the third adjudicator completes the disagreement sheet, publish
+        the finalized adjudication parquet and IRR report.
+      iteration_id: '2'
+      phase_id: iteration2/irr-and-adjudication
+      kind: validation
+      depends_on:
+      - iteration2.irr.collect_rater2_labels
+      - iteration2.irr.compute_and_seed_adjudication
+      inputs:
+      - artifact_id: irr_subset_rater2_completed_xlsx
+        path: data/labels/v1/irr_subset_rater2_completed.xlsx
+        kind: file
+        required: true
+      - artifact_id: irr_adjudication_completed_xlsx
+        path: data/labels/v1/irr_adjudication_completed.xlsx
+        kind: file
+        required: true
+      outputs:
       - artifact_id: irr_report
         path: reports/labels/irr_report.json
         kind: json
@@ -3199,15 +3437,31 @@ iterations:
         kind: parquet
         required: true
       preconditions:
-      - condition_id: labels_master_exists
-        kind: artifact_exists
-        target: data/labels/v1/labels_master.parquet
+      - condition_id: irr_rater2_completed_exists
+        kind: manual_artifact_present
+        target: data/labels/v1/irr_subset_rater2_completed.xlsx
         operator: ==
         expected: true
         on_fail: block
-        message: Canonical labels must exist before IRR.
+        message: Second-rater labels must be completed before final IRR publication.
+        reroute_to: []
+      - condition_id: irr_adjudication_completed_exists
+        kind: manual_artifact_present
+        target: data/labels/v1/irr_adjudication_completed.xlsx
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Third-adjudicator labels must be completed before final IRR publication.
         reroute_to: []
       quality_checks:
+      - condition_id: irr_final_status_passed
+        kind: json_field_compare
+        target: reports/labels/irr_report.json::summary.status
+        operator: ==
+        expected: passed
+        on_fail: block
+        message: IRR report must reach a finalized passed status.
+        reroute_to: []
       - condition_id: irr_reviewed_items_min
         kind: json_field_compare
         target: reports/labels/irr_report.json::summary.reviewed_items
@@ -3264,19 +3518,22 @@ iterations:
         on_fail: block
         message: IRR must confirm third-adjudicator resolution for disagreements.
         reroute_to: []
-      commands: []
-      manual_handoff: true
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.labeling.adjudicate_irr_labels --master data/labels/v1/irr_subset_master.csv --rater2 data/labels/v1/irr_subset_rater2_completed.xlsx --adjudication-input data/labels/v1/irr_adjudication_completed.xlsx --output-sheet-csv data/labels/v1/irr_adjudication_sheet.csv --output-sheet-xlsx data/labels/v1/irr_adjudication_sheet.xlsx --output-parquet data/labels/v1/adjudication.parquet --output-status reports/labels/irr_adjudication_status.json --allow-pending
+      - .venv/bin/python -m semantic_ai_washing.labeling.compute_irr_metrics --master data/labels/v1/irr_subset_master.csv --rater2 data/labels/v1/irr_subset_rater2_completed.xlsx --adjudication data/labels/v1/adjudication.parquet --sampling-report reports/labels/irr_subset_sampling_report.json --attestation reports/labels/irr_attestation.json --output-report reports/labels/irr_report.json --output-confusion reports/labels/irr_confusion_matrix.csv --output-transitions reports/labels/irr_transition_counts.csv --output-status reports/labels/irr_status.json --min-kappa 0.70 --gate-mode infrastructure
+      manual_handoff: false
       risks:
       - R1
       - R3
-      estimated_effort: 9
+      estimated_effort: 4
       risk_reduction: 10
-      automation_level: manual
+      automation_level: partial
       on_fail: block
       reroute_to: []
       evidence_required: true
       tags:
       - human_irr
+      - finalization
       gate_class: manual
   - phase_id: iteration2/provisional-rubric-freeze-and-split-registry
     title: Provisional Rubric Freeze and Split Registry

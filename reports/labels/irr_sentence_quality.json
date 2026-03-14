@@ -1,0 +1,11 @@
+{
+  "generated_at_utc": "2026-03-14T20:05:07.633576+00:00",
+  "git_commit": "b3fd841cb56b4ef00b11e6ac71f3a9c8f3736425",
+  "input": "data/labels/v1/labels_master_review.csv",
+  "input_sha256": "d0c1458c22cb117ad83e362054444cfe960155fd202c4585d5043397c6731726",
+  "rows": 551,
+  "fragment_rows": 1,
+  "fragment_rate": 0.0018148820326678765,
+  "threshold": 0.15,
+  "passed": true
+}

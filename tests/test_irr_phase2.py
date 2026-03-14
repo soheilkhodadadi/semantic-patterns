@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 
 import pandas as pd
 
 from semantic_ai_washing.labeling.adjudicate_irr_labels import run_adjudication
+from semantic_ai_washing.labeling.audit_sentence_integrity import run_audit
 from semantic_ai_washing.labeling.compute_irr_metrics import run_metrics
 from semantic_ai_washing.labeling.prepare_irr_subset import run_prepare
 
@@ -15,249 +17,268 @@ def _write_csv(path: Path, rows: list[dict]) -> None:
     pd.DataFrame(rows).to_csv(path, index=False)
 
 
-def test_prepare_irr_subset_stratified_and_text_blinded(tmp_path):
-    input_path = tmp_path / "expanded.csv"
-    output_dir = tmp_path / "irr"
-    report_dir = tmp_path / "reports"
+def _write_json(path: Path, payload: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
+
+def test_audit_sentence_integrity_and_prepare_subset_outputs(tmp_path):
+    input_path = tmp_path / "labels_master_review.csv"
+    report_path = tmp_path / "reports" / "irr_sentence_quality.json"
     rows = []
-    labels = ["Actionable", "Speculative", "Irrelevant"]
-    years = ["2023", "2024"]
-    ff12 = ["10", "20", "30"]
-    idx = 0
-    for label in labels:
-        for year in years:
-            for bucket in ff12:
-                for rep in range(3):
-                    idx += 1
-                    rows.append(
-                        {
-                            "sample_id": f"s{idx}",
-                            "sentence_id": f"t{idx}",
-                            "sentence": f"sentence {label} {year} {bucket} {rep}",
-                            "label": label,
-                            "source_year": year,
-                            "source_form": "10-K",
-                            "source_cik": "1001",
-                            "source_file": f"f{idx}.txt",
-                            "sentence_index": idx,
-                            "ff12_code": bucket,
-                            "ff12_name": "Bucket",
-                        }
-                    )
+    for label_idx, label in enumerate(["Actionable", "Speculative", "Irrelevant"], start=1):
+        for firm_idx in range(50):
+            rows.append(
+                {
+                    "batch_row_id": f"b{label_idx}_{firm_idx}",
+                    "sentence_id": f"s{label_idx}_{firm_idx}",
+                    "sentence": f"Firm {label_idx}-{firm_idx} uses AI capability sentence.",
+                    "label": label,
+                    "source_year": "2024",
+                    "source_form": "10-K",
+                    "source_cik": f"{label_idx}{firm_idx:04d}",
+                    "source_file": f"file_{label_idx}_{firm_idx}.txt",
+                    "sentence_index": firm_idx,
+                    "ff12_code": str((firm_idx % 3) + 10),
+                    "ff12_name": "Bucket",
+                }
+            )
     _write_csv(input_path, rows)
+
+    audit = run_audit(
+        argparse.Namespace(
+            input_csv=str(input_path),
+            output_report=str(report_path),
+            threshold=0.15,
+        )
+    )
+    assert audit["passed"] is True
+    assert audit["fragment_rows"] == 0
 
     args = argparse.Namespace(
         input=str(input_path),
-        output_dir=str(output_dir),
-        report_dir=str(report_dir),
-        subset_fraction=0.30,
-        min_per_class=5,
-        seed=20260303,
+        output_parquet=str(tmp_path / "irr_subset.parquet"),
+        output_master_csv=str(tmp_path / "irr_subset_master.csv"),
+        output_blinded_csv=str(tmp_path / "irr_subset_rater2_blinded.csv"),
+        output_blinded_xlsx=str(tmp_path / "irr_subset_rater2_blinded.xlsx"),
+        output_report=str(tmp_path / "reports" / "irr_subset_sampling_report.json"),
+        attestation_output=str(tmp_path / "reports" / "irr_attestation.json"),
+        target_size=120,
+        class_quota=40,
+        min_unique_firms=100,
+        seed=20260314,
         blind_mode="text_only",
     )
     report = run_prepare(args)
 
-    master = pd.read_csv(output_dir / "irr_subset_master.csv")
-    blinded = pd.read_csv(output_dir / "irr_subset_rater2_blinded.csv")
+    subset = pd.read_parquet(tmp_path / "irr_subset.parquet")
+    master = pd.read_csv(tmp_path / "irr_subset_master.csv")
+    blinded = pd.read_csv(tmp_path / "irr_subset_rater2_blinded.csv")
 
-    assert len(master) == report["summary"]["rows_selected"]
-    counts = master["rater1_label"].value_counts().to_dict()
-    assert counts["Actionable"] >= 5
-    assert counts["Speculative"] >= 5
-    assert counts["Irrelevant"] >= 5
+    assert len(subset) == 120
+    assert report["summary"]["rows_selected"] == 120
+    assert report["summary"]["unique_firms"] >= 100
+    assert report["summary"]["stratified_100_firms_min"] is True
+    assert report["summary"]["industry_year_balanced"] is True
+    assert subset["rater1_label"].value_counts().to_dict() == {
+        "Actionable": 40,
+        "Speculative": 40,
+        "Irrelevant": 40,
+    }
     assert list(blinded.columns) == ["irr_item_id", "sentence", "rater2_label", "rater2_note"]
+    assert (tmp_path / "irr_subset_rater2_blinded.xlsx").exists()
+    assert (master["sample_id"] == master["batch_row_id"]).all()
+    assert (
+        json.loads((tmp_path / "reports" / "irr_attestation.json").read_text())["blind_mode"]
+        == "text_only"
+    )
 
 
-def test_compute_irr_metrics_pending_modes(tmp_path):
+def test_compute_irr_metrics_pending_rater2(tmp_path):
     master_path = tmp_path / "master.csv"
     _write_csv(
         master_path,
         [
-            {"irr_item_id": "i1", "rater1_label": "Actionable"},
-            {"irr_item_id": "i2", "rater1_label": "Speculative"},
+            {
+                "irr_item_id": "i1",
+                "batch_row_id": "b1",
+                "rater1_label": "Actionable",
+                "source_cik": "1001",
+                "source_year": "2024",
+                "ff12_code": "10",
+            },
+            {
+                "irr_item_id": "i2",
+                "batch_row_id": "b2",
+                "rater1_label": "Speculative",
+                "source_cik": "1002",
+                "source_year": "2024",
+                "ff12_code": "11",
+            },
         ],
     )
-
-    args_infra = argparse.Namespace(
-        master=str(master_path),
-        rater2=str(tmp_path / "missing.csv"),
-        output_report=str(tmp_path / "report_infra.json"),
-        output_confusion=str(tmp_path / "conf_infra.csv"),
-        output_transitions=str(tmp_path / "trans_infra.csv"),
-        output_status=str(tmp_path / "status_infra.json"),
-        min_kappa=0.60,
-        gate_mode="infrastructure",
+    _write_json(
+        tmp_path / "sampling.json",
+        {"summary": {"stratified_100_firms_min": True, "industry_year_balanced": True}},
     )
-    _, status_infra, code_infra = run_metrics(args_infra)
-    assert code_infra == 0
-    assert status_infra["gate_result"] == "deferred"
-
-    args_strict = argparse.Namespace(
-        master=str(master_path),
-        rater2=str(tmp_path / "missing.csv"),
-        output_report=str(tmp_path / "report_strict.json"),
-        output_confusion=str(tmp_path / "conf_strict.csv"),
-        output_transitions=str(tmp_path / "trans_strict.csv"),
-        output_status=str(tmp_path / "status_strict.json"),
-        min_kappa=0.60,
-        gate_mode="strict",
-    )
-    _, status_strict, code_strict = run_metrics(args_strict)
-    assert code_strict == 1
-    assert status_strict["gate_result"] == "deferred"
-
-
-def test_compute_irr_metrics_happy_path_and_transitions(tmp_path):
-    master_path = tmp_path / "master.csv"
-    r2_path = tmp_path / "r2.csv"
-    _write_csv(
-        master_path,
-        [
-            {"irr_item_id": "i1", "rater1_label": "Actionable"},
-            {"irr_item_id": "i2", "rater1_label": "Speculative"},
-            {"irr_item_id": "i3", "rater1_label": "Irrelevant"},
-            {"irr_item_id": "i4", "rater1_label": "Actionable"},
-        ],
-    )
-    _write_csv(
-        r2_path,
-        [
-            {"irr_item_id": "i1", "rater2_label": "Actionable"},
-            {"irr_item_id": "i2", "rater2_label": "Actionable"},
-            {"irr_item_id": "i3", "rater2_label": "Irrelevant"},
-            {"irr_item_id": "i4", "rater2_label": "Speculative"},
-        ],
+    _write_json(
+        tmp_path / "attestation.json",
+        {"human_human_only": True, "third_adjudicator_used": False},
     )
 
     args = argparse.Namespace(
         master=str(master_path),
-        rater2=str(r2_path),
+        rater2=str(tmp_path / "missing.xlsx"),
+        adjudication=str(tmp_path / "missing.parquet"),
+        sampling_report=str(tmp_path / "sampling.json"),
+        attestation=str(tmp_path / "attestation.json"),
         output_report=str(tmp_path / "report.json"),
         output_confusion=str(tmp_path / "conf.csv"),
         output_transitions=str(tmp_path / "trans.csv"),
         output_status=str(tmp_path / "status.json"),
-        min_kappa=0.10,
-        gate_mode="strict",
+        min_kappa=0.70,
+        gate_mode="infrastructure",
     )
     report, status, code = run_metrics(args)
     assert code == 0
-    assert status["gate_result"] == "pass"
-    assert abs(float(report["summary"]["kappa"]) - 0.2) < 1e-6
-
-    transitions = pd.read_csv(tmp_path / "trans.csv").set_index("transition")["count"].to_dict()
-    assert transitions["A->S"] == 1
-    assert transitions["S->A"] == 1
+    assert status["status"] == "pending_rater2"
+    assert report["summary"]["reviewed_items"] == 0
+    assert report["summary"]["human_human_only"] is True
+    assert report["summary"]["stratified_100_firms_min"] is True
 
 
-def test_adjudication_scaffold_pending(tmp_path):
+def test_adjudication_and_compute_finalize_from_xlsx(tmp_path):
     master_path = tmp_path / "master.csv"
-    source_path = tmp_path / "source.csv"
+    r2_path = tmp_path / "rater2.xlsx"
+    adjudication_input = tmp_path / "irr_adjudication_completed.xlsx"
+    sampling_path = tmp_path / "sampling.json"
+    attestation_path = tmp_path / "attestation.json"
     _write_csv(
         master_path,
         [
             {
                 "irr_item_id": "i1",
                 "sample_id": "s1",
+                "batch_row_id": "b1",
                 "sentence_id": "t1",
-                "sentence": "sentence one",
+                "sentence": "Sentence one uses AI.",
+                "source_cik": "1001",
                 "source_year": "2024",
+                "source_form": "10-K",
+                "source_file": "f1.txt",
+                "sentence_index": 1,
                 "ff12_code": "10",
-                "rater1_label": "Actionable",
-            }
-        ],
-    )
-    _write_csv(
-        source_path, [{"sample_id": "s1", "label": "Actionable", "sentence": "sentence one"}]
-    )
-
-    args = argparse.Namespace(
-        master=str(master_path),
-        rater2=str(tmp_path / "missing.csv"),
-        output_disagreements=str(tmp_path / "disagreements.csv"),
-        output_adjudication=str(tmp_path / "adjudication.csv"),
-        source_dataset=str(source_path),
-        final_output=str(tmp_path / "final.csv"),
-        output_status=str(tmp_path / "status.json"),
-        allow_pending=True,
-    )
-    status, code = run_adjudication(args)
-    assert code == 0
-    assert status["summary"]["status"] == "pending_rater2"
-    assert (tmp_path / "adjudication.csv").exists()
-    assert not status["summary"]["final_output_written"]
-
-
-def test_adjudication_merge_writes_final_dataset(tmp_path):
-    master_path = tmp_path / "master.csv"
-    r2_path = tmp_path / "r2.csv"
-    source_path = tmp_path / "source.csv"
-    out_adj = tmp_path / "adjudication.csv"
-    out_final = tmp_path / "final.csv"
-
-    _write_csv(
-        master_path,
-        [
-            {
-                "irr_item_id": "i1",
-                "sample_id": "s1",
-                "sentence_id": "t1",
-                "sentence": "sentence one",
-                "source_year": "2024",
-                "ff12_code": "10",
+                "ff12_name": "Tech",
                 "rater1_label": "Actionable",
             },
             {
                 "irr_item_id": "i2",
                 "sample_id": "s2",
+                "batch_row_id": "b2",
                 "sentence_id": "t2",
-                "sentence": "sentence two",
+                "sentence": "Sentence two may use AI.",
+                "source_cik": "1002",
                 "source_year": "2024",
-                "ff12_code": "20",
+                "source_form": "10-K",
+                "source_file": "f2.txt",
+                "sentence_index": 2,
+                "ff12_code": "11",
+                "ff12_name": "Shops",
                 "rater1_label": "Speculative",
+            },
+            {
+                "irr_item_id": "i3",
+                "sample_id": "s3",
+                "batch_row_id": "b3",
+                "sentence_id": "t3",
+                "sentence": "Sentence three is generic AI language.",
+                "source_cik": "1003",
+                "source_year": "2024",
+                "source_form": "10-K",
+                "source_file": "f3.txt",
+                "sentence_index": 3,
+                "ff12_code": "12",
+                "ff12_name": "Other",
+                "rater1_label": "Irrelevant",
             },
         ],
     )
-    _write_csv(
-        r2_path,
+    pd.DataFrame(
         [
-            {"irr_item_id": "i1", "rater2_label": "Actionable"},
-            {"irr_item_id": "i2", "rater2_label": "Irrelevant"},
-        ],
+            {
+                "irr_item_id": "i1",
+                "sentence": "Sentence one uses AI.",
+                "rater2_label": "Actionable",
+            },
+            {
+                "irr_item_id": "i2",
+                "sentence": "Sentence two may use AI.",
+                "rater2_label": "Irrelevant",
+            },
+            {
+                "irr_item_id": "i3",
+                "sentence": "Sentence three is generic AI language.",
+                "rater2_label": "Irrelevant",
+            },
+        ]
+    ).to_excel(r2_path, index=False)
+    _write_json(
+        sampling_path,
+        {"summary": {"stratified_100_firms_min": True, "industry_year_balanced": True}},
     )
-    _write_csv(
-        source_path,
-        [
-            {"sample_id": "s1", "label": "Actionable", "sentence": "sentence one"},
-            {"sample_id": "s2", "label": "Speculative", "sentence": "sentence two"},
-        ],
+    _write_json(
+        attestation_path,
+        {"human_human_only": True, "third_adjudicator_used": False},
     )
 
-    args = argparse.Namespace(
+    adj_args = argparse.Namespace(
         master=str(master_path),
         rater2=str(r2_path),
-        output_disagreements=str(tmp_path / "disagreements.csv"),
-        output_adjudication=str(out_adj),
-        source_dataset=str(source_path),
-        final_output=str(out_final),
-        output_status=str(tmp_path / "status.json"),
+        adjudication_input=str(adjudication_input),
+        output_sheet_csv=str(tmp_path / "irr_adjudication_sheet.csv"),
+        output_sheet_xlsx=str(tmp_path / "irr_adjudication_sheet.xlsx"),
+        output_parquet=str(tmp_path / "adjudication.parquet"),
+        output_status=str(tmp_path / "adjudication_status.json"),
         allow_pending=True,
     )
-    status_first, code_first = run_adjudication(args)
-    assert code_first == 0
-    assert status_first["summary"]["status"] == "pending_adjudication"
+    status_pending, code_pending = run_adjudication(adj_args)
+    assert code_pending == 0
+    assert status_pending["summary"]["status"] == "pending_adjudication"
 
-    adj = pd.read_csv(out_adj)
-    adj["final_label"] = adj["final_label"].fillna("").astype(str)
-    adj.loc[adj["irr_item_id"] == "i2", "final_label"] = "Irrelevant"
-    adj.to_csv(out_adj, index=False)
+    sheet = pd.read_csv(tmp_path / "irr_adjudication_sheet.csv")
+    assert len(sheet) == 1
+    sheet["final_label"] = sheet["final_label"].fillna("").astype(str)
+    sheet["adjudication_note"] = sheet["adjudication_note"].fillna("").astype(str)
+    sheet.loc[sheet["irr_item_id"] == "i2", "final_label"] = "Irrelevant"
+    sheet.loc[sheet["irr_item_id"] == "i2", "adjudication_note"] = "Confirmed as generic."
+    sheet.to_excel(adjudication_input, index=False)
 
-    status_second, code_second = run_adjudication(args)
-    assert code_second == 0
-    assert status_second["summary"]["status"] == "finalized"
-    assert status_second["summary"]["final_output_written"]
+    status_final, code_final = run_adjudication(adj_args)
+    assert code_final == 0
+    assert status_final["summary"]["status"] == "finalized"
 
-    final_df = pd.read_csv(out_final)
-    labels = final_df.set_index("sample_id")["label"].to_dict()
-    assert labels["s1"] == "Actionable"
-    assert labels["s2"] == "Irrelevant"
+    adjudication = pd.read_parquet(tmp_path / "adjudication.parquet")
+    resolved = adjudication.set_index("irr_item_id")["resolved_label"].to_dict()
+    assert resolved["i1"] == "Actionable"
+    assert resolved["i2"] == "Irrelevant"
+    assert resolved["i3"] == "Irrelevant"
+
+    metric_args = argparse.Namespace(
+        master=str(master_path),
+        rater2=str(r2_path),
+        adjudication=str(tmp_path / "adjudication.parquet"),
+        sampling_report=str(sampling_path),
+        attestation=str(attestation_path),
+        output_report=str(tmp_path / "irr_report.json"),
+        output_confusion=str(tmp_path / "irr_conf.csv"),
+        output_transitions=str(tmp_path / "irr_trans.csv"),
+        output_status=str(tmp_path / "irr_status.json"),
+        min_kappa=0.0,
+        gate_mode="strict",
+    )
+    report, status, code = run_metrics(metric_args)
+    assert code == 0
+    assert status["status"] == "passed"
+    assert report["summary"]["third_adjudicator_used"] is True
+    assert report["summary"]["by_class_kappa_reported"] is True
+    assert report["summary"]["rows_disagreement"] == 1

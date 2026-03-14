@@ -1,0 +1,12 @@
+{
+  "generated_at_utc": "2026-03-14T20:05:12.311010+00:00",
+  "gate_mode": "infrastructure",
+  "gate_result": "deferred",
+  "status": "pending_rater2",
+  "min_kappa": 0.7,
+  "kappa": null,
+  "rows_master": 120,
+  "rows_scored": 0,
+  "rows_disagreement": 0,
+  "firms_reviewed": 0
+}

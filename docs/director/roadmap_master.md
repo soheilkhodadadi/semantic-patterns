@@ -1,7 +1,7 @@
 <!-- generated_file: true -->
 <!-- source_model: /Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/model/roadmap_model.yaml -->
-<!-- source_sha256: 408ffbc96d6cdd3111ec85b822e290182716825878edf07ff9e482738c1b0acd -->
-<!-- rendered_at: 2026-03-13T20:38:45.336014+00:00 -->
+<!-- source_sha256: c4d93d7f664040a341016fe0f38d61446fdab867f4885440c5c750d12c7cb0e6 -->
+<!-- rendered_at: 2026-03-14T20:06:38.002565+00:00 -->
 
 # Roadmap Master
 
@@ -719,12 +719,33 @@ Exit criteria: Rubric realignment report and revised protocol v2.4 are published
   - outputs: reports/labels/irr_sentence_quality.json
   - tags: sentence_quality_gate
   - risks: R1, R5
-- `iteration2.irr.prepare_and_collect` Prepare and collect blinded IRR labels
-  - kind: `manual` gate_class: `manual` automation: `manual`
+- `iteration2.irr.prepare_subset_handoff` Prepare blinded IRR subset handoff
+  - kind: `build` gate_class: `data` automation: `full`
   - depends_on: iteration2.shared.audit_sentence_integrity
-  - inputs: data/labels/v1/labels_master.parquet
-  - outputs: data/labels/v1/irr_subset.parquet, reports/labels/irr_report.json, data/labels/v1/adjudication.parquet
-  - tags: human_irr
+  - inputs: data/labels/v1/labels_master_review.csv
+  - outputs: data/labels/v1/irr_subset.parquet, data/labels/v1/irr_subset_master.csv, data/labels/v1/irr_subset_rater2_blinded.csv, data/labels/v1/irr_subset_rater2_blinded.xlsx, reports/labels/irr_subset_sampling_report.json, reports/labels/irr_attestation.json
+  - tags: human_irr, sampling
+  - risks: R1, R3
+- `iteration2.irr.collect_rater2_labels` Collect blinded second-rater labels
+  - kind: `manual` gate_class: `manual` automation: `manual`
+  - depends_on: iteration2.irr.prepare_subset_handoff
+  - inputs: data/labels/v1/irr_subset_rater2_blinded.xlsx
+  - outputs: data/labels/v1/irr_subset_rater2_completed.xlsx
+  - tags: human_irr, rater2
+  - risks: R1, R3
+- `iteration2.irr.compute_and_seed_adjudication` Compute IRR status and seed adjudication
+  - kind: `analysis` gate_class: `data` automation: `full`
+  - depends_on: iteration2.irr.prepare_subset_handoff
+  - inputs: data/labels/v1/irr_subset_master.csv, reports/labels/irr_attestation.json, reports/labels/irr_subset_sampling_report.json
+  - outputs: reports/labels/irr_report.json, data/labels/v1/irr_adjudication_sheet.csv, data/labels/v1/irr_adjudication_sheet.xlsx, data/labels/v1/adjudication.parquet
+  - tags: human_irr, adjudication
+  - risks: R1, R3
+- `iteration2.irr.finalize_adjudication_and_report` Finalize adjudication and publish final IRR report
+  - kind: `validation` gate_class: `manual` automation: `partial`
+  - depends_on: iteration2.irr.collect_rater2_labels, iteration2.irr.compute_and_seed_adjudication
+  - inputs: data/labels/v1/irr_subset_rater2_completed.xlsx, data/labels/v1/irr_adjudication_completed.xlsx
+  - outputs: reports/labels/irr_report.json, data/labels/v1/adjudication.parquet
+  - tags: human_irr, finalization
   - risks: R1, R3
 
 ### iteration2/provisional-rubric-freeze-and-split-registry

@@ -2147,3 +2147,55 @@ Rules:
   - aligned the roadmap-model regression test with the final merge threshold and current tranche wiring
 - Next truthful substantive step:
   - `iteration2/irr-and-adjudication`
+
+## 2026-03-14 - IRR Workflow Checkpoint A Prepared
+
+- Decomposed `iteration2/irr-and-adjudication` into truthful executable tasks:
+  - `iteration2.shared.audit_sentence_integrity`
+  - `iteration2.irr.prepare_subset_handoff`
+  - `iteration2.irr.collect_rater2_labels`
+  - `iteration2.irr.compute_and_seed_adjudication`
+  - `iteration2.irr.finalize_adjudication_and_report`
+- Extended the IRR tooling for iteration-2 master labels:
+  - `prepare_irr_subset` now accepts CSV or parquet input, falls back to `sample_id <- batch_row_id`, writes the canonical subset parquet, blinded CSV/XLSX handoff files, and the IRR attestation template.
+  - `compute_irr_metrics` now accepts CSV/XLSX rater-2 input, emits truthful pending states, reports by-class one-vs-rest kappa when available, and publishes the roadmap-gated summary fields.
+  - `adjudicate_irr_labels` now accepts CSV/XLSX manual adjudication input, writes seeded disagreement CSV/XLSX handoff files, and maintains the canonical `data/labels/v1/adjudication.parquet`.
+  - added `semantic_ai_washing.labeling.audit_sentence_integrity` to publish `reports/labels/irr_sentence_quality.json`.
+- Added XLSX support to the repo-local environment via `openpyxl>=3.1` in `setup.cfg`.
+- Executed the checkpoint-A automation commands:
+  - `.venv/bin/python -m semantic_ai_washing.labeling.audit_sentence_integrity --input-csv data/labels/v1/labels_master_review.csv --output-report reports/labels/irr_sentence_quality.json --threshold 0.15`
+  - `.venv/bin/python -m semantic_ai_washing.labeling.prepare_irr_subset --input data/labels/v1/labels_master_review.csv --output-parquet data/labels/v1/irr_subset.parquet --output-master-csv data/labels/v1/irr_subset_master.csv --output-blinded-csv data/labels/v1/irr_subset_rater2_blinded.csv --output-blinded-xlsx data/labels/v1/irr_subset_rater2_blinded.xlsx --output-report reports/labels/irr_subset_sampling_report.json --attestation-output reports/labels/irr_attestation.json --target-size 120 --class-quota 40 --min-unique-firms 100 --seed 20260314 --blind-mode text_only`
+  - `.venv/bin/python -m semantic_ai_washing.labeling.adjudicate_irr_labels --master data/labels/v1/irr_subset_master.csv --rater2 data/labels/v1/irr_subset_rater2_completed.xlsx --adjudication-input data/labels/v1/irr_adjudication_completed.xlsx --output-sheet-csv data/labels/v1/irr_adjudication_sheet.csv --output-sheet-xlsx data/labels/v1/irr_adjudication_sheet.xlsx --output-parquet data/labels/v1/adjudication.parquet --output-status reports/labels/irr_adjudication_status.json --allow-pending`
+  - `.venv/bin/python -m semantic_ai_washing.labeling.compute_irr_metrics --master data/labels/v1/irr_subset_master.csv --rater2 data/labels/v1/irr_subset_rater2_completed.xlsx --adjudication data/labels/v1/adjudication.parquet --sampling-report reports/labels/irr_subset_sampling_report.json --attestation reports/labels/irr_attestation.json --output-report reports/labels/irr_report.json --output-confusion reports/labels/irr_confusion_matrix.csv --output-transitions reports/labels/irr_transition_counts.csv --output-status reports/labels/irr_status.json --min-kappa 0.70 --gate-mode infrastructure`
+- Sentence-integrity audit outcome:
+  - `rows = 551`
+  - `fragment_rows = 1`
+  - `fragment_rate = 0.0018148820326678765`
+  - `threshold = 0.15`
+  - `passed = true`
+- IRR subset handoff outcome:
+  - `rows_selected = 120`
+  - class quotas satisfied: `40 Actionable / 40 Speculative / 40 Irrelevant`
+  - `unique_firms = 120`
+  - `stratified_100_firms_min = true`
+  - `industry_year_balanced = true`
+- Pending IRR/adjudication status after checkpoint A:
+  - `reports/labels/irr_report.json::summary.status = pending_rater2`
+  - `reports/labels/irr_adjudication_status.json::summary.status = pending_rater2`
+  - `reviewed_items = 0`
+  - `third_adjudicator_used = false`
+- Checkpoint-A artifacts generated:
+  - `reports/labels/irr_sentence_quality.json`
+  - `data/labels/v1/irr_subset.parquet`
+  - `data/labels/v1/irr_subset_master.csv`
+  - `data/labels/v1/irr_subset_rater2_blinded.csv`
+  - `data/labels/v1/irr_subset_rater2_blinded.xlsx`
+  - `reports/labels/irr_subset_sampling_report.json`
+  - `reports/labels/irr_attestation.json`
+  - `data/labels/v1/irr_adjudication_sheet.csv`
+  - `data/labels/v1/irr_adjudication_sheet.xlsx`
+  - `data/labels/v1/adjudication.parquet`
+  - `reports/labels/irr_report.json`
+- The phase is intentionally still pending until the second human rater completes `data/labels/v1/irr_subset_rater2_completed.xlsx` and the third adjudicator completes `data/labels/v1/irr_adjudication_completed.xlsx`.
+- Next truthful substantive step:
+  - `iteration2.irr.collect_rater2_labels`

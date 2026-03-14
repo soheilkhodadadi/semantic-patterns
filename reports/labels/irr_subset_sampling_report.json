@@ -1,0 +1,50 @@
+{
+  "generated_at_utc": "2026-03-14T20:05:10.651604+00:00",
+  "git_commit": "b3fd841cb56b4ef00b11e6ac71f3a9c8f3736425",
+  "inputs": {
+    "input": "data/labels/v1/labels_master_review.csv",
+    "input_sha256": "d0c1458c22cb117ad83e362054444cfe960155fd202c4585d5043397c6731726"
+  },
+  "parameters": {
+    "target_size": 120,
+    "class_quota": 40,
+    "min_unique_firms": 100,
+    "seed": 20260314,
+    "blind_mode": "text_only"
+  },
+  "summary": {
+    "rows_input": 551,
+    "rows_selected": 120,
+    "selected_class_counts": {
+      "Actionable": 40,
+      "Speculative": 40,
+      "Irrelevant": 40
+    },
+    "selected_year_counts": {
+      "2024": 120
+    },
+    "selected_ff12_counts": {
+      "11": 1,
+      "12": 117,
+      "3": 1,
+      "9": 1
+    },
+    "selected_label_strata_counts": {
+      "2024|11|Irrelevant": 1,
+      "2024|12|Actionable": 39,
+      "2024|12|Irrelevant": 39,
+      "2024|12|Speculative": 39,
+      "2024|3|Actionable": 1,
+      "2024|9|Speculative": 1
+    },
+    "unique_firms": 120,
+    "stratified_100_firms_min": true,
+    "industry_year_balanced": true
+  },
+  "artifacts": {
+    "subset_parquet": "data/labels/v1/irr_subset.parquet",
+    "master_csv": "data/labels/v1/irr_subset_master.csv",
+    "blinded_csv": "data/labels/v1/irr_subset_rater2_blinded.csv",
+    "blinded_xlsx": "data/labels/v1/irr_subset_rater2_blinded.xlsx"
+  }
+}
