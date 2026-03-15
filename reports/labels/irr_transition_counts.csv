@@ -1,7 +1,7 @@
 transition,count
-A->S,0
-A->I,0
-S->A,0
-S->I,0
+A->S,6
+A->I,7
+S->A,6
+S->I,7
 I->A,0
 I->S,0

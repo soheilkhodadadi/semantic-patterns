@@ -158,6 +158,10 @@ def run_adjudication(args: argparse.Namespace) -> tuple[dict, int]:
         combined["rater2_note"] = ""
         status_name = "pending_rater2"
     else:
+        combined = combined.drop(
+            columns=[col for col in ["rater2_label", "rater2_note"] if col in combined.columns],
+            errors="ignore",
+        )
         combined = combined.merge(rater2, on="irr_item_id", how="left")
         combined["rater2_label"] = combined["rater2_label"].fillna("")
         combined["rater2_note"] = combined["rater2_note"].fillna("")

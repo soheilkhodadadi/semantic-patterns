@@ -1,6 +1,6 @@
 {
-  "generated_at_utc": "2026-03-14T20:05:10.674066+00:00",
-  "git_commit": "b3fd841cb56b4ef00b11e6ac71f3a9c8f3736425",
+  "generated_at_utc": "2026-03-15T03:31:15.484107+00:00",
+  "git_commit": "ba527f7b859a135ff4d22b18850ff8b8fe93a24b",
   "blind_mode": "text_only",
   "handoff_formats": [
     "csv",
@@ -8,7 +8,7 @@
   ],
   "human_human_only": true,
   "third_adjudicator_used": false,
-  "second_rater_completed": false,
+  "second_rater_completed": true,
   "third_adjudicator_completed": false,
   "rater1_initials": "",
   "rater2_initials": "",

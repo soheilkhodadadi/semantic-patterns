@@ -1,22 +1,22 @@
 {
-  "generated_at_utc": "2026-03-14T20:05:11.545884+00:00",
-  "git_commit": "b3fd841cb56b4ef00b11e6ac71f3a9c8f3736425",
+  "generated_at_utc": "2026-03-15T03:32:24.213205+00:00",
+  "git_commit": "ba527f7b859a135ff4d22b18850ff8b8fe93a24b",
   "inputs": {
     "master": "data/labels/v1/irr_subset_master.csv",
     "rater2": "data/labels/v1/irr_subset_rater2_completed.xlsx",
     "adjudication_input": "data/labels/v1/irr_adjudication_completed.xlsx",
     "master_sha256": "11dea3d01311582709d53d65b0731edbc8b10cd76acdf803ff1e20fac57fc3be",
-    "rater2_sha256": "",
+    "rater2_sha256": "d257f89dce789e9d3b266577a7851d5395897b1e04f99e475435ec365d28691f",
     "adjudication_input_sha256": ""
   },
   "summary": {
-    "status": "pending_rater2",
+    "status": "pending_adjudication",
     "rows_master": 120,
-    "rows_with_rater2": 0,
-    "rows_disagreement": 0,
-    "rows_requiring_adjudication": 0,
-    "rows_resolved": 0,
-    "rows_unresolved_disagreement": 0
+    "rows_with_rater2": 120,
+    "rows_disagreement": 26,
+    "rows_requiring_adjudication": 26,
+    "rows_resolved": 94,
+    "rows_unresolved_disagreement": 26
   },
   "artifacts": {
     "sheet_csv": "data/labels/v1/irr_adjudication_sheet.csv",

@@ -170,6 +170,8 @@ def test_adjudication_and_compute_finalize_from_xlsx(tmp_path):
                 "ff12_code": "10",
                 "ff12_name": "Tech",
                 "rater1_label": "Actionable",
+                "rater2_label": "",
+                "rater2_note": "",
             },
             {
                 "irr_item_id": "i2",
@@ -185,6 +187,8 @@ def test_adjudication_and_compute_finalize_from_xlsx(tmp_path):
                 "ff12_code": "11",
                 "ff12_name": "Shops",
                 "rater1_label": "Speculative",
+                "rater2_label": "",
+                "rater2_note": "",
             },
             {
                 "irr_item_id": "i3",
@@ -200,6 +204,8 @@ def test_adjudication_and_compute_finalize_from_xlsx(tmp_path):
                 "ff12_code": "12",
                 "ff12_name": "Other",
                 "rater1_label": "Irrelevant",
+                "rater2_label": "",
+                "rater2_note": "",
             },
         ],
     )

@@ -1,6 +1,6 @@
 {
-  "generated_at_utc": "2026-03-14T20:05:12.294838+00:00",
-  "git_commit": "b3fd841cb56b4ef00b11e6ac71f3a9c8f3736425",
+  "generated_at_utc": "2026-03-15T03:34:46.699954+00:00",
+  "git_commit": "ba527f7b859a135ff4d22b18850ff8b8fe93a24b",
   "inputs": {
     "master": "data/labels/v1/irr_subset_master.csv",
     "rater2": "data/labels/v1/irr_subset_rater2_completed.xlsx",
@@ -8,41 +8,43 @@
     "sampling_report": "reports/labels/irr_subset_sampling_report.json",
     "attestation": "reports/labels/irr_attestation.json",
     "master_sha256": "11dea3d01311582709d53d65b0731edbc8b10cd76acdf803ff1e20fac57fc3be",
-    "rater2_sha256": "",
-    "adjudication_sha256": "2ec1f9d7b637032be2d21d3cb5ef649130aea785c59f94f32123878f80387b48",
+    "rater2_sha256": "d257f89dce789e9d3b266577a7851d5395897b1e04f99e475435ec365d28691f",
+    "adjudication_sha256": "bcf59866b7e7b59f202a280124433032b3122d611a9946d52d35db012d27b2b9",
     "sampling_report_sha256": "a178854f58126ecf57fdd0fbf8d4d60543668f75357871e21d8caa01b062852e",
-    "attestation_sha256": "8198b5d0657576cb67b8be455bbebcd6ed8d3f09691a26b09861cc4f325ce61e"
+    "attestation_sha256": "51eb8a501eb86b099c7b32c9215ae4c977cf4258c61953eef85ce029537086e7"
   },
   "parameters": {
     "min_kappa": 0.7,
     "gate_mode": "infrastructure"
   },
   "summary": {
-    "status": "pending_rater2",
-    "reviewed_items": 0,
-    "kappa": null,
+    "status": "pending_adjudication",
+    "reviewed_items": 120,
+    "kappa": 0.6749999999999999,
     "human_human_only": true,
     "stratified_100_firms_min": true,
     "industry_year_balanced": true,
-    "by_class_kappa_reported": false,
+    "by_class_kappa_reported": true,
     "third_adjudicator_used": false,
-    "firms_reviewed": 0,
-    "rows_disagreement": 0,
+    "firms_reviewed": 120,
+    "rows_disagreement": 26,
     "rows_master": 120,
     "transition_counts": {
-      "A->S": 0,
-      "A->I": 0,
-      "S->A": 0,
-      "S->I": 0,
+      "A->S": 6,
+      "A->I": 7,
+      "S->A": 6,
+      "S->I": 7,
       "I->A": 0,
       "I->S": 0
     },
     "by_class_kappa": {
-      "Actionable": null,
-      "Speculative": null,
-      "Irrelevant": null
+      "Actionable": 0.627450980392157,
+      "Speculative": 0.627450980392157,
+      "Irrelevant": 0.7586206896551724
     },
-    "pending_reason": "rater2_file_missing_or_invalid"
+    "pending_reason": "adjudication_incomplete",
+    "resolved_disagreements": 0,
+    "unresolved_disagreements": 26
   },
   "artifacts": {
     "confusion_matrix": "reports/labels/irr_confusion_matrix.csv",

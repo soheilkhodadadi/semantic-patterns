@@ -262,7 +262,11 @@ def run_metrics(args: argparse.Namespace) -> tuple[dict, dict, int]:
         out_status.write_text(json.dumps(status, indent=2), encoding="utf-8")
         return report, status, exit_code
 
-    merged = master.merge(rater2, on="irr_item_id", how="left")
+    master_for_merge = master.drop(
+        columns=[col for col in ["rater2_label", "rater2_note"] if col in master.columns],
+        errors="ignore",
+    )
+    merged = master_for_merge.merge(rater2, on="irr_item_id", how="left")
     merged["rater2_label"] = merged["rater2_label"].fillna("")
     merged["rater2_note"] = merged["rater2_note"].fillna("")
     scored = merged[merged["rater2_label"].isin(ALLOWED_LABELS)].copy()
