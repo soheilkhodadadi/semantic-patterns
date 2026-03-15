@@ -1,15 +1,15 @@
 {
-  "generated_at_utc": "2026-03-15T03:31:15.484107+00:00",
-  "git_commit": "ba527f7b859a135ff4d22b18850ff8b8fe93a24b",
+  "generated_at_utc": "2026-03-15T04:11:50.278354+00:00",
+  "git_commit": "0138db2553af0df7b20499688ba8904ea1484b5d",
   "blind_mode": "text_only",
   "handoff_formats": [
     "csv",
     "xlsx"
   ],
   "human_human_only": true,
-  "third_adjudicator_used": false,
+  "third_adjudicator_used": true,
   "second_rater_completed": true,
-  "third_adjudicator_completed": false,
+  "third_adjudicator_completed": true,
   "rater1_initials": "",
   "rater2_initials": "",
   "adjudicator_initials": "",

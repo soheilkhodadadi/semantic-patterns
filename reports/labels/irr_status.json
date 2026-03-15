@@ -1,14 +1,14 @@
 {
-  "generated_at_utc": "2026-03-15T03:34:46.720799+00:00",
+  "generated_at_utc": "2026-03-15T04:11:52.826432+00:00",
   "gate_mode": "infrastructure",
-  "gate_result": "deferred",
-  "status": "pending_adjudication",
+  "gate_result": "fail",
+  "status": "failed",
   "min_kappa": 0.7,
   "kappa": 0.6749999999999999,
   "rows_master": 120,
   "rows_scored": 120,
   "rows_disagreement": 26,
   "firms_reviewed": 120,
-  "resolved_disagreements": 0,
-  "unresolved_disagreements": 26
+  "resolved_disagreements": 26,
+  "unresolved_disagreements": 0
 }

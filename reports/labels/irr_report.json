@@ -1,6 +1,6 @@
 {
-  "generated_at_utc": "2026-03-15T03:34:46.699954+00:00",
-  "git_commit": "ba527f7b859a135ff4d22b18850ff8b8fe93a24b",
+  "generated_at_utc": "2026-03-15T04:11:52.806431+00:00",
+  "git_commit": "0138db2553af0df7b20499688ba8904ea1484b5d",
   "inputs": {
     "master": "data/labels/v1/irr_subset_master.csv",
     "rater2": "data/labels/v1/irr_subset_rater2_completed.xlsx",
@@ -9,23 +9,23 @@
     "attestation": "reports/labels/irr_attestation.json",
     "master_sha256": "11dea3d01311582709d53d65b0731edbc8b10cd76acdf803ff1e20fac57fc3be",
     "rater2_sha256": "d257f89dce789e9d3b266577a7851d5395897b1e04f99e475435ec365d28691f",
-    "adjudication_sha256": "bcf59866b7e7b59f202a280124433032b3122d611a9946d52d35db012d27b2b9",
+    "adjudication_sha256": "5438962519f05a3080d4d6fbd38138b18617ac8a12481ca2d6d940e354dc21ac",
     "sampling_report_sha256": "a178854f58126ecf57fdd0fbf8d4d60543668f75357871e21d8caa01b062852e",
-    "attestation_sha256": "51eb8a501eb86b099c7b32c9215ae4c977cf4258c61953eef85ce029537086e7"
+    "attestation_sha256": "7ef02736f7cef77333a06181ffe3ed2a40f50171f716c8b4d6ca3ac4c52019af"
   },
   "parameters": {
     "min_kappa": 0.7,
     "gate_mode": "infrastructure"
   },
   "summary": {
-    "status": "pending_adjudication",
+    "status": "failed",
     "reviewed_items": 120,
     "kappa": 0.6749999999999999,
     "human_human_only": true,
     "stratified_100_firms_min": true,
     "industry_year_balanced": true,
     "by_class_kappa_reported": true,
-    "third_adjudicator_used": false,
+    "third_adjudicator_used": true,
     "firms_reviewed": 120,
     "rows_disagreement": 26,
     "rows_master": 120,
@@ -42,9 +42,9 @@
       "Speculative": 0.627450980392157,
       "Irrelevant": 0.7586206896551724
     },
-    "pending_reason": "adjudication_incomplete",
-    "resolved_disagreements": 0,
-    "unresolved_disagreements": 26
+    "pending_reason": "",
+    "resolved_disagreements": 26,
+    "unresolved_disagreements": 0
   },
   "artifacts": {
     "confusion_matrix": "reports/labels/irr_confusion_matrix.csv",

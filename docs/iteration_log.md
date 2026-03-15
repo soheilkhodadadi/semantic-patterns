@@ -2246,3 +2246,56 @@ Rules:
 - Current truthful next step:
   - the third adjudicator completes `data/labels/v1/irr_adjudication_sheet.xlsx` and saves it as `data/labels/v1/irr_adjudication_completed.xlsx`
   - then rerun `iteration2.irr.finalize_adjudication_and_report`
+
+## 2026-03-14 - IRR Final Adjudication Closeout
+
+- Ingested the completed adjudication workbook from the attached handoff and normalized it into the canonical roadmap path:
+  - source handoff artifact: `data/labels/v1/irr_adjudication_completed.xlsx.xlsx`
+  - canonical execution input: `data/labels/v1/irr_adjudication_completed.xlsx`
+- Refreshed the IRR attestation truthfully before final closeout:
+  - `second_rater_completed = true`
+  - `third_adjudicator_used = true`
+  - `third_adjudicator_completed = true`
+  - `human_human_only = true`
+  - `blind_mode = text_only`
+- Executed the final closeout commands:
+  - `.venv/bin/python -m semantic_ai_washing.labeling.adjudicate_irr_labels --master data/labels/v1/irr_subset_master.csv --rater2 data/labels/v1/irr_subset_rater2_completed.xlsx --adjudication-input data/labels/v1/irr_adjudication_completed.xlsx --output-sheet-csv data/labels/v1/irr_adjudication_sheet.csv --output-sheet-xlsx data/labels/v1/irr_adjudication_sheet.xlsx --output-parquet data/labels/v1/adjudication.parquet --output-status reports/labels/irr_adjudication_status.json --allow-pending`
+  - `.venv/bin/python -m semantic_ai_washing.labeling.compute_irr_metrics --master data/labels/v1/irr_subset_master.csv --rater2 data/labels/v1/irr_subset_rater2_completed.xlsx --adjudication data/labels/v1/adjudication.parquet --sampling-report reports/labels/irr_subset_sampling_report.json --attestation reports/labels/irr_attestation.json --output-report reports/labels/irr_report.json --output-confusion reports/labels/irr_confusion_matrix.csv --output-transitions reports/labels/irr_transition_counts.csv --output-status reports/labels/irr_status.json --min-kappa 0.70 --gate-mode infrastructure`
+- Verified the adjudication workbook and seeded disagreement sheet align:
+  - `26/26` completed adjudication rows
+  - same `irr_item_id` set
+  - same row order
+  - `26` nonblank `final_label`
+- Final adjudication outcome:
+  - `reports/labels/irr_adjudication_status.json::summary.status = finalized`
+  - `rows_disagreement = 26`
+  - `rows_resolved = 120`
+  - `rows_unresolved_disagreement = 0`
+  - `data/labels/v1/adjudication.parquet` now resolves:
+    - `94` agreement rows via `resolution_source = agreement`
+    - `26` disagreement rows via `resolution_source = third_adjudicator`
+- Final IRR outcome:
+  - `reports/labels/irr_report.json::summary.status = failed`
+  - `reports/labels/irr_status.json::gate_result = fail`
+  - `reviewed_items = 120`
+  - `firms_reviewed = 120`
+  - `rows_disagreement = 26`
+  - `kappa = 0.6749999999999999`
+  - `by_class_kappa_reported = true`
+  - `third_adjudicator_used = true`
+  - `resolved_disagreements = 26`
+  - `unresolved_disagreements = 0`
+- By-class kappas remain the same measured human-human values:
+  - `Actionable = 0.627450980392157`
+  - `Speculative = 0.627450980392157`
+  - `Irrelevant = 0.7586206896551724`
+- Transition counts remain:
+  - `A->I = 7`
+  - `A->S = 6`
+  - `S->A = 6`
+  - `S->I = 7`
+  - `I->A = 0`
+  - `I->S = 0`
+- The IRR phase is now finalized truthfully, but it remains blocked by the current `> 0.7` kappa gate.
+- Current truthful next step:
+  - diagnose the `26` disagreement rows and decide whether the next remediation is rubric clarification, subset redesign, or threshold/policy review
