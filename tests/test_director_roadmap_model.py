@@ -1192,6 +1192,27 @@ def test_actual_iteration2_tranche_workflow_is_wired():
         for condition in irr_finalize.quality_checks
     )
 
+    irr_diagnostic_phase = find_phase(
+        model, iteration_id="2", phase_name="irr-disagreement-diagnostic"
+    )
+    assert irr_diagnostic_phase is not None
+    assert irr_diagnostic_phase.canonical is False
+    irr_diagnostic_task = next(
+        task
+        for task in irr_diagnostic_phase.tasks
+        if task.task_id == "iteration2.irr.publish_disagreement_diagnostic"
+    )
+    assert (
+        "semantic_ai_washing.labeling.diagnose_irr_disagreements"
+        in irr_diagnostic_task.commands[0]
+    )
+    assert any(
+        condition.kind == "json_field_compare"
+        and condition.target == "reports/labels/irr_adjudication_status.json::summary.status"
+        and condition.expected == "finalized"
+        for condition in irr_diagnostic_task.preconditions
+    )
+
     freeze_phase = find_phase(
         model, iteration_id="2", phase_name="provisional-rubric-freeze-and-split-registry"
     )
@@ -1199,6 +1220,35 @@ def test_actual_iteration2_tranche_workflow_is_wired():
     assert any(
         task.task_id == "iteration2.rubric.publish_provisional_freeze"
         for task in freeze_phase.tasks
+    )
+
+    prelim_auth_phase = find_phase(
+        model, iteration_id="2", phase_name="preliminary-results-authorization"
+    )
+    assert prelim_auth_phase is not None
+    assert prelim_auth_phase.canonical is False
+    prelim_auth_task = next(
+        task
+        for task in prelim_auth_phase.tasks
+        if task.task_id == "iteration2.prelim.publish_preliminary_results_readiness"
+    )
+    assert (
+        "semantic_ai_washing.labeling.publish_preliminary_results_readiness"
+        in prelim_auth_task.commands[0]
+    )
+    assert any(
+        condition.kind == "json_field_compare"
+        and condition.target
+        == "reports/models/preliminary_results_readiness_v1.json::summary.preliminary_only"
+        and condition.expected is True
+        for condition in prelim_auth_task.quality_checks
+    )
+    assert any(
+        condition.kind == "json_field_compare"
+        and condition.target
+        == "reports/models/preliminary_results_readiness_v1.json::summary.publication_grade_authorized"
+        and condition.expected is False
+        for condition in prelim_auth_task.quality_checks
     )
 
     measures_phase = find_phase(
@@ -1209,6 +1259,115 @@ def test_actual_iteration2_tranche_workflow_is_wired():
         model, iteration_id="3", phase_name="development-predictive-validity-gate"
     )
     assert validity_phase is not None
+
+    prelim_kickoff_phase = find_phase(
+        model, iteration_id="3", phase_name="preliminary-kickoff-and-preflight"
+    )
+    assert prelim_kickoff_phase is not None
+    assert prelim_kickoff_phase.canonical is False
+
+    prelim_retraining_phase = find_phase(
+        model, iteration_id="3", phase_name="preliminary-centroid-retraining"
+    )
+    assert prelim_retraining_phase is not None
+    assert prelim_retraining_phase.canonical is False
+    assert (
+        "artifacts/models/mpnet_prelim_v1/centroids.json"
+        in prelim_retraining_phase.required_artifacts
+    )
+
+    prelim_eval_phase = find_phase(
+        model, iteration_id="3", phase_name="preliminary-heldout-evaluation"
+    )
+    assert prelim_eval_phase is not None
+    assert prelim_eval_phase.canonical is False
+    assert "reports/evaluation/heldout_eval_prelim_v1.json" in prelim_eval_phase.required_artifacts
+
+    prelim_classify_phase = find_phase(
+        model, iteration_id="3", phase_name="preliminary-active-window-classification"
+    )
+    assert prelim_classify_phase is not None
+    assert prelim_classify_phase.canonical is False
+    assert (
+        "data/processed/classifications/year=2024/model=mpnet_prelim_v1/classified_sentences.parquet"
+        in prelim_classify_phase.required_artifacts
+    )
+
+    prelim_measures_phase = find_phase(
+        model, iteration_id="3", phase_name="preliminary-firm-year-measure-construction"
+    )
+    assert prelim_measures_phase is not None
+    assert prelim_measures_phase.canonical is False
+    assert (
+        "data/processed/aggregates/firm_year_narrative_measures_prelim_v1.parquet"
+        in prelim_measures_phase.required_artifacts
+    )
+
+    prelim_panel_phase = find_phase(
+        model, iteration_id="4", phase_name="preliminary-panel-assembly-2021-2024"
+    )
+    assert prelim_panel_phase is not None
+    assert prelim_panel_phase.canonical is False
+    assert "data/panels/panel_prelim_v1.parquet" in prelim_panel_phase.required_artifacts
+
+    prelim_panel_qa_phase = find_phase(model, iteration_id="4", phase_name="preliminary-panel-qa")
+    assert prelim_panel_qa_phase is not None
+    assert prelim_panel_qa_phase.canonical is False
+    assert "reports/panels/panel_prelim_qa_v1.json" in prelim_panel_qa_phase.required_artifacts
+
+    prelim_regression_phase = find_phase(
+        model, iteration_id="5", phase_name="preliminary-regression-specification"
+    )
+    assert prelim_regression_phase is not None
+    assert prelim_regression_phase.canonical is False
+    assert (
+        "reports/analysis/regression_specification_prelim_v1.json"
+        in prelim_regression_phase.required_artifacts
+    )
+
+    prelim_results_phase = find_phase(
+        model, iteration_id="5", phase_name="preliminary-results-generation"
+    )
+    assert prelim_results_phase is not None
+    assert prelim_results_phase.canonical is False
+    assert (
+        "reports/analysis/results_manifest_prelim_v1.json"
+        in prelim_results_phase.required_artifacts
+    )
+
+    prelim_package_phase = find_phase(
+        model, iteration_id="5", phase_name="preliminary-results-package"
+    )
+    assert prelim_package_phase is not None
+    assert prelim_package_phase.canonical is False
+    assert (
+        "reports/release/preliminary_release_manifest_v1.json"
+        in prelim_package_phase.required_artifacts
+    )
+
+    prelim_table_phase = find_phase(
+        model, iteration_id="5", phase_name="preliminary-results-table-planning"
+    )
+    assert prelim_table_phase is not None
+    assert prelim_table_phase.canonical is False
+    assert prelim_table_phase.lifecycle_state == "deferred"
+    prelim_table_task = next(
+        task
+        for task in prelim_table_phase.tasks
+        if task.task_id == "iteration5.prelim.define_first_results_tables"
+    )
+    assert prelim_table_task.manual_handoff is True
+    assert (
+        prelim_table_task.outputs[0].path
+        == "reports/analysis/preliminary_results_table_plan_v1.md"
+    )
+
+    upgrade_phase = find_phase(
+        model, iteration_id="6", phase_name="post-preliminary-publication-grade-upgrade"
+    )
+    assert upgrade_phase is not None
+    assert upgrade_phase.lifecycle_state == "deferred"
+    assert "reports/models/publication_upgrade_plan_v1.json" in upgrade_phase.required_artifacts
 
     review_phase = find_phase(model, iteration_id="2", phase_name="review-and-replan")
     assert review_phase is not None

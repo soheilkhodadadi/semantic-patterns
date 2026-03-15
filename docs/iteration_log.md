@@ -2299,3 +2299,58 @@ Rules:
 - The IRR phase is now finalized truthfully, but it remains blocked by the current `> 0.7` kappa gate.
 - Current truthful next step:
   - diagnose the `26` disagreement rows and decide whether the next remediation is rubric clarification, subset redesign, or threshold/policy review
+
+## 2026-03-15 - Preliminary Results Fast Track Control-Plane Setup
+
+- Implemented the new non-canonical preliminary-results lane in the roadmap while leaving the canonical publication-grade IRR gate unchanged.
+- Added the standalone disagreement diagnostic CLI:
+  - `src/semantic_ai_washing/labeling/diagnose_irr_disagreements.py`
+- Added the preliminary readiness publisher:
+  - `src/semantic_ai_washing/labeling/publish_preliminary_results_readiness.py`
+- Extended roadmap and regression coverage for:
+  - `iteration2/irr-disagreement-diagnostic`
+  - `iteration2/preliminary-results-authorization`
+  - non-canonical preliminary phases across Iterations 3-5
+  - deferred Iteration 6 publication-grade upgrade placeholder
+- Executed the live disagreement diagnostic:
+  - `.venv/bin/python -m semantic_ai_washing.labeling.diagnose_irr_disagreements --master data/labels/v1/irr_subset_master.csv --rater2 data/labels/v1/irr_subset_rater2_completed.xlsx --adjudication data/labels/v1/adjudication.parquet --irr-report reports/labels/irr_report.json --output-report reports/labels/irr_disagreement_diagnostic_v1.json --output-rows reports/labels/irr_disagreement_rows_v1.csv`
+- Published the preliminary readiness report:
+  - `.venv/bin/python -m semantic_ai_washing.labeling.publish_preliminary_results_readiness --labels-master data/labels/v1/labels_master.parquet --irr-report reports/labels/irr_report.json --diagnostic-report reports/labels/irr_disagreement_diagnostic_v1.json --held-out data/validation/held_out_sentences.csv --split-registry-csv data/metadata/splits/split_registry_v1.csv --split-registry-json data/metadata/splits/split_registry_v1.json --rubric-freeze-report reports/labels/rubric_freeze_v2.json --output-report reports/models/preliminary_results_readiness_v1.json --source-window-id active_2021_2024 --min-total-labels 500 --min-per-class 80 --min-irr-reviewed-items 100`
+- Disagreement diagnostic result:
+  - `headline_irr_status = failed`
+  - `headline_three_class_kappa = 0.6749999999999999`
+  - `reviewed_items = 120`
+  - `rows_disagreement = 26`
+  - `unresolved_disagreements = 0`
+  - `binary_relevance_kappa = 0.7586206896551724`
+  - `actionable_speculative_conditional_kappa = 0.6363636363636365`
+  - `actionable_speculative_conditional_items = 66`
+  - `rater1_vs_final_agreement = 0.9166666666666666`
+  - `rater2_vs_final_agreement = 0.8666666666666667`
+  - transition counts remain:
+    - `A->I = 7`
+    - `A->S = 6`
+    - `S->A = 6`
+    - `S->I = 7`
+- Preliminary readiness result:
+  - `preliminary_only = true`
+  - `source_window_id = active_2021_2024`
+  - `publication_grade_authorized = false`
+  - `preliminary_results_authorized = false`
+  - `total_adjudicated_labels = 551`
+  - `min_class_count = 99`
+  - `heldout_overlap_count = 0`
+  - `split_registry_frozen = false`
+  - `rubric_freeze_status = ""`
+- Current truthful interpretation:
+  - the new preliminary lane is now modeled and the disagreement diagnostic is published
+  - the preliminary authorization artifact exists, but it remains blocked because the split registry and rubric-freeze artifacts have not been published yet
+  - the canonical publication-grade gate remains blocked by `irr_kappa <= 0.7`
+- Validation:
+  - `make doctor`
+  - `make lint`
+  - `.venv/bin/pytest -q`
+  - `.venv/bin/python -m semantic_ai_washing.director.cli render-roadmap`
+  - `.venv/bin/python -m semantic_ai_washing.director.cli plan --iteration 2 --phase preliminary-results-authorization`
+- Current truthful next step:
+  - publish the split registry and provisional rubric-freeze artifacts if we want the preliminary lane to become authorized, or explicitly relax that requirement in the roadmap if the team decides preliminary work should proceed without them

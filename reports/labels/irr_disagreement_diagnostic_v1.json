@@ -1,0 +1,48 @@
+{
+  "generated_at_utc": "2026-03-15T19:18:46.835690+00:00",
+  "git_commit": "202f3d4e4de9974c9e08ac5bfff7e92475a75b55",
+  "inputs": {
+    "master": "data/labels/v1/irr_subset_master.csv",
+    "rater2": "data/labels/v1/irr_subset_rater2_completed.xlsx",
+    "adjudication": "data/labels/v1/adjudication.parquet",
+    "irr_report": "reports/labels/irr_report.json",
+    "master_sha256": "11dea3d01311582709d53d65b0731edbc8b10cd76acdf803ff1e20fac57fc3be",
+    "rater2_sha256": "d257f89dce789e9d3b266577a7851d5395897b1e04f99e475435ec365d28691f",
+    "adjudication_sha256": "5438962519f05a3080d4d6fbd38138b18617ac8a12481ca2d6d940e354dc21ac",
+    "irr_report_sha256": "1bf30016be39b3a99c7aa9ce601fd31b177a457cd610cafca56d75870f45f5ba"
+  },
+  "summary": {
+    "headline_irr_status": "failed",
+    "headline_three_class_kappa": 0.6749999999999999,
+    "reviewed_items": 120,
+    "rows_disagreement": 26,
+    "unresolved_disagreements": 0,
+    "binary_relevance_kappa": 0.7586206896551724,
+    "binary_relevance_reviewed_items": 120,
+    "actionable_speculative_conditional_kappa": 0.6363636363636365,
+    "actionable_speculative_conditional_items": 66,
+    "rater1_vs_final_agreement": 0.9166666666666666,
+    "rater2_vs_final_agreement": 0.8666666666666667,
+    "transition_counts": {
+      "A->I": 7,
+      "A->S": 6,
+      "S->A": 6,
+      "S->I": 7
+    },
+    "disagreement_counts_by_rater1_class": {
+      "Actionable": 13,
+      "Speculative": 13
+    },
+    "disagreement_counts_by_ff12_code": {
+      "12": 25,
+      "3": 1
+    },
+    "disagreement_counts_by_year": {
+      "2024": 26
+    },
+    "adjudicator_based_metrics_are_not_irr": true
+  },
+  "artifacts": {
+    "disagreement_rows": "reports/labels/irr_disagreement_rows_v1.csv"
+  }
+}

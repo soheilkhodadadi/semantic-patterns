@@ -9,7 +9,9 @@ import pandas as pd
 from semantic_ai_washing.labeling.adjudicate_irr_labels import run_adjudication
 from semantic_ai_washing.labeling.audit_sentence_integrity import run_audit
 from semantic_ai_washing.labeling.compute_irr_metrics import run_metrics
+from semantic_ai_washing.labeling.diagnose_irr_disagreements import run_diagnostic
 from semantic_ai_washing.labeling.prepare_irr_subset import run_prepare
+from semantic_ai_washing.labeling.publish_preliminary_results_readiness import run_publish
 
 
 def _write_csv(path: Path, rows: list[dict]) -> None:
@@ -288,3 +290,195 @@ def test_adjudication_and_compute_finalize_from_xlsx(tmp_path):
     assert report["summary"]["third_adjudicator_used"] is True
     assert report["summary"]["by_class_kappa_reported"] is True
     assert report["summary"]["rows_disagreement"] == 1
+
+
+def test_diagnose_irr_disagreements_publishes_secondary_metrics(tmp_path):
+    master_path = tmp_path / "irr_subset_master.csv"
+    rater2_path = tmp_path / "irr_subset_rater2_completed.xlsx"
+    adjudication_path = tmp_path / "adjudication.parquet"
+    irr_report_path = tmp_path / "irr_report.json"
+
+    _write_csv(
+        master_path,
+        [
+            {
+                "irr_item_id": "i1",
+                "sample_id": "s1",
+                "batch_row_id": "b1",
+                "sentence_id": "t1",
+                "sentence": "Sentence one reports deployed AI capabilities.",
+                "source_cik": "1001",
+                "source_year": "2024",
+                "ff12_code": "10",
+                "ff12_name": "Tech",
+                "rater1_label": "Actionable",
+            },
+            {
+                "irr_item_id": "i2",
+                "sample_id": "s2",
+                "batch_row_id": "b2",
+                "sentence_id": "t2",
+                "sentence": "Sentence two says AI may improve operations.",
+                "source_cik": "1002",
+                "source_year": "2024",
+                "ff12_code": "11",
+                "ff12_name": "Retail",
+                "rater1_label": "Speculative",
+            },
+            {
+                "irr_item_id": "i3",
+                "sample_id": "s3",
+                "batch_row_id": "b3",
+                "sentence_id": "t3",
+                "sentence": "Sentence three says the firm uses AI in production.",
+                "source_cik": "1003",
+                "source_year": "2024",
+                "ff12_code": "10",
+                "ff12_name": "Tech",
+                "rater1_label": "Speculative",
+            },
+            {
+                "irr_item_id": "i4",
+                "sample_id": "s4",
+                "batch_row_id": "b4",
+                "sentence_id": "t4",
+                "sentence": "Sentence four is generic AI positioning language.",
+                "source_cik": "1004",
+                "source_year": "2024",
+                "ff12_code": "12",
+                "ff12_name": "Other",
+                "rater1_label": "Irrelevant",
+            },
+        ],
+    )
+    pd.DataFrame(
+        [
+            {"irr_item_id": "i1", "rater2_label": "Actionable"},
+            {"irr_item_id": "i2", "rater2_label": "Actionable"},
+            {"irr_item_id": "i3", "rater2_label": "Speculative"},
+            {"irr_item_id": "i4", "rater2_label": "Irrelevant"},
+        ]
+    ).to_excel(rater2_path, index=False)
+    pd.DataFrame(
+        [
+            {
+                "irr_item_id": "i1",
+                "resolved_label": "Actionable",
+                "disagreement_pair": "",
+                "transition": "",
+                "resolution_source": "agreement",
+            },
+            {
+                "irr_item_id": "i2",
+                "resolved_label": "Speculative",
+                "disagreement_pair": "Speculative vs Actionable",
+                "transition": "S->A",
+                "resolution_source": "third_adjudicator",
+            },
+            {
+                "irr_item_id": "i3",
+                "resolved_label": "Speculative",
+                "disagreement_pair": "",
+                "transition": "",
+                "resolution_source": "agreement",
+            },
+            {
+                "irr_item_id": "i4",
+                "resolved_label": "Irrelevant",
+                "disagreement_pair": "",
+                "transition": "",
+                "resolution_source": "agreement",
+            },
+        ]
+    ).to_parquet(adjudication_path, index=False)
+    _write_json(irr_report_path, {"summary": {"status": "failed", "kappa": 0.675}})
+
+    report = run_diagnostic(
+        argparse.Namespace(
+            master=str(master_path),
+            rater2=str(rater2_path),
+            adjudication=str(adjudication_path),
+            irr_report=str(irr_report_path),
+            output_report=str(tmp_path / "irr_disagreement_diagnostic_v1.json"),
+            output_rows=str(tmp_path / "irr_disagreement_rows_v1.csv"),
+        )
+    )
+
+    assert report["summary"]["headline_irr_status"] == "failed"
+    assert report["summary"]["headline_three_class_kappa"] == 0.675
+    assert report["summary"]["reviewed_items"] == 4
+    assert report["summary"]["rows_disagreement"] == 1
+    assert report["summary"]["unresolved_disagreements"] == 0
+    assert report["summary"]["binary_relevance_kappa"] == 1.0
+    assert report["summary"]["actionable_speculative_conditional_items"] == 3
+    assert round(report["summary"]["actionable_speculative_conditional_kappa"], 6) == 0.4
+    assert report["summary"]["rater1_vs_final_agreement"] == 1.0
+    assert report["summary"]["rater2_vs_final_agreement"] == 0.75
+    assert report["summary"]["transition_counts"] == {"S->A": 1}
+    rows = pd.read_csv(tmp_path / "irr_disagreement_rows_v1.csv")
+    assert rows["irr_item_id"].tolist() == ["i2"]
+
+
+def test_publish_preliminary_results_readiness_keeps_publication_gate_false(tmp_path):
+    labels_master_path = tmp_path / "labels_master.parquet"
+    held_out_path = tmp_path / "held_out.csv"
+    split_registry_csv = tmp_path / "split_registry_v1.csv"
+    split_registry_json = tmp_path / "split_registry_v1.json"
+    rubric_freeze_path = tmp_path / "rubric_freeze_v2.json"
+    irr_report_path = tmp_path / "irr_report.json"
+    diagnostic_path = tmp_path / "irr_disagreement_diagnostic_v1.json"
+
+    rows = []
+    for idx in range(200):
+        rows.append({"label": "Actionable", "sentence": f"Actionable sentence {idx}"})
+    for idx in range(180):
+        rows.append({"label": "Speculative", "sentence": f"Speculative sentence {idx}"})
+    for idx in range(171):
+        rows.append({"label": "Irrelevant", "sentence": f"Irrelevant sentence {idx}"})
+    pd.DataFrame(rows).to_parquet(labels_master_path, index=False)
+    _write_csv(held_out_path, [{"sentence": "held out sentence"}])
+    _write_csv(split_registry_csv, [{"sample_id": "s1", "split": "train"}])
+    _write_json(split_registry_json, {"status": "frozen"})
+    _write_json(rubric_freeze_path, {"status": "provisional_frozen"})
+    _write_json(
+        irr_report_path, {"summary": {"status": "failed", "kappa": 0.675, "reviewed_items": 120}}
+    )
+    _write_json(
+        diagnostic_path,
+        {
+            "summary": {
+                "rows_disagreement": 26,
+                "headline_three_class_kappa": 0.675,
+                "binary_relevance_kappa": 0.79,
+                "actionable_speculative_conditional_kappa": 0.74,
+            }
+        },
+    )
+
+    report = run_publish(
+        argparse.Namespace(
+            labels_master=str(labels_master_path),
+            irr_report=str(irr_report_path),
+            diagnostic_report=str(diagnostic_path),
+            held_out=str(held_out_path),
+            split_registry_csv=str(split_registry_csv),
+            split_registry_json=str(split_registry_json),
+            rubric_freeze_report=str(rubric_freeze_path),
+            output_report=str(tmp_path / "preliminary_results_readiness_v1.json"),
+            source_window_id="active_2021_2024",
+            min_total_labels=500,
+            min_per_class=80,
+            min_irr_reviewed_items=100,
+        )
+    )
+
+    assert report["summary"]["preliminary_only"] is True
+    assert report["summary"]["publication_grade_authorized"] is False
+    assert report["summary"]["preliminary_results_authorized"] is True
+    assert report["summary"]["source_window_id"] == "active_2021_2024"
+    assert report["summary"]["total_adjudicated_labels"] == 551
+    assert report["summary"]["min_class_count"] == 171
+    assert report["summary"]["irr_kappa"] == 0.675
+    assert report["summary"]["heldout_overlap_count"] == 0
+    assert report["summary"]["split_registry_frozen"] is True
+    assert report["summary"]["rubric_freeze_status"] == "provisional_frozen"

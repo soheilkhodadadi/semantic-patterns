@@ -1,7 +1,7 @@
 <!-- generated_file: true -->
 <!-- source_model: /Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/model/roadmap_model.yaml -->
-<!-- source_sha256: c4d93d7f664040a341016fe0f38d61446fdab867f4885440c5c750d12c7cb0e6 -->
-<!-- rendered_at: 2026-03-14T20:06:38.002565+00:00 -->
+<!-- source_sha256: 363798831db1c0bf8fd330aca7c6ad94f3ef9f583609afa41b0fae91122db08b -->
+<!-- rendered_at: 2026-03-15T19:19:57.877262+00:00 -->
 
 # Roadmap Master
 
@@ -122,6 +122,12 @@ Optimization proposals may recommend resequencing tasks or phases beyond the can
   - source refs: email thread 2025-11-01, email thread 2025-11-18
   - mapped phases: iteration5/release-packaging
   - mapped gates: results_package_present
+- `preliminary_results_internal_fast_track` priority=`operational` stakeholder=`Kuntara`
+  - summary: After truthful IRR closeout, allow stakeholder-facing preliminary results on the active 2021-2024 window without weakening publication-grade gates.
+  - target iteration: `2`
+  - source refs: email thread 2026-03-15
+  - mapped phases: iteration2/irr-disagreement-diagnostic, iteration2/preliminary-results-authorization, iteration3/preliminary-kickoff-and-preflight, iteration4/preliminary-panel-assembly-2021-2024, iteration5/preliminary-results-package, iteration5/preliminary-results-table-planning
+  - mapped gates: preliminary_results_internal_only
 
 ## Methodology Alignment
 - source artifact: `docs/director/proposal_methodology.md`
@@ -194,6 +200,7 @@ Optimization proposals may recommend resequencing tasks or phases beyond the can
 - `no_downstream_outcome_peeking` `methodology` enforcement=`hard` value=`True`
 - `openai_assistive_only` `model_governance` enforcement=`hard` value=`assistive_only`
 - `no_significance_optimization` `analysis_governance` enforcement=`hard` value=`True`
+- `preliminary_results_internal_only` `analysis_governance` enforcement=`hard` value=`{'preliminary_only': True, 'source_window_id': 'active_2021_2024', 'publication_grade_authorized': False}`
 - `split_registry_required_before_retraining` `data_governance` enforcement=`hard` value=`True`
 - `sentence_quality_gate_before_labeling` `data_governance` enforcement=`hard` value=`True`
 - `sentence_quality_gate_before_irr` `data_governance` enforcement=`hard` value=`True`
@@ -462,7 +469,7 @@ Exit criteria: Foundation phases passed through label-ops-bootstrap., Iteration 
 ## Iteration 2 - Rubric Realignment, Label Expansion, and Provisional Freeze
 Goal: Realign the rubric to the proposal construct, rebuild tranche-based canonical labels under rubric v2.4, and provisionally freeze the rubric only after sufficiency and IRR gates pass.
 Entry criteria: Iteration 1 review approved., Iteration 2 kickoff completed on iteration2/integration., Proposal methodology source and stakeholder expectations are both current.
-Exit criteria: Rubric realignment report and revised protocol v2.4 are published., Tranche 1 is re-reviewed under rubric v2.4 before further canonical labeling proceeds., Sentence-pool expansion reaches 500 firms and at least 1,000 clean AI sentences in the 2024 candidate pool., At least 500 adjudicated labels with at least 80 labels per class are available before retraining., Human-human IRR exceeds 0.7 on a stratified, blinded 100+ item subset with by-class diagnostics., Provisional rubric freeze and split registry are published with zero held-out leakage., Iteration 2 review approved.
+Exit criteria: Rubric realignment report and revised protocol v2.4 are published., Tranche 1 is re-reviewed under rubric v2.4 before further canonical labeling proceeds., Sentence-pool expansion reaches 500 firms and at least 1,000 clean AI sentences in the 2024 candidate pool., At least 500 adjudicated labels with at least 80 labels per class are available before retraining., Human-human IRR exceeds 0.7 on a stratified, blinded 100+ item subset with by-class diagnostics., Provisional rubric freeze and split registry are published with zero held-out leakage., Preliminary stakeholder-facing results may be authorized separately for the active 2021-2024 window without authorizing publication-grade retraining., Iteration 2 review approved.
 
 ### iteration2/kickoff-and-preflight
 - Title: Kickoff and Preflight
@@ -748,6 +755,24 @@ Exit criteria: Rubric realignment report and revised protocol v2.4 are published
   - tags: human_irr, finalization
   - risks: R1, R3
 
+### iteration2/irr-disagreement-diagnostic
+- Title: IRR Disagreement Diagnostic
+- Goal: Publish a secondary disagreement diagnostic package that explains where the failed canonical IRR is concentrated without rewriting the headline IRR result.
+- Lifecycle: `planned`
+- Depends on: iteration2/merge-canonical-labels
+- Source window: `active_2021_2024`
+- Required artifacts: reports/labels/irr_disagreement_diagnostic_v1.json, reports/labels/irr_disagreement_rows_v1.csv
+- Tags: irr, disagreement_diagnostic, preliminary_results
+
+#### Tasks
+- `iteration2.irr.publish_disagreement_diagnostic` Publish IRR disagreement diagnostic
+  - kind: `analysis` gate_class: `science` automation: `full`
+  - depends_on: none
+  - inputs: data/labels/v1/irr_subset_master.csv, data/labels/v1/irr_subset_rater2_completed.xlsx, data/labels/v1/adjudication.parquet, reports/labels/irr_report.json
+  - outputs: reports/labels/irr_disagreement_diagnostic_v1.json, reports/labels/irr_disagreement_rows_v1.csv
+  - tags: irr, disagreement_diagnostic
+  - risks: R1, R3
+
 ### iteration2/provisional-rubric-freeze-and-split-registry
 - Title: Provisional Rubric Freeze and Split Registry
 - Goal: Freeze the rubric provisionally for scale-up, generate the split registry, and preserve zero held-out leakage before retraining.
@@ -798,6 +823,24 @@ Exit criteria: Rubric realignment report and revised protocol v2.4 are published
   - tags: modeling_gate
   - risks: R1, R3
 
+### iteration2/preliminary-results-authorization
+- Title: Preliminary Results Authorization
+- Goal: Publish a separate active-window readiness report that authorizes stakeholder-facing preliminary results without weakening the blocked publication-grade gate.
+- Lifecycle: `planned`
+- Depends on: iteration2/irr-disagreement-diagnostic
+- Source window: `active_2021_2024`
+- Required artifacts: reports/models/preliminary_results_readiness_v1.json
+- Tags: preliminary_results, stakeholder_alignment, readiness
+
+#### Tasks
+- `iteration2.prelim.publish_preliminary_results_readiness` Publish preliminary results readiness
+  - kind: `analysis` gate_class: `science` automation: `full`
+  - depends_on: none
+  - inputs: data/labels/v1/labels_master.parquet, reports/labels/irr_report.json, reports/labels/irr_disagreement_diagnostic_v1.json, data/metadata/splits/split_registry_v1.csv, data/metadata/splits/split_registry_v1.json, reports/labels/rubric_freeze_v2.json
+  - outputs: reports/models/preliminary_results_readiness_v1.json
+  - tags: preliminary_results, stakeholder_alignment
+  - risks: R1, R3
+
 ### iteration2/review-and-replan
 - Title: Review and Replan
 - Goal: Synthesize iteration evidence, approve closeout, and prepare the next iteration handoff.
@@ -828,6 +871,66 @@ Exit criteria: Rubric realignment report and revised protocol v2.4 are published
 Goal: Retrain on the proposal-aligned adjudicated labels, build named firm-year measures, and test whether the rubric directionally predicts later AI capability before publication-scale deployment.
 Entry criteria: Iteration 2 review approved., Iteration 3 kickoff completed on iteration3/integration., Label sufficiency gate passed with at least 500 adjudicated labels, at least 80 labels per class, human-human IRR > 0.7, and provisional rubric freeze recorded.
 Exit criteria: Retraining, held-out evaluation, active-window classification, and ai_total merge-integrity QA are complete., Named firm-year narrative measures are published explicitly., Development predictive-validity gate is documented before publication-scale rollout., Iteration 3 review approved.
+
+### iteration3/preliminary-kickoff-and-preflight
+- Title: Preliminary Kickoff and Preflight
+- Goal: Confirm that the active-window preliminary lane is authorized and remains explicitly separate from the blocked publication-grade path.
+- Lifecycle: `planned`
+- Depends on: iteration2/preliminary-results-authorization
+- Source window: `active_2021_2024`
+- Required artifacts: reports/models/preliminary_results_readiness_v1.json
+- Tags: preliminary_results, kickoff
+
+#### Tasks
+- phase-level only in this roadmap version
+
+### iteration3/preliminary-centroid-retraining
+- Title: Preliminary Centroid Retraining
+- Goal: Train a preliminary-only model namespace for the active 2021-2024 window without overwriting publication-grade artifacts.
+- Lifecycle: `planned`
+- Depends on: iteration3/preliminary-kickoff-and-preflight
+- Source window: `active_2021_2024`
+- Required artifacts: artifacts/models/mpnet_prelim_v1/embeddings.parquet, artifacts/models/mpnet_prelim_v1/centroids.json, artifacts/models/mpnet_prelim_v1/metadata.json
+- Tags: preliminary_results, retraining
+
+#### Tasks
+- phase-level only in this roadmap version
+
+### iteration3/preliminary-heldout-evaluation
+- Title: Preliminary Held-Out Evaluation
+- Goal: Evaluate the preliminary model truthfully on the frozen held-out split without relaxing leakage checks or implying publication-grade authorization.
+- Lifecycle: `planned`
+- Depends on: iteration3/preliminary-centroid-retraining
+- Source window: `active_2021_2024`
+- Required artifacts: reports/evaluation/heldout_eval_prelim_v1.json
+- Tags: preliminary_results, evaluation
+
+#### Tasks
+- phase-level only in this roadmap version
+
+### iteration3/preliminary-active-window-classification
+- Title: Preliminary Active Window Classification
+- Goal: Classify the active 2021-2024 source window into a separate preliminary artifact namespace for internal results work.
+- Lifecycle: `planned`
+- Depends on: iteration3/preliminary-heldout-evaluation
+- Source window: `active_2021_2024`
+- Required artifacts: data/processed/classifications/year=2021/model=mpnet_prelim_v1/classified_sentences.parquet, data/processed/classifications/year=2022/model=mpnet_prelim_v1/classified_sentences.parquet, data/processed/classifications/year=2023/model=mpnet_prelim_v1/classified_sentences.parquet, data/processed/classifications/year=2024/model=mpnet_prelim_v1/classified_sentences.parquet, reports/classification/active_window_coverage_prelim_v1.json
+- Tags: preliminary_results, batch_classification
+
+#### Tasks
+- phase-level only in this roadmap version
+
+### iteration3/preliminary-firm-year-measure-construction
+- Title: Preliminary Firm-Year Measure Construction
+- Goal: Build preliminary-only firm-year AI metrics and narrative measures for internal 2021-2024 stakeholder results.
+- Lifecycle: `planned`
+- Depends on: iteration3/preliminary-active-window-classification
+- Source window: `active_2021_2024`
+- Required artifacts: data/processed/aggregates/firm_year_ai_metrics_prelim_v1.parquet, data/processed/aggregates/firm_year_narrative_measures_prelim_v1.parquet, reports/classification/firm_year_narrative_measures_prelim_v1.json
+- Tags: preliminary_results, measures
+
+#### Tasks
+- phase-level only in this roadmap version
 
 ### iteration3/kickoff-and-preflight
 - Title: Kickoff and Preflight
@@ -980,6 +1083,42 @@ Goal: Build the active-window panel, add stakeholder-requested robustness inputs
 Entry criteria: Iteration 3 review approved., Iteration 4 kickoff completed on iteration4/integration.
 Exit criteria: Active-window panel is assembled and QA-frozen., Job-postings robustness inputs are integrated., Publication-scope expansion readiness is recorded for all-public-firm / longer-horizon coverage., Iteration 4 review approved.
 
+### iteration4/preliminary-patents-and-controls-ingestion
+- Title: Preliminary Patents and Controls Ingestion
+- Goal: Refresh or document the reuse of patents and controls inputs for the active-window preliminary panel lane.
+- Lifecycle: `planned`
+- Depends on: iteration3/preliminary-firm-year-measure-construction
+- Source window: `active_2021_2024`
+- Required artifacts: reports/panels/preliminary_inputs_manifest_v1.json
+- Tags: preliminary_results, panel_inputs
+
+#### Tasks
+- phase-level only in this roadmap version
+
+### iteration4/preliminary-panel-assembly-2021-2024
+- Title: Preliminary Panel Assembly 2021-2024
+- Goal: Assemble a separate preliminary 2021-2024 panel for internal stakeholder-facing results without touching canonical panel artifacts.
+- Lifecycle: `planned`
+- Depends on: iteration4/preliminary-patents-and-controls-ingestion
+- Source window: `active_2021_2024`
+- Required artifacts: data/panels/panel_prelim_v1.parquet, data/panels/panel_prelim_v1.csv, reports/panels/panel_prelim_merge_coverage_v1.json
+- Tags: preliminary_results, panel
+
+#### Tasks
+- phase-level only in this roadmap version
+
+### iteration4/preliminary-panel-qa
+- Title: Preliminary Panel QA
+- Goal: Run preliminary panel QA and document that outputs remain preliminary-only and active-window scoped.
+- Lifecycle: `planned`
+- Depends on: iteration4/preliminary-panel-assembly-2021-2024
+- Source window: `active_2021_2024`
+- Required artifacts: reports/panels/panel_prelim_qa_v1.json
+- Tags: preliminary_results, panel_qa
+
+#### Tasks
+- phase-level only in this roadmap version
+
 ### iteration4/kickoff-and-preflight
 - Title: Kickoff and Preflight
 - Goal: Validate branch context and prior review approval before starting Iteration 4 work.
@@ -1095,6 +1234,60 @@ Goal: Produce publication-oriented analysis outputs, stakeholder-requested robus
 Entry criteria: Iteration 4 review approved., Iteration 5 kickoff completed on iteration5/integration.
 Exit criteria: Publication regressions, robustness outputs, differentiation artifacts, and paper/results package are complete., Iteration 5 review approved.
 
+### iteration5/preliminary-regression-specification
+- Title: Preliminary Regression Specification
+- Goal: Freeze preliminary active-window regression inputs and baseline internal-result specifications without implying publication-grade release readiness.
+- Lifecycle: `planned`
+- Depends on: iteration4/preliminary-panel-qa
+- Source window: `active_2021_2024`
+- Required artifacts: reports/analysis/regression_specification_prelim_v1.json
+- Tags: preliminary_results, analysis
+
+#### Tasks
+- phase-level only in this roadmap version
+
+### iteration5/preliminary-results-generation
+- Title: Preliminary Results Generation
+- Goal: Produce an internal preliminary results manifest for the active 2021-2024 window while keeping publication-grade claims closed.
+- Lifecycle: `planned`
+- Depends on: iteration5/preliminary-regression-specification
+- Source window: `active_2021_2024`
+- Required artifacts: reports/analysis/results_manifest_prelim_v1.json
+- Tags: preliminary_results, analysis
+
+#### Tasks
+- phase-level only in this roadmap version
+
+### iteration5/preliminary-results-package
+- Title: Preliminary Results Package
+- Goal: Package preliminary stakeholder-facing outputs in a separate release manifest that clearly marks the active-window scope and non-publication status.
+- Lifecycle: `planned`
+- Depends on: iteration5/preliminary-results-generation
+- Source window: `active_2021_2024`
+- Required artifacts: reports/release/preliminary_release_manifest_v1.json
+- Tags: preliminary_results, release
+
+#### Tasks
+- phase-level only in this roadmap version
+
+### iteration5/preliminary-results-table-planning
+- Title: Preliminary Results Table Planning
+- Goal: Preserve a deferred planning placeholder for the first internal draft table set after we inspect the preliminary panel and results outputs.
+- Lifecycle: `deferred`
+- Depends on: iteration5/preliminary-results-generation
+- Source window: `active_2021_2024`
+- Required artifacts: reports/analysis/preliminary_results_table_plan_v1.md
+- Tags: preliminary_results, planning
+
+#### Tasks
+- `iteration5.prelim.define_first_results_tables` Define first preliminary results tables
+  - kind: `manual` gate_class: `manual` automation: `manual`
+  - depends_on: none
+  - inputs: reports/analysis/results_manifest_prelim_v1.json
+  - outputs: reports/analysis/preliminary_results_table_plan_v1.md
+  - tags: preliminary_results, planning
+  - risks: R2
+
 ### iteration5/kickoff-and-preflight
 - Title: Kickoff and Preflight
 - Goal: Validate branch context and prior review approval before starting Iteration 5 work.
@@ -1203,6 +1396,24 @@ Exit criteria: Publication regressions, robustness outputs, differentiation arti
   - outputs: director/reviews/iteration_5_approval.json
   - tags: review_approval
   - risks: R4
+
+
+## Iteration 6 - Publication-Grade Upgrade and Scope Expansion
+Goal: After the preliminary-results cycle, improve model quality, revisit rubric only when diagnostics justify it, and expand toward broader publication-grade source coverage.
+Entry criteria: Preliminary stakeholder-facing results have been packaged from the active 2021-2024 window., Publication-grade retraining and release gates remain governed by the canonical methodology hard gates.
+Exit criteria: A publication-grade upgrade plan is published for the next wave of model, scope, and robustness improvements.
+
+### iteration6/post-preliminary-publication-grade-upgrade
+- Title: Post-Preliminary Publication-Grade Upgrade
+- Goal: Diagnose disagreement and model-quality limitations, plan historical expansion, and define the next publication-grade upgrade cycle without tuning toward significance.
+- Lifecycle: `deferred`
+- Depends on: iteration5/review-and-replan
+- Source window: `none`
+- Required artifacts: reports/models/publication_upgrade_plan_v1.json
+- Tags: deferred_upgrade, publication_scope, methodology_alignment
+
+#### Tasks
+- phase-level only in this roadmap version
 
 
 ## Approved Review Appendix

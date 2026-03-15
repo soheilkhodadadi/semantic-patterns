@@ -1,0 +1,43 @@
+{
+  "generated_at_utc": "2026-03-15T19:19:57.513801+00:00",
+  "git_commit": "202f3d4e4de9974c9e08ac5bfff7e92475a75b55",
+  "inputs": {
+    "labels_master": "data/labels/v1/labels_master.parquet",
+    "irr_report": "reports/labels/irr_report.json",
+    "diagnostic_report": "reports/labels/irr_disagreement_diagnostic_v1.json",
+    "held_out": "data/validation/held_out_sentences.csv",
+    "split_registry_csv": "data/metadata/splits/split_registry_v1.csv",
+    "split_registry_json": "data/metadata/splits/split_registry_v1.json",
+    "rubric_freeze_report": "reports/labels/rubric_freeze_v2.json",
+    "labels_master_sha256": "ec479d493138c27103c00f6b17e0c62bb54e380862fc0d75b12098381db42fc5",
+    "irr_report_sha256": "1bf30016be39b3a99c7aa9ce601fd31b177a457cd610cafca56d75870f45f5ba",
+    "diagnostic_report_sha256": "6acf4bbfc0ef85b4ac6681290679a586b3a0041eadd0d52640fe2498fe330940",
+    "held_out_sha256": "0655a14cf69b1a9160471533689b286b6a4da9a2cbf468afab2623aa8c08b99e",
+    "split_registry_csv_sha256": "",
+    "split_registry_json_sha256": "",
+    "rubric_freeze_report_sha256": ""
+  },
+  "summary": {
+    "preliminary_only": true,
+    "source_window_id": "active_2021_2024",
+    "publication_grade_authorized": false,
+    "preliminary_results_authorized": false,
+    "total_adjudicated_labels": 551,
+    "min_class_count": 99,
+    "class_counts": {
+      "Actionable": 108,
+      "Irrelevant": 344,
+      "Speculative": 99
+    },
+    "irr_kappa": 0.6749999999999999,
+    "irr_reviewed_items": 120,
+    "irr_report_status": "failed",
+    "heldout_overlap_count": 0,
+    "split_registry_frozen": false,
+    "rubric_freeze_status": "",
+    "diagnostic_rows_disagreement": 26,
+    "headline_three_class_kappa": 0.6749999999999999,
+    "binary_relevance_kappa": 0.7586206896551724,
+    "actionable_speculative_conditional_kappa": 0.6363636363636365
+  }
+}

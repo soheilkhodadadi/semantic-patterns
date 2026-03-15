@@ -233,6 +233,23 @@ stakeholder_alignment:
     - iteration5/release-packaging
     mapped_gates:
     - results_package_present
+  - requirement_id: preliminary_results_internal_fast_track
+    stakeholder: Kuntara
+    priority: operational
+    summary: After truthful IRR closeout, allow stakeholder-facing preliminary results
+      on the active 2021-2024 window without weakening publication-grade gates.
+    target_iteration: '2'
+    source_refs:
+    - email thread 2026-03-15
+    mapped_phases:
+    - iteration2/irr-disagreement-diagnostic
+    - iteration2/preliminary-results-authorization
+    - iteration3/preliminary-kickoff-and-preflight
+    - iteration4/preliminary-panel-assembly-2021-2024
+    - iteration5/preliminary-results-package
+    - iteration5/preliminary-results-table-planning
+    mapped_gates:
+    - preliminary_results_internal_only
 methodology_alignment:
   schema_version: 1.4.0
   source_artifact: docs/director/proposal_methodology.md
@@ -425,8 +442,28 @@ policies:
   enforcement: hard
   targets:
   - iteration5/results-generation
+  - iteration5/preliminary-results-generation
   - iteration5/robustness-and-sensitivity
   value: true
+- policy_id: preliminary_results_internal_only
+  kind: analysis_governance
+  description: Preliminary stakeholder-facing results may proceed only as explicitly
+    preliminary active-window outputs and must not be treated as publication-grade.
+  enforcement: hard
+  targets:
+  - iteration2/preliminary-results-authorization
+  - iteration3/preliminary-heldout-evaluation
+  - iteration3/preliminary-active-window-classification
+  - iteration3/preliminary-firm-year-measure-construction
+  - iteration4/preliminary-panel-assembly-2021-2024
+  - iteration4/preliminary-panel-qa
+  - iteration5/preliminary-regression-specification
+  - iteration5/preliminary-results-generation
+  - iteration5/preliminary-results-package
+  value:
+    preliminary_only: true
+    source_window_id: active_2021_2024
+    publication_grade_authorized: false
 - policy_id: split_registry_required_before_retraining
   kind: data_governance
   description: Retraining requires a frozen split registry with no held-out overlap.
@@ -1520,6 +1557,8 @@ iterations:
     diagnostics.
   - Provisional rubric freeze and split registry are published with zero held-out
     leakage.
+  - Preliminary stakeholder-facing results may be authorized separately for the active
+    2021-2024 window without authorizing publication-grade retraining.
   - Iteration 2 review approved.
   phases:
   - phase_id: iteration2/kickoff-and-preflight
@@ -3535,6 +3574,119 @@ iterations:
       - human_irr
       - finalization
       gate_class: manual
+  - phase_id: iteration2/irr-disagreement-diagnostic
+    title: IRR Disagreement Diagnostic
+    goal: Publish a secondary disagreement diagnostic package that explains where
+      the failed canonical IRR is concentrated without rewriting the headline IRR
+      result.
+    lifecycle_state: planned
+    canonical: false
+    depends_on:
+    - iteration2/merge-canonical-labels
+    required_artifacts:
+    - reports/labels/irr_disagreement_diagnostic_v1.json
+    - reports/labels/irr_disagreement_rows_v1.csv
+    source_window_id: active_2021_2024
+    tags:
+    - irr
+    - disagreement_diagnostic
+    - preliminary_results
+    tasks:
+    - task_id: iteration2.irr.publish_disagreement_diagnostic
+      title: Publish IRR disagreement diagnostic
+      description: Compute secondary disagreement diagnostics and a row-level dossier
+        after truthful IRR finalization.
+      iteration_id: '2'
+      phase_id: iteration2/irr-disagreement-diagnostic
+      kind: analysis
+      depends_on: []
+      inputs:
+      - artifact_id: irr_subset_master
+        path: data/labels/v1/irr_subset_master.csv
+        kind: csv
+        required: true
+      - artifact_id: irr_subset_rater2_completed_xlsx
+        path: data/labels/v1/irr_subset_rater2_completed.xlsx
+        kind: file
+        required: true
+      - artifact_id: adjudication
+        path: data/labels/v1/adjudication.parquet
+        kind: parquet
+        required: true
+      - artifact_id: irr_report
+        path: reports/labels/irr_report.json
+        kind: json
+        required: true
+      outputs:
+      - artifact_id: irr_disagreement_diagnostic
+        path: reports/labels/irr_disagreement_diagnostic_v1.json
+        kind: json
+        required: true
+      - artifact_id: irr_disagreement_rows
+        path: reports/labels/irr_disagreement_rows_v1.csv
+        kind: csv
+        required: true
+      preconditions:
+      - condition_id: finalized_irr_report_exists
+        kind: artifact_exists
+        target: reports/labels/irr_report.json
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Final IRR report must exist before disagreement diagnostics can run.
+        reroute_to: []
+      - condition_id: finalized_adjudication_exists
+        kind: artifact_exists
+        target: data/labels/v1/adjudication.parquet
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Final adjudication parquet must exist before disagreement diagnostics
+          can run.
+        reroute_to: []
+      - condition_id: irr_adjudication_finalized
+        kind: json_field_compare
+        target: reports/labels/irr_adjudication_status.json::summary.status
+        operator: ==
+        expected: finalized
+        on_fail: block
+        message: Disagreement diagnostics require finalized adjudication status.
+        reroute_to: []
+      quality_checks:
+      - condition_id: disagreement_diagnostic_headline_status_truthful
+        kind: json_field_compare
+        target: reports/labels/irr_disagreement_diagnostic_v1.json::summary.headline_irr_status
+        operator: in
+        expected:
+        - passed
+        - failed
+        on_fail: block
+        message: Disagreement diagnostic must preserve the truthful headline IRR status.
+        reroute_to: []
+      - condition_id: disagreement_diagnostic_no_unresolved_rows
+        kind: json_field_compare
+        target: reports/labels/irr_disagreement_diagnostic_v1.json::summary.unresolved_disagreements
+        operator: ==
+        expected: 0
+        on_fail: block
+        message: Disagreement diagnostic requires fully resolved adjudication rows.
+        reroute_to: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.labeling.diagnose_irr_disagreements --master data/labels/v1/irr_subset_master.csv --rater2 data/labels/v1/irr_subset_rater2_completed.xlsx --adjudication data/labels/v1/adjudication.parquet --irr-report reports/labels/irr_report.json --output-report reports/labels/irr_disagreement_diagnostic_v1.json --output-rows reports/labels/irr_disagreement_rows_v1.csv
+      manual_handoff: false
+      risks:
+      - R1
+      - R3
+      estimated_effort: 2
+      risk_reduction: 8
+      automation_level: full
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - irr
+      - disagreement_diagnostic
+      gate_class: science
   - phase_id: iteration2/provisional-rubric-freeze-and-split-registry
     title: Provisional Rubric Freeze and Split Registry
     goal: Freeze the rubric provisionally for scale-up, generate the split registry,
@@ -3824,6 +3976,144 @@ iterations:
       tags:
       - modeling_gate
       gate_class: science
+  - phase_id: iteration2/preliminary-results-authorization
+    title: Preliminary Results Authorization
+    goal: Publish a separate active-window readiness report that authorizes stakeholder-facing
+      preliminary results without weakening the blocked publication-grade gate.
+    lifecycle_state: planned
+    canonical: false
+    depends_on:
+    - iteration2/irr-disagreement-diagnostic
+    required_artifacts:
+    - reports/models/preliminary_results_readiness_v1.json
+    source_window_id: active_2021_2024
+    tags:
+    - preliminary_results
+    - stakeholder_alignment
+    - readiness
+    tasks:
+    - task_id: iteration2.prelim.publish_preliminary_results_readiness
+      title: Publish preliminary results readiness
+      description: Record whether the active 2021-2024 scope may proceed as a preliminary-only
+        stakeholder-facing lane while publication-grade retraining remains unauthorized.
+      iteration_id: '2'
+      phase_id: iteration2/preliminary-results-authorization
+      kind: analysis
+      depends_on: []
+      inputs:
+      - artifact_id: labels_master
+        path: data/labels/v1/labels_master.parquet
+        kind: parquet
+        required: true
+      - artifact_id: irr_report
+        path: reports/labels/irr_report.json
+        kind: json
+        required: true
+      - artifact_id: irr_disagreement_diagnostic
+        path: reports/labels/irr_disagreement_diagnostic_v1.json
+        kind: json
+        required: true
+      - artifact_id: split_registry_csv
+        path: data/metadata/splits/split_registry_v1.csv
+        kind: csv
+        required: true
+      - artifact_id: split_registry_json
+        path: data/metadata/splits/split_registry_v1.json
+        kind: json
+        required: true
+      - artifact_id: rubric_freeze_report
+        path: reports/labels/rubric_freeze_v2.json
+        kind: json
+        required: true
+      outputs:
+      - artifact_id: preliminary_results_readiness
+        path: reports/models/preliminary_results_readiness_v1.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: labels_master_exists_for_prelim_readiness
+        kind: artifact_exists
+        target: data/labels/v1/labels_master.parquet
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Canonical labels must exist before preliminary readiness can be published.
+        reroute_to: []
+      - condition_id: finalized_irr_report_exists_for_prelim_readiness
+        kind: artifact_exists
+        target: reports/labels/irr_report.json
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Final IRR report must exist before preliminary readiness can be published.
+        reroute_to: []
+      - condition_id: finalized_split_registry_exists_for_prelim_readiness
+        kind: artifact_exists
+        target: data/metadata/splits/split_registry_v1.csv
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Split registry must exist before preliminary readiness can be published.
+        reroute_to: []
+      - condition_id: finalized_rubric_freeze_exists_for_prelim_readiness
+        kind: artifact_exists
+        target: reports/labels/rubric_freeze_v2.json
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Rubric freeze report must exist before preliminary readiness can
+          be published.
+        reroute_to: []
+      quality_checks:
+      - condition_id: preliminary_results_internal_only
+        kind: json_field_compare
+        target: reports/models/preliminary_results_readiness_v1.json::summary.preliminary_only
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Preliminary readiness must explicitly mark the lane as preliminary-only.
+        reroute_to: []
+      - condition_id: preliminary_active_window_scoped
+        kind: json_field_compare
+        target: reports/models/preliminary_results_readiness_v1.json::summary.source_window_id
+        operator: ==
+        expected: active_2021_2024
+        on_fail: block
+        message: Preliminary readiness must remain scoped to the active 2021-2024 window.
+        reroute_to: []
+      - condition_id: preliminary_publication_gate_stays_closed
+        kind: json_field_compare
+        target: reports/models/preliminary_results_readiness_v1.json::summary.publication_grade_authorized
+        operator: ==
+        expected: false
+        on_fail: block
+        message: Preliminary readiness must not authorize publication-grade retraining.
+        reroute_to: []
+      - condition_id: preliminary_results_authorized
+        kind: json_field_compare
+        target: reports/models/preliminary_results_readiness_v1.json::summary.preliminary_results_authorized
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Preliminary readiness must affirm that the internal preliminary lane
+          is authorized before downstream preliminary work proceeds.
+        reroute_to: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.labeling.publish_preliminary_results_readiness --labels-master data/labels/v1/labels_master.parquet --irr-report reports/labels/irr_report.json --diagnostic-report reports/labels/irr_disagreement_diagnostic_v1.json --held-out data/validation/held_out_sentences.csv --split-registry-csv data/metadata/splits/split_registry_v1.csv --split-registry-json data/metadata/splits/split_registry_v1.json --rubric-freeze-report reports/labels/rubric_freeze_v2.json --output-report reports/models/preliminary_results_readiness_v1.json --source-window-id active_2021_2024 --min-total-labels 500 --min-per-class 80 --min-irr-reviewed-items 100
+      manual_handoff: false
+      risks:
+      - R1
+      - R3
+      estimated_effort: 2
+      risk_reduction: 8
+      automation_level: full
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - preliminary_results
+      - stakeholder_alignment
+      gate_class: science
   - phase_id: iteration2/review-and-replan
     title: Review and Replan
     goal: Synthesize iteration evidence, approve closeout, and prepare the next iteration
@@ -3970,6 +4260,89 @@ iterations:
   - Development predictive-validity gate is documented before publication-scale rollout.
   - Iteration 3 review approved.
   phases:
+  - phase_id: iteration3/preliminary-kickoff-and-preflight
+    title: Preliminary Kickoff and Preflight
+    goal: Confirm that the active-window preliminary lane is authorized and remains
+      explicitly separate from the blocked publication-grade path.
+    lifecycle_state: planned
+    canonical: false
+    depends_on:
+    - iteration2/preliminary-results-authorization
+    required_artifacts:
+    - reports/models/preliminary_results_readiness_v1.json
+    source_window_id: active_2021_2024
+    tags:
+    - preliminary_results
+    - kickoff
+    tasks: []
+  - phase_id: iteration3/preliminary-centroid-retraining
+    title: Preliminary Centroid Retraining
+    goal: Train a preliminary-only model namespace for the active 2021-2024 window
+      without overwriting publication-grade artifacts.
+    lifecycle_state: planned
+    canonical: false
+    depends_on:
+    - iteration3/preliminary-kickoff-and-preflight
+    required_artifacts:
+    - artifacts/models/mpnet_prelim_v1/embeddings.parquet
+    - artifacts/models/mpnet_prelim_v1/centroids.json
+    - artifacts/models/mpnet_prelim_v1/metadata.json
+    source_window_id: active_2021_2024
+    tags:
+    - preliminary_results
+    - retraining
+    tasks: []
+  - phase_id: iteration3/preliminary-heldout-evaluation
+    title: Preliminary Held-Out Evaluation
+    goal: Evaluate the preliminary model truthfully on the frozen held-out split without
+      relaxing leakage checks or implying publication-grade authorization.
+    lifecycle_state: planned
+    canonical: false
+    depends_on:
+    - iteration3/preliminary-centroid-retraining
+    required_artifacts:
+    - reports/evaluation/heldout_eval_prelim_v1.json
+    source_window_id: active_2021_2024
+    tags:
+    - preliminary_results
+    - evaluation
+    tasks: []
+  - phase_id: iteration3/preliminary-active-window-classification
+    title: Preliminary Active Window Classification
+    goal: Classify the active 2021-2024 source window into a separate preliminary
+      artifact namespace for internal results work.
+    lifecycle_state: planned
+    canonical: false
+    depends_on:
+    - iteration3/preliminary-heldout-evaluation
+    required_artifacts:
+    - data/processed/classifications/year=2021/model=mpnet_prelim_v1/classified_sentences.parquet
+    - data/processed/classifications/year=2022/model=mpnet_prelim_v1/classified_sentences.parquet
+    - data/processed/classifications/year=2023/model=mpnet_prelim_v1/classified_sentences.parquet
+    - data/processed/classifications/year=2024/model=mpnet_prelim_v1/classified_sentences.parquet
+    - reports/classification/active_window_coverage_prelim_v1.json
+    source_window_id: active_2021_2024
+    tags:
+    - preliminary_results
+    - batch_classification
+    tasks: []
+  - phase_id: iteration3/preliminary-firm-year-measure-construction
+    title: Preliminary Firm-Year Measure Construction
+    goal: Build preliminary-only firm-year AI metrics and narrative measures for internal
+      2021-2024 stakeholder results.
+    lifecycle_state: planned
+    canonical: false
+    depends_on:
+    - iteration3/preliminary-active-window-classification
+    required_artifacts:
+    - data/processed/aggregates/firm_year_ai_metrics_prelim_v1.parquet
+    - data/processed/aggregates/firm_year_narrative_measures_prelim_v1.parquet
+    - reports/classification/firm_year_narrative_measures_prelim_v1.json
+    source_window_id: active_2021_2024
+    tags:
+    - preliminary_results
+    - measures
+    tasks: []
   - phase_id: iteration3/kickoff-and-preflight
     title: Kickoff and Preflight
     goal: Validate branch context and prior review approval before starting Iteration
@@ -4465,6 +4838,53 @@ iterations:
     coverage.
   - Iteration 4 review approved.
   phases:
+  - phase_id: iteration4/preliminary-patents-and-controls-ingestion
+    title: Preliminary Patents and Controls Ingestion
+    goal: Refresh or document the reuse of patents and controls inputs for the active-window
+      preliminary panel lane.
+    lifecycle_state: planned
+    canonical: false
+    depends_on:
+    - iteration3/preliminary-firm-year-measure-construction
+    required_artifacts:
+    - reports/panels/preliminary_inputs_manifest_v1.json
+    source_window_id: active_2021_2024
+    tags:
+    - preliminary_results
+    - panel_inputs
+    tasks: []
+  - phase_id: iteration4/preliminary-panel-assembly-2021-2024
+    title: Preliminary Panel Assembly 2021-2024
+    goal: Assemble a separate preliminary 2021-2024 panel for internal stakeholder-facing
+      results without touching canonical panel artifacts.
+    lifecycle_state: planned
+    canonical: false
+    depends_on:
+    - iteration4/preliminary-patents-and-controls-ingestion
+    required_artifacts:
+    - data/panels/panel_prelim_v1.parquet
+    - data/panels/panel_prelim_v1.csv
+    - reports/panels/panel_prelim_merge_coverage_v1.json
+    source_window_id: active_2021_2024
+    tags:
+    - preliminary_results
+    - panel
+    tasks: []
+  - phase_id: iteration4/preliminary-panel-qa
+    title: Preliminary Panel QA
+    goal: Run preliminary panel QA and document that outputs remain preliminary-only
+      and active-window scoped.
+    lifecycle_state: planned
+    canonical: false
+    depends_on:
+    - iteration4/preliminary-panel-assembly-2021-2024
+    required_artifacts:
+    - reports/panels/panel_prelim_qa_v1.json
+    source_window_id: active_2021_2024
+    tags:
+    - preliminary_results
+    - panel_qa
+    tasks: []
   - phase_id: iteration4/kickoff-and-preflight
     title: Kickoff and Preflight
     goal: Validate branch context and prior review approval before starting Iteration
@@ -4789,6 +5209,108 @@ iterations:
     package are complete.
   - Iteration 5 review approved.
   phases:
+  - phase_id: iteration5/preliminary-regression-specification
+    title: Preliminary Regression Specification
+    goal: Freeze preliminary active-window regression inputs and baseline internal-result
+      specifications without implying publication-grade release readiness.
+    lifecycle_state: planned
+    canonical: false
+    depends_on:
+    - iteration4/preliminary-panel-qa
+    required_artifacts:
+    - reports/analysis/regression_specification_prelim_v1.json
+    source_window_id: active_2021_2024
+    tags:
+    - preliminary_results
+    - analysis
+    tasks: []
+  - phase_id: iteration5/preliminary-results-generation
+    title: Preliminary Results Generation
+    goal: Produce an internal preliminary results manifest for the active 2021-2024
+      window while keeping publication-grade claims closed.
+    lifecycle_state: planned
+    canonical: false
+    depends_on:
+    - iteration5/preliminary-regression-specification
+    required_artifacts:
+    - reports/analysis/results_manifest_prelim_v1.json
+    source_window_id: active_2021_2024
+    tags:
+    - preliminary_results
+    - analysis
+    tasks: []
+  - phase_id: iteration5/preliminary-results-package
+    title: Preliminary Results Package
+    goal: Package preliminary stakeholder-facing outputs in a separate release manifest
+      that clearly marks the active-window scope and non-publication status.
+    lifecycle_state: planned
+    canonical: false
+    depends_on:
+    - iteration5/preliminary-results-generation
+    required_artifacts:
+    - reports/release/preliminary_release_manifest_v1.json
+    source_window_id: active_2021_2024
+    tags:
+    - preliminary_results
+    - release
+    tasks: []
+  - phase_id: iteration5/preliminary-results-table-planning
+    title: Preliminary Results Table Planning
+    goal: Preserve a deferred planning placeholder for the first internal draft table
+      set after we inspect the preliminary panel and results outputs.
+    lifecycle_state: deferred
+    canonical: false
+    depends_on:
+    - iteration5/preliminary-results-generation
+    required_artifacts:
+    - reports/analysis/preliminary_results_table_plan_v1.md
+    source_window_id: active_2021_2024
+    tags:
+    - preliminary_results
+    - planning
+    tasks:
+    - task_id: iteration5.prelim.define_first_results_tables
+      title: Define first preliminary results tables
+      description: Document the initial internal draft table set after inspecting
+        the preliminary panel and results outputs.
+      iteration_id: '5'
+      phase_id: iteration5/preliminary-results-table-planning
+      kind: manual
+      depends_on: []
+      inputs:
+      - artifact_id: preliminary_results_manifest
+        path: reports/analysis/results_manifest_prelim_v1.json
+        kind: json
+        required: true
+      outputs:
+      - artifact_id: preliminary_results_table_plan
+        path: reports/analysis/preliminary_results_table_plan_v1.md
+        kind: markdown
+        required: true
+      preconditions:
+      - condition_id: preliminary_results_manifest_exists
+        kind: artifact_exists
+        target: reports/analysis/results_manifest_prelim_v1.json
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Preliminary results manifest must exist before table planning begins.
+        reroute_to: []
+      quality_checks: []
+      commands: []
+      manual_handoff: true
+      risks:
+      - R2
+      estimated_effort: 2
+      risk_reduction: 6
+      automation_level: manual
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - preliminary_results
+      - planning
+      gate_class: manual
   - phase_id: iteration5/kickoff-and-preflight
     title: Kickoff and Preflight
     goal: Validate branch context and prior review approval before starting Iteration
@@ -5083,3 +5605,32 @@ iterations:
       tags:
       - review_approval
       gate_class: manual
+- iteration_id: '6'
+  title: Publication-Grade Upgrade and Scope Expansion
+  goal: After the preliminary-results cycle, improve model quality, revisit rubric
+    only when diagnostics justify it, and expand toward broader publication-grade
+    source coverage.
+  entry_criteria:
+  - Preliminary stakeholder-facing results have been packaged from the active 2021-2024
+    window.
+  - Publication-grade retraining and release gates remain governed by the canonical
+    methodology hard gates.
+  exit_criteria:
+  - A publication-grade upgrade plan is published for the next wave of model, scope,
+    and robustness improvements.
+  phases:
+  - phase_id: iteration6/post-preliminary-publication-grade-upgrade
+    title: Post-Preliminary Publication-Grade Upgrade
+    goal: Diagnose disagreement and model-quality limitations, plan historical expansion,
+      and define the next publication-grade upgrade cycle without tuning toward significance.
+    lifecycle_state: deferred
+    canonical: true
+    depends_on:
+    - iteration5/review-and-replan
+    required_artifacts:
+    - reports/models/publication_upgrade_plan_v1.json
+    tags:
+    - deferred_upgrade
+    - publication_scope
+    - methodology_alignment
+    tasks: []
