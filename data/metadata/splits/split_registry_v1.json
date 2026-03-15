@@ -1,0 +1,72 @@
+{
+  "status": "frozen",
+  "generated_at_utc": "2026-03-15T20:16:09.450023+00:00",
+  "git_commit": "4f9dabd3b1f29713cf995c71a9ed5534dd72bdb6",
+  "inputs": {
+    "labels_master": "data/labels/v1/labels_master.parquet",
+    "held_out": "data/validation/held_out_sentences.csv",
+    "labels_master_sha256": "ec479d493138c27103c00f6b17e0c62bb54e380862fc0d75b12098381db42fc5",
+    "held_out_sha256": "0655a14cf69b1a9160471533689b286b6a4da9a2cbf468afab2623aa8c08b99e"
+  },
+  "outputs": {
+    "split_registry_csv": "data/metadata/splits/split_registry_v1.csv",
+    "split_registry_csv_sha256": "eacaeddec7a7b089cda40958cbfed80709558ce66d36b6d7e6adc672b7a47293",
+    "split_registry_json": "data/metadata/splits/split_registry_v1.json"
+  },
+  "summary": {
+    "rows_total": 551,
+    "rows_target_validation": 111,
+    "rows_by_split": {
+      "train": 440,
+      "validation": 111
+    },
+    "rows_by_split_and_label": {
+      "train": {
+        "Actionable": 86,
+        "Speculative": 79,
+        "Irrelevant": 275
+      },
+      "validation": {
+        "Actionable": 22,
+        "Speculative": 20,
+        "Irrelevant": 69
+      }
+    },
+    "unique_firms_by_split": {
+      "train": 229,
+      "validation": 59
+    },
+    "label_targets_validation": {
+      "Actionable": 22,
+      "Speculative": 20,
+      "Irrelevant": 69
+    },
+    "label_actuals_validation": {
+      "Actionable": 22,
+      "Speculative": 20,
+      "Irrelevant": 69
+    },
+    "label_deviation_validation": {
+      "Actionable": 0,
+      "Speculative": 0,
+      "Irrelevant": 0
+    },
+    "sentence_id_unique": true,
+    "source_cik_cross_split_count": 0,
+    "sentence_text_id_cross_split_count": 0,
+    "heldout_external": true,
+    "heldout_row_count": 214,
+    "heldout_overlap_count": 0,
+    "validation_groups_selected": 59,
+    "validation_row_count": 111,
+    "validation_row_bounds": {
+      "min": 101,
+      "max": 121
+    },
+    "max_class_deviation": 5,
+    "status": "frozen",
+    "assignment_method": "grouped_source_cik_stratified_80_20_v1",
+    "split_version": "v1",
+    "seed": 20260315
+  }
+}

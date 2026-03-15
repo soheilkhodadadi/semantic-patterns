@@ -1,0 +1,103 @@
+{
+  "status": "provisional_frozen",
+  "generated_at_utc": "2026-03-15T20:16:10.262224+00:00",
+  "git_commit": "4f9dabd3b1f29713cf995c71a9ed5534dd72bdb6",
+  "rubric_version": "v2.4",
+  "source_window_id": "active_2021_2024",
+  "preliminary_only": true,
+  "publication_grade_authorized": false,
+  "attestation_mode": "role_only",
+  "freeze_purpose": "stabilize label semantics and split discipline for preliminary internal results",
+  "canonical_publication_gate_status": "blocked",
+  "known_limitations": [
+    "Final human-human IRR remains 0.675.",
+    "Canonical retraining remains blocked by the > 0.7 human-human IRR gate.",
+    "Later rubric changes are allowed only through a future review-driven cycle."
+  ],
+  "governance_statement": "Predictive validity or regression significance must not be used to retune the rubric without a separate review-driven methodology cycle.",
+  "references": {
+    "labels_master": {
+      "path": "data/labels/v1/labels_master.parquet",
+      "sha256": "ec479d493138c27103c00f6b17e0c62bb54e380862fc0d75b12098381db42fc5",
+      "rows_total": 551,
+      "class_counts": {
+        "Actionable": 108,
+        "Irrelevant": 344,
+        "Speculative": 99
+      }
+    },
+    "split_registry": {
+      "path": "data/metadata/splits/split_registry_v1.json",
+      "sha256": "272856486dc8251586f4f31d01c53a722835b363fc79294a992175d5d715f095",
+      "summary_excerpt": {
+        "status": "frozen",
+        "rows_total": 551,
+        "rows_by_split": {
+          "train": 440,
+          "validation": 111
+        },
+        "label_actuals_validation": {
+          "Actionable": 22,
+          "Speculative": 20,
+          "Irrelevant": 69
+        },
+        "heldout_overlap_count": 0,
+        "source_cik_cross_split_count": 0,
+        "sentence_text_id_cross_split_count": 0
+      }
+    },
+    "irr_report": {
+      "path": "reports/labels/irr_report.json",
+      "sha256": "1bf30016be39b3a99c7aa9ce601fd31b177a457cd610cafca56d75870f45f5ba",
+      "summary_excerpt": {
+        "status": "failed",
+        "kappa": 0.6749999999999999,
+        "reviewed_items": 120,
+        "rows_disagreement": 26,
+        "third_adjudicator_used": true
+      }
+    },
+    "irr_disagreement_diagnostic": {
+      "path": "reports/labels/irr_disagreement_diagnostic_v1.json",
+      "sha256": "6acf4bbfc0ef85b4ac6681290679a586b3a0041eadd0d52640fe2498fe330940",
+      "summary_excerpt": {
+        "headline_irr_status": "failed",
+        "headline_three_class_kappa": 0.6749999999999999,
+        "binary_relevance_kappa": 0.7586206896551724,
+        "actionable_speculative_conditional_kappa": 0.6363636363636365,
+        "rows_disagreement": 26
+      }
+    }
+  },
+  "summary": {
+    "status": "provisional_frozen",
+    "rubric_version": "v2.4",
+    "source_window_id": "active_2021_2024",
+    "preliminary_only": true,
+    "publication_grade_authorized": false,
+    "canonical_publication_gate_status": "blocked",
+    "labels_master_rows": 551,
+    "class_counts": {
+      "Actionable": 108,
+      "Irrelevant": 344,
+      "Speculative": 99
+    },
+    "split_registry_status": "frozen",
+    "split_rows_total": 551,
+    "split_rows_by_split": {
+      "train": 440,
+      "validation": 111
+    },
+    "split_label_actuals_validation": {
+      "Actionable": 22,
+      "Speculative": 20,
+      "Irrelevant": 69
+    },
+    "irr_status": "failed",
+    "irr_kappa": 0.6749999999999999,
+    "irr_reviewed_items": 120,
+    "rows_disagreement": 26,
+    "binary_relevance_kappa": 0.7586206896551724,
+    "actionable_speculative_conditional_kappa": 0.6363636363636365
+  }
+}

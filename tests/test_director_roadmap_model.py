@@ -1217,10 +1217,19 @@ def test_actual_iteration2_tranche_workflow_is_wired():
         model, iteration_id="2", phase_name="provisional-rubric-freeze-and-split-registry"
     )
     assert freeze_phase is not None
-    assert any(
-        task.task_id == "iteration2.rubric.publish_provisional_freeze"
-        for task in freeze_phase.tasks
+    split_freeze_task = next(
+        task for task in freeze_phase.tasks if task.task_id == "iteration2.splits.freeze_registry"
     )
+    assert "semantic_ai_washing.labeling.freeze_split_registry" in split_freeze_task.commands[0]
+    assert split_freeze_task.manual_handoff is False
+    rubric_freeze_task = next(
+        task
+        for task in freeze_phase.tasks
+        if task.task_id == "iteration2.rubric.publish_provisional_freeze"
+    )
+    assert rubric_freeze_task.kind == "build"
+    assert rubric_freeze_task.manual_handoff is False
+    assert "semantic_ai_washing.labeling.publish_rubric_freeze" in rubric_freeze_task.commands[0]
 
     prelim_auth_phase = find_phase(
         model, iteration_id="2", phase_name="preliminary-results-authorization"
@@ -1249,6 +1258,20 @@ def test_actual_iteration2_tranche_workflow_is_wired():
         == "reports/models/preliminary_results_readiness_v1.json::summary.publication_grade_authorized"
         and condition.expected is False
         for condition in prelim_auth_task.quality_checks
+    )
+
+    label_gate_phase = find_phase(model, iteration_id="2", phase_name="label-sufficiency-gate")
+    assert label_gate_phase is not None
+    label_gate_task = next(
+        task
+        for task in label_gate_phase.tasks
+        if task.task_id == "iteration2.labels.verify_label_sufficiency"
+    )
+    assert any(
+        condition.kind == "json_field_compare"
+        and condition.target == "reports/models/modeling_readiness_gate.json::summary.irr_kappa"
+        and condition.expected == 0.7
+        for condition in label_gate_task.quality_checks
     )
 
     measures_phase = find_phase(

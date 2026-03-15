@@ -3714,9 +3714,13 @@ iterations:
       kind: build
       depends_on: []
       inputs:
-      - artifact_id: adjudication
-        path: data/labels/v1/adjudication.parquet
+      - artifact_id: labels_master
+        path: data/labels/v1/labels_master.parquet
         kind: parquet
+        required: true
+      - artifact_id: held_out_sentences
+        path: data/validation/held_out_sentences.csv
+        kind: csv
         required: true
       outputs:
       - artifact_id: split_registry_csv
@@ -3728,23 +3732,64 @@ iterations:
         kind: json
         required: true
       preconditions:
-      - condition_id: adjudication_exists
+      - condition_id: labels_master_exists
         kind: artifact_exists
-        target: data/labels/v1/adjudication.parquet
+        target: data/labels/v1/labels_master.parquet
         operator: ==
         expected: true
         on_fail: block
-        message: Adjudication artifacts are required before split freeze.
+        message: Canonical labels must exist before split freeze.
         reroute_to: []
-      quality_checks: []
-      commands: []
+      - condition_id: held_out_exists
+        kind: artifact_exists
+        target: data/validation/held_out_sentences.csv
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Held-out sentences must exist before split freeze.
+        reroute_to: []
+      quality_checks:
+      - condition_id: split_registry_status_frozen
+        kind: json_field_compare
+        target: data/metadata/splits/split_registry_v1.json::status
+        operator: ==
+        expected: frozen
+        on_fail: block
+        message: Split registry JSON must report a frozen split.
+        reroute_to: []
+      - condition_id: split_registry_no_source_cik_leakage
+        kind: json_field_compare
+        target: data/metadata/splits/split_registry_v1.json::summary.source_cik_cross_split_count
+        operator: ==
+        expected: 0
+        on_fail: block
+        message: Source CIK groups must not leak across train and validation.
+        reroute_to: []
+      - condition_id: split_registry_no_sentence_text_leakage
+        kind: json_field_compare
+        target: data/metadata/splits/split_registry_v1.json::summary.sentence_text_id_cross_split_count
+        operator: ==
+        expected: 0
+        on_fail: block
+        message: Sentence text ids must not leak across train and validation.
+        reroute_to: []
+      - condition_id: split_registry_no_heldout_overlap
+        kind: json_field_compare
+        target: data/metadata/splits/split_registry_v1.json::summary.heldout_overlap_count
+        operator: ==
+        expected: 0
+        on_fail: block
+        message: Held-out overlap must remain zero in the split registry.
+        reroute_to: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.labeling.freeze_split_registry --labels-master data/labels/v1/labels_master.parquet --held-out data/validation/held_out_sentences.csv --output-csv data/metadata/splits/split_registry_v1.csv --output-json data/metadata/splits/split_registry_v1.json --split-version v1 --seed 20260315 --validation-frac 0.20 --max-class-deviation 5
       manual_handoff: false
       risks:
       - R3
       - R6
       estimated_effort: 3
       risk_reduction: 9
-      automation_level: partial
+      automation_level: full
       on_fail: block
       reroute_to:
       - common.rebuild_split_registry
@@ -3758,13 +3803,25 @@ iterations:
         later predictive-validity review.
       iteration_id: '2'
       phase_id: iteration2/provisional-rubric-freeze-and-split-registry
-      kind: manual
+      kind: build
       depends_on:
       - iteration2.splits.freeze_registry
       inputs:
       - artifact_id: irr_report
         path: reports/labels/irr_report.json
         kind: json
+        required: true
+      - artifact_id: irr_disagreement_diagnostic
+        path: reports/labels/irr_disagreement_diagnostic_v1.json
+        kind: json
+        required: true
+      - artifact_id: split_registry_json
+        path: data/metadata/splits/split_registry_v1.json
+        kind: json
+        required: true
+      - artifact_id: labels_master
+        path: data/labels/v1/labels_master.parquet
+        kind: parquet
         required: true
       outputs:
       - artifact_id: rubric_freeze_report
@@ -3780,6 +3837,14 @@ iterations:
         on_fail: block
         message: Split registry must exist before provisional rubric freeze is published.
         reroute_to: []
+      - condition_id: split_registry_json_exists
+        kind: artifact_exists
+        target: data/metadata/splits/split_registry_v1.json
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Split registry JSON must exist before provisional rubric freeze is published.
+        reroute_to: []
       quality_checks:
       - condition_id: rubric_freeze_status
         kind: json_field_compare
@@ -3789,14 +3854,15 @@ iterations:
         on_fail: block
         message: Rubric freeze report must mark the rubric as provisionally frozen.
         reroute_to: []
-      commands: []
-      manual_handoff: true
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.labeling.publish_rubric_freeze --irr-report reports/labels/irr_report.json --diagnostic-report reports/labels/irr_disagreement_diagnostic_v1.json --split-registry-json data/metadata/splits/split_registry_v1.json --labels-master data/labels/v1/labels_master.parquet --output-report reports/labels/rubric_freeze_v2.json --rubric-version v2.4 --source-window-id active_2021_2024
+      manual_handoff: false
       risks:
       - R1
       - R3
       estimated_effort: 3
       risk_reduction: 9
-      automation_level: manual
+      automation_level: full
       on_fail: block
       reroute_to: []
       evidence_required: true

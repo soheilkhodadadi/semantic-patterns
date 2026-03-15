@@ -2354,3 +2354,57 @@ Rules:
   - `.venv/bin/python -m semantic_ai_washing.director.cli plan --iteration 2 --phase preliminary-results-authorization`
 - Current truthful next step:
   - publish the split registry and provisional rubric-freeze artifacts if we want the preliminary lane to become authorized, or explicitly relax that requirement in the roadmap if the team decides preliminary work should proceed without them
+
+## 2026-03-15 - Split Registry Freeze and Provisional Rubric Freeze
+
+- Implemented the canonical grouped split-registry publisher:
+  - `src/semantic_ai_washing/labeling/freeze_split_registry.py`
+- Implemented the automated provisional rubric-freeze publisher:
+  - `src/semantic_ai_washing/labeling/publish_rubric_freeze.py`
+- Strengthened the preliminary readiness publisher so it now requires:
+  - `split_registry_v1.json::status = frozen`
+  - `rows_total` matches the adjudicated label master
+  - zero held-out overlap
+  - zero `source_cik` cross-split leakage
+  - zero `sentence_text_id` cross-split leakage
+- Updated the roadmap so these are executable Director tasks rather than placeholders:
+  - `iteration2.splits.freeze_registry`
+  - `iteration2.rubric.publish_provisional_freeze`
+- Executed the live split freeze:
+  - `.venv/bin/python -m semantic_ai_washing.labeling.freeze_split_registry --labels-master data/labels/v1/labels_master.parquet --held-out data/validation/held_out_sentences.csv --output-csv data/metadata/splits/split_registry_v1.csv --output-json data/metadata/splits/split_registry_v1.json --split-version v1 --seed 20260315 --validation-frac 0.20 --max-class-deviation 5`
+- Executed the live rubric freeze publish:
+  - `.venv/bin/python -m semantic_ai_washing.labeling.publish_rubric_freeze --irr-report reports/labels/irr_report.json --diagnostic-report reports/labels/irr_disagreement_diagnostic_v1.json --split-registry-json data/metadata/splits/split_registry_v1.json --labels-master data/labels/v1/labels_master.parquet --output-report reports/labels/rubric_freeze_v2.json --rubric-version v2.4 --source-window-id active_2021_2024`
+- Re-published the preliminary readiness artifact:
+  - `.venv/bin/python -m semantic_ai_washing.labeling.publish_preliminary_results_readiness --labels-master data/labels/v1/labels_master.parquet --irr-report reports/labels/irr_report.json --diagnostic-report reports/labels/irr_disagreement_diagnostic_v1.json --held-out data/validation/held_out_sentences.csv --split-registry-csv data/metadata/splits/split_registry_v1.csv --split-registry-json data/metadata/splits/split_registry_v1.json --rubric-freeze-report reports/labels/rubric_freeze_v2.json --output-report reports/models/preliminary_results_readiness_v1.json --source-window-id active_2021_2024 --min-total-labels 500 --min-per-class 80 --min-irr-reviewed-items 100`
+- Live split-registry result:
+  - `rows_total = 551`
+  - `rows_by_split = {train: 440, validation: 111}`
+  - `label_targets_validation = {Actionable: 22, Speculative: 20, Irrelevant: 69}`
+  - `label_actuals_validation = {Actionable: 22, Speculative: 20, Irrelevant: 69}`
+  - `label_deviation_validation = {Actionable: 0, Speculative: 0, Irrelevant: 0}`
+  - `unique_firms_by_split = {train: 229, validation: 59}`
+  - `source_cik_cross_split_count = 0`
+  - `sentence_text_id_cross_split_count = 0`
+  - `heldout_overlap_count = 0`
+  - `status = frozen`
+- Live rubric-freeze result:
+  - `status = provisional_frozen`
+  - `rubric_version = v2.4`
+  - `source_window_id = active_2021_2024`
+  - `preliminary_only = true`
+  - `publication_grade_authorized = false`
+  - `canonical_publication_gate_status = blocked`
+  - known limitations explicitly preserve the truthful `0.675` human-human IRR and the still-blocked canonical retraining gate
+- Live preliminary readiness result after the new artifacts:
+  - `preliminary_only = true`
+  - `source_window_id = active_2021_2024`
+  - `publication_grade_authorized = false`
+  - `preliminary_results_authorized = true`
+  - `total_adjudicated_labels = 551`
+  - `min_class_count = 99`
+  - `heldout_overlap_count = 0`
+  - `split_registry_frozen = true`
+  - `rubric_freeze_status = provisional_frozen`
+- Current truthful interpretation:
+  - the non-canonical preliminary lane is now authorized for internal stakeholder-facing development results on the active `2021-2024` scope
+  - the canonical publication-grade lane remains blocked by the unchanged `irr_kappa > 0.7` requirement

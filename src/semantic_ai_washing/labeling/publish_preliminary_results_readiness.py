@@ -11,7 +11,7 @@ from typing import Any
 
 import pandas as pd
 
-from semantic_ai_washing.labeling.common import ensure_allowed_label, normalize_sentence
+from semantic_ai_washing.labeling.common import ensure_allowed_label, normalize_sentence, safe_int
 
 
 def _git_commit() -> str:
@@ -76,6 +76,7 @@ def run_publish(args: argparse.Namespace) -> dict[str, Any]:
     irr_report = _load_json(args.irr_report)
     rubric_freeze = _load_json(args.rubric_freeze_report)
     diagnostic = _load_json(args.diagnostic_report)
+    split_registry = _load_json(args.split_registry_json)
 
     class_counts = {
         str(label): int(count)
@@ -84,8 +85,15 @@ def run_publish(args: argparse.Namespace) -> dict[str, Any]:
     heldout_overlap_count = _heldout_overlap_count(labels_master, args.held_out)
     total_adjudicated_labels = int(len(labels_master))
     min_class_count = int(min(class_counts.values())) if class_counts else 0
+    split_summary = split_registry.get("summary", {})
     split_registry_frozen = (
-        Path(args.split_registry_csv).exists() and Path(args.split_registry_json).exists()
+        Path(args.split_registry_csv).exists()
+        and Path(args.split_registry_json).exists()
+        and str(split_registry.get("status", "")).strip() == "frozen"
+        and safe_int(split_summary.get("rows_total"), 0) == total_adjudicated_labels
+        and safe_int(split_summary.get("heldout_overlap_count"), -1) == 0
+        and safe_int(split_summary.get("source_cik_cross_split_count"), -1) == 0
+        and safe_int(split_summary.get("sentence_text_id_cross_split_count"), -1) == 0
     )
     rubric_freeze_status = str(rubric_freeze.get("status", "")).strip()
     irr_summary = irr_report.get("summary", {})
@@ -132,6 +140,8 @@ def run_publish(args: argparse.Namespace) -> dict[str, Any]:
             "irr_report_status": str(irr_summary.get("status", "")).strip(),
             "heldout_overlap_count": heldout_overlap_count,
             "split_registry_frozen": split_registry_frozen,
+            "split_registry_status": str(split_registry.get("status", "")).strip(),
+            "split_registry_rows_total": safe_int(split_summary.get("rows_total"), 0),
             "rubric_freeze_status": rubric_freeze_status,
             "diagnostic_rows_disagreement": diagnostic.get("summary", {}).get(
                 "rows_disagreement", None

@@ -1,7 +1,7 @@
 <!-- generated_file: true -->
 <!-- source_model: /Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/model/roadmap_model.yaml -->
-<!-- source_sha256: 363798831db1c0bf8fd330aca7c6ad94f3ef9f583609afa41b0fae91122db08b -->
-<!-- rendered_at: 2026-03-15T19:19:57.877262+00:00 -->
+<!-- source_sha256: 16183af06aa3f599b32eab66bfb9e4e84245d04f0a0b208eb6d51fcf43b90cad -->
+<!-- rendered_at: 2026-03-15T20:17:30.762585+00:00 -->
 
 # Roadmap Master
 
@@ -784,16 +784,16 @@ Exit criteria: Rubric realignment report and revised protocol v2.4 are published
 
 #### Tasks
 - `iteration2.splits.freeze_registry` Freeze split registry
-  - kind: `build` gate_class: `data` automation: `partial`
+  - kind: `build` gate_class: `data` automation: `full`
   - depends_on: none
-  - inputs: data/labels/v1/adjudication.parquet
+  - inputs: data/labels/v1/labels_master.parquet, data/validation/held_out_sentences.csv
   - outputs: data/metadata/splits/split_registry_v1.csv, data/metadata/splits/split_registry_v1.json
   - tags: split_registry
   - risks: R3, R6
 - `iteration2.rubric.publish_provisional_freeze` Publish provisional rubric freeze
-  - kind: `manual` gate_class: `science` automation: `manual`
+  - kind: `build` gate_class: `science` automation: `full`
   - depends_on: iteration2.splits.freeze_registry
-  - inputs: reports/labels/irr_report.json
+  - inputs: reports/labels/irr_report.json, reports/labels/irr_disagreement_diagnostic_v1.json, data/metadata/splits/split_registry_v1.json, data/labels/v1/labels_master.parquet
   - outputs: reports/labels/rubric_freeze_v2.json
   - tags: rubric_freeze, methodology_alignment
   - risks: R1, R3

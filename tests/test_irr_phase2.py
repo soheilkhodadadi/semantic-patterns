@@ -438,7 +438,18 @@ def test_publish_preliminary_results_readiness_keeps_publication_gate_false(tmp_
     pd.DataFrame(rows).to_parquet(labels_master_path, index=False)
     _write_csv(held_out_path, [{"sentence": "held out sentence"}])
     _write_csv(split_registry_csv, [{"sample_id": "s1", "split": "train"}])
-    _write_json(split_registry_json, {"status": "frozen"})
+    _write_json(
+        split_registry_json,
+        {
+            "status": "frozen",
+            "summary": {
+                "rows_total": 551,
+                "heldout_overlap_count": 0,
+                "source_cik_cross_split_count": 0,
+                "sentence_text_id_cross_split_count": 0,
+            },
+        },
+    )
     _write_json(rubric_freeze_path, {"status": "provisional_frozen"})
     _write_json(
         irr_report_path, {"summary": {"status": "failed", "kappa": 0.675, "reviewed_items": 120}}
@@ -481,4 +492,6 @@ def test_publish_preliminary_results_readiness_keeps_publication_gate_false(tmp_
     assert report["summary"]["irr_kappa"] == 0.675
     assert report["summary"]["heldout_overlap_count"] == 0
     assert report["summary"]["split_registry_frozen"] is True
+    assert report["summary"]["split_registry_status"] == "frozen"
+    assert report["summary"]["split_registry_rows_total"] == 551
     assert report["summary"]["rubric_freeze_status"] == "provisional_frozen"
