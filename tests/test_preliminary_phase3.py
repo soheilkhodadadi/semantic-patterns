@@ -171,6 +171,8 @@ def test_preliminary_training_eval_classification_and_measures_hash_backend(tmp_
 
     sentence_root = tmp_path / "processed" / "sentences"
     for year in (2021, 2022, 2023, 2024):
+        year_dir = sentence_root / f"year={year}"
+        year_dir.mkdir(parents=True, exist_ok=True)
         pd.DataFrame(
             [
                 {
@@ -188,7 +190,7 @@ def test_preliminary_training_eval_classification_and_measures_hash_backend(tmp_
                     "source_file": f"{year}_b.txt",
                 },
             ]
-        ).to_parquet(sentence_root / f"year={year}" / "ai_sentences.parquet", index=False)
+        ).to_parquet(year_dir / "ai_sentences.parquet", index=False)
 
     metadata = run_training(
         argparse.Namespace(

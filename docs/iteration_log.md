@@ -2471,3 +2471,60 @@ Rules:
   - Iteration 2 is now formally closed out as `canonical = blocked` and `preliminary = authorized`
   - the preliminary Iteration 3 lane is now executable in Director
   - Iteration 4 preliminary panel work is now truthfully hard-blocked until patents and controls are refreshed beyond the current sample-sized inputs
+
+## 2026-03-16 - Pre-Iteration 3 Environment Hardening on Native arm64 Python 3.11
+
+- Performed a repo-only environment hardening substage before opening Iteration 3.
+- Published environment diagnostics artifacts:
+  - `reports/environment/environment_audit_pre_rebuild_v1.json`
+  - `reports/environment/environment_audit_post_rebuild_v1.json`
+  - `reports/environment/wrds_smoke_v1.json`
+- Pre-rebuild audit captured the broken baseline truthfully:
+  - shell interpreter was `x86_64` Anaconda Python `3.9.12`
+  - canonical repo `.venv` was also `x86_64` and rooted in Anaconda
+  - package import probing on the Rosetta-backed pre-rebuild runtime was unstable enough to block reliable validation
+- Installed native Homebrew Python `3.11.15` at `/opt/homebrew/bin/python3.11`.
+- Rebuilt the canonical repo-local `.venv` from native arm64 Python `3.11` using `venv --copies`.
+- Reinstalled the editable project and verified the required stack in the rebuilt `.venv`, including:
+  - `pyarrow`
+  - `wrds`
+  - `psycopg2-binary`
+  - `numexpr`
+  - `bottleneck`
+- Standardized repo configuration on Python `3.11`:
+  - `setup.cfg` now requires `>=3.11`
+  - CI now uses Python `3.11`
+  - bootstrap/docs no longer hardcode `python3.9`
+  - repo setup now points to `.venv` as the single supported local environment
+- Added environment diagnostics modules:
+  - `src/semantic_ai_washing/diagnostics/environment_audit.py`
+  - `src/semantic_ai_washing/diagnostics/wrds_smoke.py`
+- Added regression coverage for the new diagnostics:
+  - `tests/test_environment_diagnostics.py`
+- Added researcher-facing setup documentation:
+  - `docs/environment_setup.md`
+- Post-rebuild environment audit result:
+  - `status = passed_with_warnings`
+  - canonical `.venv` interpreter is now `arm64` Python `3.11.15`
+  - canonical import failures = none
+  - remaining warning: shell `python` on PATH is still the user’s `x86_64` Anaconda install because conda base is active
+- Live WRDS smoke result:
+  - `status = passed`
+  - `wrds.Connection(...).raw_sql("select 1 as ok")` succeeded
+  - direct `psycopg2` connection with `SELECT 1` succeeded
+- Validation completed successfully from the rebuilt `.venv`:
+  - `make doctor`
+  - `make lint`
+  - `.venv/bin/pytest -q`
+  - `.venv/bin/pytest -q tests/test_preliminary_phase3.py`
+  - `.venv/bin/python -m semantic_ai_washing.director.cli render-roadmap`
+  - `.venv/bin/python -m semantic_ai_washing.director.cli status`
+  - `.venv/bin/python -m semantic_ai_washing.director.cli plan --iteration 3 --phase preliminary-kickoff-and-preflight`
+- The full pytest run surfaced one real test issue that had been masked by the prior environment drift:
+  - `tests/test_preliminary_phase3.py` wrote parquet fixtures into year directories that it never created
+  - fixed by creating the per-year directories before `to_parquet(...)`
+- Removed the old repo-local `venv/` after successful cutover so `.venv` is the only supported environment remaining in the repo.
+- Current truthful interpretation:
+  - the repo is now standardized on native arm64 Python `3.11` in `.venv`
+  - WRDS connectivity is confirmed live from the rebuilt env
+  - environment drift is substantially reduced, but the user shell still points at conda base unless `.venv` is activated explicitly

@@ -1,0 +1,50 @@
+{
+  "status": "passed",
+  "generated_at_utc": "2026-03-16T19:41:04.079654+00:00",
+  "summary": {
+    "status": "passed",
+    "failure_reasons": [],
+    "dotenv_path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/.env",
+    "credentials_missing": []
+  },
+  "runtime": {
+    "python_executable": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/.venv/bin/python",
+    "query": "select 1 as ok",
+    "timeout_seconds": 15
+  },
+  "host_metadata": {
+    "wrds_user": "soheilkh",
+    "wrds_db_host": "wrds-pgdata.wharton.upenn.edu",
+    "wrds_db_port": "9737"
+  },
+  "imports": {
+    "wrds": {
+      "ok": true,
+      "version": ""
+    },
+    "psycopg2": {
+      "ok": true,
+      "version": "2.9.11 (dt dec pq3 ext lo64)"
+    }
+  },
+  "attempts": {
+    "wrds_connection": {
+      "ok": true,
+      "row_count": 1,
+      "records": [
+        {
+          "ok": 1
+        }
+      ]
+    },
+    "psycopg2_connection": {
+      "ok": true,
+      "row_count": 1,
+      "records": [
+        {
+          "ok": 1
+        }
+      ]
+    }
+  }
+}

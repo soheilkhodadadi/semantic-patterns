@@ -3,11 +3,12 @@
 #################################################################################
 
 PROJECT_NAME = semantic-patterns
-PYTHON_VERSION = 3.9
-PYTHON_INTERPRETER = python
+PYTHON_VERSION = 3.11
 VENV_DIR = .venv
 VENV_PYTHON = $(VENV_DIR)/bin/python
 VENV_PIP = $(VENV_PYTHON) -m pip
+BOOTSTRAP_PYTHON ?= python3.11
+PYTHON_INTERPRETER = $(VENV_PYTHON)
 ITER ?= 1
 PHASE ?= label-expansion
 
@@ -16,22 +17,33 @@ PHASE ?= label-expansion
 #################################################################################
 
 
-## Install Python dependencies
+## Install Python dependencies into the canonical repo-local .venv
 .PHONY: requirements
-requirements:
-	conda env update --name $(PROJECT_NAME) --file environment.yml --prune
+requirements: bootstrap
+	@echo "[OK] dependencies managed through $(VENV_DIR)"
 
 
 ## Bootstrap local .venv with project + dev dependencies
 .PHONY: bootstrap
 bootstrap:
 	@if [ ! -x "$(VENV_PYTHON)" ]; then \
-		echo ">>> creating $(VENV_DIR) with python3.9"; \
-		python3.9 -m venv $(VENV_DIR); \
+		if ! command -v "$(BOOTSTRAP_PYTHON)" >/dev/null 2>&1; then \
+			echo "[ERROR] $(BOOTSTRAP_PYTHON) not found. Install native Python $(PYTHON_VERSION) first."; \
+			exit 1; \
+		fi; \
+		echo ">>> creating $(VENV_DIR) with $$($(BOOTSTRAP_PYTHON) -c 'import os,sys; print(os.path.realpath(sys.executable))')"; \
+		$(BOOTSTRAP_PYTHON) -m venv --copies $(VENV_DIR); \
 	fi
 	$(VENV_PIP) install --upgrade pip setuptools wheel
 	$(VENV_PIP) install -e ".[dev]"
-	$(VENV_PIP) install --upgrade "numexpr>=2.8.4" "bottleneck>=1.3.6"
+	$(VENV_PIP) install --upgrade "pyarrow>=16.1.0" "wrds>=3.3.0" "psycopg2-binary>=2.9.0" "numexpr>=2.8.4" "bottleneck>=1.3.6"
+
+
+## Rebuild the canonical .venv from the configured Python bootstrap interpreter
+.PHONY: rebuild-venv
+rebuild-venv:
+	rm -rf $(VENV_DIR)
+	$(MAKE) bootstrap
 
 
 ## Diagnose interpreter/tooling setup for reliable local runs
@@ -63,6 +75,12 @@ doctor:
 		echo "[ERROR] venv python cannot run -m pip"; \
 		exit 1; \
 	fi
+	@if $(VENV_PYTHON) -c "import platform, sys; assert sys.version_info >= (3, 11), 'Python 3.11+ required'; host='$(shell uname -m)'; assert not (sys.platform == 'darwin' and host == 'arm64' and platform.machine() != 'arm64'), 'arm64 host requires arm64 .venv'; print('[OK] venv interpreter version/arch compatible')" >/dev/null 2>&1; then \
+		echo "[OK] venv interpreter version/arch compatible"; \
+	else \
+		echo "[ERROR] incompatible venv interpreter version or architecture"; \
+		exit 1; \
+	fi
 	@if $(VENV_PYTHON) -c "import semantic_ai_washing" >/dev/null 2>&1; then \
 		echo "[OK] semantic_ai_washing import works in $(VENV_DIR)"; \
 	else \
@@ -73,6 +91,12 @@ doctor:
 		echo "[OK] pyarrow import works in $(VENV_DIR)"; \
 	else \
 		echo "[ERROR] cannot import pyarrow from $(VENV_DIR)"; \
+		exit 1; \
+	fi
+	@if $(VENV_PYTHON) -c "import wrds, psycopg2" >/dev/null 2>&1; then \
+		echo "[OK] wrds + psycopg2 imports work in $(VENV_DIR)"; \
+	else \
+		echo "[ERROR] cannot import wrds and psycopg2 from $(VENV_DIR)"; \
 		exit 1; \
 	fi
 	@$(VENV_PYTHON) -m ruff --version
@@ -110,14 +134,14 @@ clean:
 ## Lint using ruff (use `make format` to do formatting)
 .PHONY: lint
 lint:
-	ruff format --check
-	ruff check
+	$(VENV_PYTHON) -m ruff format --check
+	$(VENV_PYTHON) -m ruff check
 
 ## Format source code with ruff
 .PHONY: format
 format:
-	ruff check --fix
-	ruff format
+	$(VENV_PYTHON) -m ruff check --fix
+	$(VENV_PYTHON) -m ruff format
 
 
 
@@ -125,10 +149,8 @@ format:
 
 ## Set up Python interpreter environment
 .PHONY: create_environment
-create_environment:
-	conda env create --name $(PROJECT_NAME) -f environment.yml
-	
-	@echo ">>> conda env created. Activate with:\nconda activate $(PROJECT_NAME)"
+create_environment: bootstrap
+	@echo ">>> canonical environment ready at $(VENV_DIR). Activate with:\nsource $(VENV_DIR)/bin/activate"
 	
 
 

@@ -1,0 +1,128 @@
+{
+  "status": "passed_with_warnings",
+  "generated_at_utc": "2026-03-16T19:45:06.241217+00:00",
+  "repo_target": {
+    "canonical_env_dir": ".venv",
+    "target_python": "3.11",
+    "target_arch": "arm64"
+  },
+  "summary": {
+    "status": "passed_with_warnings",
+    "canonical_failures": [],
+    "warnings": [
+      "shell_python_not_arm64"
+    ]
+  },
+  "shell_python": {
+    "exists": true,
+    "path": "/Users/soheilkhodadadi/opt/anaconda3/bin/python",
+    "probe_status": "ok",
+    "version": "3.9.12",
+    "architecture": "x86_64",
+    "imports": {
+      "numpy": {
+        "ok": false,
+        "error_type": "NotProbed",
+        "error": "Import checks are only run against the canonical repo environment."
+      },
+      "pandas": {
+        "ok": false,
+        "error_type": "NotProbed",
+        "error": "Import checks are only run against the canonical repo environment."
+      },
+      "pyarrow": {
+        "ok": false,
+        "error_type": "NotProbed",
+        "error": "Import checks are only run against the canonical repo environment."
+      },
+      "torch": {
+        "ok": false,
+        "error_type": "NotProbed",
+        "error": "Import checks are only run against the canonical repo environment."
+      },
+      "sentence_transformers": {
+        "ok": false,
+        "error_type": "NotProbed",
+        "error": "Import checks are only run against the canonical repo environment."
+      },
+      "spacy": {
+        "ok": false,
+        "error_type": "NotProbed",
+        "error": "Import checks are only run against the canonical repo environment."
+      },
+      "wrds": {
+        "ok": false,
+        "error_type": "NotProbed",
+        "error": "Import checks are only run against the canonical repo environment."
+      },
+      "psycopg2": {
+        "ok": false,
+        "error_type": "NotProbed",
+        "error": "Import checks are only run against the canonical repo environment."
+      }
+    },
+    "stderr": "",
+    "pyvenv_cfg": {}
+  },
+  "canonical_env": {
+    "exists": true,
+    "path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/.venv/bin/python",
+    "probe_status": "ok",
+    "version": "3.11.15",
+    "architecture": "arm64",
+    "imports": {
+      "numpy": {
+        "ok": true,
+        "version": "1.26.4"
+      },
+      "pandas": {
+        "ok": true,
+        "version": "2.2.3"
+      },
+      "pyarrow": {
+        "ok": true,
+        "version": "23.0.1"
+      },
+      "torch": {
+        "ok": true,
+        "version": "2.10.0"
+      },
+      "sentence_transformers": {
+        "ok": true,
+        "version": "5.3.0"
+      },
+      "spacy": {
+        "ok": true,
+        "version": "3.7.5"
+      },
+      "wrds": {
+        "ok": true,
+        "version": ""
+      },
+      "psycopg2": {
+        "ok": true,
+        "version": "2.9.11 (dt dec pq3 ext lo64)"
+      }
+    },
+    "stderr": "",
+    "env_dir": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/.venv",
+    "pyvenv_cfg": {
+      "home": "/opt/homebrew/opt/python@3.11/bin",
+      "include-system-site-packages": "false",
+      "version": "3.11.15",
+      "executable": "/opt/homebrew/Cellar/python@3.11/3.11.15/Frameworks/Python.framework/Versions/3.11/bin/python3.11",
+      "command": "/opt/homebrew/opt/python@3.11/bin/python3.11 -m venv --copies /Users/soheilkhodadadi/Documents/Projects/semantic-patterns/.venv"
+    }
+  },
+  "legacy_env": {
+    "exists": false,
+    "path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/venv/bin/python",
+    "probe_status": "missing",
+    "version": "",
+    "architecture": "",
+    "imports": {},
+    "stderr": "",
+    "env_dir": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/venv",
+    "pyvenv_cfg": {}
+  }
+}

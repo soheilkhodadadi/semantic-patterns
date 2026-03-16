@@ -7,27 +7,24 @@ The workflow extracts AI-related sentences, classifies each sentence as **Action
 
 ## Python and Environment
 
-- Python baseline: **3.9+**
-- Recommended setup:
+- Python baseline: **3.11+**
+- Canonical repo environment: **`.venv`**
+- Recommended local runtime on Apple Silicon: **native arm64 Python 3.11**
+
+Quick start:
 
 ```bash
-python3.9 -m venv .venv
+make bootstrap
 source .venv/bin/activate
-pip install --upgrade pip setuptools wheel
-pip install -e .
-# optional developer tools (pytest + ruff)
-pip install -e .[dev]
+make doctor
 ```
 
-Verify installation:
-
-```bash
-python -c "import semantic_ai_washing; print(semantic_ai_washing.__file__)"
-```
+Detailed setup, WRDS configuration, and Apple Silicon notes live in
+[`docs/environment_setup.md`](docs/environment_setup.md).
 
 ## Reliable Local Setup
 
-For reproducible local runs, prefer the repo-local `.venv` interpreter over conda base:
+For reproducible local runs, prefer the repo-local `.venv` interpreter over conda base or any legacy local `venv/`:
 
 ```bash
 make bootstrap
@@ -37,7 +34,7 @@ make lint
 pytest -q
 ```
 
-If your shell defaults to conda base, activate the project environment explicitly:
+If your shell defaults to conda base, activate the project environment explicitly and use the repo-local interpreter for all work:
 
 ```bash
 source .venv/bin/activate
@@ -114,7 +111,7 @@ Project QA commands:
 ```bash
 make format
 make lint
-pytest -q
+.venv/bin/pytest -q
 ```
 
 CI runs Ruff + pytest on each push and pull request.

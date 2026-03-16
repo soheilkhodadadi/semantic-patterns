@@ -1,0 +1,182 @@
+{
+  "status": "failed",
+  "generated_at_utc": "2026-03-16T19:33:24.225805+00:00",
+  "repo_target": {
+    "canonical_env_dir": ".venv",
+    "target_python": "3.11",
+    "target_arch": "arm64"
+  },
+  "summary": {
+    "status": "failed",
+    "canonical_failures": [
+      "canonical_python_not_3.11",
+      "canonical_arch_not_arm64",
+      "canonical_package_probe_blocked_under_rosetta"
+    ],
+    "warnings": [
+      "shell_python_not_arm64",
+      "legacy_venv_present"
+    ]
+  },
+  "shell_python": {
+    "path": "/Users/soheilkhodadadi/opt/anaconda3/bin/python",
+    "version": "3.9.12",
+    "architecture": "x86_64",
+    "exists": true,
+    "probe_status": "probe_blocked_on_package_imports",
+    "imports": {
+      "numpy": {
+        "ok": false,
+        "error_type": "ProbeBlocked",
+        "error": "Package import probing on the pre-rebuild x86_64 environment hung under Rosetta; rebuild required before reliable import verification."
+      },
+      "pandas": {
+        "ok": false,
+        "error_type": "ProbeBlocked",
+        "error": "Package import probing on the pre-rebuild x86_64 environment hung under Rosetta; rebuild required before reliable import verification."
+      },
+      "pyarrow": {
+        "ok": false,
+        "error_type": "ProbeBlocked",
+        "error": "Package import probing on the pre-rebuild x86_64 environment hung under Rosetta; rebuild required before reliable import verification."
+      },
+      "torch": {
+        "ok": false,
+        "error_type": "ProbeBlocked",
+        "error": "Package import probing on the pre-rebuild x86_64 environment hung under Rosetta; rebuild required before reliable import verification."
+      },
+      "sentence_transformers": {
+        "ok": false,
+        "error_type": "ProbeBlocked",
+        "error": "Package import probing on the pre-rebuild x86_64 environment hung under Rosetta; rebuild required before reliable import verification."
+      },
+      "spacy": {
+        "ok": false,
+        "error_type": "ProbeBlocked",
+        "error": "Package import probing on the pre-rebuild x86_64 environment hung under Rosetta; rebuild required before reliable import verification."
+      },
+      "wrds": {
+        "ok": false,
+        "error_type": "ProbeBlocked",
+        "error": "Package import probing on the pre-rebuild x86_64 environment hung under Rosetta; rebuild required before reliable import verification."
+      },
+      "psycopg2": {
+        "ok": false,
+        "error_type": "ProbeBlocked",
+        "error": "Package import probing on the pre-rebuild x86_64 environment hung under Rosetta; rebuild required before reliable import verification."
+      }
+    },
+    "stderr": "Pre-rebuild package import probes were abandoned after repeated hangs in the x86_64 Rosetta-backed environment.",
+    "pyvenv_cfg": {}
+  },
+  "canonical_env": {
+    "path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/.venv/bin/python",
+    "version": "3.9.12",
+    "architecture": "x86_64",
+    "exists": true,
+    "probe_status": "probe_blocked_on_package_imports",
+    "imports": {
+      "numpy": {
+        "ok": false,
+        "error_type": "ProbeBlocked",
+        "error": "Package import probing on the pre-rebuild x86_64 environment hung under Rosetta; rebuild required before reliable import verification."
+      },
+      "pandas": {
+        "ok": false,
+        "error_type": "ProbeBlocked",
+        "error": "Package import probing on the pre-rebuild x86_64 environment hung under Rosetta; rebuild required before reliable import verification."
+      },
+      "pyarrow": {
+        "ok": false,
+        "error_type": "ProbeBlocked",
+        "error": "Package import probing on the pre-rebuild x86_64 environment hung under Rosetta; rebuild required before reliable import verification."
+      },
+      "torch": {
+        "ok": false,
+        "error_type": "ProbeBlocked",
+        "error": "Package import probing on the pre-rebuild x86_64 environment hung under Rosetta; rebuild required before reliable import verification."
+      },
+      "sentence_transformers": {
+        "ok": false,
+        "error_type": "ProbeBlocked",
+        "error": "Package import probing on the pre-rebuild x86_64 environment hung under Rosetta; rebuild required before reliable import verification."
+      },
+      "spacy": {
+        "ok": false,
+        "error_type": "ProbeBlocked",
+        "error": "Package import probing on the pre-rebuild x86_64 environment hung under Rosetta; rebuild required before reliable import verification."
+      },
+      "wrds": {
+        "ok": false,
+        "error_type": "ProbeBlocked",
+        "error": "Package import probing on the pre-rebuild x86_64 environment hung under Rosetta; rebuild required before reliable import verification."
+      },
+      "psycopg2": {
+        "ok": false,
+        "error_type": "ProbeBlocked",
+        "error": "Package import probing on the pre-rebuild x86_64 environment hung under Rosetta; rebuild required before reliable import verification."
+      }
+    },
+    "stderr": "Pre-rebuild package import probes were abandoned after repeated hangs in the x86_64 Rosetta-backed environment.",
+    "pyvenv_cfg": {
+      "home": "/Users/soheilkhodadadi/opt/anaconda3/bin",
+      "include-system-site-packages": "false",
+      "version": "3.9.12"
+    }
+  },
+  "legacy_env": {
+    "path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/venv/bin/python",
+    "version": "3.9.6",
+    "architecture": "x86_64",
+    "exists": true,
+    "probe_status": "probe_blocked_on_package_imports",
+    "imports": {
+      "numpy": {
+        "ok": false,
+        "error_type": "ProbeBlocked",
+        "error": "Package import probing on the pre-rebuild x86_64 environment hung under Rosetta; rebuild required before reliable import verification."
+      },
+      "pandas": {
+        "ok": false,
+        "error_type": "ProbeBlocked",
+        "error": "Package import probing on the pre-rebuild x86_64 environment hung under Rosetta; rebuild required before reliable import verification."
+      },
+      "pyarrow": {
+        "ok": false,
+        "error_type": "ProbeBlocked",
+        "error": "Package import probing on the pre-rebuild x86_64 environment hung under Rosetta; rebuild required before reliable import verification."
+      },
+      "torch": {
+        "ok": false,
+        "error_type": "ProbeBlocked",
+        "error": "Package import probing on the pre-rebuild x86_64 environment hung under Rosetta; rebuild required before reliable import verification."
+      },
+      "sentence_transformers": {
+        "ok": false,
+        "error_type": "ProbeBlocked",
+        "error": "Package import probing on the pre-rebuild x86_64 environment hung under Rosetta; rebuild required before reliable import verification."
+      },
+      "spacy": {
+        "ok": false,
+        "error_type": "ProbeBlocked",
+        "error": "Package import probing on the pre-rebuild x86_64 environment hung under Rosetta; rebuild required before reliable import verification."
+      },
+      "wrds": {
+        "ok": false,
+        "error_type": "ProbeBlocked",
+        "error": "Package import probing on the pre-rebuild x86_64 environment hung under Rosetta; rebuild required before reliable import verification."
+      },
+      "psycopg2": {
+        "ok": false,
+        "error_type": "ProbeBlocked",
+        "error": "Package import probing on the pre-rebuild x86_64 environment hung under Rosetta; rebuild required before reliable import verification."
+      }
+    },
+    "stderr": "Pre-rebuild package import probes were abandoned after repeated hangs in the x86_64 Rosetta-backed environment.",
+    "pyvenv_cfg": {
+      "home": "/Applications/Xcode.app/Contents/Developer/usr/bin",
+      "include-system-site-packages": "false",
+      "version": "3.9.6"
+    }
+  }
+}
