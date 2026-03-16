@@ -2560,3 +2560,41 @@ Rules:
   - `total = 113,234`
 - Known runtime note at start:
   - no prior `reports/data/active_window_sentence_inventory_v1.json` existed, so the first clean run rematerializes `2024` as well as creating `2021-2023`
+
+## 2026-03-16 - Iteration 3 Preliminary Centroid Retraining and Held-Out Evaluation
+
+- Confirmed frozen training inputs are ready independent of active-window sentence extraction:
+  - `rows_total = 551`
+  - `rows_train = 440`
+  - `rows_validation_reserved = 111`
+  - train class counts:
+    - `Actionable = 86`
+    - `Speculative = 79`
+    - `Irrelevant = 275`
+  - validation class counts:
+    - `Actionable = 22`
+    - `Speculative = 20`
+    - `Irrelevant = 69`
+- Generated Director planning artifacts for the retraining phase while sentence materialization remained in progress:
+  - `director/plans/plan_0bf737a714706d7d.md`
+  - `director/plans/runbook_0bf737a714706d7d.yaml`
+  - `director/decisions/decision_0bf737a714706d7d.json`
+- Trained the preliminary centroid model:
+  - `PYTHONPATH=src .venv/bin/python -m semantic_ai_washing.classification.train_preliminary_centroids --labels-master data/labels/v1/labels_master.parquet --split-registry data/metadata/splits/split_registry_v1.csv --embeddings-output artifacts/models/mpnet_prelim_v1/embeddings.parquet --centroids-output artifacts/models/mpnet_prelim_v1/centroids.json --metadata-output artifacts/models/mpnet_prelim_v1/metadata.json --model-id mpnet_prelim_v1 --source-window-id active_2021_2024 --embedding-backend sentence_transformers --model-name sentence-transformers/all-mpnet-base-v2 --batch-size 32`
+- Training artifacts written:
+  - `artifacts/models/mpnet_prelim_v1/embeddings.parquet`
+  - `artifacts/models/mpnet_prelim_v1/centroids.json`
+  - `artifacts/models/mpnet_prelim_v1/metadata.json`
+- Ran preliminary held-out evaluation:
+  - `PYTHONPATH=src .venv/bin/python -m semantic_ai_washing.classification.evaluate_preliminary_heldout --held-out data/validation/held_out_sentences.csv --labels-master data/labels/v1/labels_master.parquet --centroids artifacts/models/mpnet_prelim_v1/centroids.json --model-metadata artifacts/models/mpnet_prelim_v1/metadata.json --output-report reports/evaluation/heldout_eval_prelim_v1.json --model-id mpnet_prelim_v1 --source-window-id active_2021_2024 --embedding-backend sentence_transformers --model-name sentence-transformers/all-mpnet-base-v2 --batch-size 32 --accuracy-threshold 0.80`
+- Held-out evaluation result:
+  - `status = passed`
+  - `reviewed_items = 214`
+  - `accuracy = 0.4299`
+  - `macro_f1 = 0.4478`
+  - `leakage_detected = false`
+  - `heldout_overlap_count = 0`
+  - `publication_grade_threshold_passed = false`
+- Truthful interpretation:
+  - the preliminary model artifacts are valid and ready for downstream active-window classification once sentence materialization completes
+  - current held-out predictive quality is well below the publication-grade threshold and will need diagnosis/remediation later

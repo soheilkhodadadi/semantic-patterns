@@ -1,0 +1,47 @@
+{
+  "status": "passed",
+  "generated_at_utc": "2026-03-16T21:53:29.227895+00:00",
+  "model_id": "mpnet_prelim_v1",
+  "summary": {
+    "status": "passed",
+    "preliminary_only": true,
+    "source_window_id": "active_2021_2024",
+    "reviewed_items": 214,
+    "accuracy": 0.42990654205607476,
+    "macro_f1": 0.44778569056737955,
+    "leakage_detected": false,
+    "heldout_overlap_count": 0,
+    "publication_grade_threshold": 0.8,
+    "publication_grade_threshold_passed": false,
+    "valid_evaluation_state": true,
+    "embedding_backend": "sentence_transformers",
+    "model_name": "sentence-transformers/all-mpnet-base-v2"
+  },
+  "inputs": {
+    "held_out": "data/validation/held_out_sentences.csv",
+    "labels_master": "data/labels/v1/labels_master.parquet",
+    "centroids": "artifacts/models/mpnet_prelim_v1/centroids.json",
+    "model_metadata": "artifacts/models/mpnet_prelim_v1/metadata.json",
+    "held_out_sha256": "0655a14cf69b1a9160471533689b286b6a4da9a2cbf468afab2623aa8c08b99e",
+    "labels_master_sha256": "ec479d493138c27103c00f6b17e0c62bb54e380862fc0d75b12098381db42fc5",
+    "centroids_sha256": "05e4e8b7dd1831ca2b09a04de31b922118abf8c25eebbea7dbde8033e8a20f60",
+    "model_metadata_sha256": "1b1354baedeb52d7da1c5f9954cdcbe835b3e79a16eeded7b5e743bc8ef1e143"
+  },
+  "confusion_matrix": {
+    "Actionable": {
+      "Actionable": 35,
+      "Speculative": 44,
+      "Irrelevant": 2
+    },
+    "Speculative": {
+      "Actionable": 1,
+      "Speculative": 26,
+      "Irrelevant": 69
+    },
+    "Irrelevant": {
+      "Actionable": 1,
+      "Speculative": 5,
+      "Irrelevant": 31
+    }
+  }
+}
