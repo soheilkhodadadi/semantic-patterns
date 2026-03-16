@@ -62,8 +62,8 @@ def _review_model() -> dict:
         },
         "branching_policy": {
             "schema_version": "1.0.0",
-            "integration_branch_template": "iteration{iteration_id}/integration",
-            "work_branch_template": "iteration{iteration_id}/{slug}",
+            "integration_branch_template": "codex/iteration{iteration_id}/integration",
+            "work_branch_template": "codex/iteration{iteration_id}/{slug}",
             "merge_target": "main",
             "preferred_merge_strategy": "ff_only_if_possible_else_pr_merge_commit",
             "require_review_approval_before_next_iteration": True,
@@ -422,7 +422,7 @@ def test_review_approval_patch_and_kickoff_flow(tmp_path, monkeypatch, capsys):
     assert "requirement_statuses" in phase_review["stakeholder_alignment_summary"]
     assert "requirement_statuses" in phase_review["methodology_alignment_summary"]
 
-    _run(["git", "switch", "-c", "iteration2/integration"], tmp_path)
+    _run(["git", "switch", "-c", "codex/iteration2/integration"], tmp_path)
     kickoff_blocked = main_with_args(["kickoff", "--iteration", "2"])
     assert kickoff_blocked == 2
 
@@ -566,7 +566,7 @@ def test_dual_track_review_approval_blocks_canonical_kickoff(tmp_path, monkeypat
     )
     assert approval_payload["authorized_track"] == "preliminary_only"
 
-    _run(["git", "switch", "-c", "iteration3/integration"], tmp_path)
+    _run(["git", "switch", "-c", "codex/iteration3/integration"], tmp_path)
     canonical_kickoff = main_with_args(["kickoff", "--iteration", "3"])
     assert canonical_kickoff == 2
 

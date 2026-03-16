@@ -23,8 +23,8 @@ settings:
     canonical_table_format: parquet
 branching_policy:
   schema_version: 1.0.0
-  integration_branch_template: iteration{iteration_id}/integration
-  work_branch_template: iteration{iteration_id}/{slug}
+  integration_branch_template: codex/iteration{iteration_id}/integration
+  work_branch_template: codex/iteration{iteration_id}/{slug}
   merge_target: main
   preferred_merge_strategy: ff_only_if_possible_else_pr_merge_commit
   require_review_approval_before_next_iteration: true
@@ -4352,7 +4352,7 @@ iterations:
     before publication-scale deployment.
   entry_criteria:
   - Iteration 2 review approved.
-  - Iteration 3 kickoff completed on iteration3/integration.
+  - Iteration 3 kickoff completed on codex/iteration3/integration.
   - Label sufficiency gate passed with at least 500 adjudicated labels, at least 80
     labels per class, human-human IRR > 0.7, and provisional rubric freeze recorded.
   exit_criteria:

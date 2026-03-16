@@ -73,8 +73,8 @@ def _minimal_model() -> dict:
         },
         "branching_policy": {
             "schema_version": "1.0.0",
-            "integration_branch_template": "iteration{iteration_id}/integration",
-            "work_branch_template": "iteration{iteration_id}/{slug}",
+            "integration_branch_template": "codex/iteration{iteration_id}/integration",
+            "work_branch_template": "codex/iteration{iteration_id}/{slug}",
             "merge_target": "main",
             "preferred_merge_strategy": "ff_only_if_possible_else_pr_merge_commit",
             "require_review_approval_before_next_iteration": True,
