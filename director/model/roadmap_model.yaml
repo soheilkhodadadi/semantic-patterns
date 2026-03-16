@@ -4187,7 +4187,9 @@ iterations:
     lifecycle_state: planned
     canonical: true
     depends_on:
-    - iteration2/label-sufficiency-gate
+    - iteration2/irr-and-adjudication
+    - iteration2/provisional-rubric-freeze-and-split-registry
+    - iteration2/preliminary-results-authorization
     required_artifacts:
     - director/reviews/iteration_2_review.json
     - director/reviews/iteration_2_review.md
@@ -4207,7 +4209,9 @@ iterations:
       phase_id: iteration2/review-and-replan
       kind: analysis
       depends_on:
-      - iteration2.labels.verify_label_sufficiency
+      - iteration2.irr.finalize_adjudication_and_report
+      - iteration2.rubric.publish_provisional_freeze
+      - iteration2.prelim.publish_preliminary_results_readiness
       inputs:
       - artifact_id: iteration_log
         path: docs/iteration_log.md
@@ -4243,7 +4247,31 @@ iterations:
         on_fail: block
         message: Iteration log must exist before generating a review.
         reroute_to: []
-      quality_checks: []
+      quality_checks:
+      - condition_id: iteration2_review_canonical_track_blocked
+        kind: json_field_compare
+        target: director/reviews/iteration_2_review.json::canonical_track_status
+        operator: ==
+        expected: blocked
+        on_fail: block
+        message: Iteration 2 review must preserve the blocked canonical track state.
+        reroute_to: []
+      - condition_id: iteration2_review_preliminary_track_authorized
+        kind: json_field_compare
+        target: director/reviews/iteration_2_review.json::preliminary_track_status
+        operator: ==
+        expected: authorized
+        on_fail: block
+        message: Iteration 2 review must record the authorized preliminary track.
+        reroute_to: []
+      - condition_id: iteration2_review_blocking_gate_recorded
+        kind: json_field_compare
+        target: director/reviews/iteration_2_review.json::blocking_canonical_gate
+        operator: ==
+        expected: human_human_irr_gt_0_7
+        on_fail: block
+        message: Iteration 2 review must record the blocked canonical IRR gate.
+        reroute_to: []
       commands:
       - .venv/bin/python -m semantic_ai_washing.director.cli review --iteration 2
       manual_handoff: false
@@ -4296,6 +4324,14 @@ iterations:
         on_fail: block
         message: Iteration review approval must be explicitly approved.
         reroute_to: []
+      - condition_id: iteration_review_preliminary_track_only
+        kind: json_field_compare
+        target: director/reviews/iteration_2_approval.json::authorized_track
+        operator: ==
+        expected: preliminary_only
+        on_fail: block
+        message: Iteration 2 closeout must authorize only the preliminary track.
+        reroute_to: []
       commands: []
       manual_handoff: true
       risks:
@@ -4335,12 +4371,187 @@ iterations:
     depends_on:
     - iteration2/preliminary-results-authorization
     required_artifacts:
-    - reports/models/preliminary_results_readiness_v1.json
+    - director/reviews/iteration_3_preliminary_kickoff.json
     source_window_id: active_2021_2024
     tags:
     - preliminary_results
     - kickoff
-    tasks: []
+    tasks:
+    - task_id: iteration3.prelim.verify_kickoff_context
+      title: Verify preliminary kickoff context
+      description: Confirm the preliminary lane is authorized while publication-grade
+        authorization remains closed.
+      iteration_id: '3'
+      phase_id: iteration3/preliminary-kickoff-and-preflight
+      kind: validation
+      depends_on: []
+      inputs:
+      - artifact_id: preliminary_results_readiness
+        path: reports/models/preliminary_results_readiness_v1.json
+        kind: json
+        required: true
+      outputs:
+      - artifact_id: preliminary_kickoff_report
+        path: director/reviews/iteration_3_preliminary_kickoff.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: preliminary_results_readiness_exists
+        kind: artifact_exists
+        target: reports/models/preliminary_results_readiness_v1.json
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Preliminary readiness report must exist before preliminary kickoff.
+        reroute_to: []
+      quality_checks:
+      - condition_id: preliminary_results_lane_authorized
+        kind: json_field_compare
+        target: reports/models/preliminary_results_readiness_v1.json::summary.preliminary_results_authorized
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Preliminary kickoff requires a truthfully authorized preliminary lane.
+        reroute_to: []
+      - condition_id: preliminary_kickoff_ready
+        kind: json_field_compare
+        target: director/reviews/iteration_3_preliminary_kickoff.json::status
+        operator: ==
+        expected: ready
+        on_fail: block
+        message: Preliminary kickoff is not ready.
+        reroute_to: []
+      - condition_id: preliminary_kickoff_track
+        kind: json_field_compare
+        target: director/reviews/iteration_3_preliminary_kickoff.json::track
+        operator: ==
+        expected: preliminary
+        on_fail: block
+        message: Preliminary kickoff must record the preliminary track explicitly.
+        reroute_to: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.director.cli kickoff --iteration 3 --track preliminary
+      manual_handoff: false
+      risks:
+      - R3
+      estimated_effort: 2
+      risk_reduction: 8
+      automation_level: full
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - preliminary_results
+      - kickoff
+      gate_class: ops
+  - phase_id: iteration3/preliminary-source-window-sentence-materialization
+    title: Preliminary Source Window Sentence Materialization
+    goal: Materialize or validate canonical 2021-2024 sentence tables before preliminary-only
+      model training and classification.
+    lifecycle_state: planned
+    canonical: false
+    depends_on:
+    - iteration3/preliminary-kickoff-and-preflight
+    required_artifacts:
+    - data/processed/sentences/year=2021/ai_sentences.parquet
+    - data/processed/sentences/year=2022/ai_sentences.parquet
+    - data/processed/sentences/year=2023/ai_sentences.parquet
+    - data/processed/sentences/year=2024/ai_sentences.parquet
+    - reports/data/active_window_sentence_inventory_v1.json
+    source_window_id: active_2021_2024
+    tags:
+    - preliminary_results
+    - sentence_materialization
+    tasks:
+    - task_id: iteration3.prelim.materialize_active_window_sentence_tables
+      title: Materialize active-window sentence tables
+      description: Build or reuse canonical sentence tables for 2021-2024 from the
+        indexed SEC source window.
+      iteration_id: '3'
+      phase_id: iteration3/preliminary-source-window-sentence-materialization
+      kind: build
+      depends_on:
+      - iteration3.prelim.verify_kickoff_context
+      inputs:
+      - artifact_id: sec_source_hint
+        path: data/metadata/sec_source_dir.txt
+        kind: file
+        required: true
+      - artifact_id: available_filings_index
+        path: data/metadata/available_filings_index.csv
+        kind: csv
+        required: false
+      outputs:
+      - artifact_id: year_2021_ai_sentences
+        path: data/processed/sentences/year=2021/ai_sentences.parquet
+        kind: parquet
+        required: true
+      - artifact_id: year_2022_ai_sentences
+        path: data/processed/sentences/year=2022/ai_sentences.parquet
+        kind: parquet
+        required: true
+      - artifact_id: year_2023_ai_sentences
+        path: data/processed/sentences/year=2023/ai_sentences.parquet
+        kind: parquet
+        required: true
+      - artifact_id: year_2024_ai_sentences
+        path: data/processed/sentences/year=2024/ai_sentences.parquet
+        kind: parquet
+        required: true
+      - artifact_id: active_window_sentence_inventory
+        path: reports/data/active_window_sentence_inventory_v1.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: sec_source_dir_hint_exists
+        kind: artifact_exists
+        target: data/metadata/sec_source_dir.txt
+        operator: ==
+        expected: true
+        on_fail: block
+        message: SEC source hint file must exist before sentence materialization.
+        reroute_to: []
+      - condition_id: ai_keywords_exist
+        kind: artifact_exists
+        target: data/metadata/ai_keywords.txt
+        operator: ==
+        expected: true
+        on_fail: block
+        message: AI keyword list must exist before sentence materialization.
+        reroute_to: []
+      quality_checks:
+      - condition_id: active_window_sentence_inventory_passed
+        kind: json_field_compare
+        target: reports/data/active_window_sentence_inventory_v1.json::summary.status
+        operator: ==
+        expected: passed
+        on_fail: block
+        message: Active-window sentence inventory must report a passing materialization run.
+        reroute_to: []
+      - condition_id: active_window_sentence_inventory_all_years
+        kind: json_field_compare
+        target: reports/data/active_window_sentence_inventory_v1.json::summary.completed_year_count
+        operator: ==
+        expected: 4
+        on_fail: block
+        message: Active-window sentence materialization must complete all 2021-2024 years.
+        reroute_to: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.data.materialize_active_window_sentences --index-csv data/metadata/available_filings_index.csv --source-root-hint data/metadata/sec_source_dir.txt --source-windows-json data/metadata/source_windows.json --index-summary-json reports/data/source_index_summary.json --source-window-id active_2021_2024 --years 2021 2022 2023 2024 --output-root data/processed/sentences --output-report reports/data/active_window_sentence_inventory_v1.json --keywords-path data/metadata/ai_keywords.txt --min-tokens 6
+      manual_handoff: false
+      risks:
+      - R1
+      - R5
+      estimated_effort: 4
+      risk_reduction: 9
+      automation_level: full
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - preliminary_results
+      - sentence_materialization
+      gate_class: data
   - phase_id: iteration3/preliminary-centroid-retraining
     title: Preliminary Centroid Retraining
     goal: Train a preliminary-only model namespace for the active 2021-2024 window
@@ -4348,7 +4559,7 @@ iterations:
     lifecycle_state: planned
     canonical: false
     depends_on:
-    - iteration3/preliminary-kickoff-and-preflight
+    - iteration3/preliminary-source-window-sentence-materialization
     required_artifacts:
     - artifacts/models/mpnet_prelim_v1/embeddings.parquet
     - artifacts/models/mpnet_prelim_v1/centroids.json
@@ -4357,7 +4568,89 @@ iterations:
     tags:
     - preliminary_results
     - retraining
-    tasks: []
+    tasks:
+    - task_id: iteration3.prelim.train_centroids
+      title: Train preliminary centroid model
+      description: Train the frozen-split preliminary centroid artifacts in the mpnet_prelim_v1
+        namespace.
+      iteration_id: '3'
+      phase_id: iteration3/preliminary-centroid-retraining
+      kind: build
+      depends_on:
+      - iteration3.prelim.materialize_active_window_sentence_tables
+      inputs:
+      - artifact_id: labels_master
+        path: data/labels/v1/labels_master.parquet
+        kind: parquet
+        required: true
+      - artifact_id: split_registry
+        path: data/metadata/splits/split_registry_v1.csv
+        kind: csv
+        required: true
+      outputs:
+      - artifact_id: prelim_embeddings
+        path: artifacts/models/mpnet_prelim_v1/embeddings.parquet
+        kind: parquet
+        required: true
+      - artifact_id: prelim_centroids
+        path: artifacts/models/mpnet_prelim_v1/centroids.json
+        kind: json
+        required: true
+      - artifact_id: prelim_model_metadata
+        path: artifacts/models/mpnet_prelim_v1/metadata.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: labels_master_exists_for_prelim_training
+        kind: artifact_exists
+        target: data/labels/v1/labels_master.parquet
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Labels master must exist before preliminary retraining.
+        reroute_to: []
+      - condition_id: split_registry_exists_for_prelim_training
+        kind: artifact_exists
+        target: data/metadata/splits/split_registry_v1.csv
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Frozen split registry must exist before preliminary retraining.
+        reroute_to: []
+      quality_checks:
+      - condition_id: prelim_model_preliminary_only
+        kind: json_field_compare
+        target: artifacts/models/mpnet_prelim_v1/metadata.json::preliminary_only
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Preliminary model metadata must stay explicitly preliminary-only.
+        reroute_to: []
+      - condition_id: prelim_model_train_rows_positive
+        kind: json_field_compare
+        target: artifacts/models/mpnet_prelim_v1/metadata.json::summary.rows_train
+        operator: '>'
+        expected: 0
+        on_fail: block
+        message: Preliminary retraining must use non-empty train rows from the frozen split.
+        reroute_to: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.classification.train_preliminary_centroids --labels-master data/labels/v1/labels_master.parquet --split-registry data/metadata/splits/split_registry_v1.csv --embeddings-output artifacts/models/mpnet_prelim_v1/embeddings.parquet --centroids-output artifacts/models/mpnet_prelim_v1/centroids.json --metadata-output artifacts/models/mpnet_prelim_v1/metadata.json --model-id mpnet_prelim_v1 --source-window-id active_2021_2024 --embedding-backend sentence_transformers --model-name sentence-transformers/all-mpnet-base-v2 --batch-size 32
+      manual_handoff: false
+      risks:
+      - R2
+      - R6
+      estimated_effort: 4
+      risk_reduction: 8
+      automation_level: full
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - preliminary_results
+      - retraining
+      - centroid
+      gate_class: science
   - phase_id: iteration3/preliminary-heldout-evaluation
     title: Preliminary Held-Out Evaluation
     goal: Evaluate the preliminary model truthfully on the frozen held-out split without
@@ -4372,7 +4665,76 @@ iterations:
     tags:
     - preliminary_results
     - evaluation
-    tasks: []
+    tasks:
+    - task_id: iteration3.prelim.evaluate_heldout
+      title: Evaluate preliminary model on held-out data
+      description: Publish a truthful held-out evaluation without implying publication-grade
+        authorization.
+      iteration_id: '3'
+      phase_id: iteration3/preliminary-heldout-evaluation
+      kind: validation
+      depends_on:
+      - iteration3.prelim.train_centroids
+      inputs:
+      - artifact_id: prelim_centroids
+        path: artifacts/models/mpnet_prelim_v1/centroids.json
+        kind: json
+        required: true
+      - artifact_id: prelim_model_metadata
+        path: artifacts/models/mpnet_prelim_v1/metadata.json
+        kind: json
+        required: true
+      - artifact_id: held_out
+        path: data/validation/held_out_sentences.csv
+        kind: csv
+        required: true
+      outputs:
+      - artifact_id: heldout_eval_prelim
+        path: reports/evaluation/heldout_eval_prelim_v1.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: heldout_exists_for_prelim_eval
+        kind: artifact_exists
+        target: data/validation/held_out_sentences.csv
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Held-out evaluation data must exist before preliminary evaluation.
+        reroute_to: []
+      quality_checks:
+      - condition_id: prelim_heldout_eval_status_passed
+        kind: json_field_compare
+        target: reports/evaluation/heldout_eval_prelim_v1.json::summary.status
+        operator: ==
+        expected: passed
+        on_fail: block
+        message: Preliminary held-out evaluation must complete in a valid non-leaky state.
+        reroute_to: []
+      - condition_id: prelim_heldout_eval_no_leakage
+        kind: json_field_compare
+        target: reports/evaluation/heldout_eval_prelim_v1.json::summary.leakage_detected
+        operator: ==
+        expected: false
+        on_fail: block
+        message: Preliminary held-out evaluation must confirm no leakage.
+        reroute_to: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.classification.evaluate_preliminary_heldout --held-out data/validation/held_out_sentences.csv --labels-master data/labels/v1/labels_master.parquet --centroids artifacts/models/mpnet_prelim_v1/centroids.json --model-metadata artifacts/models/mpnet_prelim_v1/metadata.json --output-report reports/evaluation/heldout_eval_prelim_v1.json --model-id mpnet_prelim_v1 --source-window-id active_2021_2024 --accuracy-threshold 0.80
+      manual_handoff: false
+      risks:
+      - R2
+      - R3
+      estimated_effort: 3
+      risk_reduction: 8
+      automation_level: full
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - preliminary_results
+      - evaluation
+      gate_class: science
   - phase_id: iteration3/preliminary-active-window-classification
     title: Preliminary Active Window Classification
     goal: Classify the active 2021-2024 source window into a separate preliminary
@@ -4391,7 +4753,88 @@ iterations:
     tags:
     - preliminary_results
     - batch_classification
-    tasks: []
+    tasks:
+    - task_id: iteration3.prelim.classify_active_window
+      title: Classify the active window with the preliminary model
+      description: Write year-partitioned preliminary classification outputs for the
+        full active 2021-2024 source window.
+      iteration_id: '3'
+      phase_id: iteration3/preliminary-active-window-classification
+      kind: build
+      depends_on:
+      - iteration3.prelim.evaluate_heldout
+      inputs:
+      - artifact_id: prelim_centroids
+        path: artifacts/models/mpnet_prelim_v1/centroids.json
+        kind: json
+        required: true
+      - artifact_id: prelim_model_metadata
+        path: artifacts/models/mpnet_prelim_v1/metadata.json
+        kind: json
+        required: true
+      outputs:
+      - artifact_id: prelim_classified_2021
+        path: data/processed/classifications/year=2021/model=mpnet_prelim_v1/classified_sentences.parquet
+        kind: parquet
+        required: true
+      - artifact_id: prelim_classified_2022
+        path: data/processed/classifications/year=2022/model=mpnet_prelim_v1/classified_sentences.parquet
+        kind: parquet
+        required: true
+      - artifact_id: prelim_classified_2023
+        path: data/processed/classifications/year=2023/model=mpnet_prelim_v1/classified_sentences.parquet
+        kind: parquet
+        required: true
+      - artifact_id: prelim_classified_2024
+        path: data/processed/classifications/year=2024/model=mpnet_prelim_v1/classified_sentences.parquet
+        kind: parquet
+        required: true
+      - artifact_id: prelim_active_window_coverage
+        path: reports/classification/active_window_coverage_prelim_v1.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: active_window_2021_sentences_exist
+        kind: artifact_exists
+        target: data/processed/sentences/year=2021/ai_sentences.parquet
+        operator: ==
+        expected: true
+        on_fail: block
+        message: 2021 sentence table must exist before preliminary classification.
+        reroute_to: []
+      quality_checks:
+      - condition_id: prelim_classification_report_passed
+        kind: json_field_compare
+        target: reports/classification/active_window_coverage_prelim_v1.json::summary.status
+        operator: ==
+        expected: passed
+        on_fail: block
+        message: Preliminary classification coverage report must pass.
+        reroute_to: []
+      - condition_id: prelim_classification_all_years_completed
+        kind: json_field_compare
+        target: reports/classification/active_window_coverage_prelim_v1.json::summary.completed_year_count
+        operator: ==
+        expected: 4
+        on_fail: block
+        message: Preliminary classification must emit outputs for all active-window years.
+        reroute_to: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.classification.classify_active_window_preliminary --input-root data/processed/sentences --years 2021 2022 2023 2024 --centroids artifacts/models/mpnet_prelim_v1/centroids.json --model-metadata artifacts/models/mpnet_prelim_v1/metadata.json --output-root data/processed/classifications --output-report reports/classification/active_window_coverage_prelim_v1.json --model-id mpnet_prelim_v1 --source-window-id active_2021_2024
+      manual_handoff: false
+      risks:
+      - R2
+      - R6
+      estimated_effort: 5
+      risk_reduction: 8
+      automation_level: full
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - preliminary_results
+      - batch_classification
+      gate_class: data
   - phase_id: iteration3/preliminary-firm-year-measure-construction
     title: Preliminary Firm-Year Measure Construction
     goal: Build preliminary-only firm-year AI metrics and narrative measures for internal
@@ -4408,7 +4851,68 @@ iterations:
     tags:
     - preliminary_results
     - measures
-    tasks: []
+    tasks:
+    - task_id: iteration3.prelim.publish_firm_year_measures
+      title: Publish preliminary firm-year narrative measures
+      description: Publish preliminary-only firm-year AI metrics and the named proposal-defined
+        narrative measures.
+      iteration_id: '3'
+      phase_id: iteration3/preliminary-firm-year-measure-construction
+      kind: build
+      depends_on:
+      - iteration3.prelim.classify_active_window
+      inputs:
+      - artifact_id: prelim_active_window_coverage
+        path: reports/classification/active_window_coverage_prelim_v1.json
+        kind: json
+        required: true
+      outputs:
+      - artifact_id: prelim_firm_year_ai_metrics
+        path: data/processed/aggregates/firm_year_ai_metrics_prelim_v1.parquet
+        kind: parquet
+        required: true
+      - artifact_id: prelim_firm_year_narrative_measures
+        path: data/processed/aggregates/firm_year_narrative_measures_prelim_v1.parquet
+        kind: parquet
+        required: true
+      - artifact_id: prelim_firm_year_narrative_measures_report
+        path: reports/classification/firm_year_narrative_measures_prelim_v1.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: prelim_classification_coverage_report_exists
+        kind: artifact_exists
+        target: reports/classification/active_window_coverage_prelim_v1.json
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Preliminary classification coverage report must exist before firm-year aggregation.
+        reroute_to: []
+      quality_checks:
+      - condition_id: prelim_named_measures_complete
+        kind: json_field_compare
+        target: reports/classification/firm_year_narrative_measures_prelim_v1.json::summary.named_measures_complete
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Preliminary firm-year report must confirm the full named measure set.
+        reroute_to: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.aggregation.build_preliminary_narrative_measures --input-root data/processed/classifications --years 2021 2022 2023 2024 --model-id mpnet_prelim_v1 --source-window-id active_2021_2024 --output-ai-metrics data/processed/aggregates/firm_year_ai_metrics_prelim_v1.parquet --output-measures data/processed/aggregates/firm_year_narrative_measures_prelim_v1.parquet --output-report reports/classification/firm_year_narrative_measures_prelim_v1.json
+      manual_handoff: false
+      risks:
+      - R2
+      - R6
+      estimated_effort: 4
+      risk_reduction: 8
+      automation_level: full
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - preliminary_results
+      - measures
+      gate_class: science
   - phase_id: iteration3/kickoff-and-preflight
     title: Kickoff and Preflight
     goal: Validate branch context and prior review approval before starting Iteration
@@ -4918,7 +5422,70 @@ iterations:
     tags:
     - preliminary_results
     - panel_inputs
-    tasks: []
+    tasks:
+    - task_id: iteration4.prelim.audit_panel_inputs
+      title: Audit preliminary panel inputs
+      description: Publish a truthful manifest describing whether patents and controls
+        inputs are full-scope enough for preliminary panel assembly.
+      iteration_id: '4'
+      phase_id: iteration4/preliminary-patents-and-controls-ingestion
+      kind: diagnostic
+      depends_on: []
+      inputs:
+      - artifact_id: prelim_firm_year_narrative_measures
+        path: data/processed/aggregates/firm_year_narrative_measures_prelim_v1.parquet
+        kind: parquet
+        required: true
+      outputs:
+      - artifact_id: preliminary_inputs_manifest
+        path: reports/panels/preliminary_inputs_manifest_v1.json
+        kind: json
+        required: true
+      preconditions:
+      - condition_id: prelim_firm_year_narrative_measures_exist
+        kind: artifact_exists
+        target: data/processed/aggregates/firm_year_narrative_measures_prelim_v1.parquet
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Preliminary narrative measures must exist before panel-input audit.
+        reroute_to: []
+      quality_checks:
+      - condition_id: preliminary_inputs_manifest_exists
+        kind: artifact_exists
+        target: reports/panels/preliminary_inputs_manifest_v1.json
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Preliminary input audit must publish its manifest.
+        reroute_to: []
+      - condition_id: preliminary_inputs_manifest_truthful_status
+        kind: json_field_compare
+        target: reports/panels/preliminary_inputs_manifest_v1.json::summary.status
+        operator: in
+        expected:
+        - ready
+        - blocked_refresh_required
+        on_fail: block
+        message: Preliminary input audit must report either ready or blocked_refresh_required.
+        reroute_to: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.analysis.audit_preliminary_panel_inputs --controls data/interim/controls/controls_by_firm_year.csv --patents data/processed/patents/ai_patent_counts_filtered_2019plus.csv --crosswalk data/externals/crosswalks/cik_gvkey.csv --narrative-measures data/processed/aggregates/firm_year_narrative_measures_prelim_v1.parquet --raw-controls data/raw/compustat/compustat_sample.csv --raw-patents data/raw/patents/sample_patents.csv --source-window-id active_2021_2024 --output-report reports/panels/preliminary_inputs_manifest_v1.json
+      manual_handoff: false
+      risks:
+      - R3
+      - R6
+      estimated_effort: 3
+      risk_reduction: 9
+      automation_level: full
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - preliminary_results
+      - panel_inputs
+      - audit_gate
+      gate_class: data
   - phase_id: iteration4/preliminary-panel-assembly-2021-2024
     title: Preliminary Panel Assembly 2021-2024
     goal: Assemble a separate preliminary 2021-2024 panel for internal stakeholder-facing
@@ -4935,7 +5502,55 @@ iterations:
     tags:
     - preliminary_results
     - panel
-    tasks: []
+    tasks:
+    - task_id: iteration4.prelim.validate_panel_inputs_ready
+      title: Validate preliminary panel inputs are ready
+      description: Hard-block preliminary panel assembly until patents and controls
+        inputs are no longer sample-scoped and fully cover 2021-2024.
+      iteration_id: '4'
+      phase_id: iteration4/preliminary-panel-assembly-2021-2024
+      kind: validation
+      depends_on:
+      - iteration4.prelim.audit_panel_inputs
+      inputs:
+      - artifact_id: preliminary_inputs_manifest
+        path: reports/panels/preliminary_inputs_manifest_v1.json
+        kind: json
+        required: true
+      outputs: []
+      preconditions:
+      - condition_id: preliminary_inputs_manifest_present_for_panel_assembly
+        kind: artifact_exists
+        target: reports/panels/preliminary_inputs_manifest_v1.json
+        operator: ==
+        expected: true
+        on_fail: block
+        message: Preliminary input manifest must exist before panel assembly can start.
+        reroute_to: []
+      quality_checks:
+      - condition_id: preliminary_inputs_ready_for_panel_assembly
+        kind: json_field_compare
+        target: reports/panels/preliminary_inputs_manifest_v1.json::summary.status
+        operator: ==
+        expected: ready
+        on_fail: block
+        message: Preliminary panel assembly is blocked until patents and controls inputs are refreshed and ready.
+        reroute_to: []
+      commands: []
+      manual_handoff: false
+      risks:
+      - R3
+      estimated_effort: 1
+      risk_reduction: 9
+      automation_level: partial
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - preliminary_results
+      - panel_inputs
+      - audit_gate
+      gate_class: data
   - phase_id: iteration4/preliminary-panel-qa
     title: Preliminary Panel QA
     goal: Run preliminary panel QA and document that outputs remain preliminary-only

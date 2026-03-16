@@ -479,9 +479,109 @@ def test_review_approval_patch_and_kickoff_flow(tmp_path, monkeypatch, capsys):
     assert status_payload["latest_review"].endswith("iteration_1_review.json")
     assert status_payload["latest_review_approval"].endswith("iteration_1_approval.json")
     assert status_payload["latest_kickoff"].endswith("iteration_2_kickoff.json")
+    assert status_payload["latest_authorized_track"] == "canonical"
 
     refreshed_review = json.loads(review_path.read_text(encoding="utf-8"))
     assert (
         refreshed_review["methodology_alignment_summary"]["source_artifact"]
         == "docs/director/proposal_methodology.md"
     )
+
+
+def test_dual_track_review_approval_blocks_canonical_kickoff(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    _init_git_repo(tmp_path)
+    main_with_args(["init"])
+
+    model = _review_model()
+    model["settings"]["active_horizon_iterations"] = ["1", "2", "3"]
+    model["iterations"].append(
+        {
+            "iteration_id": "3",
+            "title": "Iteration 3",
+            "goal": "preliminary lane",
+            "entry_criteria": ["iteration 2 review approved"],
+            "exit_criteria": [],
+            "phases": [
+                {
+                    "phase_id": "iteration3/preliminary-kickoff-and-preflight",
+                    "title": "Prelim kickoff",
+                    "goal": "validate preliminary lane",
+                    "depends_on": ["iteration2/review-and-replan"],
+                    "canonical": False,
+                    "required_artifacts": [
+                        "director/reviews/iteration_3_preliminary_kickoff.json"
+                    ],
+                    "tasks": [],
+                },
+                {
+                    "phase_id": "iteration3/kickoff-and-preflight",
+                    "title": "Canonical kickoff",
+                    "goal": "validate canonical lane",
+                    "depends_on": ["iteration2/review-and-replan"],
+                    "canonical": True,
+                    "required_artifacts": ["director/reviews/iteration_3_kickoff.json"],
+                    "tasks": [],
+                },
+            ],
+        }
+    )
+
+    _write(tmp_path / "docs" / "iteration_log.md", "## Iteration 2\nreview pending\n")
+    _write(tmp_path / "docs" / "director" / "implementation_protocol_master.md", "Protocol text\n")
+    _write_yaml(tmp_path / "director" / "model" / "roadmap_model.yaml", model)
+    _write_json(
+        tmp_path / "reports" / "models" / "preliminary_results_readiness_v1.json",
+        {
+            "summary": {
+                "preliminary_results_authorized": True,
+                "publication_grade_authorized": False,
+            }
+        },
+    )
+
+    review_code = main_with_args(["review", "--iteration", "2"])
+    assert review_code == 0
+    review_path = tmp_path / "director" / "reviews" / "iteration_2_review.json"
+
+    approve_code = main_with_args(
+        [
+            "approve-review",
+            "--review-file",
+            str(review_path),
+            "--decision",
+            "approve",
+            "--accept-patch",
+            "none",
+            "--authorized-track",
+            "preliminary_only",
+        ]
+    )
+    assert approve_code == 0
+
+    approval_payload = json.loads(
+        (tmp_path / "director" / "reviews" / "iteration_2_approval.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert approval_payload["authorized_track"] == "preliminary_only"
+
+    _run(["git", "switch", "-c", "iteration3/integration"], tmp_path)
+    canonical_kickoff = main_with_args(["kickoff", "--iteration", "3"])
+    assert canonical_kickoff == 2
+
+    preliminary_kickoff = main_with_args(["kickoff", "--iteration", "3", "--track", "preliminary"])
+    assert preliminary_kickoff == 0
+    preliminary_payload = json.loads(
+        (tmp_path / "director" / "reviews" / "iteration_3_preliminary_kickoff.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert preliminary_payload["track"] == "preliminary"
+    assert preliminary_payload["status"] == "ready"
+
+    capsys.readouterr()
+    status_code = main_with_args(["status"])
+    assert status_code == 0
+    status_payload = json.loads(capsys.readouterr().out)
+    assert status_payload["latest_authorized_track"] == "preliminary_only"

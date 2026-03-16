@@ -565,6 +565,9 @@ class IterationReview(DeterministicModel):
     rubric_calibration_status: str = ""
     rubric_freeze_status: str = ""
     predictive_validity_gate_status: str = ""
+    canonical_track_status: str = ""
+    preliminary_track_status: str = ""
+    blocking_canonical_gate: str = ""
     publication_readiness_blockers: list[str] = Field(default_factory=list)
     findings: list[ReviewFinding] = Field(default_factory=list)
     recommended_playbooks: list[PlaybookRecommendation] = Field(default_factory=list)
@@ -601,6 +604,9 @@ class PhaseReview(DeterministicModel):
     rubric_calibration_status: str = ""
     rubric_freeze_status: str = ""
     predictive_validity_gate_status: str = ""
+    canonical_track_status: str = ""
+    preliminary_track_status: str = ""
+    blocking_canonical_gate: str = ""
     publication_readiness_blockers: list[str] = Field(default_factory=list)
     findings: list[ReviewFinding] = Field(default_factory=list)
     recommended_playbooks: list[PlaybookRecommendation] = Field(default_factory=list)
@@ -625,6 +631,7 @@ class ReviewApproval(DeterministicModel):
     deferred_change_ids: list[str] = Field(default_factory=list)
     branch_closeout_approved: bool = False
     next_iteration_authorized: bool = False
+    authorized_track: Literal["none", "preliminary_only", "canonical"] = "none"
     created_at: str
     notes: str = ""
 
@@ -634,10 +641,12 @@ class KickoffReport(DeterministicModel):
     kickoff_id: str
     iteration_id: str
     generated_at: str
+    track: Literal["canonical", "preliminary"] = "canonical"
     git: dict[str, Any] = Field(default_factory=dict)
     expected_branch: str
     base_branch: str
     review_approval_file: str = ""
+    authorized_track: str = ""
     checks: list[dict[str, Any]] = Field(default_factory=list)
     status: Literal["ready", "blocked"] = "blocked"
     starter_prompt_path: str = ""

@@ -1288,15 +1288,51 @@ def test_actual_iteration2_tranche_workflow_is_wired():
     )
     assert prelim_kickoff_phase is not None
     assert prelim_kickoff_phase.canonical is False
+    prelim_kickoff_task = next(
+        task
+        for task in prelim_kickoff_phase.tasks
+        if task.task_id == "iteration3.prelim.verify_kickoff_context"
+    )
+    assert prelim_kickoff_task.commands == [
+        ".venv/bin/python -m semantic_ai_washing.director.cli kickoff --iteration 3 --track preliminary"
+    ]
+
+    prelim_sentence_phase = find_phase(
+        model, iteration_id="3", phase_name="preliminary-source-window-sentence-materialization"
+    )
+    assert prelim_sentence_phase is not None
+    assert prelim_sentence_phase.canonical is False
+    assert prelim_sentence_phase.depends_on == ["iteration3/preliminary-kickoff-and-preflight"]
+    prelim_sentence_task = next(
+        task
+        for task in prelim_sentence_phase.tasks
+        if task.task_id == "iteration3.prelim.materialize_active_window_sentence_tables"
+    )
+    assert (
+        "semantic_ai_washing.data.materialize_active_window_sentences"
+        in prelim_sentence_task.commands[0]
+    )
 
     prelim_retraining_phase = find_phase(
         model, iteration_id="3", phase_name="preliminary-centroid-retraining"
     )
     assert prelim_retraining_phase is not None
     assert prelim_retraining_phase.canonical is False
+    assert prelim_retraining_phase.depends_on == [
+        "iteration3/preliminary-source-window-sentence-materialization"
+    ]
     assert (
         "artifacts/models/mpnet_prelim_v1/centroids.json"
         in prelim_retraining_phase.required_artifacts
+    )
+    prelim_retraining_task = next(
+        task
+        for task in prelim_retraining_phase.tasks
+        if task.task_id == "iteration3.prelim.train_centroids"
+    )
+    assert (
+        "semantic_ai_washing.classification.train_preliminary_centroids"
+        in prelim_retraining_task.commands[0]
     )
 
     prelim_eval_phase = find_phase(
@@ -1305,6 +1341,15 @@ def test_actual_iteration2_tranche_workflow_is_wired():
     assert prelim_eval_phase is not None
     assert prelim_eval_phase.canonical is False
     assert "reports/evaluation/heldout_eval_prelim_v1.json" in prelim_eval_phase.required_artifacts
+    prelim_eval_task = next(
+        task
+        for task in prelim_eval_phase.tasks
+        if task.task_id == "iteration3.prelim.evaluate_heldout"
+    )
+    assert (
+        "semantic_ai_washing.classification.evaluate_preliminary_heldout"
+        in prelim_eval_task.commands[0]
+    )
 
     prelim_classify_phase = find_phase(
         model, iteration_id="3", phase_name="preliminary-active-window-classification"
@@ -1314,6 +1359,15 @@ def test_actual_iteration2_tranche_workflow_is_wired():
     assert (
         "data/processed/classifications/year=2024/model=mpnet_prelim_v1/classified_sentences.parquet"
         in prelim_classify_phase.required_artifacts
+    )
+    prelim_classify_task = next(
+        task
+        for task in prelim_classify_phase.tasks
+        if task.task_id == "iteration3.prelim.classify_active_window"
+    )
+    assert (
+        "semantic_ai_washing.classification.classify_active_window_preliminary"
+        in prelim_classify_task.commands[0]
     )
 
     prelim_measures_phase = find_phase(
@@ -1325,18 +1379,50 @@ def test_actual_iteration2_tranche_workflow_is_wired():
         "data/processed/aggregates/firm_year_narrative_measures_prelim_v1.parquet"
         in prelim_measures_phase.required_artifacts
     )
+    prelim_measures_task = next(
+        task
+        for task in prelim_measures_phase.tasks
+        if task.task_id == "iteration3.prelim.publish_firm_year_measures"
+    )
+    assert (
+        "semantic_ai_washing.aggregation.build_preliminary_narrative_measures"
+        in prelim_measures_task.commands[0]
+    )
 
     prelim_panel_phase = find_phase(
         model, iteration_id="4", phase_name="preliminary-panel-assembly-2021-2024"
     )
     assert prelim_panel_phase is not None
     assert prelim_panel_phase.canonical is False
+    assert prelim_panel_phase.depends_on == [
+        "iteration4/preliminary-patents-and-controls-ingestion"
+    ]
     assert "data/panels/panel_prelim_v1.parquet" in prelim_panel_phase.required_artifacts
+    prelim_panel_task = next(
+        task
+        for task in prelim_panel_phase.tasks
+        if task.task_id == "iteration4.prelim.validate_panel_inputs_ready"
+    )
+    assert prelim_panel_task.depends_on == ["iteration4.prelim.audit_panel_inputs"]
 
     prelim_panel_qa_phase = find_phase(model, iteration_id="4", phase_name="preliminary-panel-qa")
     assert prelim_panel_qa_phase is not None
     assert prelim_panel_qa_phase.canonical is False
     assert "reports/panels/panel_prelim_qa_v1.json" in prelim_panel_qa_phase.required_artifacts
+
+    prelim_input_phase = find_phase(
+        model, iteration_id="4", phase_name="preliminary-patents-and-controls-ingestion"
+    )
+    assert prelim_input_phase is not None
+    prelim_input_task = next(
+        task
+        for task in prelim_input_phase.tasks
+        if task.task_id == "iteration4.prelim.audit_panel_inputs"
+    )
+    assert (
+        "semantic_ai_washing.analysis.audit_preliminary_panel_inputs"
+        in prelim_input_task.commands[0]
+    )
 
     prelim_regression_phase = find_phase(
         model, iteration_id="5", phase_name="preliminary-regression-specification"
@@ -1397,4 +1483,16 @@ def test_actual_iteration2_tranche_workflow_is_wired():
     review_task = next(
         task for task in review_phase.tasks if task.task_id == "iteration2.review.generate_review"
     )
-    assert review_task.depends_on == ["iteration2.labels.verify_label_sufficiency"]
+    assert review_task.depends_on == [
+        "iteration2.irr.finalize_adjudication_and_report",
+        "iteration2.rubric.publish_provisional_freeze",
+        "iteration2.prelim.publish_preliminary_results_readiness",
+    ]
+    review_approval_task = next(
+        task for task in review_phase.tasks if task.task_id == "iteration2.review.approve_closeout"
+    )
+    assert any(
+        condition.target == "director/reviews/iteration_2_approval.json::authorized_track"
+        and condition.expected == "preliminary_only"
+        for condition in review_approval_task.quality_checks
+    )

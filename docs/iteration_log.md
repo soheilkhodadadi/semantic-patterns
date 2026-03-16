@@ -2408,3 +2408,66 @@ Rules:
 - Current truthful interpretation:
   - the non-canonical preliminary lane is now authorized for internal stakeholder-facing development results on the active `2021-2024` scope
   - the canonical publication-grade lane remains blocked by the unchanged `irr_kappa > 0.7` requirement
+
+## 2026-03-16 - Dual-Track Iteration 2 Closeout and Preliminary Iteration 3 Runbook
+
+- Formalized Iteration 2 closeout as a dual-track review in Director:
+  - added track-level authorization to review approvals with `authorized_track in {none, preliminary_only, canonical}`
+  - extended review artifacts to record:
+    - `canonical_track_status`
+    - `preliminary_track_status`
+    - `blocking_canonical_gate`
+- Rewired `iteration2/review-and-replan` so it now depends on finalized Iteration 2 evidence rather than the blocked canonical label-sufficiency gate:
+  - `iteration2/irr-and-adjudication`
+  - `iteration2/provisional-rubric-freeze-and-split-registry`
+  - `iteration2/preliminary-results-authorization`
+- Generated and approved the Iteration 2 closeout review on the preliminary track:
+  - `director/reviews/iteration_2_review.json`
+  - `director/reviews/iteration_2_review.md`
+  - `director/reviews/iteration_2_patch_proposal.yaml`
+  - `director/reviews/iteration_2_branch_plan.md`
+  - `director/reviews/iteration_2_starter_prompt.md`
+  - `director/reviews/iteration_2_approval.json`
+- Iteration 2 closeout review recorded the truthful dual-track state:
+  - `canonical_track_status = blocked`
+  - `preliminary_track_status = authorized`
+  - `blocking_canonical_gate = human_human_irr_gt_0_7`
+  - `authorized_track = preliminary_only`
+- Updated kickoff logic so Iteration 3 behaves correctly by track:
+  - canonical kickoff remains blocked when the latest approval is `preliminary_only`
+  - preliminary kickoff accepts `preliminary_only` approval, but still requires the preliminary readiness artifact and clean branch/worktree context
+- Added executable preliminary Iteration 3 tasks and commands:
+  - `iteration3/preliminary-source-window-sentence-materialization`
+  - `iteration3/prelim.verify_kickoff_context`
+  - `iteration3.prelim.materialize_active_window_sentence_tables`
+  - `iteration3.prelim.train_centroids`
+  - `iteration3.prelim.evaluate_heldout`
+  - `iteration3.prelim.classify_active_window`
+  - `iteration3.prelim.publish_firm_year_measures`
+- Added the hard patents/controls coverage audit gate before preliminary panel assembly:
+  - new CLI: `semantic_ai_washing.analysis.audit_preliminary_panel_inputs`
+  - new artifact: `reports/panels/preliminary_inputs_manifest_v1.json`
+  - `iteration4/preliminary-panel-assembly-2021-2024` now requires `summary.status == ready`
+- Added preliminary workflow modules:
+  - `src/semantic_ai_washing/data/materialize_active_window_sentences.py`
+  - `src/semantic_ai_washing/classification/preliminary_pipeline.py`
+  - `src/semantic_ai_washing/classification/train_preliminary_centroids.py`
+  - `src/semantic_ai_washing/classification/evaluate_preliminary_heldout.py`
+  - `src/semantic_ai_washing/classification/classify_active_window_preliminary.py`
+  - `src/semantic_ai_washing/aggregation/build_preliminary_narrative_measures.py`
+  - `src/semantic_ai_washing/analysis/audit_preliminary_panel_inputs.py`
+- Added or updated regression coverage for:
+  - dual-track review approval and kickoff behavior
+  - preliminary Iteration 3 roadmap taskization
+  - parquet-backed preliminary pipeline smoke tests
+- Validation completed:
+  - `ruff format --check`
+  - `ruff check`
+  - `PYTHONPATH=src python -m pytest -q tests/test_director_review.py tests/test_director_roadmap_model.py tests/test_preliminary_phase3.py`
+- Validation note:
+  - the repo-local `.venv` is currently x86_64 on an arm64 host and fails `numpy/pandas` imports under Rosetta in this session
+  - the new parquet-backed preliminary integration test module therefore skips when `pyarrow` is unavailable in the active shell environment rather than failing for the wrong reason
+- Current truthful interpretation:
+  - Iteration 2 is now formally closed out as `canonical = blocked` and `preliminary = authorized`
+  - the preliminary Iteration 3 lane is now executable in Director
+  - Iteration 4 preliminary panel work is now truthfully hard-blocked until patents and controls are refreshed beyond the current sample-sized inputs

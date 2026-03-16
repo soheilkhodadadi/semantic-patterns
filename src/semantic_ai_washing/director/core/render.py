@@ -79,6 +79,7 @@ def render_roadmap_markdown(
             "- Every iteration ends with `review-and-replan`.",
             "- Iterations 2-5 start with `kickoff-and-preflight`.",
             "- Approved reviews authorize the next iteration and main-merge closeout.",
+            "- Review approvals may authorize the `canonical` track or only the `preliminary_only` track.",
             "",
             "## Stakeholder Alignment",
             f"- source artifact: `{model.stakeholder_alignment.source_artifact}`",
@@ -458,6 +459,9 @@ def render_review_markdown(review: IterationReview | PhaseReview) -> str:
     lines.append(
         f"- Predictive-validity gate status: `{review.predictive_validity_gate_status or 'none'}`"
     )
+    lines.append(f"- Canonical track status: `{review.canonical_track_status or 'none'}`")
+    lines.append(f"- Preliminary track status: `{review.preliminary_track_status or 'none'}`")
+    lines.append(f"- Blocking canonical gate: `{review.blocking_canonical_gate or 'none'}`")
     lines.extend(["", "## Recommended Playbooks"])
     if review.recommended_playbooks:
         for playbook in review.recommended_playbooks:

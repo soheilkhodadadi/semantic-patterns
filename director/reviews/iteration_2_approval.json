@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.4.0",
+  "approval_id": "bb7cad54-323a3a32",
+  "review_id": "bb7cad54-323a3a32",
+  "iteration_id": "2",
+  "decision": "approved",
+  "accepted_change_ids": [],
+  "deferred_change_ids": [
+    "optimizer-proposed_roadmap_patch_8732eb4e-3a3a3230-1",
+    "optimizer-proposed_roadmap_patch_8732eb4e-3a3a3230-2",
+    "optimizer-proposed_roadmap_patch_9d516339-3a3a3230-1",
+    "optimizer-proposed_roadmap_patch_9d516339-3a3a3230-2",
+    "optimizer-proposed_roadmap_patch_b2f116c5-3a3a3230-1",
+    "optimizer-proposed_roadmap_patch_b2f116c5-3a3a3230-2",
+    "optimizer-proposed_roadmap_patch_e08e31e6-3a3a3230-1",
+    "optimizer-proposed_roadmap_patch_e08e31e6-3a3a3230-2",
+    "optimizer-proposed_roadmap_patch_fb55837d-3a3a3230-1",
+    "optimizer-proposed_roadmap_patch_fb55837d-3a3a3230-2"
+  ],
+  "branch_closeout_approved": true,
+  "next_iteration_authorized": true,
+  "authorized_track": "preliminary_only",
+  "created_at": "2026-03-16T16:12:46.339943+00:00",
+  "notes": "manual review approval recorded"
+}

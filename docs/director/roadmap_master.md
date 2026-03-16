@@ -1,7 +1,7 @@
 <!-- generated_file: true -->
 <!-- source_model: /Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/model/roadmap_model.yaml -->
-<!-- source_sha256: 16183af06aa3f599b32eab66bfb9e4e84245d04f0a0b208eb6d51fcf43b90cad -->
-<!-- rendered_at: 2026-03-15T20:17:30.762585+00:00 -->
+<!-- source_sha256: bb7cad542cdba649885b201127aa308228eec4ef774be059fc021131fb4a071a -->
+<!-- rendered_at: 2026-03-16T16:14:37.749564+00:00 -->
 
 # Roadmap Master
 
@@ -22,6 +22,7 @@ Optimization proposals may recommend resequencing tasks or phases beyond the can
 - Every iteration ends with `review-and-replan`.
 - Iterations 2-5 start with `kickoff-and-preflight`.
 - Approved reviews authorize the next iteration and main-merge closeout.
+- Review approvals may authorize the `canonical` track or only the `preliminary_only` track.
 
 ## Stakeholder Alignment
 - source artifact: `docs/director/stakeholder_expectations.md`
@@ -845,7 +846,7 @@ Exit criteria: Rubric realignment report and revised protocol v2.4 are published
 - Title: Review and Replan
 - Goal: Synthesize iteration evidence, approve closeout, and prepare the next iteration handoff.
 - Lifecycle: `planned`
-- Depends on: iteration2/label-sufficiency-gate
+- Depends on: iteration2/irr-and-adjudication, iteration2/provisional-rubric-freeze-and-split-registry, iteration2/preliminary-results-authorization
 - Source window: `none`
 - Required artifacts: director/reviews/iteration_2_review.json, director/reviews/iteration_2_review.md, director/reviews/iteration_2_patch_proposal.yaml, director/reviews/iteration_2_branch_plan.md, director/reviews/iteration_2_starter_prompt.md, director/reviews/iteration_2_approval.json
 - Tags: review, closeout
@@ -853,7 +854,7 @@ Exit criteria: Rubric realignment report and revised protocol v2.4 are published
 #### Tasks
 - `iteration2.review.generate_review` Generate iteration review
   - kind: `analysis` gate_class: `ops` automation: `partial`
-  - depends_on: iteration2.labels.verify_label_sufficiency
+  - depends_on: iteration2.irr.finalize_adjudication_and_report, iteration2.rubric.publish_provisional_freeze, iteration2.prelim.publish_preliminary_results_readiness
   - inputs: docs/iteration_log.md
   - outputs: director/reviews/iteration_2_review.json, director/reviews/iteration_2_review.md, director/reviews/iteration_2_patch_proposal.yaml, director/reviews/iteration_2_branch_plan.md, director/reviews/iteration_2_starter_prompt.md
   - tags: review_generation
@@ -878,23 +879,53 @@ Exit criteria: Retraining, held-out evaluation, active-window classification, an
 - Lifecycle: `planned`
 - Depends on: iteration2/preliminary-results-authorization
 - Source window: `active_2021_2024`
-- Required artifacts: reports/models/preliminary_results_readiness_v1.json
+- Required artifacts: director/reviews/iteration_3_preliminary_kickoff.json
 - Tags: preliminary_results, kickoff
 
 #### Tasks
-- phase-level only in this roadmap version
+- `iteration3.prelim.verify_kickoff_context` Verify preliminary kickoff context
+  - kind: `validation` gate_class: `ops` automation: `full`
+  - depends_on: none
+  - inputs: reports/models/preliminary_results_readiness_v1.json
+  - outputs: director/reviews/iteration_3_preliminary_kickoff.json
+  - tags: preliminary_results, kickoff
+  - risks: R3
+
+### iteration3/preliminary-source-window-sentence-materialization
+- Title: Preliminary Source Window Sentence Materialization
+- Goal: Materialize or validate canonical 2021-2024 sentence tables before preliminary-only model training and classification.
+- Lifecycle: `planned`
+- Depends on: iteration3/preliminary-kickoff-and-preflight
+- Source window: `active_2021_2024`
+- Required artifacts: data/processed/sentences/year=2021/ai_sentences.parquet, data/processed/sentences/year=2022/ai_sentences.parquet, data/processed/sentences/year=2023/ai_sentences.parquet, data/processed/sentences/year=2024/ai_sentences.parquet, reports/data/active_window_sentence_inventory_v1.json
+- Tags: preliminary_results, sentence_materialization
+
+#### Tasks
+- `iteration3.prelim.materialize_active_window_sentence_tables` Materialize active-window sentence tables
+  - kind: `build` gate_class: `data` automation: `full`
+  - depends_on: iteration3.prelim.verify_kickoff_context
+  - inputs: data/metadata/sec_source_dir.txt, data/metadata/available_filings_index.csv
+  - outputs: data/processed/sentences/year=2021/ai_sentences.parquet, data/processed/sentences/year=2022/ai_sentences.parquet, data/processed/sentences/year=2023/ai_sentences.parquet, data/processed/sentences/year=2024/ai_sentences.parquet, reports/data/active_window_sentence_inventory_v1.json
+  - tags: preliminary_results, sentence_materialization
+  - risks: R1, R5
 
 ### iteration3/preliminary-centroid-retraining
 - Title: Preliminary Centroid Retraining
 - Goal: Train a preliminary-only model namespace for the active 2021-2024 window without overwriting publication-grade artifacts.
 - Lifecycle: `planned`
-- Depends on: iteration3/preliminary-kickoff-and-preflight
+- Depends on: iteration3/preliminary-source-window-sentence-materialization
 - Source window: `active_2021_2024`
 - Required artifacts: artifacts/models/mpnet_prelim_v1/embeddings.parquet, artifacts/models/mpnet_prelim_v1/centroids.json, artifacts/models/mpnet_prelim_v1/metadata.json
 - Tags: preliminary_results, retraining
 
 #### Tasks
-- phase-level only in this roadmap version
+- `iteration3.prelim.train_centroids` Train preliminary centroid model
+  - kind: `build` gate_class: `science` automation: `full`
+  - depends_on: iteration3.prelim.materialize_active_window_sentence_tables
+  - inputs: data/labels/v1/labels_master.parquet, data/metadata/splits/split_registry_v1.csv
+  - outputs: artifacts/models/mpnet_prelim_v1/embeddings.parquet, artifacts/models/mpnet_prelim_v1/centroids.json, artifacts/models/mpnet_prelim_v1/metadata.json
+  - tags: preliminary_results, retraining, centroid
+  - risks: R2, R6
 
 ### iteration3/preliminary-heldout-evaluation
 - Title: Preliminary Held-Out Evaluation
@@ -906,7 +937,13 @@ Exit criteria: Retraining, held-out evaluation, active-window classification, an
 - Tags: preliminary_results, evaluation
 
 #### Tasks
-- phase-level only in this roadmap version
+- `iteration3.prelim.evaluate_heldout` Evaluate preliminary model on held-out data
+  - kind: `validation` gate_class: `science` automation: `full`
+  - depends_on: iteration3.prelim.train_centroids
+  - inputs: artifacts/models/mpnet_prelim_v1/centroids.json, artifacts/models/mpnet_prelim_v1/metadata.json, data/validation/held_out_sentences.csv
+  - outputs: reports/evaluation/heldout_eval_prelim_v1.json
+  - tags: preliminary_results, evaluation
+  - risks: R2, R3
 
 ### iteration3/preliminary-active-window-classification
 - Title: Preliminary Active Window Classification
@@ -918,7 +955,13 @@ Exit criteria: Retraining, held-out evaluation, active-window classification, an
 - Tags: preliminary_results, batch_classification
 
 #### Tasks
-- phase-level only in this roadmap version
+- `iteration3.prelim.classify_active_window` Classify the active window with the preliminary model
+  - kind: `build` gate_class: `data` automation: `full`
+  - depends_on: iteration3.prelim.evaluate_heldout
+  - inputs: artifacts/models/mpnet_prelim_v1/centroids.json, artifacts/models/mpnet_prelim_v1/metadata.json
+  - outputs: data/processed/classifications/year=2021/model=mpnet_prelim_v1/classified_sentences.parquet, data/processed/classifications/year=2022/model=mpnet_prelim_v1/classified_sentences.parquet, data/processed/classifications/year=2023/model=mpnet_prelim_v1/classified_sentences.parquet, data/processed/classifications/year=2024/model=mpnet_prelim_v1/classified_sentences.parquet, reports/classification/active_window_coverage_prelim_v1.json
+  - tags: preliminary_results, batch_classification
+  - risks: R2, R6
 
 ### iteration3/preliminary-firm-year-measure-construction
 - Title: Preliminary Firm-Year Measure Construction
@@ -930,7 +973,13 @@ Exit criteria: Retraining, held-out evaluation, active-window classification, an
 - Tags: preliminary_results, measures
 
 #### Tasks
-- phase-level only in this roadmap version
+- `iteration3.prelim.publish_firm_year_measures` Publish preliminary firm-year narrative measures
+  - kind: `build` gate_class: `science` automation: `full`
+  - depends_on: iteration3.prelim.classify_active_window
+  - inputs: reports/classification/active_window_coverage_prelim_v1.json
+  - outputs: data/processed/aggregates/firm_year_ai_metrics_prelim_v1.parquet, data/processed/aggregates/firm_year_narrative_measures_prelim_v1.parquet, reports/classification/firm_year_narrative_measures_prelim_v1.json
+  - tags: preliminary_results, measures
+  - risks: R2, R6
 
 ### iteration3/kickoff-and-preflight
 - Title: Kickoff and Preflight
@@ -1093,7 +1142,13 @@ Exit criteria: Active-window panel is assembled and QA-frozen., Job-postings rob
 - Tags: preliminary_results, panel_inputs
 
 #### Tasks
-- phase-level only in this roadmap version
+- `iteration4.prelim.audit_panel_inputs` Audit preliminary panel inputs
+  - kind: `diagnostic` gate_class: `data` automation: `full`
+  - depends_on: none
+  - inputs: data/processed/aggregates/firm_year_narrative_measures_prelim_v1.parquet
+  - outputs: reports/panels/preliminary_inputs_manifest_v1.json
+  - tags: preliminary_results, panel_inputs, audit_gate
+  - risks: R3, R6
 
 ### iteration4/preliminary-panel-assembly-2021-2024
 - Title: Preliminary Panel Assembly 2021-2024
@@ -1105,7 +1160,13 @@ Exit criteria: Active-window panel is assembled and QA-frozen., Job-postings rob
 - Tags: preliminary_results, panel
 
 #### Tasks
-- phase-level only in this roadmap version
+- `iteration4.prelim.validate_panel_inputs_ready` Validate preliminary panel inputs are ready
+  - kind: `validation` gate_class: `data` automation: `partial`
+  - depends_on: iteration4.prelim.audit_panel_inputs
+  - inputs: reports/panels/preliminary_inputs_manifest_v1.json
+  - outputs: none
+  - tags: preliminary_results, panel_inputs, audit_gate
+  - risks: R3
 
 ### iteration4/preliminary-panel-qa
 - Title: Preliminary Panel QA
@@ -1431,3 +1492,18 @@ Exit criteria: A publication-grade upgrade plan is published for the next wave o
 - Rubric freeze status: `future`
 - Predictive-validity gate status: `future`
 - Publication blockers: none
+
+### bb7cad54-323a3a32
+- Scope: `iteration 2`
+- Accepted changes: none
+- Deferred changes: optimizer-proposed_roadmap_patch_8732eb4e-3a3a3230-1, optimizer-proposed_roadmap_patch_8732eb4e-3a3a3230-2, optimizer-proposed_roadmap_patch_9d516339-3a3a3230-1, optimizer-proposed_roadmap_patch_9d516339-3a3a3230-2, optimizer-proposed_roadmap_patch_b2f116c5-3a3a3230-1, optimizer-proposed_roadmap_patch_b2f116c5-3a3a3230-2, optimizer-proposed_roadmap_patch_e08e31e6-3a3a3230-1, optimizer-proposed_roadmap_patch_e08e31e6-3a3a3230-2, optimizer-proposed_roadmap_patch_fb55837d-3a3a3230-1, optimizer-proposed_roadmap_patch_fb55837d-3a3a3230-2
+- Next iteration: `3`
+- Entry criteria: Iteration 2 review approved., Iteration 3 kickoff completed on iteration3/integration., Label sufficiency gate passed with at least 500 adjudicated labels, at least 80 labels per class, human-human IRR > 0.7, and provisional rubric freeze recorded.
+- Stakeholder summary: active_development_scope=2021-2024 public-filing development window; counts_by_priority{non-negotiable=4, operational=1, preferred=1, publication-critical=7}; counts_by_status{open=13}; desired_horizon=20-year horizon when source availability permits; due_unsatisfied_count=5; publication_target_scope=all publicly traded firms; requirement_statuses=[{'requirement_id': 'validate_methodology_before_scale', 'priority': 'non-negotiable', 'target_iteration': '2', 'status': 'open', 'mapped_phases': ['iteration2/rubric-realignment', 'iteration2/irr-and-adjudication', 'iteration2/label-sufficiency-gate'], 'mapped_statuses': ['blocked_manual', 'waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'true_human_irr_multi_rater', 'priority': 'non-negotiable', 'target_iteration': '2', 'status': 'open', 'mapped_phases': ['iteration2/irr-and-adjudication', 'iteration2/label-sufficiency-gate'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'scale_candidate_pool_to_500_firms', 'priority': 'publication-critical', 'target_iteration': '2', 'status': 'open', 'mapped_phases': ['iteration2/sentence-pool-expansion-2024', 'iteration2/tranche2-labeling', 'iteration2/tranche3-labeling'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'label_set_sufficiency_before_retraining', 'priority': 'publication-critical', 'target_iteration': '2', 'status': 'open', 'mapped_phases': ['iteration2/tranche1-labeling', 'iteration2/tranche2-labeling', 'iteration2/tranche3-labeling', 'iteration2/merge-canonical-labels', 'iteration2/irr-and-adjudication', 'iteration2/provisional-rubric-freeze-and-split-registry', 'iteration2/label-sufficiency-gate'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps', 'waiting_on_deps', 'waiting_on_deps', 'waiting_on_deps', 'waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'ai_total_merge_integrity', 'priority': 'non-negotiable', 'target_iteration': '3', 'status': 'open', 'mapped_phases': ['iteration3/classification-merge-integrity', 'iteration4/panel-assembly-2021-2024'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'job_postings_robustness', 'priority': 'publication-critical', 'target_iteration': '4', 'status': 'open', 'mapped_phases': ['iteration4/job-postings-robustness-integration', 'iteration5/robustness-and-sensitivity'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'lagged_and_industry_robustness', 'priority': 'publication-critical', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/regression-specification', 'iteration5/robustness-and-sensitivity'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'patent_mismatch_washing_proxy', 'priority': 'publication-critical', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/robustness-and-sensitivity'], 'mapped_statuses': ['waiting_on_deps']}, {'requirement_id': 'literature_differentiation', 'priority': 'publication-critical', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/literature-differentiation-and-examples', 'iteration5/release-packaging'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'before_after_examples', 'priority': 'publication-critical', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/literature-differentiation-and-examples', 'iteration5/release-packaging'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'publication_scope_all_public_firms', 'priority': 'preferred', 'target_iteration': '4', 'status': 'open', 'mapped_phases': ['iteration4/historical-window-expansion-readiness', 'iteration5/results-generation'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps']}, {'requirement_id': 'results_and_paper_package', 'priority': 'non-negotiable', 'target_iteration': '5', 'status': 'open', 'mapped_phases': ['iteration5/release-packaging'], 'mapped_statuses': ['waiting_on_deps']}, {'requirement_id': 'preliminary_results_internal_fast_track', 'priority': 'operational', 'target_iteration': '2', 'status': 'open', 'mapped_phases': ['iteration2/irr-disagreement-diagnostic', 'iteration2/preliminary-results-authorization', 'iteration3/preliminary-kickoff-and-preflight', 'iteration4/preliminary-panel-assembly-2021-2024', 'iteration5/preliminary-results-package', 'iteration5/preliminary-results-table-planning'], 'mapped_statuses': ['waiting_on_deps', 'waiting_on_deps', 'waiting_on_deps', 'waiting_on_deps', 'waiting_on_deps', 'waiting_on_deps']}]; source_artifact=docs/director/stakeholder_expectations.md
+- Methodology summary: active_development_scope=2021-2024 public-filing development window; core_construct=AI-washing is speculative firm AI narrative without later observable AI capability.; counts_by_priority{non-negotiable=3, publication-critical=2}; counts_by_status{open=5}; desired_horizon=2000-2024 when source availability permits; hard_gates=['human_human_irr_only', 'irr_stratified_100_firms_min', 'by_class_kappa_report_required', 'rubric_freeze_before_final_scale', 'directional_predictive_validity_before_publication_scale']; named_measures=[{'measure_id': 'AI_Focus', 'formula': 'log(1 + AI sentences)'}, {'measure_id': 'log_1_plus_A', 'formula': 'log(1 + A)'}, {'measure_id': 'log_1_plus_S', 'formula': 'log(1 + S)'}, {'measure_id': 'SpecShare', 'formula': 'S / (A + S)'}, {'measure_id': 'CredAI', 'formula': 'z(A) - z(S)'}, {'measure_id': 'A_S', 'formula': 'log(1 + A / (1 + S))'}]; publication_target_scope=all publicly traded firms; requirement_statuses=[{'requirement_id': 'proposal_rubric_realignment_before_scale', 'priority': 'non-negotiable', 'target_iteration': '2', 'status': 'open', 'mapped_phases': ['iteration2/rubric-realignment', 'iteration2/tranche1-labeling'], 'mapped_statuses': ['blocked_manual', 'waiting_on_deps']}, {'requirement_id': 'proposal_style_irr_design', 'priority': 'non-negotiable', 'target_iteration': '2', 'status': 'open', 'mapped_phases': ['iteration2/irr-and-adjudication'], 'mapped_statuses': ['waiting_on_deps']}, {'requirement_id': 'proposal_named_measure_construction', 'priority': 'publication-critical', 'target_iteration': '3', 'status': 'open', 'mapped_phases': ['iteration3/firm-year-measure-construction'], 'mapped_statuses': ['waiting_on_deps']}, {'requirement_id': 'proposal_directional_predictive_validity', 'priority': 'publication-critical', 'target_iteration': '3', 'status': 'open', 'mapped_phases': ['iteration3/development-predictive-validity-gate'], 'mapped_statuses': ['waiting_on_deps']}, {'requirement_id': 'proposal_rubric_freeze', 'priority': 'non-negotiable', 'target_iteration': '2', 'status': 'open', 'mapped_phases': ['iteration2/provisional-rubric-freeze-and-split-registry'], 'mapped_statuses': ['waiting_on_deps']}]; source_artifact=docs/director/proposal_methodology.md
+- Unmet stakeholder requirements: validate_methodology_before_scale, true_human_irr_multi_rater, scale_candidate_pool_to_500_firms, label_set_sufficiency_before_retraining
+- Unmet methodology requirements: proposal_rubric_realignment_before_scale, proposal_style_irr_design, proposal_rubric_freeze
+- Rubric calibration status: `blocked_manual`
+- Rubric freeze status: `waiting_on_deps`
+- Predictive-validity gate status: `future`
+- Publication blockers: validate_methodology_before_scale: Validate the new A/S/I classification approach before deeper investment in scaled execution., true_human_irr_multi_rater: Use multiple human raters and true IRR rather than model-vs-label agreement., scale_candidate_pool_to_500_firms: Expand beyond the bootstrap pilot to a 500-firm candidate pool with roughly 1-2k clean AI sentences., label_set_sufficiency_before_retraining: Reach a publication-grade adjudicated label set before retraining, not just a small pilot.

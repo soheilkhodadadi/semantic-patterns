@@ -301,6 +301,7 @@ def _approve_review_command(args: argparse.Namespace) -> int:
         review_file=args.review_file,
         decision=args.decision,
         accept_patch=args.accept_patch,
+        authorized_track=args.authorized_track,
     )
     print(json.dumps(approval.as_deterministic_dict(), indent=2))
     return 0
@@ -365,7 +366,7 @@ def _kickoff_command(args: argparse.Namespace) -> int:
         ),
         iteration_log_path=str(Path(repo_root) / "docs" / "iteration_log.md"),
     )
-    report = engine.kickoff(args.iteration)
+    report = engine.kickoff(args.iteration, track=args.track)
     print(json.dumps(report.as_deterministic_dict(), indent=2))
     return 0 if report.status == "ready" else 2
 
@@ -445,6 +446,7 @@ def _status_command(args: argparse.Namespace) -> int:
         "next_iteration_authorized": bool(
             latest_approval_payload.get("next_iteration_authorized", False)
         ),
+        "latest_authorized_track": str(latest_approval_payload.get("authorized_track", "none")),
         "latest_stakeholder_alignment_summary": latest_review_payload.get(
             "stakeholder_alignment_summary", {}
         ),
@@ -760,6 +762,12 @@ def build_parser() -> argparse.ArgumentParser:
     approve_review_cmd.add_argument("--review-file", required=True)
     approve_review_cmd.add_argument("--decision", required=True, choices=["approve", "defer"])
     approve_review_cmd.add_argument("--accept-patch", default="none")
+    approve_review_cmd.add_argument(
+        "--authorized-track",
+        default=None,
+        choices=["none", "preliminary_only", "canonical"],
+        help="Track-level iteration authorization to record on approved iteration reviews.",
+    )
     approve_review_cmd.set_defaults(func=_approve_review_command)
 
     apply_review_patch_cmd = subparsers.add_parser(
@@ -773,6 +781,12 @@ def build_parser() -> argparse.ArgumentParser:
         "kickoff", help="Validate iteration kickoff branch context and approval state"
     )
     kickoff_cmd.add_argument("--iteration", required=True)
+    kickoff_cmd.add_argument(
+        "--track",
+        default="canonical",
+        choices=["canonical", "preliminary"],
+        help="Kickoff track to validate. Canonical requires canonical authorization; preliminary requires preliminary readiness.",
+    )
     kickoff_cmd.set_defaults(func=_kickoff_command)
 
     playbooks_cmd = subparsers.add_parser(

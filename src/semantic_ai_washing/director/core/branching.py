@@ -152,13 +152,18 @@ def normalize_branching_policy(model: RoadmapModel) -> BranchingPolicySpec:
 
 
 def review_artifact_paths(
-    reviews_dir: Path, iteration_id: str, phase_id: str = ""
+    reviews_dir: Path, iteration_id: str, phase_id: str = "", track: str = "canonical"
 ) -> dict[str, Path]:
     if phase_id:
         safe_phase = phase_id.replace("/", "_")
         stem = f"phase_{safe_phase}"
     else:
         stem = f"iteration_{iteration_id}"
+    kickoff_name = (
+        f"iteration_{iteration_id}_kickoff.json"
+        if track == "canonical"
+        else f"iteration_{iteration_id}_{track}_kickoff.json"
+    )
     return {
         "review_json": reviews_dir / f"{stem}_review.json",
         "review_md": reviews_dir / f"{stem}_review.md",
@@ -166,6 +171,6 @@ def review_artifact_paths(
         "branch_plan": reviews_dir / f"{stem}_branch_plan.md",
         "starter_prompt": reviews_dir / f"{stem}_starter_prompt.md",
         "approval_json": reviews_dir / f"{stem}_approval.json",
-        "kickoff_json": reviews_dir / f"iteration_{iteration_id}_kickoff.json",
+        "kickoff_json": reviews_dir / kickoff_name,
         "patch_apply_json": reviews_dir / f"{stem}_patch_apply.json",
     }

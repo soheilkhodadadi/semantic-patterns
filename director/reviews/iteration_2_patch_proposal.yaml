@@ -1,0 +1,67 @@
+schema_version: 1.0.0
+proposal_id: bb7cad54-323a3a32
+source_roadmap_sha256: bb7cad542cdba649885b201127aa308228eec4ef774be059fc021131fb4a071a
+focus_iteration: '2'
+focus_phase: ''
+operations:
+- op: insert_before_phase
+  task_id: common.remediate_fragmented_sentences
+  before_phase: iteration1/label-ops-bootstrap
+  blocked_task_id: iteration1.shared.audit_sentence_integrity
+- op: insert_before_phase
+  task_id: common.resample_from_clean_sentence_pool
+  before_phase: iteration1/label-ops-bootstrap
+  blocked_task_id: iteration1.shared.audit_sentence_integrity
+- op: insert_before_phase
+  task_id: common.remediate_fragmented_sentences
+  before_phase: iteration2/irr-and-adjudication
+  blocked_task_id: iteration2.shared.audit_sentence_integrity
+- op: insert_before_phase
+  task_id: common.resample_from_clean_sentence_pool
+  before_phase: iteration2/irr-and-adjudication
+  blocked_task_id: iteration2.shared.audit_sentence_integrity
+- op: insert_before_phase
+  task_id: common.remediate_fragmented_sentences
+  before_phase: iteration1/label-ops-bootstrap
+  blocked_task_id: iteration1.shared.audit_sentence_integrity
+- op: insert_before_phase
+  task_id: common.resample_from_clean_sentence_pool
+  before_phase: iteration1/label-ops-bootstrap
+  blocked_task_id: iteration1.shared.audit_sentence_integrity
+- op: insert_before_phase
+  task_id: common.remediate_fragmented_sentences
+  before_phase: iteration1/label-ops-bootstrap
+  blocked_task_id: iteration1.shared.audit_sentence_integrity
+- op: insert_before_phase
+  task_id: common.resample_from_clean_sentence_pool
+  before_phase: iteration1/label-ops-bootstrap
+  blocked_task_id: iteration1.shared.audit_sentence_integrity
+- op: insert_before_phase
+  task_id: common.remediate_fragmented_sentences
+  before_phase: iteration1/label-ops-bootstrap
+  blocked_task_id: iteration1.shared.audit_sentence_integrity
+- op: insert_before_phase
+  task_id: common.resample_from_clean_sentence_pool
+  before_phase: iteration1/label-ops-bootstrap
+  blocked_task_id: iteration1.shared.audit_sentence_integrity
+rationale:
+- Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences`
+  before `iteration1/label-ops-bootstrap`.
+- Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences`
+  before `iteration1/label-ops-bootstrap`.
+- Task `iteration2.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences`
+  before `iteration2/irr-and-adjudication`.
+- Task `iteration2.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences`
+  before `iteration2/irr-and-adjudication`.
+- Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences`
+  before `iteration1/label-ops-bootstrap`.
+- Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences`
+  before `iteration1/label-ops-bootstrap`.
+- Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences`
+  before `iteration1/label-ops-bootstrap`.
+- Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences`
+  before `iteration1/label-ops-bootstrap`.
+- Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences`
+  before `iteration1/label-ops-bootstrap`.
+- Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences`
+  before `iteration1/label-ops-bootstrap`.

@@ -7,7 +7,7 @@ from collections import Counter, defaultdict
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import yaml
 
@@ -601,6 +601,37 @@ class ReviewEngine:
                 carryover.append(payload)
         return carryover
 
+    def _track_status_summary(self, iteration_id: str) -> tuple[str, str, str]:
+        if str(iteration_id) != "2":
+            return ("not_evaluated", "not_evaluated", "")
+
+        irr_summary = (
+            load_json(self.repo_root / "reports" / "labels" / "irr_report.json", default={}) or {}
+        ).get("summary", {})
+        prelim_summary = (
+            load_json(
+                self.repo_root / "reports" / "models" / "preliminary_results_readiness_v1.json",
+                default={},
+            )
+            or {}
+        ).get("summary", {})
+
+        irr_status = str(irr_summary.get("status", "")).strip()
+        irr_kappa = irr_summary.get("kappa")
+        blocking_gate = ""
+        canonical_track_status = "blocked"
+        if irr_status == "passed" and irr_kappa is not None and float(irr_kappa) > 0.7:
+            canonical_track_status = "authorized"
+        else:
+            blocking_gate = "human_human_irr_gt_0_7"
+
+        preliminary_track_status = (
+            "authorized"
+            if bool(prelim_summary.get("preliminary_results_authorized", False))
+            else "blocked"
+        )
+        return (canonical_track_status, preliminary_track_status, blocking_gate)
+
     def _starter_prompt(
         self, iteration_id: str, phase_summary: dict[str, Any]
     ) -> StarterPromptArtifact:
@@ -769,6 +800,11 @@ class ReviewEngine:
             predictive_validity_gate_status,
         ) = self._methodology_alignment(iteration_id)
         starter = self._starter_prompt(iteration_id, phase_summary)
+        (
+            canonical_track_status,
+            preliminary_track_status,
+            blocking_canonical_gate,
+        ) = self._track_status_summary(iteration_id)
         roadmap_changes, patch = self._roadmap_changes(
             iteration_id, blocker_findings + quality_findings, focus_phase=phase_id
         )
@@ -833,6 +869,9 @@ class ReviewEngine:
             rubric_calibration_status=rubric_calibration_status,
             rubric_freeze_status=rubric_freeze_status,
             predictive_validity_gate_status=predictive_validity_gate_status,
+            canonical_track_status=canonical_track_status,
+            preliminary_track_status=preliminary_track_status,
+            blocking_canonical_gate=blocking_canonical_gate,
             publication_readiness_blockers=publication_readiness_blockers,
             findings=blocker_findings + quality_findings,
             recommended_playbooks=recommended_playbooks,
@@ -864,7 +903,13 @@ class ReviewEngine:
                 return path
         raise FileNotFoundError(f"Unable to locate review file for review_id={review_id}")
 
-    def approve_review(self, review_file: str, decision: str, accept_patch: str) -> ReviewApproval:
+    def approve_review(
+        self,
+        review_file: str,
+        decision: str,
+        accept_patch: str,
+        authorized_track: Literal["none", "preliminary_only", "canonical"] | None = None,
+    ) -> ReviewApproval:
         review_path = Path(review_file)
         payload = load_json(review_path, default={}) or {}
         review_type = str(payload.get("review_type", "iteration"))
@@ -880,6 +925,16 @@ class ReviewEngine:
             change["status"] = "accepted" if change.get("change_id") in accepted else "deferred"
         payload["status"] = "approved" if decision == "approve" else "deferred"
         review_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+        if decision != "approve":
+            resolved_track: Literal["none", "preliminary_only", "canonical"] = "none"
+        elif review_type != "iteration":
+            resolved_track = "none"
+        elif authorized_track is not None:
+            resolved_track = authorized_track
+        else:
+            resolved_track = "canonical"
+
         approval = ReviewApproval(
             approval_id=self._review_id(
                 str(payload.get("iteration_id", "")), str(payload.get("phase_id", ""))
@@ -891,6 +946,7 @@ class ReviewEngine:
             deferred_change_ids=deferred,
             branch_closeout_approved=decision == "approve" and review_type == "iteration",
             next_iteration_authorized=decision == "approve" and review_type == "iteration",
+            authorized_track=resolved_track,
             created_at=now_utc_iso(),
             notes="manual review approval recorded",
         )
@@ -1008,7 +1064,9 @@ class ReviewEngine:
         result_path.write_text(json.dumps(result, indent=2), encoding="utf-8")
         return result
 
-    def kickoff(self, iteration_id: str) -> KickoffReport:
+    def kickoff(
+        self, iteration_id: str, track: Literal["canonical", "preliminary"] = "canonical"
+    ) -> KickoffReport:
         model = self._model()
         policy = normalize_branching_policy(model)
         expected_branch = policy.integration_branch_template.format(
@@ -1016,6 +1074,7 @@ class ReviewEngine:
         )
         previous_iteration_id = str(int(iteration_id) - 1)
         approval_file = ""
+        authorized_track = ""
         checks = kickoff_checks(str(self.repo_root), policy, iteration_id)
         rationale: list[str] = []
         starter_prompt_path = ""
@@ -1027,12 +1086,32 @@ class ReviewEngine:
             approval_file = str(approval_path)
             if approval_path.exists():
                 approval_payload = load_json(approval_path, default={}) or {}
-                authorized = bool(approval_payload.get("next_iteration_authorized", False))
+                next_iteration_authorized = bool(
+                    approval_payload.get("next_iteration_authorized", False)
+                )
+                authorized_track = str(approval_payload.get("authorized_track", "")).strip()
+                if not authorized_track and next_iteration_authorized:
+                    authorized_track = "canonical"
+                if track == "canonical":
+                    authorized = next_iteration_authorized and authorized_track == "canonical"
+                    detail = (
+                        f"approval={next_iteration_authorized} authorized_track="
+                        f"{authorized_track or 'none'} required=canonical"
+                    )
+                else:
+                    authorized = next_iteration_authorized and authorized_track in {
+                        "preliminary_only",
+                        "canonical",
+                    }
+                    detail = (
+                        f"approval={next_iteration_authorized} authorized_track="
+                        f"{authorized_track or 'none'} required=preliminary_only|canonical"
+                    )
                 checks.append(
                     {
                         "name": "prior_review_approval",
                         "ok": authorized,
-                        "detail": f"approval={authorized}",
+                        "detail": detail,
                     }
                 )
                 starter_prompt_path = str(
@@ -1053,28 +1132,53 @@ class ReviewEngine:
                         "detail": f"missing {approval_path}",
                     }
                 )
+        if track == "preliminary":
+            readiness_path = (
+                self.repo_root / "reports" / "models" / "preliminary_results_readiness_v1.json"
+            )
+            readiness_payload = load_json(readiness_path, default={}) or {}
+            readiness_summary = readiness_payload.get("summary", {})
+            prelim_ok = bool(readiness_summary.get("preliminary_results_authorized", False)) and (
+                not bool(readiness_summary.get("publication_grade_authorized", False))
+            )
+            checks.append(
+                {
+                    "name": "preliminary_readiness",
+                    "ok": prelim_ok,
+                    "detail": (
+                        f"authorized={bool(readiness_summary.get('preliminary_results_authorized', False))} "
+                        f"publication_grade_authorized={bool(readiness_summary.get('publication_grade_authorized', False))}"
+                    ),
+                }
+            )
         ok = all(check["ok"] for check in checks)
         if not ok:
             rationale.append(
-                "Kickoff is blocked until branch context and prior review approval are valid."
+                "Kickoff is blocked until branch context, prior review approval, and track readiness are valid."
             )
         else:
-            rationale.append("Kickoff checks passed for the iteration integration branch.")
+            rationale.append(
+                f"Kickoff checks passed for the {track} track on the iteration integration branch."
+            )
         report = KickoffReport(
             kickoff_id=self._review_id(iteration_id, phase_id="kickoff"),
             iteration_id=iteration_id,
             generated_at=now_utc_iso(),
+            track=track,
             git=git_info(str(self.repo_root)),
             expected_branch=expected_branch,
             base_branch=policy.merge_target,
             review_approval_file=approval_file,
+            authorized_track=authorized_track,
             checks=checks,
             status="ready" if ok else "blocked",
             starter_prompt_path=starter_prompt_path,
             branch_plan_path=branch_plan_path,
             rationale=rationale,
         )
-        out_path = review_artifact_paths(self.paths.reviews_dir, iteration_id)["kickoff_json"]
+        out_path = review_artifact_paths(self.paths.reviews_dir, iteration_id, track=track)[
+            "kickoff_json"
+        ]
         out_path.write_text(json.dumps(report.as_deterministic_dict(), indent=2), encoding="utf-8")
         return report
 
@@ -1106,6 +1210,7 @@ def load_approved_review_summaries(reviews_dir: str | Path) -> list[dict[str, An
                 "findings_count": len(review.get("findings", [])),
                 "accepted_change_ids": approval.get("accepted_change_ids", []),
                 "deferred_change_ids": approval.get("deferred_change_ids", []),
+                "authorized_track": approval.get("authorized_track", "none"),
                 "next_iteration": review.get("next_iteration", {}),
                 "stakeholder_alignment_summary": review.get("stakeholder_alignment_summary", {}),
                 "methodology_alignment_summary": review.get("methodology_alignment_summary", {}),

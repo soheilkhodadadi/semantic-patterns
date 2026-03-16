@@ -1,0 +1,1163 @@
+{
+  "schema_version": "1.4.0",
+  "review_id": "bb7cad54-323a3a32",
+  "review_type": "iteration",
+  "iteration_id": "2",
+  "generated_at": "2026-03-16T16:13:20.316189+00:00",
+  "git": {
+    "branch": "iteration2/integration",
+    "commit": "3a73c3301e1838659bb2d973ef115701bbb31790",
+    "dirty": true
+  },
+  "inputs": {
+    "roadmap_model": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/model/roadmap_model.yaml",
+    "iteration_log": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/docs/iteration_log.md",
+    "run_count": 26
+  },
+  "phase_summary": {
+    "phases": [
+      {
+        "phase_id": "iteration2/kickoff-and-preflight",
+        "title": "Kickoff and Preflight",
+        "goal": "Validate branch context and prior review approval before starting Iteration 2 work.",
+        "lifecycle_state": "planned",
+        "status": "unstarted",
+        "run_count": 0,
+        "latest_runbook_id": "",
+        "latest_state_file": "",
+        "latest_result_file": ""
+      },
+      {
+        "phase_id": "iteration2/rubric-realignment",
+        "title": "Rubric Realignment",
+        "goal": "Confirm the cleaned tranche-1 slice under the accepted v2.4a prompt, then rebuild the full tranche through the cleaned extraction path before canonical tranche review resumes.",
+        "lifecycle_state": "planned",
+        "status": "unknown",
+        "run_count": 7,
+        "latest_runbook_id": "9e3044ec80575657",
+        "latest_state_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_state_9e3044ec80575657.json",
+        "latest_result_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_result_9e3044ec80575657.json"
+      },
+      {
+        "phase_id": "iteration2/tranche1-labeling",
+        "title": "Tranche 1 Labeling",
+        "goal": "Verify tranche 1 under rubric v2.4 after slice sign-off and regenerated assistive prelabels.",
+        "lifecycle_state": "planned",
+        "status": "unknown",
+        "run_count": 3,
+        "latest_runbook_id": "ed2674f06982d8b3",
+        "latest_state_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_state_ed2674f06982d8b3.json",
+        "latest_result_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_result_ed2674f06982d8b3.json"
+      },
+      {
+        "phase_id": "iteration2/sentence-pool-expansion-2024",
+        "title": "Sentence Pool Expansion 2024",
+        "goal": "Expand beyond tranche 1 into 4 resumable 125-firm batches, then combine them into a cumulative 500-firm, 1-2k clean AI sentence pool.",
+        "lifecycle_state": "planned",
+        "status": "unknown",
+        "run_count": 1,
+        "latest_runbook_id": "aba43632eb03847a",
+        "latest_state_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_state_aba43632eb03847a.json",
+        "latest_result_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_result_aba43632eb03847a.json"
+      },
+      {
+        "phase_id": "iteration2/tranche2-labeling",
+        "title": "Tranche 2 Labeling",
+        "goal": "Build, prelabel, and verify the first 160-row expanded tranche from the cumulative expanded sentence pool.",
+        "lifecycle_state": "planned",
+        "status": "unknown",
+        "run_count": 3,
+        "latest_runbook_id": "b9ff6738fad09751",
+        "latest_state_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_state_b9ff6738fad09751.json",
+        "latest_result_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_result_b9ff6738fad09751.json"
+      },
+      {
+        "phase_id": "iteration2/tranche3-labeling",
+        "title": "Tranche 3 Labeling",
+        "goal": "Build, prelabel, and verify the second 160-row expanded tranche from the cumulative expanded sentence pool.",
+        "lifecycle_state": "planned",
+        "status": "unknown",
+        "run_count": 4,
+        "latest_runbook_id": "96a7623956dd41fe",
+        "latest_state_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_state_96a7623956dd41fe.json",
+        "latest_result_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_result_96a7623956dd41fe.json"
+      },
+      {
+        "phase_id": "iteration2/merge-canonical-labels",
+        "title": "Merge Canonical Labels",
+        "goal": "Merge the three verified tranches into the canonical label master after proposal-faithful tranche 1 review.",
+        "lifecycle_state": "planned",
+        "status": "unstarted",
+        "run_count": 0,
+        "latest_runbook_id": "",
+        "latest_state_file": "",
+        "latest_result_file": ""
+      },
+      {
+        "phase_id": "iteration2/irr-and-adjudication",
+        "title": "IRR and Adjudication",
+        "goal": "Run proposal-style human-human IRR on a stratified 100+ firm subset, publish by-class diagnostics, and adjudicate disagreements.",
+        "lifecycle_state": "planned",
+        "status": "unknown",
+        "run_count": 5,
+        "latest_runbook_id": "238ebae834077a35",
+        "latest_state_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_state_238ebae834077a35.json",
+        "latest_result_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_result_238ebae834077a35.json"
+      },
+      {
+        "phase_id": "iteration2/irr-disagreement-diagnostic",
+        "title": "IRR Disagreement Diagnostic",
+        "goal": "Publish a secondary disagreement diagnostic package that explains where the failed canonical IRR is concentrated without rewriting the headline IRR result.",
+        "lifecycle_state": "planned",
+        "status": "unstarted",
+        "run_count": 0,
+        "latest_runbook_id": "",
+        "latest_state_file": "",
+        "latest_result_file": ""
+      },
+      {
+        "phase_id": "iteration2/provisional-rubric-freeze-and-split-registry",
+        "title": "Provisional Rubric Freeze and Split Registry",
+        "goal": "Freeze the rubric provisionally for scale-up, generate the split registry, and preserve zero held-out leakage before retraining.",
+        "lifecycle_state": "planned",
+        "status": "unstarted",
+        "run_count": 0,
+        "latest_runbook_id": "",
+        "latest_state_file": "",
+        "latest_result_file": ""
+      },
+      {
+        "phase_id": "iteration2/label-sufficiency-gate",
+        "title": "Label Sufficiency Gate",
+        "goal": "Publish and verify the modeling readiness report only after proposal-style IRR, split freeze, and provisional rubric freeze are complete.",
+        "lifecycle_state": "planned",
+        "status": "unstarted",
+        "run_count": 0,
+        "latest_runbook_id": "",
+        "latest_state_file": "",
+        "latest_result_file": ""
+      },
+      {
+        "phase_id": "iteration2/preliminary-results-authorization",
+        "title": "Preliminary Results Authorization",
+        "goal": "Publish a separate active-window readiness report that authorizes stakeholder-facing preliminary results without weakening the blocked publication-grade gate.",
+        "lifecycle_state": "planned",
+        "status": "unknown",
+        "run_count": 2,
+        "latest_runbook_id": "daa75e15d1657452",
+        "latest_state_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_state_daa75e15d1657452.json",
+        "latest_result_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/runs/execution_result_daa75e15d1657452.json"
+      },
+      {
+        "phase_id": "iteration2/review-and-replan",
+        "title": "Review and Replan",
+        "goal": "Synthesize iteration evidence, approve closeout, and prepare the next iteration handoff.",
+        "lifecycle_state": "planned",
+        "status": "unstarted",
+        "run_count": 0,
+        "latest_runbook_id": "",
+        "latest_state_file": "",
+        "latest_result_file": ""
+      }
+    ],
+    "completed": [],
+    "blocked": [],
+    "deferred": [],
+    "historical": []
+  },
+  "blocker_summary": {
+    "blocker_count": 1,
+    "by_type": {
+      "manual": 1
+    },
+    "repeated_signatures": [
+      {
+        "blocker_type": "manual",
+        "signature": "Required outputs missing for step-008",
+        "count": 1,
+        "blocker_ids": [
+          "3b6121efd7cc0b05-step-008-data"
+        ]
+      }
+    ]
+  },
+  "timing_summary": {
+    "total_automated_runtime_seconds": 34.2,
+    "total_validation_runtime_seconds": 32.948,
+    "slowest_phase": {
+      "phase_id": "iteration2/dataset-expansion-2024",
+      "seconds": 34.2
+    },
+    "slowest_command": {
+      "command": ".venv/bin/pytest -q",
+      "seconds": 21.818,
+      "phase_id": "iteration2/dataset-expansion-2024"
+    },
+    "rerun_count": 18
+  },
+  "manual_summary": {
+    "manual_task_count": 8,
+    "blocked_manual_count": 1,
+    "satisfied_manual_count": 0,
+    "tasks": [
+      {
+        "task_id": "iteration2.rubric.review_tranche1_error_patterns_v2_4",
+        "phase_id": "iteration2/rubric-realignment",
+        "status": "blocked_manual",
+        "outputs": [
+          "reports/labels/tranche1_rubric_calibration_v2_4.md"
+        ]
+      },
+      {
+        "task_id": "iteration2.rubric.publish_protocol_v2_4",
+        "phase_id": "iteration2/rubric-realignment",
+        "status": "waiting_on_deps",
+        "outputs": [
+          "docs/labeling_protocol.md"
+        ]
+      },
+      {
+        "task_id": "iteration2.labels.verify_tranche1_labels",
+        "phase_id": "iteration2/tranche1-labeling",
+        "status": "waiting_on_deps",
+        "outputs": [
+          "data/labels/v1/labeling_batch_v1_filled_v2_4.csv"
+        ]
+      },
+      {
+        "task_id": "iteration2.labels.verify_tranche2_labels",
+        "phase_id": "iteration2/tranche2-labeling",
+        "status": "waiting_on_deps",
+        "outputs": [
+          "data/labels/v1/labeling_batch_v2_filled.csv"
+        ]
+      },
+      {
+        "task_id": "iteration2.labels.verify_tranche3_labels",
+        "phase_id": "iteration2/tranche3-labeling",
+        "status": "waiting_on_deps",
+        "outputs": [
+          "data/labels/v1/labeling_batch_v3_filled.csv"
+        ]
+      },
+      {
+        "task_id": "iteration2.irr.collect_rater2_labels",
+        "phase_id": "iteration2/irr-and-adjudication",
+        "status": "waiting_on_deps",
+        "outputs": [
+          "data/labels/v1/irr_subset_rater2_completed.xlsx"
+        ]
+      },
+      {
+        "task_id": "iteration2.labels.publish_modeling_readiness_report",
+        "phase_id": "iteration2/label-sufficiency-gate",
+        "status": "waiting_on_deps",
+        "outputs": [
+          "reports/models/modeling_readiness_gate.json"
+        ]
+      },
+      {
+        "task_id": "iteration2.review.approve_closeout",
+        "phase_id": "iteration2/review-and-replan",
+        "status": "waiting_on_deps",
+        "outputs": [
+          "director/reviews/iteration_2_approval.json"
+        ]
+      }
+    ]
+  },
+  "quality_summary": {
+    "reports": {
+      "data/metadata/splits/split_registry_v1.json": {
+        "status": "frozen",
+        "summary": {
+          "rows_total": 551,
+          "rows_target_validation": 111,
+          "rows_by_split": {
+            "train": 440,
+            "validation": 111
+          },
+          "rows_by_split_and_label": {
+            "train": {
+              "Actionable": 86,
+              "Speculative": 79,
+              "Irrelevant": 275
+            },
+            "validation": {
+              "Actionable": 22,
+              "Speculative": 20,
+              "Irrelevant": 69
+            }
+          },
+          "unique_firms_by_split": {
+            "train": 229,
+            "validation": 59
+          },
+          "label_targets_validation": {
+            "Actionable": 22,
+            "Speculative": 20,
+            "Irrelevant": 69
+          },
+          "label_actuals_validation": {
+            "Actionable": 22,
+            "Speculative": 20,
+            "Irrelevant": 69
+          },
+          "label_deviation_validation": {
+            "Actionable": 0,
+            "Speculative": 0,
+            "Irrelevant": 0
+          },
+          "sentence_id_unique": true,
+          "source_cik_cross_split_count": 0,
+          "sentence_text_id_cross_split_count": 0,
+          "heldout_external": true,
+          "heldout_row_count": 214,
+          "heldout_overlap_count": 0,
+          "validation_groups_selected": 59,
+          "validation_row_count": 111,
+          "validation_row_bounds": {
+            "min": 101,
+            "max": 121
+          },
+          "max_class_deviation": 5,
+          "status": "frozen",
+          "assignment_method": "grouped_source_cik_stratified_80_20_v1",
+          "split_version": "v1",
+          "seed": 20260315
+        }
+      },
+      "director/reviews/iteration_2_kickoff.json": {
+        "status": "ready"
+      },
+      "director/reviews/iteration_2_review.json": {
+        "status": "draft"
+      },
+      "reports/labels/assistive_prelabel_tranche1_v2_4_clean_slice40_summary.json": {
+        "status": "passed"
+      },
+      "reports/labels/assistive_prelabel_tranche1_v2_4_summary.json": {
+        "status": "passed"
+      },
+      "reports/labels/assistive_prelabel_tranche2_summary.json": {
+        "status": "passed"
+      },
+      "reports/labels/assistive_prelabel_tranche3_summary.json": {
+        "status": "passed"
+      },
+      "reports/labels/irr_disagreement_diagnostic_v1.json": {
+        "summary": {
+          "headline_irr_status": "failed",
+          "headline_three_class_kappa": 0.6749999999999999,
+          "reviewed_items": 120,
+          "rows_disagreement": 26,
+          "unresolved_disagreements": 0,
+          "binary_relevance_kappa": 0.7586206896551724,
+          "binary_relevance_reviewed_items": 120,
+          "actionable_speculative_conditional_kappa": 0.6363636363636365,
+          "actionable_speculative_conditional_items": 66,
+          "rater1_vs_final_agreement": 0.9166666666666666,
+          "rater2_vs_final_agreement": 0.8666666666666667,
+          "transition_counts": {
+            "A->I": 7,
+            "A->S": 6,
+            "S->A": 6,
+            "S->I": 7
+          },
+          "disagreement_counts_by_rater1_class": {
+            "Actionable": 13,
+            "Speculative": 13
+          },
+          "disagreement_counts_by_ff12_code": {
+            "12": 25,
+            "3": 1
+          },
+          "disagreement_counts_by_year": {
+            "2024": 26
+          },
+          "adjudicator_based_metrics_are_not_irr": true
+        }
+      },
+      "reports/labels/irr_report.json": {
+        "summary": {
+          "status": "failed",
+          "reviewed_items": 120,
+          "kappa": 0.6749999999999999,
+          "human_human_only": true,
+          "stratified_100_firms_min": true,
+          "industry_year_balanced": true,
+          "by_class_kappa_reported": true,
+          "third_adjudicator_used": true,
+          "firms_reviewed": 120,
+          "rows_disagreement": 26,
+          "rows_master": 120,
+          "transition_counts": {
+            "A->S": 6,
+            "A->I": 7,
+            "S->A": 6,
+            "S->I": 7,
+            "I->A": 0,
+            "I->S": 0
+          },
+          "by_class_kappa": {
+            "Actionable": 0.627450980392157,
+            "Speculative": 0.627450980392157,
+            "Irrelevant": 0.7586206896551724
+          },
+          "pending_reason": "",
+          "resolved_disagreements": 26,
+          "unresolved_disagreements": 0
+        }
+      },
+      "reports/labels/label_expansion_summary.json": {
+        "quality": {
+          "heldout_overlap_count": 0,
+          "heldout_overlap_removed_count": 6,
+          "exact_duplicate_count": 0,
+          "invalid_label_count": 0,
+          "nonempty_label_count": 551
+        },
+        "summary": {
+          "total_input_rows": 560,
+          "total_canonical_labeled_rows": 551,
+          "blank_label_rows_excluded": 3,
+          "heldout_overlap_rows_removed": 6,
+          "min_class_count": 99
+        }
+      },
+      "reports/labels/labeling_batch_v2_summary.json": {
+        "selection": {
+          "batch_row_count": 160,
+          "target_size": 160,
+          "quota_satisfied": true,
+          "quarter_quotas_used": {
+            "1": 40,
+            "2": 40,
+            "3": 40,
+            "4": 40
+          },
+          "selected_quarter_counts": {
+            "1": 40,
+            "2": 40,
+            "3": 40,
+            "4": 40
+          },
+          "selected_file_count": 160,
+          "selected_ff12_counts": {
+            "11": 1,
+            "12": 159
+          },
+          "selected_known_ff12_count": 1,
+          "selected_unknown_ff12_count": 159,
+          "selected_length_counts": {
+            "long": 46,
+            "medium": 114
+          },
+          "selected_edge_case_count": 160
+        },
+        "quality": {
+          "heldout_overlap_count": 0,
+          "exact_duplicate_count": 0
+        }
+      },
+      "reports/labels/labeling_batch_v3_summary.json": {
+        "selection": {
+          "batch_row_count": 160,
+          "target_size": 160,
+          "quota_satisfied": true,
+          "quarter_quotas_used": {
+            "1": 40,
+            "2": 40,
+            "3": 40,
+            "4": 40
+          },
+          "selected_quarter_counts": {
+            "1": 40,
+            "2": 40,
+            "3": 40,
+            "4": 40
+          },
+          "selected_file_count": 160,
+          "selected_ff12_counts": {
+            "12": 160
+          },
+          "selected_known_ff12_count": 0,
+          "selected_unknown_ff12_count": 160,
+          "selected_length_counts": {
+            "long": 84,
+            "medium": 76
+          },
+          "selected_edge_case_count": 152
+        },
+        "quality": {
+          "heldout_overlap_count": 0,
+          "exact_duplicate_count": 0
+        }
+      },
+      "reports/labels/rubric_freeze_v2.json": {
+        "status": "provisional_frozen",
+        "summary": {
+          "status": "provisional_frozen",
+          "rubric_version": "v2.4",
+          "source_window_id": "active_2021_2024",
+          "preliminary_only": true,
+          "publication_grade_authorized": false,
+          "canonical_publication_gate_status": "blocked",
+          "labels_master_rows": 551,
+          "class_counts": {
+            "Actionable": 108,
+            "Irrelevant": 344,
+            "Speculative": 99
+          },
+          "split_registry_status": "frozen",
+          "split_rows_total": 551,
+          "split_rows_by_split": {
+            "train": 440,
+            "validation": 111
+          },
+          "split_label_actuals_validation": {
+            "Actionable": 22,
+            "Speculative": 20,
+            "Irrelevant": 69
+          },
+          "irr_status": "failed",
+          "irr_kappa": 0.6749999999999999,
+          "irr_reviewed_items": 120,
+          "rows_disagreement": 26,
+          "binary_relevance_kappa": 0.7586206896551724,
+          "actionable_speculative_conditional_kappa": 0.6363636363636365
+        }
+      },
+      "reports/labels/sentence_pool_expansion_2024_summary.json": {
+        "quality": {
+          "duplicate_firm_count": 0,
+          "duplicate_sentence_text_count_removed": 354,
+          "post_combine_duplicate_sentence_text_count": 0
+        }
+      },
+      "reports/models/preliminary_results_readiness_v1.json": {
+        "summary": {
+          "preliminary_only": true,
+          "source_window_id": "active_2021_2024",
+          "publication_grade_authorized": false,
+          "preliminary_results_authorized": true,
+          "total_adjudicated_labels": 551,
+          "min_class_count": 99,
+          "class_counts": {
+            "Actionable": 108,
+            "Irrelevant": 344,
+            "Speculative": 99
+          },
+          "irr_kappa": 0.6749999999999999,
+          "irr_reviewed_items": 120,
+          "irr_report_status": "failed",
+          "heldout_overlap_count": 0,
+          "split_registry_frozen": true,
+          "split_registry_status": "frozen",
+          "split_registry_rows_total": 551,
+          "rubric_freeze_status": "provisional_frozen",
+          "diagnostic_rows_disagreement": 26,
+          "headline_three_class_kappa": 0.6749999999999999,
+          "binary_relevance_kappa": 0.7586206896551724,
+          "actionable_speculative_conditional_kappa": 0.6363636363636365
+        }
+      }
+    }
+  },
+  "stakeholder_alignment_summary": {
+    "source_artifact": "docs/director/stakeholder_expectations.md",
+    "active_development_scope": "2021-2024 public-filing development window",
+    "publication_target_scope": "all publicly traded firms",
+    "desired_horizon": "20-year horizon when source availability permits",
+    "counts_by_priority": {
+      "non-negotiable": 4,
+      "publication-critical": 7,
+      "preferred": 1,
+      "operational": 1
+    },
+    "counts_by_status": {
+      "open": 13
+    },
+    "due_unsatisfied_count": 5,
+    "requirement_statuses": [
+      {
+        "requirement_id": "validate_methodology_before_scale",
+        "priority": "non-negotiable",
+        "target_iteration": "2",
+        "status": "open",
+        "mapped_phases": [
+          "iteration2/rubric-realignment",
+          "iteration2/irr-and-adjudication",
+          "iteration2/label-sufficiency-gate"
+        ],
+        "mapped_statuses": [
+          "blocked_manual",
+          "waiting_on_deps",
+          "waiting_on_deps"
+        ]
+      },
+      {
+        "requirement_id": "true_human_irr_multi_rater",
+        "priority": "non-negotiable",
+        "target_iteration": "2",
+        "status": "open",
+        "mapped_phases": [
+          "iteration2/irr-and-adjudication",
+          "iteration2/label-sufficiency-gate"
+        ],
+        "mapped_statuses": [
+          "waiting_on_deps",
+          "waiting_on_deps"
+        ]
+      },
+      {
+        "requirement_id": "scale_candidate_pool_to_500_firms",
+        "priority": "publication-critical",
+        "target_iteration": "2",
+        "status": "open",
+        "mapped_phases": [
+          "iteration2/sentence-pool-expansion-2024",
+          "iteration2/tranche2-labeling",
+          "iteration2/tranche3-labeling"
+        ],
+        "mapped_statuses": [
+          "waiting_on_deps",
+          "waiting_on_deps",
+          "waiting_on_deps"
+        ]
+      },
+      {
+        "requirement_id": "label_set_sufficiency_before_retraining",
+        "priority": "publication-critical",
+        "target_iteration": "2",
+        "status": "open",
+        "mapped_phases": [
+          "iteration2/tranche1-labeling",
+          "iteration2/tranche2-labeling",
+          "iteration2/tranche3-labeling",
+          "iteration2/merge-canonical-labels",
+          "iteration2/irr-and-adjudication",
+          "iteration2/provisional-rubric-freeze-and-split-registry",
+          "iteration2/label-sufficiency-gate"
+        ],
+        "mapped_statuses": [
+          "waiting_on_deps",
+          "waiting_on_deps",
+          "waiting_on_deps",
+          "waiting_on_deps",
+          "waiting_on_deps",
+          "waiting_on_deps",
+          "waiting_on_deps"
+        ]
+      },
+      {
+        "requirement_id": "ai_total_merge_integrity",
+        "priority": "non-negotiable",
+        "target_iteration": "3",
+        "status": "open",
+        "mapped_phases": [
+          "iteration3/classification-merge-integrity",
+          "iteration4/panel-assembly-2021-2024"
+        ],
+        "mapped_statuses": [
+          "waiting_on_deps",
+          "waiting_on_deps"
+        ]
+      },
+      {
+        "requirement_id": "job_postings_robustness",
+        "priority": "publication-critical",
+        "target_iteration": "4",
+        "status": "open",
+        "mapped_phases": [
+          "iteration4/job-postings-robustness-integration",
+          "iteration5/robustness-and-sensitivity"
+        ],
+        "mapped_statuses": [
+          "waiting_on_deps",
+          "waiting_on_deps"
+        ]
+      },
+      {
+        "requirement_id": "lagged_and_industry_robustness",
+        "priority": "publication-critical",
+        "target_iteration": "5",
+        "status": "open",
+        "mapped_phases": [
+          "iteration5/regression-specification",
+          "iteration5/robustness-and-sensitivity"
+        ],
+        "mapped_statuses": [
+          "waiting_on_deps",
+          "waiting_on_deps"
+        ]
+      },
+      {
+        "requirement_id": "patent_mismatch_washing_proxy",
+        "priority": "publication-critical",
+        "target_iteration": "5",
+        "status": "open",
+        "mapped_phases": [
+          "iteration5/robustness-and-sensitivity"
+        ],
+        "mapped_statuses": [
+          "waiting_on_deps"
+        ]
+      },
+      {
+        "requirement_id": "literature_differentiation",
+        "priority": "publication-critical",
+        "target_iteration": "5",
+        "status": "open",
+        "mapped_phases": [
+          "iteration5/literature-differentiation-and-examples",
+          "iteration5/release-packaging"
+        ],
+        "mapped_statuses": [
+          "waiting_on_deps",
+          "waiting_on_deps"
+        ]
+      },
+      {
+        "requirement_id": "before_after_examples",
+        "priority": "publication-critical",
+        "target_iteration": "5",
+        "status": "open",
+        "mapped_phases": [
+          "iteration5/literature-differentiation-and-examples",
+          "iteration5/release-packaging"
+        ],
+        "mapped_statuses": [
+          "waiting_on_deps",
+          "waiting_on_deps"
+        ]
+      },
+      {
+        "requirement_id": "publication_scope_all_public_firms",
+        "priority": "preferred",
+        "target_iteration": "4",
+        "status": "open",
+        "mapped_phases": [
+          "iteration4/historical-window-expansion-readiness",
+          "iteration5/results-generation"
+        ],
+        "mapped_statuses": [
+          "waiting_on_deps",
+          "waiting_on_deps"
+        ]
+      },
+      {
+        "requirement_id": "results_and_paper_package",
+        "priority": "non-negotiable",
+        "target_iteration": "5",
+        "status": "open",
+        "mapped_phases": [
+          "iteration5/release-packaging"
+        ],
+        "mapped_statuses": [
+          "waiting_on_deps"
+        ]
+      },
+      {
+        "requirement_id": "preliminary_results_internal_fast_track",
+        "priority": "operational",
+        "target_iteration": "2",
+        "status": "open",
+        "mapped_phases": [
+          "iteration2/irr-disagreement-diagnostic",
+          "iteration2/preliminary-results-authorization",
+          "iteration3/preliminary-kickoff-and-preflight",
+          "iteration4/preliminary-panel-assembly-2021-2024",
+          "iteration5/preliminary-results-package",
+          "iteration5/preliminary-results-table-planning"
+        ],
+        "mapped_statuses": [
+          "waiting_on_deps",
+          "waiting_on_deps",
+          "waiting_on_deps",
+          "waiting_on_deps",
+          "waiting_on_deps",
+          "waiting_on_deps"
+        ]
+      }
+    ]
+  },
+  "methodology_alignment_summary": {
+    "source_artifact": "docs/director/proposal_methodology.md",
+    "core_construct": "AI-washing is speculative firm AI narrative without later observable AI capability.",
+    "active_development_scope": "2021-2024 public-filing development window",
+    "publication_target_scope": "all publicly traded firms",
+    "desired_horizon": "2000-2024 when source availability permits",
+    "counts_by_priority": {
+      "non-negotiable": 3,
+      "publication-critical": 2
+    },
+    "counts_by_status": {
+      "open": 5
+    },
+    "hard_gates": [
+      "human_human_irr_only",
+      "irr_stratified_100_firms_min",
+      "by_class_kappa_report_required",
+      "rubric_freeze_before_final_scale",
+      "directional_predictive_validity_before_publication_scale"
+    ],
+    "named_measures": [
+      {
+        "measure_id": "AI_Focus",
+        "formula": "log(1 + AI sentences)"
+      },
+      {
+        "measure_id": "log_1_plus_A",
+        "formula": "log(1 + A)"
+      },
+      {
+        "measure_id": "log_1_plus_S",
+        "formula": "log(1 + S)"
+      },
+      {
+        "measure_id": "SpecShare",
+        "formula": "S / (A + S)"
+      },
+      {
+        "measure_id": "CredAI",
+        "formula": "z(A) - z(S)"
+      },
+      {
+        "measure_id": "A_S",
+        "formula": "log(1 + A / (1 + S))"
+      }
+    ],
+    "requirement_statuses": [
+      {
+        "requirement_id": "proposal_rubric_realignment_before_scale",
+        "priority": "non-negotiable",
+        "target_iteration": "2",
+        "status": "open",
+        "mapped_phases": [
+          "iteration2/rubric-realignment",
+          "iteration2/tranche1-labeling"
+        ],
+        "mapped_statuses": [
+          "blocked_manual",
+          "waiting_on_deps"
+        ]
+      },
+      {
+        "requirement_id": "proposal_style_irr_design",
+        "priority": "non-negotiable",
+        "target_iteration": "2",
+        "status": "open",
+        "mapped_phases": [
+          "iteration2/irr-and-adjudication"
+        ],
+        "mapped_statuses": [
+          "waiting_on_deps"
+        ]
+      },
+      {
+        "requirement_id": "proposal_named_measure_construction",
+        "priority": "publication-critical",
+        "target_iteration": "3",
+        "status": "open",
+        "mapped_phases": [
+          "iteration3/firm-year-measure-construction"
+        ],
+        "mapped_statuses": [
+          "waiting_on_deps"
+        ]
+      },
+      {
+        "requirement_id": "proposal_directional_predictive_validity",
+        "priority": "publication-critical",
+        "target_iteration": "3",
+        "status": "open",
+        "mapped_phases": [
+          "iteration3/development-predictive-validity-gate"
+        ],
+        "mapped_statuses": [
+          "waiting_on_deps"
+        ]
+      },
+      {
+        "requirement_id": "proposal_rubric_freeze",
+        "priority": "non-negotiable",
+        "target_iteration": "2",
+        "status": "open",
+        "mapped_phases": [
+          "iteration2/provisional-rubric-freeze-and-split-registry"
+        ],
+        "mapped_statuses": [
+          "waiting_on_deps"
+        ]
+      }
+    ]
+  },
+  "unmet_stakeholder_requirements": [
+    "validate_methodology_before_scale",
+    "true_human_irr_multi_rater",
+    "scale_candidate_pool_to_500_firms",
+    "label_set_sufficiency_before_retraining"
+  ],
+  "deferred_stakeholder_requirements": [],
+  "unmet_methodology_requirements": [
+    "proposal_rubric_realignment_before_scale",
+    "proposal_style_irr_design",
+    "proposal_rubric_freeze"
+  ],
+  "rubric_calibration_status": "blocked_manual",
+  "rubric_freeze_status": "waiting_on_deps",
+  "predictive_validity_gate_status": "future",
+  "canonical_track_status": "blocked",
+  "preliminary_track_status": "authorized",
+  "blocking_canonical_gate": "human_human_irr_gt_0_7",
+  "publication_readiness_blockers": [
+    "validate_methodology_before_scale: Validate the new A/S/I classification approach before deeper investment in scaled execution.",
+    "true_human_irr_multi_rater: Use multiple human raters and true IRR rather than model-vs-label agreement.",
+    "scale_candidate_pool_to_500_firms: Expand beyond the bootstrap pilot to a 500-firm candidate pool with roughly 1-2k clean AI sentences.",
+    "label_set_sufficiency_before_retraining: Reach a publication-grade adjudicated label set before retraining, not just a small pilot."
+  ],
+  "findings": [],
+  "recommended_playbooks": [],
+  "playbooks_used": [],
+  "playbook_outcomes": [],
+  "promotion_candidates": [],
+  "roadmap_changes": [
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_8732eb4e-3a3a3230-1",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.remediate_fragmented_sentences",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "target": "iteration1/label-ops-bootstrap",
+      "rationale": "Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration1/label-ops-bootstrap`.",
+      "status": "proposed"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_8732eb4e-3a3a3230-2",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.resample_from_clean_sentence_pool",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "target": "iteration1/label-ops-bootstrap",
+      "rationale": "Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration1/label-ops-bootstrap`.",
+      "status": "proposed"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_9d516339-3a3a3230-1",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.remediate_fragmented_sentences",
+        "before_phase": "iteration2/irr-and-adjudication",
+        "blocked_task_id": "iteration2.shared.audit_sentence_integrity"
+      },
+      "target": "iteration2/irr-and-adjudication",
+      "rationale": "Task `iteration2.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration2/irr-and-adjudication`.",
+      "status": "proposed"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_9d516339-3a3a3230-2",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.resample_from_clean_sentence_pool",
+        "before_phase": "iteration2/irr-and-adjudication",
+        "blocked_task_id": "iteration2.shared.audit_sentence_integrity"
+      },
+      "target": "iteration2/irr-and-adjudication",
+      "rationale": "Task `iteration2.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration2/irr-and-adjudication`.",
+      "status": "proposed"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_b2f116c5-3a3a3230-1",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.remediate_fragmented_sentences",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "target": "iteration1/label-ops-bootstrap",
+      "rationale": "Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration1/label-ops-bootstrap`.",
+      "status": "proposed"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_b2f116c5-3a3a3230-2",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.resample_from_clean_sentence_pool",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "target": "iteration1/label-ops-bootstrap",
+      "rationale": "Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration1/label-ops-bootstrap`.",
+      "status": "proposed"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_e08e31e6-3a3a3230-1",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.remediate_fragmented_sentences",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "target": "iteration1/label-ops-bootstrap",
+      "rationale": "Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration1/label-ops-bootstrap`.",
+      "status": "proposed"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_e08e31e6-3a3a3230-2",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.resample_from_clean_sentence_pool",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "target": "iteration1/label-ops-bootstrap",
+      "rationale": "Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration1/label-ops-bootstrap`.",
+      "status": "proposed"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_fb55837d-3a3a3230-1",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.remediate_fragmented_sentences",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "target": "iteration1/label-ops-bootstrap",
+      "rationale": "Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration1/label-ops-bootstrap`.",
+      "status": "proposed"
+    },
+    {
+      "schema_version": "1.0.0",
+      "change_id": "optimizer-proposed_roadmap_patch_fb55837d-3a3a3230-2",
+      "source": "optimizer_patch",
+      "operation": {
+        "op": "insert_before_phase",
+        "task_id": "common.resample_from_clean_sentence_pool",
+        "before_phase": "iteration1/label-ops-bootstrap",
+        "blocked_task_id": "iteration1.shared.audit_sentence_integrity"
+      },
+      "target": "iteration1/label-ops-bootstrap",
+      "rationale": "Task `iteration1.shared.audit_sentence_integrity` is blocked; recommend `common.remediate_fragmented_sentences` before `iteration1/label-ops-bootstrap`.",
+      "status": "proposed"
+    }
+  ],
+  "carryover_blockers": [
+    {
+      "schema_version": "1.0.0",
+      "deferred_id": "51a4c7ed8c613dc7",
+      "decision_id": "cde09cd3d28fb567",
+      "blocker_id": "115d7b0ec26e20bc-step-009-runtime",
+      "until_iteration": "2",
+      "until_phase": "full-classification",
+      "criteria": "Increase sampled supply and align recovery target-size policy before retry",
+      "created_at": "2026-03-03T17:37:01.161934+00:00",
+      "status": "active",
+      "context": {
+        "decision_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/decisions/decision_cde09cd3d28fb567.json"
+      },
+      "path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/decisions/deferred_51a4c7ed8c613dc7.json"
+    },
+    {
+      "schema_version": "1.0.0",
+      "deferred_id": "6fa72b112467c617",
+      "decision_id": "c5828a0ba91f06fb",
+      "blocker_id": "31bb0b5874d88bca-step-004-runtime",
+      "until_iteration": "2",
+      "until_phase": "full-classification",
+      "criteria": "Resume after data architecture stabilization and Phase 1 science recovery",
+      "created_at": "2026-03-03T02:52:37.710187+00:00",
+      "status": "active",
+      "context": {
+        "decision_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/decisions/decision_c5828a0ba91f06fb.json"
+      },
+      "path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/decisions/deferred_6fa72b112467c617.json"
+    },
+    {
+      "schema_version": "1.0.0",
+      "deferred_id": "eedb6fbadba43363",
+      "decision_id": "8bbeeba8186ff739",
+      "blocker_id": "31bb0b5874d88bca-step-004-runtime",
+      "until_iteration": "2",
+      "until_phase": "full-classification",
+      "criteria": "Resume after Phase 1 label expansion blockers are addressed",
+      "created_at": "2026-03-03T02:53:23.844095+00:00",
+      "status": "active",
+      "context": {
+        "decision_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/decisions/decision_8bbeeba8186ff739.json"
+      },
+      "path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/decisions/deferred_eedb6fbadba43363.json"
+    }
+  ],
+  "branch_closeout": {
+    "current_branch": "iteration2/integration",
+    "integration_branch": "iteration2/integration",
+    "merge_target": "main",
+    "tag": "iteration2-closeout",
+    "closeout_validation_commands": [
+      "make bootstrap",
+      "make doctor",
+      "make format",
+      "make lint",
+      ".venv/bin/pytest -q"
+    ],
+    "steps": [
+      "git push origin iteration2/integration",
+      "git switch iteration2/integration",
+      "git merge --ff-only iteration2/integration",
+      "git switch main",
+      "git pull --ff-only",
+      "git switch iteration2/integration",
+      "git merge --ff-only main"
+    ],
+    "merge_strategy_note": "Prefer ff-only. If ff-only is not possible, use a non-interactive PR/merge-commit workflow after rerunning closeout validation.",
+    "next_iteration_steps": [
+      "git switch main",
+      "git pull --ff-only",
+      "git switch -c iteration3/integration"
+    ]
+  },
+  "next_iteration": {
+    "iteration_id": "3",
+    "recommended_phase": "iteration3/kickoff-and-preflight",
+    "entry_criteria": [
+      "Iteration 2 review approved.",
+      "Iteration 3 kickoff completed on iteration3/integration.",
+      "Label sufficiency gate passed with at least 500 adjudicated labels, at least 80 labels per class, human-human IRR > 0.7, and provisional rubric freeze recorded."
+    ],
+    "authorized": false
+  },
+  "artifacts": {
+    "review_json": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/reviews/iteration_2_review.json",
+    "review_md": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/reviews/iteration_2_review.md",
+    "patch_yaml": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/reviews/iteration_2_patch_proposal.yaml",
+    "branch_plan": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/reviews/iteration_2_branch_plan.md",
+    "starter_prompt": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/reviews/iteration_2_starter_prompt.md",
+    "approval_json": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/reviews/iteration_2_approval.json",
+    "kickoff_json": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/reviews/iteration_2_kickoff.json",
+    "patch_apply_json": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/reviews/iteration_2_patch_apply.json"
+  },
+  "status": "draft"
+}
