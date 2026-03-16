@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.4.0",
+  "kickoff_id": "f88c8506-333a6b69",
+  "iteration_id": "3",
+  "generated_at": "2026-03-16T20:35:45.301258+00:00",
+  "track": "preliminary",
+  "git": {
+    "branch": "codex/iteration3/integration",
+    "commit": "37dbb918a3c11b6409f8241a776776d36656c668",
+    "dirty": true
+  },
+  "expected_branch": "codex/iteration3/integration",
+  "base_branch": "main",
+  "review_approval_file": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/reviews/iteration_2_approval.json",
+  "authorized_track": "preliminary_only",
+  "checks": [
+    {
+      "name": "branch_name",
+      "ok": true,
+      "detail": "expected=codex/iteration3/integration current=codex/iteration3/integration"
+    },
+    {
+      "name": "merge_base",
+      "ok": true,
+      "detail": "HEAD contains main"
+    },
+    {
+      "name": "worktree_clean",
+      "ok": true,
+      "detail": "clean"
+    },
+    {
+      "name": "prior_review_approval",
+      "ok": true,
+      "detail": "approval=True authorized_track=preliminary_only required=preliminary_only|canonical"
+    },
+    {
+      "name": "preliminary_readiness",
+      "ok": true,
+      "detail": "authorized=True publication_grade_authorized=False"
+    }
+  ],
+  "status": "ready",
+  "starter_prompt_path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/reviews/iteration_2_starter_prompt.md",
+  "branch_plan_path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/reviews/iteration_2_branch_plan.md",
+  "rationale": [
+    "Kickoff checks passed for the preliminary track on the iteration integration branch."
+  ]
+}

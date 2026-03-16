@@ -2528,3 +2528,35 @@ Rules:
   - the repo is now standardized on native arm64 Python `3.11` in `.venv`
   - WRDS connectivity is confirmed live from the rebuilt env
   - environment drift is substantially reduced, but the user shell still points at conda base unless `.venv` is activated explicitly
+
+## 2026-03-16 - Iteration 3 Preliminary Kickoff and Preflight
+
+- Created the Iteration 3 integration branch using the codex-prefixed branch policy:
+  - `codex/iteration3/integration`
+- Aligned Director branching policy to codex-prefixed iteration branches in the roadmap/config/test fixtures.
+- Revalidated the branch-policy change with repo preflight checks:
+  - `make bootstrap`
+  - `make doctor`
+  - `make format`
+  - `make lint`
+  - `.venv/bin/pytest -q`
+- Ran preliminary kickoff:
+  - `.venv/bin/python -m semantic_ai_washing.director.cli kickoff --iteration 3 --track preliminary`
+- Kickoff artifact written:
+  - `director/reviews/iteration_3_preliminary_kickoff.json`
+- Kickoff result:
+  - `status = ready`
+  - `track = preliminary`
+  - `expected_branch = codex/iteration3/integration`
+  - `authorized_track = preliminary_only`
+  - preliminary readiness check passed and publication-grade authorization remained false
+- Started active-window sentence materialization for `2021-2024`:
+  - `.venv/bin/python -m semantic_ai_washing.data.materialize_active_window_sentences --index-csv data/metadata/available_filings_index.csv --source-root-hint data/metadata/sec_source_dir.txt --source-windows-json data/metadata/source_windows.json --index-summary-json reports/data/source_index_summary.json --source-window-id active_2021_2024 --years 2021 2022 2023 2024 --output-root data/processed/sentences --output-report reports/data/active_window_sentence_inventory_v1.json --keywords-path data/metadata/ai_keywords.txt --min-tokens 6`
+- Active-window source index coverage at materialization start:
+  - `2021 = 29,293`
+  - `2022 = 30,114`
+  - `2023 = 27,834`
+  - `2024 = 25,993`
+  - `total = 113,234`
+- Known runtime note at start:
+  - no prior `reports/data/active_window_sentence_inventory_v1.json` existed, so the first clean run rematerializes `2024` as well as creating `2021-2023`
