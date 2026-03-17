@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from pathlib import Path
 
 import pandas as pd
@@ -18,6 +19,7 @@ DEFAULT_YEARS = (2021, 2022, 2023, 2024)
 TARGET_PER_LABEL = 60
 TARGET_TOTAL = 180
 LABELS = ("Actionable", "Speculative", "Irrelevant")
+PRELABELERS = ("legacy_two_stage", "heuristic")
 REVIEW_COLUMNS = [
     "sentence_id",
     "sentence",
@@ -31,6 +33,24 @@ REVIEW_COLUMNS = [
     "review_note",
     "benchmark_asset_role",
 ]
+
+ANY_AI = re.compile(r"\b(ai|artificial intelligence|machine learning|ml)\b", re.I)
+ACTIONABLE_VERBS = re.compile(
+    r"\b(deploy(?:ed|ing)?|implement(?:ed|ing)?|use(?:d|s|ing)?|build(?:s|ing|t)?|"
+    r"develop(?:s|ed|ing)?|offer(?:s|ed|ing)?|provide(?:s|d|ing)?|operate(?:s|d|ing)?|"
+    r"run(?:s|ning)?|launch(?:ed|es|ing)?|integrat(?:e|ed|es|ing)|automate(?:d|s|ing)?)\b",
+    re.I,
+)
+SPECULATIVE_CUES = re.compile(
+    r"\b(may|might|could|plan(?:s|ned)? to|planning to|intend(?:s|ed)? to|aim(?:s|ed)? to|"
+    r"expect(?:s|ed)? to|will|future|focus(?:ed|es|ing)? on)\b",
+    re.I,
+)
+IRRELEVANT_CUES = re.compile(
+    r"\b(laws? and regulations|subject to multiple lawsuits|ai infrastructure|"
+    r"graphics processing units|data leakage|unauthorized exposure|reevaluated our data center)\b",
+    re.I,
+)
 
 
 def load_sentence_pool(root: str | Path, years: list[int]) -> pd.DataFrame:
@@ -87,6 +107,8 @@ def select_candidate_review_rows(eligible: pd.DataFrame) -> pd.DataFrame:
             (eligible["candidate_label"] == label)
             & (~eligible["source_cik_norm"].isin(used_ciks))
         ].copy()
+        bucket = bucket.sort_values(["source_year", "source_cik_norm", "sentence_id"])
+        bucket = bucket.drop_duplicates(subset=["source_cik_norm"], keep="first")
         bucket = bucket.groupby("source_year", group_keys=False).head(15)
         if len(bucket) < TARGET_PER_LABEL:
             remainder = eligible[
@@ -94,9 +116,21 @@ def select_candidate_review_rows(eligible: pd.DataFrame) -> pd.DataFrame:
                 & (~eligible["sentence_id"].isin(bucket["sentence_id"]))
                 & (~eligible["source_cik_norm"].isin(used_ciks))
             ].copy()
+            remainder = remainder.sort_values(["source_year", "source_cik_norm", "sentence_id"])
+            remainder = remainder.drop_duplicates(subset=["source_cik_norm"], keep="first")
             if not remainder.empty:
                 bucket = pd.concat(
                     [bucket, remainder.head(TARGET_PER_LABEL - len(bucket))], ignore_index=True
+                )
+        if len(bucket) < TARGET_PER_LABEL:
+            relaxed = eligible[
+                (eligible["candidate_label"] == label)
+                & (~eligible["sentence_id"].isin(bucket["sentence_id"]))
+            ].copy()
+            relaxed = relaxed.sort_values(["source_year", "source_cik_norm", "sentence_id"])
+            if not relaxed.empty:
+                bucket = pd.concat(
+                    [bucket, relaxed.head(TARGET_PER_LABEL - len(bucket))], ignore_index=True
                 )
         bucket = bucket.head(TARGET_PER_LABEL).copy()
         shortfall[label] = TARGET_PER_LABEL - int(len(bucket))
@@ -169,14 +203,49 @@ def write_review_package(
     return report
 
 
+def heuristic_candidate_label(text: str) -> str:
+    sentence = str(text)
+    has_ai = bool(ANY_AI.search(sentence))
+    actionable = bool(ACTIONABLE_VERBS.search(sentence))
+    speculative = bool(SPECULATIVE_CUES.search(sentence))
+    irrelevant = bool(IRRELEVANT_CUES.search(sentence))
+
+    if speculative and not actionable:
+        return "Speculative"
+    if irrelevant and not speculative:
+        return "Irrelevant"
+    if has_ai and actionable:
+        return "Actionable"
+    if speculative:
+        return "Speculative"
+    if irrelevant:
+        return "Irrelevant"
+    return "Irrelevant"
+
+
+def predict_candidate_labels(
+    sentences: list[str], *, prelabeler: str = "legacy_two_stage"
+) -> list[str]:
+    mode = str(prelabeler).strip().lower()
+    if mode == "heuristic":
+        return [heuristic_candidate_label(sentence) for sentence in sentences]
+    if mode != "legacy_two_stage":
+        raise ValueError(f"Unsupported prelabeler: {prelabeler}")
+
+    legacy = build_legacy_two_stage_runtime()
+    predicted, _scores = predict_sentences(sentences, legacy)
+    return predicted
+
+
 def run_sampling(args: argparse.Namespace) -> dict:
     years = [int(value) for value in args.years]
     pool = load_sentence_pool(args.input_root, years)
     exclusions = load_exclusions(args.labels_master, args.historical_held_out)
     eligible = pool[~pool["sentence_norm"].isin(exclusions)].copy()
-    legacy = build_legacy_two_stage_runtime()
-    predicted, _scores = predict_sentences(eligible["sentence"].astype(str).tolist(), legacy)
-    eligible["candidate_label"] = predicted
+    eligible["candidate_label"] = predict_candidate_labels(
+        eligible["sentence"].astype(str).tolist(),
+        prelabeler=getattr(args, "prelabeler", "legacy_two_stage"),
+    )
     eligible = eligible.sort_values(["source_year", "source_cik", "sentence_id"]).reset_index(
         drop=True
     )
@@ -205,6 +274,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output-report", default="reports/validation/held_out_v2_sampling_report.json"
     )
+    parser.add_argument("--prelabeler", choices=list(PRELABELERS), default="legacy_two_stage")
     return parser.parse_args()
 
 

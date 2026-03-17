@@ -10,15 +10,12 @@ from typing import Any
 
 import pandas as pd
 
-from semantic_ai_washing.classification.model_runtime import (
-    build_legacy_two_stage_runtime,
-    predict_sentences,
-)
 from semantic_ai_washing.labeling.sample_heldout_v2_candidates import (
     DEFAULT_YEARS,
     LABELS,
     load_exclusions,
     load_sentence_pool,
+    predict_candidate_labels,
     select_candidate_review_rows,
     write_review_package,
 )
@@ -59,10 +56,12 @@ def _cache_metadata(
     input_root: str | Path,
     labels_master: str | Path,
     historical_held_out: str | Path,
+    prelabeler: str,
 ) -> dict[str, Any]:
     sentence_table = Path(input_root) / f"year={year}" / "ai_sentences.parquet"
     return {
         "year": int(year),
+        "prelabeler": str(prelabeler),
         "sentence_table": _file_fingerprint(sentence_table),
         "labels_master_sha256": _sha256_file(labels_master),
         "historical_held_out_sha256": _sha256_file(historical_held_out),
@@ -137,7 +136,6 @@ def _predict_year(
     input_root: str | Path,
     year: int,
     exclusions: set[str],
-    legacy_runtime: dict[str, Any],
     batch_size: int,
     progress_path: Path,
     years_requested: list[int],
@@ -147,6 +145,7 @@ def _predict_year(
     output_csv: str,
     output_xlsx: str,
     output_report: str,
+    prelabeler: str,
 ) -> pd.DataFrame:
     frame = load_sentence_pool(input_root, [year])
     eligible = frame[~frame["sentence_norm"].isin(exclusions)].copy()
@@ -186,9 +185,9 @@ def _predict_year(
     predicted: list[str] = []
     for start in range(0, total_rows, batch_size):
         stop = min(start + batch_size, total_rows)
-        labels, _scores = predict_sentences(
+        labels = predict_candidate_labels(
             eligible.iloc[start:stop]["sentence"].astype(str).tolist(),
-            legacy_runtime,
+            prelabeler=prelabeler,
         )
         predicted.extend(labels)
         partial = pd.Series(predicted).value_counts().to_dict()
@@ -230,7 +229,6 @@ def run_sampling_restartable(args: argparse.Namespace) -> dict[str, Any]:
     progress_path = Path(args.progress_report)
     years_completed: list[int] = []
     year_state: dict[str, Any] = {}
-    legacy_runtime = build_legacy_two_stage_runtime()
 
     cached_frames: list[pd.DataFrame] = []
     _write_progress(
@@ -255,6 +253,7 @@ def run_sampling_restartable(args: argparse.Namespace) -> dict[str, Any]:
                 input_root=args.input_root,
                 labels_master=args.labels_master,
                 historical_held_out=args.historical_held_out,
+                prelabeler=args.prelabeler,
             )
             if (
                 cache_path.exists()
@@ -297,7 +296,6 @@ def run_sampling_restartable(args: argparse.Namespace) -> dict[str, Any]:
                 input_root=args.input_root,
                 year=year,
                 exclusions=exclusions,
-                legacy_runtime=legacy_runtime,
                 batch_size=int(args.batch_size),
                 progress_path=progress_path,
                 years_requested=years,
@@ -307,6 +305,7 @@ def run_sampling_restartable(args: argparse.Namespace) -> dict[str, Any]:
                 output_csv=args.output_csv,
                 output_xlsx=args.output_xlsx,
                 output_report=args.output_report,
+                prelabeler=args.prelabeler,
             )
             year_candidates.to_parquet(cache_path, index=False)
             _dump_json(meta_path, cache_meta)
@@ -391,6 +390,11 @@ def parse_args() -> argparse.Namespace:
         default="reports/validation/held_out_v2_cache",
     )
     parser.add_argument("--batch-size", type=int, default=500)
+    parser.add_argument(
+        "--prelabeler",
+        choices=["legacy_two_stage", "heuristic"],
+        default="legacy_two_stage",
+    )
     parser.add_argument(
         "--force-recompute",
         action="store_true",

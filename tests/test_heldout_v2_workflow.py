@@ -79,6 +79,7 @@ def test_sample_heldout_v2_candidates_builds_review_pack(tmp_path: Path, monkeyp
         output_csv=str(tmp_path / "heldout_v2_review.csv"),
         output_xlsx=str(tmp_path / "heldout_v2_review.xlsx"),
         output_report=str(tmp_path / "heldout_v2_report.json"),
+        prelabeler="legacy_two_stage",
     )
 
     report = sample_heldout_v2_candidates.run_sampling(args)
@@ -94,6 +95,86 @@ def test_sample_heldout_v2_candidates_builds_review_pack(tmp_path: Path, monkeyp
     assert report["status"] == "pending_review"
     saved_report = json.loads(Path(args.output_report).read_text())
     assert saved_report["summary"]["rows_selected"] == 180
+
+
+def test_sample_heldout_v2_candidates_supports_heuristic_prelabeler(tmp_path: Path) -> None:
+    input_root = tmp_path / "sentences"
+
+    def write_heuristic_year(path: Path, year: int) -> None:
+        records = []
+        for idx in range(80):
+            records.append(
+                {
+                    "sentence_id": f"{year}-A-{idx}",
+                    "sentence": (
+                        "We deployed AI systems into production workflows "
+                        f"in {year} case {idx}."
+                    ),
+                    "source_cik": f"{year}A{idx:04d}",
+                    "source_year": year,
+                    "source_form": "10-K",
+                    "source_file": f"{year}_actionable_{idx}.txt",
+                    "sentence_index": idx,
+                }
+            )
+            records.append(
+                {
+                    "sentence_id": f"{year}-S-{idx}",
+                    "sentence": (
+                        "We plan to focus on AI capabilities in future releases "
+                        f"for {year} case {idx}."
+                    ),
+                    "source_cik": f"{year}S{idx:04d}",
+                    "source_year": year,
+                    "source_form": "10-K",
+                    "source_file": f"{year}_speculative_{idx}.txt",
+                    "sentence_index": 1000 + idx,
+                }
+            )
+            records.append(
+                {
+                    "sentence_id": f"{year}-I-{idx}",
+                    "sentence": (
+                        "Our AI infrastructure and laws and regulations discussion "
+                        f"continued in {year} case {idx}."
+                    ),
+                    "source_cik": f"{year}I{idx:04d}",
+                    "source_year": year,
+                    "source_form": "10-K",
+                    "source_file": f"{year}_irrelevant_{idx}.txt",
+                    "sentence_index": 2000 + idx,
+                }
+            )
+        frame = pd.DataFrame.from_records(records, columns=REQUIRED_COLUMNS)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        frame.to_parquet(path, index=False)
+
+    write_heuristic_year(input_root / "year=2021" / "ai_sentences.parquet", 2021)
+    write_heuristic_year(input_root / "year=2024" / "ai_sentences.parquet", 2024)
+
+    labels_master = tmp_path / "labels_master.parquet"
+    pd.DataFrame({"sentence": ["existing labeled sentence"]}).to_parquet(
+        labels_master, index=False
+    )
+    historical = tmp_path / "historical.csv"
+    pd.DataFrame({"sentence": ["historical heldout sentence"]}).to_csv(historical, index=False)
+
+    args = argparse.Namespace(
+        input_root=str(input_root),
+        years=["2021", "2024"],
+        labels_master=str(labels_master),
+        historical_held_out=str(historical),
+        output_csv=str(tmp_path / "heldout_v2_review.csv"),
+        output_xlsx=str(tmp_path / "heldout_v2_review.xlsx"),
+        output_report=str(tmp_path / "heldout_v2_report.json"),
+        prelabeler="heuristic",
+    )
+
+    report = sample_heldout_v2_candidates.run_sampling(args)
+
+    review = pd.read_csv(args.output_csv)
+    assert len(review) == 180
+    assert report["status"] == "pending_review"
 
 
 def test_freeze_heldout_v2_requires_complete_balanced_labels(tmp_path: Path) -> None:

@@ -26,7 +26,7 @@ def test_run_sampling_restartable_creates_progress_and_outputs(tmp_path, monkeyp
             ("i", "irrelevant"),
         ):
             for idx in range(16):
-                cik_value = year * 1000 if idx == 0 else year * 1000 + (idx * 10) + ord(prefix)
+                cik_value = year * 1_000_000 + (ord(prefix) * 100) + idx
                 rows.append(
                     {
                         "sentence_id": f"{prefix}-{year}-{idx:02d}",
@@ -46,7 +46,8 @@ def test_run_sampling_restartable_creates_progress_and_outputs(tmp_path, monkeyp
     held_out = tmp_path / "held_out.csv"
     pd.DataFrame({"sentence": ["historical sentence"]}).to_csv(held_out, index=False)
 
-    def fake_predict(sentences, _manifest):
+    def fake_predict(sentences, *, prelabeler="legacy_two_stage"):
+        assert prelabeler == "legacy_two_stage"
         predicted = []
         for sentence in sentences:
             lowered = sentence.lower()
@@ -56,13 +57,10 @@ def test_run_sampling_restartable_creates_progress_and_outputs(tmp_path, monkeyp
                 predicted.append("Speculative")
             else:
                 predicted.append("Irrelevant")
-        zero_scores = {
-            label: 0.0 for label in ("Actionable", "Speculative", "Irrelevant")
-        }
-        return predicted, [zero_scores.copy() for _ in predicted]
+        return predicted
 
     monkeypatch.setattr(
-        "semantic_ai_washing.labeling.sample_heldout_v2_restartable.predict_sentences",
+        "semantic_ai_washing.labeling.sample_heldout_v2_restartable.predict_candidate_labels",
         fake_predict,
     )
 
@@ -77,6 +75,7 @@ def test_run_sampling_restartable_creates_progress_and_outputs(tmp_path, monkeyp
         progress_report=str(tmp_path / "held_out_v2_progress.json"),
         cache_dir=str(tmp_path / "cache"),
         batch_size=10,
+        prelabeler="legacy_two_stage",
         force_recompute=False,
     )
 
