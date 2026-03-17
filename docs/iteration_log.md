@@ -2696,3 +2696,22 @@ Rules:
   - `make lint`
   - `PYTHONPATH=src ./.venv/bin/python -m pytest -q tests/test_controls_and_universe.py tests/test_patent_lookup_builder.py`
   - `PYTHONPATH=src ./.venv/bin/python -m semantic_ai_washing.analysis.generate_preliminary_regression_spec`
+
+## 2026-03-16 — Held-out v2 workflow ready while extraction continues
+
+- Kept the active-window sentence materialization batch running; `2022` and `2023` sentence tables are still pending, so the canonical `held_out_v2` review pack cannot be frozen yet.
+- Validated the `held_out_v2` workflow itself in two ways while waiting:
+  - added fast regression tests for candidate sampling and freeze behavior:
+    - `tests/test_heldout_v2_workflow.py`
+  - ran a local smoke generation pass against temporary `2021`/`2024` sentence subsets under `tmp/heldout_v2_smoke_input/`
+- Smoke run result:
+  - `status = pending_review`
+  - `rows = 180`
+  - outputs written locally:
+    - `tmp/heldout_v2_smoke_review_sheet.csv`
+    - `tmp/heldout_v2_smoke_review_sheet.xlsx`
+    - `tmp/heldout_v2_smoke_sampling_report.json`
+- Ready-to-run canonical command once all four years exist:
+  - `PYTHONPATH=src ./.venv/bin/python -m semantic_ai_washing.labeling.sample_heldout_v2_candidates --input-root data/processed/sentences --years 2021 2022 2023 2024 --output-csv data/validation/held_out_sentences_v2_review_sheet.csv --output-xlsx data/validation/held_out_sentences_v2_review_sheet.xlsx --output-report reports/validation/held_out_v2_sampling_report.json`
+- Follow-on freeze command after review labels are completed:
+  - `PYTHONPATH=src ./.venv/bin/python -m semantic_ai_washing.labeling.freeze_heldout_v2 --reviewed-input data/validation/held_out_sentences_v2_review_sheet.xlsx --output-csv data/validation/held_out_sentences_v2.csv --output-report reports/validation/held_out_sentences_v2_freeze.json`
