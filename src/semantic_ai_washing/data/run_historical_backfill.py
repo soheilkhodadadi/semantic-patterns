@@ -173,6 +173,7 @@ def _materialize_years(
     keywords_path: str,
     min_tokens: int,
     max_tokens: int,
+    segmentation_mode: str,
     sample_size: int,
     source_window_id: str,
     years: list[int],
@@ -195,6 +196,7 @@ def _materialize_years(
             keywords_path=keywords_path,
             min_tokens=min_tokens,
             max_tokens=max_tokens,
+            segmentation_mode=segmentation_mode,
             sample_size=sample_size,
             refresh_index_if_missing_or_empty=False,
         )
@@ -396,6 +398,7 @@ def run_backfill(args: argparse.Namespace) -> dict[str, Any]:
                 keywords_path=args.keywords_path,
                 min_tokens=int(args.min_tokens),
                 max_tokens=int(args.max_tokens),
+                segmentation_mode=str(getattr(args, "segmentation_mode", "default")),
                 sample_size=int(args.sample_size),
                 source_window_id=HISTORICAL_SOURCE_WINDOW_ID,
                 years=materialize_years,
@@ -473,6 +476,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--keywords-path", default="data/metadata/ai_keywords.txt")
     parser.add_argument("--min-tokens", type=int, default=6)
     parser.add_argument("--max-tokens", type=int, default=120)
+    parser.add_argument(
+        "--segmentation-mode",
+        choices=["default", "fast"],
+        default="default",
+    )
     parser.add_argument("--sample-size", type=int, default=200)
     parser.add_argument(
         "--materialization-report-template",

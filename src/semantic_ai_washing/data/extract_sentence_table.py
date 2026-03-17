@@ -19,6 +19,7 @@ from semantic_ai_washing.core.sentence_filter import (
     merge_sentence_fragments,
     normalize_sentence_text,
     segment_sentences,
+    segment_sentences_fast,
 )
 from semantic_ai_washing.data.index_sec_filings import SEC_SOURCE_HINT_FILE, resolve_sec_source
 
@@ -31,6 +32,7 @@ EXTRACTOR_VERSION = "sentence_table_v1"
 INTEGRITY_FLAG_COUNT = 4
 DEFAULT_MAX_TOKENS = 120
 DEFAULT_MAX_FRAGMENT_SCORE = 0.0
+DEFAULT_SEGMENTATION_MODE = "default"
 
 OUTPUT_COLUMNS = [
     "sentence_id",
@@ -124,6 +126,15 @@ def _build_row(
     return row, flags
 
 
+def _segment_text(text: str, segmentation_mode: str) -> list[str]:
+    mode = str(segmentation_mode).strip().lower()
+    if mode == "fast":
+        return segment_sentences_fast(text)
+    if mode == "default":
+        return segment_sentences(text)
+    raise ValueError(f"Unsupported segmentation mode: {segmentation_mode}")
+
+
 def extract_sentence_table(
     manifest_path: str = DEFAULT_MANIFEST,
     output_path: str = DEFAULT_OUTPUT,
@@ -134,6 +145,7 @@ def extract_sentence_table(
     min_tokens: int = 6,
     max_tokens: int = DEFAULT_MAX_TOKENS,
     max_fragment_score: float = DEFAULT_MAX_FRAGMENT_SCORE,
+    segmentation_mode: str = DEFAULT_SEGMENTATION_MODE,
     sample_size: int = 200,
 ) -> dict[str, Any]:
     manifest = pd.read_csv(
@@ -178,7 +190,7 @@ def extract_sentence_table(
             )
             continue
 
-        segmented = segment_sentences(text)
+        segmented = _segment_text(text, segmentation_mode)
         total_segmented_sentences += len(segmented)
         page_merged = merge_page_fragments(segmented, raw_text=text)
         merged = merge_sentence_fragments(page_merged)
@@ -264,6 +276,7 @@ def extract_sentence_table(
                 "min_tokens": int(min_tokens),
                 "max_tokens": int(max_tokens),
                 "max_fragment_score": float(max_fragment_score),
+                "segmentation_mode": str(segmentation_mode),
                 "dropped_fragment_rows": int(dropped_fragment_rows),
                 "dropped_token_rows": int(dropped_token_rows),
             },
@@ -307,6 +320,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--min-tokens", type=int, default=6)
     parser.add_argument("--max-tokens", type=int, default=DEFAULT_MAX_TOKENS)
     parser.add_argument("--max-fragment-score", type=float, default=DEFAULT_MAX_FRAGMENT_SCORE)
+    parser.add_argument(
+        "--segmentation-mode",
+        choices=["default", "fast"],
+        default=DEFAULT_SEGMENTATION_MODE,
+    )
     parser.add_argument("--sample-size", type=int, default=200)
     return parser.parse_args()
 
@@ -323,6 +341,7 @@ def main() -> None:
         min_tokens=args.min_tokens,
         max_tokens=args.max_tokens,
         max_fragment_score=args.max_fragment_score,
+        segmentation_mode=args.segmentation_mode,
         sample_size=args.sample_size,
     )
     print(f"[i] Wrote sentence table: {args.output}")
