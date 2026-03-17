@@ -5,10 +5,13 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
 
+from semantic_ai_washing.classification.model_runtime import load_manifest
+from semantic_ai_washing.classification.preliminary_pipeline import sha256_file
 from semantic_ai_washing.labeling.common import load_table
 
 
@@ -47,6 +50,39 @@ def _load_classified_rows(input_root: str | Path, years: list[int], model_id: st
     if not frames:
         raise ValueError("No classified sentence tables were loaded.")
     return pd.concat(frames, ignore_index=True)
+
+
+def _selected_model_context(selected_manifest_path: str | Path) -> dict[str, Any]:
+    if not selected_manifest_path:
+        return {}
+    path = Path(selected_manifest_path)
+    if not path.exists():
+        return {}
+    payload = load_manifest(path)
+    winner = payload.get("winner") if isinstance(payload.get("winner"), dict) else {}
+    benchmark_path = Path(str(payload.get("benchmark_matrix", "")))
+    held_out_v2_sha256 = ""
+    benchmark_name = ""
+    if benchmark_path.exists():
+        benchmark_payload = json.loads(benchmark_path.read_text(encoding="utf-8"))
+        benchmark_name = str(
+            benchmark_payload.get("summary", {}).get("primary_benchmark_name", "")
+        )
+        benchmarks = benchmark_payload.get("benchmarks", {})
+        if benchmark_name in benchmarks:
+            held_out_v2_sha256 = str(benchmarks[benchmark_name].get("sha256", ""))
+    return {
+        "selected_model_manifest": str(path),
+        "selected_model_manifest_sha256": sha256_file(path),
+        "selected_model_status": str(payload.get("status", "")),
+        "selected_model_id": str(winner.get("model_id", "")),
+        "benchmark_matrix": str(benchmark_path)
+        if benchmark_path.exists()
+        else str(benchmark_path),
+        "benchmark_matrix_sha256": sha256_file(benchmark_path),
+        "primary_benchmark_name": benchmark_name,
+        "primary_benchmark_sha256": held_out_v2_sha256,
+    }
 
 
 def run_measure_build(args: argparse.Namespace) -> dict:
@@ -98,6 +134,7 @@ def run_measure_build(args: argparse.Namespace) -> dict:
     measures["A_S"] = np.log1p(measures["n_A"] / (1.0 + measures["n_S"]))
     measures.to_parquet(measures_path, index=False)
 
+    selected_context = _selected_model_context(getattr(args, "selected_model_manifest", ""))
     report = {
         "status": "passed",
         "generated_at_utc": pd.Timestamp.utcnow().isoformat(),
@@ -106,6 +143,7 @@ def run_measure_build(args: argparse.Namespace) -> dict:
             "preliminary_only": True,
             "source_window_id": str(args.source_window_id),
             "model_id": str(args.model_id),
+            "selected_model_id": selected_context.get("selected_model_id", ""),
             "rows_total": int(len(measures)),
             "years_covered": sorted({int(value) for value in measures["source_year"].unique()}),
             "firm_count": int(measures["source_cik"].nunique()),
@@ -113,6 +151,16 @@ def run_measure_build(args: argparse.Namespace) -> dict:
             "named_measures_complete": all(
                 column in measures.columns for column in REQUIRED_MEASURES
             ),
+            "primary_benchmark_name": selected_context.get("primary_benchmark_name", ""),
+            "primary_benchmark_sha256": selected_context.get("primary_benchmark_sha256", ""),
+        },
+        "inputs": {
+            "selected_model_manifest": selected_context.get("selected_model_manifest", ""),
+            "selected_model_manifest_sha256": selected_context.get(
+                "selected_model_manifest_sha256", ""
+            ),
+            "benchmark_matrix": selected_context.get("benchmark_matrix", ""),
+            "benchmark_matrix_sha256": selected_context.get("benchmark_matrix_sha256", ""),
         },
     }
     report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
@@ -125,6 +173,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--years", nargs="+", default=["2021", "2022", "2023", "2024"])
     parser.add_argument("--model-id", default="mpnet_prelim_v1")
     parser.add_argument("--source-window-id", default="active_2021_2024")
+    parser.add_argument("--selected-model-manifest", default="")
     parser.add_argument(
         "--output-ai-metrics",
         default="data/processed/aggregates/firm_year_ai_metrics_prelim_v1.parquet",

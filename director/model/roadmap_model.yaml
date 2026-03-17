@@ -245,6 +245,9 @@ stakeholder_alignment:
     - iteration2/irr-disagreement-diagnostic
     - iteration2/preliminary-results-authorization
     - iteration3/preliminary-kickoff-and-preflight
+    - iteration3/preliminary-validation-asset-rebaseline
+    - iteration3/preliminary-model-benchmark-wave1
+    - iteration3/preliminary-model-selection
     - iteration4/preliminary-panel-assembly-2021-2024
     - iteration5/preliminary-results-package
     - iteration5/preliminary-results-table-planning
@@ -452,6 +455,10 @@ policies:
   enforcement: hard
   targets:
   - iteration2/preliminary-results-authorization
+  - iteration3/preliminary-validation-asset-rebaseline
+  - iteration3/preliminary-model-benchmark-wave1
+  - iteration3/preliminary-model-selection
+  - iteration3/preliminary-model-benchmark-wave2
   - iteration3/preliminary-heldout-evaluation
   - iteration3/preliminary-active-window-classification
   - iteration3/preliminary-firm-year-measure-construction
@@ -4552,6 +4559,175 @@ iterations:
       - preliminary_results
       - sentence_materialization
       gate_class: data
+  - phase_id: iteration3/preliminary-validation-asset-rebaseline
+    title: Preliminary Validation Asset Rebaseline
+    goal: Freeze the new current-rubric held-out path and explicitly separate historical,
+      boundary, and canonical preliminary evaluation assets.
+    lifecycle_state: planned
+    canonical: false
+    depends_on:
+    - iteration3/preliminary-source-window-sentence-materialization
+    required_artifacts:
+    - data/validation/irr_boundary_benchmark_v1.csv
+    - reports/validation/irr_boundary_benchmark_v1.json
+    - reports/validation/validation_asset_registry_v2.json
+    - data/validation/held_out_sentences_v2_review_sheet.csv
+    - data/validation/held_out_sentences_v2_review_sheet.xlsx
+    - reports/validation/held_out_v2_sampling_report.json
+    - data/validation/held_out_sentences_v2.csv
+    - reports/validation/held_out_sentences_v2_freeze.json
+    source_window_id: active_2021_2024
+    tags:
+    - preliminary_results
+    - evaluation_assets
+    tasks:
+    - task_id: iteration3.prelim.publish_irr_boundary_benchmark
+      title: Publish IRR boundary benchmark
+      description: Publish the finalized adjudicated IRR slice as a diagnostic-only
+        boundary benchmark.
+      iteration_id: '3'
+      phase_id: iteration3/preliminary-validation-asset-rebaseline
+      kind: build
+      depends_on:
+      - iteration3.prelim.materialize_active_window_sentence_tables
+      inputs:
+      - artifact_id: adjudication
+        path: data/labels/v1/adjudication.parquet
+        kind: parquet
+        required: true
+      outputs:
+      - artifact_id: irr_boundary_benchmark
+        path: data/validation/irr_boundary_benchmark_v1.csv
+        kind: csv
+        required: true
+      - artifact_id: irr_boundary_benchmark_report
+        path: reports/validation/irr_boundary_benchmark_v1.json
+        kind: json
+        required: true
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.labeling.build_irr_boundary_benchmark --adjudication data/labels/v1/adjudication.parquet --output-csv data/validation/irr_boundary_benchmark_v1.csv --output-report reports/validation/irr_boundary_benchmark_v1.json
+      manual_handoff: false
+      risks:
+      - R2
+      estimated_effort: 2
+      risk_reduction: 7
+      automation_level: full
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - preliminary_results
+      - evaluation_assets
+      gate_class: science
+    - task_id: iteration3.prelim.sample_heldout_v2_candidates
+      title: Sample held-out v2 review candidates
+      description: Build a balanced 180-row review sheet from the active-window sentence
+        universe while excluding current labels and the historical held-out.
+      iteration_id: '3'
+      phase_id: iteration3/preliminary-validation-asset-rebaseline
+      kind: build
+      depends_on:
+      - iteration3.prelim.materialize_active_window_sentence_tables
+      outputs:
+      - artifact_id: heldout_v2_review_csv
+        path: data/validation/held_out_sentences_v2_review_sheet.csv
+        kind: csv
+        required: true
+      - artifact_id: heldout_v2_review_xlsx
+        path: data/validation/held_out_sentences_v2_review_sheet.xlsx
+        kind: file
+        required: true
+      - artifact_id: heldout_v2_sampling_report
+        path: reports/validation/held_out_v2_sampling_report.json
+        kind: json
+        required: true
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.labeling.sample_heldout_v2_candidates --input-root data/processed/sentences --years 2021 2022 2023 2024 --labels-master data/labels/v1/labels_master.parquet --historical-held-out data/validation/held_out_sentences.csv --output-csv data/validation/held_out_sentences_v2_review_sheet.csv --output-xlsx data/validation/held_out_sentences_v2_review_sheet.xlsx --output-report reports/validation/held_out_v2_sampling_report.json
+      manual_handoff: false
+      risks:
+      - R2
+      - R6
+      estimated_effort: 3
+      risk_reduction: 7
+      automation_level: full
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - preliminary_results
+      - evaluation_assets
+      gate_class: science
+    - task_id: iteration3.prelim.freeze_heldout_v2
+      title: Freeze held-out v2 after review
+      description: Freeze the reviewed held-out v2 sheet into the canonical current-rubric
+        preliminary evaluation asset.
+      iteration_id: '3'
+      phase_id: iteration3/preliminary-validation-asset-rebaseline
+      kind: manual
+      depends_on:
+      - iteration3.prelim.sample_heldout_v2_candidates
+      outputs:
+      - artifact_id: heldout_v2
+        path: data/validation/held_out_sentences_v2.csv
+        kind: csv
+        required: true
+      - artifact_id: heldout_v2_freeze_report
+        path: reports/validation/held_out_sentences_v2_freeze.json
+        kind: json
+        required: true
+      quality_checks:
+      - condition_id: heldout_v2_frozen
+        kind: json_field_compare
+        target: reports/validation/held_out_sentences_v2_freeze.json::summary.status
+        operator: ==
+        expected: frozen
+        on_fail: block
+        message: Held-out v2 must be fully reviewed and frozen before model selection benchmarking.
+        reroute_to: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.labeling.freeze_heldout_v2 --reviewed-input data/validation/held_out_sentences_v2_review_sheet.xlsx --output-csv data/validation/held_out_sentences_v2.csv --output-report reports/validation/held_out_sentences_v2_freeze.json
+      manual_handoff: true
+      risks:
+      - R3
+      estimated_effort: 3
+      risk_reduction: 8
+      automation_level: manual
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - preliminary_results
+      - evaluation_assets
+      gate_class: science
+    - task_id: iteration3.prelim.publish_validation_asset_registry_v2
+      title: Publish validation asset registry v2
+      description: Publish the multi-asset validation registry that distinguishes
+        historical, canonical current-rubric, and boundary benchmark roles.
+      iteration_id: '3'
+      phase_id: iteration3/preliminary-validation-asset-rebaseline
+      kind: build
+      depends_on:
+      - iteration3.prelim.publish_irr_boundary_benchmark
+      outputs:
+      - artifact_id: validation_asset_registry_v2
+        path: reports/validation/validation_asset_registry_v2.json
+        kind: json
+        required: true
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.director.tasks.validation_assets --held-out data/validation/held_out_sentences.csv --held-out-v2 data/validation/held_out_sentences_v2.csv --irr-boundary data/validation/irr_boundary_benchmark_v1.csv --collected data/validation/CollectedAiSentencesClassifiedCleaned.csv --hand-labeled data/validation/hand_labeled_ai_sentences_with_embeddings_revised.csv --output reports/validation/validation_asset_registry_v2.json
+      manual_handoff: false
+      risks:
+      - R2
+      estimated_effort: 2
+      risk_reduction: 6
+      automation_level: full
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - preliminary_results
+      - evaluation_assets
+      gate_class: science
   - phase_id: iteration3/preliminary-centroid-retraining
     title: Preliminary Centroid Retraining
     goal: Train a preliminary-only model namespace for the active 2021-2024 window
@@ -4651,61 +4827,275 @@ iterations:
       - retraining
       - centroid
       gate_class: science
-  - phase_id: iteration3/preliminary-heldout-evaluation
-    title: Preliminary Held-Out Evaluation
-    goal: Evaluate the preliminary model truthfully on the frozen held-out split without
-      relaxing leakage checks or implying publication-grade authorization.
+  - phase_id: iteration3/preliminary-model-benchmark-wave1
+    title: Preliminary Model Benchmark Wave 1
+    goal: Benchmark low-blast-radius local candidate models on the current validation
+      asset stack before selecting an active-window classifier.
     lifecycle_state: planned
     canonical: false
     depends_on:
+    - iteration3/preliminary-validation-asset-rebaseline
     - iteration3/preliminary-centroid-retraining
     required_artifacts:
-    - reports/evaluation/heldout_eval_prelim_v1.json
+    - artifacts/models/mpnet_logreg_prelim_v1/model.pkl
+    - artifacts/models/mpnet_logreg_prelim_v1/metadata.json
+    - artifacts/models/binary_relevance_then_as_v1/relevance_model.pkl
+    - artifacts/models/binary_relevance_then_as_v1/actionable_speculative_model.pkl
+    - artifacts/models/binary_relevance_then_as_v1/metadata.json
+    - reports/evaluation/model_benchmark_matrix_prelim_v1.json
+    - reports/evaluation/model_benchmark_matrix_prelim_v1.md
+    - artifacts/models/prelim_selected_model_v1.json
+    source_window_id: active_2021_2024
+    tags:
+    - preliminary_results
+    - benchmarking
+    tasks:
+    - task_id: iteration3.prelim.train_logreg_baseline
+      title: Train MPNet logistic-regression baseline
+      description: Train a low-blast-radius multinomial logistic-regression classifier
+        on the frozen train split.
+      iteration_id: '3'
+      phase_id: iteration3/preliminary-model-benchmark-wave1
+      kind: build
+      depends_on:
+      - iteration3.prelim.train_centroids
+      outputs:
+      - artifact_id: prelim_logreg_model
+        path: artifacts/models/mpnet_logreg_prelim_v1/model.pkl
+        kind: file
+        required: true
+      - artifact_id: prelim_logreg_metadata
+        path: artifacts/models/mpnet_logreg_prelim_v1/metadata.json
+        kind: json
+        required: true
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.classification.train_logreg_preliminary --labels-master data/labels/v1/labels_master.parquet --split-registry data/metadata/splits/split_registry_v1.csv --model-output artifacts/models/mpnet_logreg_prelim_v1/model.pkl --metadata-output artifacts/models/mpnet_logreg_prelim_v1/metadata.json --model-id mpnet_logreg_prelim_v1 --source-window-id active_2021_2024 --embedding-backend sentence_transformers --model-name sentence-transformers/all-mpnet-base-v2 --batch-size 32
+      manual_handoff: false
+      risks:
+      - R2
+      estimated_effort: 3
+      risk_reduction: 7
+      automation_level: full
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - preliminary_results
+      - benchmarking
+      gate_class: science
+    - task_id: iteration3.prelim.train_binary_relevance_then_as
+      title: Train binary relevance then A/S baseline
+      description: Train a staged relevant-vs-irrelevant and actionable-vs-speculative
+        classifier on the frozen train split.
+      iteration_id: '3'
+      phase_id: iteration3/preliminary-model-benchmark-wave1
+      kind: build
+      depends_on:
+      - iteration3.prelim.train_centroids
+      outputs:
+      - artifact_id: prelim_binary_rel_model
+        path: artifacts/models/binary_relevance_then_as_v1/relevance_model.pkl
+        kind: file
+        required: true
+      - artifact_id: prelim_binary_as_model
+        path: artifacts/models/binary_relevance_then_as_v1/actionable_speculative_model.pkl
+        kind: file
+        required: true
+      - artifact_id: prelim_binary_metadata
+        path: artifacts/models/binary_relevance_then_as_v1/metadata.json
+        kind: json
+        required: true
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.classification.train_binary_relevance_then_as --labels-master data/labels/v1/labels_master.parquet --split-registry data/metadata/splits/split_registry_v1.csv --relevance-model-output artifacts/models/binary_relevance_then_as_v1/relevance_model.pkl --actionable-speculative-model-output artifacts/models/binary_relevance_then_as_v1/actionable_speculative_model.pkl --metadata-output artifacts/models/binary_relevance_then_as_v1/metadata.json --model-id binary_relevance_then_as_v1 --source-window-id active_2021_2024 --embedding-backend sentence_transformers --model-name sentence-transformers/all-mpnet-base-v2 --batch-size 32
+      manual_handoff: false
+      risks:
+      - R2
+      estimated_effort: 3
+      risk_reduction: 7
+      automation_level: full
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - preliminary_results
+      - benchmarking
+      gate_class: science
+    - task_id: iteration3.prelim.benchmark_wave1_candidates
+      title: Benchmark wave-1 candidate models
+      description: Benchmark the legacy two-stage, centroid, logreg, and binary staged
+        models across the available benchmark assets and publish a selected-model manifest.
+      iteration_id: '3'
+      phase_id: iteration3/preliminary-model-benchmark-wave1
+      kind: validation
+      depends_on:
+      - iteration3.prelim.train_logreg_baseline
+      - iteration3.prelim.train_binary_relevance_then_as
+      outputs:
+      - artifact_id: prelim_model_benchmark_matrix
+        path: reports/evaluation/model_benchmark_matrix_prelim_v1.json
+        kind: json
+        required: true
+      - artifact_id: prelim_model_benchmark_matrix_md
+        path: reports/evaluation/model_benchmark_matrix_prelim_v1.md
+        kind: markdown
+        required: true
+      - artifact_id: prelim_selected_model_manifest
+        path: artifacts/models/prelim_selected_model_v1.json
+        kind: json
+        required: true
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.classification.benchmark_preliminary_models --labels-master data/labels/v1/labels_master.parquet --split-registry data/metadata/splits/split_registry_v1.csv --primary-benchmark data/validation/held_out_sentences_v2.csv --historical-benchmark data/validation/held_out_sentences.csv --irr-boundary-benchmark data/validation/irr_boundary_benchmark_v1.csv --centroid-model artifacts/models/mpnet_prelim_v1/centroids.json --centroid-metadata artifacts/models/mpnet_prelim_v1/metadata.json --logreg-metadata artifacts/models/mpnet_logreg_prelim_v1/metadata.json --binary-metadata artifacts/models/binary_relevance_then_as_v1/metadata.json --output-json reports/evaluation/model_benchmark_matrix_prelim_v1.json --output-md reports/evaluation/model_benchmark_matrix_prelim_v1.md --model-report-dir reports/evaluation/models --selected-manifest artifacts/models/prelim_selected_model_v1.json
+      manual_handoff: false
+      risks:
+      - R2
+      - R3
+      estimated_effort: 4
+      risk_reduction: 9
+      automation_level: full
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - preliminary_results
+      - benchmarking
+      gate_class: science
+  - phase_id: iteration3/preliminary-model-selection
+    title: Preliminary Model Selection
+    goal: Select a single preliminary model only after the new canonical held-out
+      asset is frozen and benchmarked.
+    lifecycle_state: planned
+    canonical: false
+    depends_on:
+    - iteration3/preliminary-model-benchmark-wave1
+    required_artifacts:
+    - artifacts/models/prelim_selected_model_v1.json
+    - reports/evaluation/heldout_eval_prelim_v2.json
+    source_window_id: active_2021_2024
+    tags:
+    - preliminary_results
+    - benchmarking
+    - selection
+    tasks:
+    - task_id: iteration3.prelim.publish_selected_model_eval
+      title: Publish selected-model held-out evaluation
+      description: Publish the selected-model held-out evaluation from the benchmark
+        matrix without reusing the historical held-out as the primary gate.
+      iteration_id: '3'
+      phase_id: iteration3/preliminary-model-selection
+      kind: validation
+      depends_on:
+      - iteration3.prelim.benchmark_wave1_candidates
+      outputs:
+      - artifact_id: heldout_eval_prelim_v2
+        path: reports/evaluation/heldout_eval_prelim_v2.json
+        kind: json
+        required: true
+      quality_checks:
+      - condition_id: prelim_selected_model_status_selected
+        kind: json_field_compare
+        target: artifacts/models/prelim_selected_model_v1.json::status
+        operator: ==
+        expected: selected
+        on_fail: block
+        message: A preliminary winner must be selected before active-window classification can proceed.
+        reroute_to: []
+      - condition_id: prelim_selected_eval_status_passed
+        kind: json_field_compare
+        target: reports/evaluation/heldout_eval_prelim_v2.json::summary.status
+        operator: ==
+        expected: passed
+        on_fail: block
+        message: Selected-model held-out evaluation must pass in a valid non-leaky state.
+        reroute_to: []
+      commands:
+      - .venv/bin/python -m semantic_ai_washing.classification.publish_selected_preliminary_eval --selected-manifest artifacts/models/prelim_selected_model_v1.json --benchmark-matrix reports/evaluation/model_benchmark_matrix_prelim_v1.json --output-report reports/evaluation/heldout_eval_prelim_v2.json --accuracy-threshold 0.80
+      manual_handoff: false
+      risks:
+      - R2
+      - R3
+      estimated_effort: 2
+      risk_reduction: 8
+      automation_level: full
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - preliminary_results
+      - evaluation
+      gate_class: science
+  - phase_id: iteration3/preliminary-model-benchmark-wave2
+    title: Preliminary Model Benchmark Wave 2
+    goal: Escalate to SetFit, OpenAI batch, or cross-encoder benchmarking only if
+      wave 1 fails to clear the preliminary gate.
+    lifecycle_state: planned
+    canonical: false
+    depends_on:
+    - iteration3/preliminary-model-benchmark-wave1
+    required_artifacts: []
+    source_window_id: active_2021_2024
+    tags:
+    - preliminary_results
+    - benchmarking
+    - escalation
+    tasks:
+    - task_id: iteration3.prelim.plan_wave2_benchmarks
+      title: Plan wave-2 benchmark escalation
+      description: Escalate to SetFit, OpenAI GPT-5 mini batch, or a cross-encoder
+        benchmark if no wave-1 winner clears the preliminary gate.
+      iteration_id: '3'
+      phase_id: iteration3/preliminary-model-benchmark-wave2
+      kind: manual
+      depends_on:
+      - iteration3.prelim.benchmark_wave1_candidates
+      commands: []
+      manual_handoff: true
+      risks:
+      - R2
+      - R3
+      estimated_effort: 3
+      risk_reduction: 6
+      automation_level: manual
+      on_fail: block
+      reroute_to: []
+      evidence_required: true
+      tags:
+      - preliminary_results
+      - benchmarking
+      - escalation
+      gate_class: science
+  - phase_id: iteration3/preliminary-heldout-evaluation
+    title: Preliminary Held-Out Evaluation
+    goal: Evaluate the selected preliminary model truthfully on the frozen current-rubric
+      held-out without relaxing leakage checks or implying publication-grade authorization.
+    lifecycle_state: planned
+    canonical: false
+    depends_on:
+    - iteration3/preliminary-model-selection
+    required_artifacts:
+    - reports/evaluation/heldout_eval_prelim_v2.json
     source_window_id: active_2021_2024
     tags:
     - preliminary_results
     - evaluation
     tasks:
-    - task_id: iteration3.prelim.evaluate_heldout
-      title: Evaluate preliminary model on held-out data
-      description: Publish a truthful held-out evaluation without implying publication-grade
-        authorization.
+    - task_id: iteration3.prelim.verify_selected_heldout_eval
+      title: Verify selected-model held-out evaluation
+      description: Treat the selected-model current-rubric held-out evaluation as the
+        gating artifact for preliminary active-window classification.
       iteration_id: '3'
       phase_id: iteration3/preliminary-heldout-evaluation
       kind: validation
       depends_on:
-      - iteration3.prelim.train_centroids
-      inputs:
-      - artifact_id: prelim_centroids
-        path: artifacts/models/mpnet_prelim_v1/centroids.json
-        kind: json
-        required: true
-      - artifact_id: prelim_model_metadata
-        path: artifacts/models/mpnet_prelim_v1/metadata.json
-        kind: json
-        required: true
-      - artifact_id: held_out
-        path: data/validation/held_out_sentences.csv
-        kind: csv
-        required: true
+      - iteration3.prelim.publish_selected_model_eval
       outputs:
       - artifact_id: heldout_eval_prelim
-        path: reports/evaluation/heldout_eval_prelim_v1.json
+        path: reports/evaluation/heldout_eval_prelim_v2.json
         kind: json
         required: true
-      preconditions:
-      - condition_id: heldout_exists_for_prelim_eval
-        kind: artifact_exists
-        target: data/validation/held_out_sentences.csv
-        operator: ==
-        expected: true
-        on_fail: block
-        message: Held-out evaluation data must exist before preliminary evaluation.
-        reroute_to: []
       quality_checks:
       - condition_id: prelim_heldout_eval_status_passed
         kind: json_field_compare
-        target: reports/evaluation/heldout_eval_prelim_v1.json::summary.status
+        target: reports/evaluation/heldout_eval_prelim_v2.json::summary.status
         operator: ==
         expected: passed
         on_fail: block
@@ -4713,20 +5103,19 @@ iterations:
         reroute_to: []
       - condition_id: prelim_heldout_eval_no_leakage
         kind: json_field_compare
-        target: reports/evaluation/heldout_eval_prelim_v1.json::summary.leakage_detected
+        target: reports/evaluation/heldout_eval_prelim_v2.json::summary.leakage_detected
         operator: ==
         expected: false
         on_fail: block
         message: Preliminary held-out evaluation must confirm no leakage.
         reroute_to: []
-      commands:
-      - .venv/bin/python -m semantic_ai_washing.classification.evaluate_preliminary_heldout --held-out data/validation/held_out_sentences.csv --labels-master data/labels/v1/labels_master.parquet --centroids artifacts/models/mpnet_prelim_v1/centroids.json --model-metadata artifacts/models/mpnet_prelim_v1/metadata.json --output-report reports/evaluation/heldout_eval_prelim_v1.json --model-id mpnet_prelim_v1 --source-window-id active_2021_2024 --accuracy-threshold 0.80
+      commands: []
       manual_handoff: false
       risks:
       - R2
       - R3
-      estimated_effort: 3
-      risk_reduction: 8
+      estimated_effort: 1
+      risk_reduction: 7
       automation_level: full
       on_fail: block
       reroute_to: []
@@ -4738,16 +5127,17 @@ iterations:
   - phase_id: iteration3/preliminary-active-window-classification
     title: Preliminary Active Window Classification
     goal: Classify the active 2021-2024 source window into a separate preliminary
-      artifact namespace for internal results work.
+      artifact namespace for internal results work using the selected preliminary
+      model manifest.
     lifecycle_state: planned
     canonical: false
     depends_on:
     - iteration3/preliminary-heldout-evaluation
     required_artifacts:
-    - data/processed/classifications/year=2021/model=mpnet_prelim_v1/classified_sentences.parquet
-    - data/processed/classifications/year=2022/model=mpnet_prelim_v1/classified_sentences.parquet
-    - data/processed/classifications/year=2023/model=mpnet_prelim_v1/classified_sentences.parquet
-    - data/processed/classifications/year=2024/model=mpnet_prelim_v1/classified_sentences.parquet
+    - data/processed/classifications/year=2021/model=prelim_selected_model_v1/classified_sentences.parquet
+    - data/processed/classifications/year=2022/model=prelim_selected_model_v1/classified_sentences.parquet
+    - data/processed/classifications/year=2023/model=prelim_selected_model_v1/classified_sentences.parquet
+    - data/processed/classifications/year=2024/model=prelim_selected_model_v1/classified_sentences.parquet
     - reports/classification/active_window_coverage_prelim_v1.json
     source_window_id: active_2021_2024
     tags:
@@ -4755,38 +5145,34 @@ iterations:
     - batch_classification
     tasks:
     - task_id: iteration3.prelim.classify_active_window
-      title: Classify the active window with the preliminary model
+      title: Classify the active window with the selected preliminary model
       description: Write year-partitioned preliminary classification outputs for the
-        full active 2021-2024 source window.
+        full active 2021-2024 source window using the selected-model manifest.
       iteration_id: '3'
       phase_id: iteration3/preliminary-active-window-classification
       kind: build
       depends_on:
-      - iteration3.prelim.evaluate_heldout
+      - iteration3.prelim.verify_selected_heldout_eval
       inputs:
-      - artifact_id: prelim_centroids
-        path: artifacts/models/mpnet_prelim_v1/centroids.json
-        kind: json
-        required: true
-      - artifact_id: prelim_model_metadata
-        path: artifacts/models/mpnet_prelim_v1/metadata.json
+      - artifact_id: prelim_selected_model_manifest
+        path: artifacts/models/prelim_selected_model_v1.json
         kind: json
         required: true
       outputs:
       - artifact_id: prelim_classified_2021
-        path: data/processed/classifications/year=2021/model=mpnet_prelim_v1/classified_sentences.parquet
+        path: data/processed/classifications/year=2021/model=prelim_selected_model_v1/classified_sentences.parquet
         kind: parquet
         required: true
       - artifact_id: prelim_classified_2022
-        path: data/processed/classifications/year=2022/model=mpnet_prelim_v1/classified_sentences.parquet
+        path: data/processed/classifications/year=2022/model=prelim_selected_model_v1/classified_sentences.parquet
         kind: parquet
         required: true
       - artifact_id: prelim_classified_2023
-        path: data/processed/classifications/year=2023/model=mpnet_prelim_v1/classified_sentences.parquet
+        path: data/processed/classifications/year=2023/model=prelim_selected_model_v1/classified_sentences.parquet
         kind: parquet
         required: true
       - artifact_id: prelim_classified_2024
-        path: data/processed/classifications/year=2024/model=mpnet_prelim_v1/classified_sentences.parquet
+        path: data/processed/classifications/year=2024/model=prelim_selected_model_v1/classified_sentences.parquet
         kind: parquet
         required: true
       - artifact_id: prelim_active_window_coverage
@@ -4820,7 +5206,7 @@ iterations:
         message: Preliminary classification must emit outputs for all active-window years.
         reroute_to: []
       commands:
-      - .venv/bin/python -m semantic_ai_washing.classification.classify_active_window_preliminary --input-root data/processed/sentences --years 2021 2022 2023 2024 --centroids artifacts/models/mpnet_prelim_v1/centroids.json --model-metadata artifacts/models/mpnet_prelim_v1/metadata.json --output-root data/processed/classifications --output-report reports/classification/active_window_coverage_prelim_v1.json --model-id mpnet_prelim_v1 --source-window-id active_2021_2024
+      - .venv/bin/python -m semantic_ai_washing.classification.classify_active_window_preliminary --input-root data/processed/sentences --years 2021 2022 2023 2024 --selected-model-manifest artifacts/models/prelim_selected_model_v1.json --output-root data/processed/classifications --output-report reports/classification/active_window_coverage_prelim_v1.json --model-id prelim_selected_model_v1 --source-window-id active_2021_2024
       manual_handoff: false
       risks:
       - R2
@@ -4866,6 +5252,10 @@ iterations:
         path: reports/classification/active_window_coverage_prelim_v1.json
         kind: json
         required: true
+      - artifact_id: prelim_selected_model_manifest
+        path: artifacts/models/prelim_selected_model_v1.json
+        kind: json
+        required: true
       outputs:
       - artifact_id: prelim_firm_year_ai_metrics
         path: data/processed/aggregates/firm_year_ai_metrics_prelim_v1.parquet
@@ -4898,7 +5288,7 @@ iterations:
         message: Preliminary firm-year report must confirm the full named measure set.
         reroute_to: []
       commands:
-      - .venv/bin/python -m semantic_ai_washing.aggregation.build_preliminary_narrative_measures --input-root data/processed/classifications --years 2021 2022 2023 2024 --model-id mpnet_prelim_v1 --source-window-id active_2021_2024 --output-ai-metrics data/processed/aggregates/firm_year_ai_metrics_prelim_v1.parquet --output-measures data/processed/aggregates/firm_year_narrative_measures_prelim_v1.parquet --output-report reports/classification/firm_year_narrative_measures_prelim_v1.json
+      - .venv/bin/python -m semantic_ai_washing.aggregation.build_preliminary_narrative_measures --input-root data/processed/classifications --years 2021 2022 2023 2024 --model-id prelim_selected_model_v1 --source-window-id active_2021_2024 --selected-model-manifest artifacts/models/prelim_selected_model_v1.json --output-ai-metrics data/processed/aggregates/firm_year_ai_metrics_prelim_v1.parquet --output-measures data/processed/aggregates/firm_year_narrative_measures_prelim_v1.parquet --output-report reports/classification/firm_year_narrative_measures_prelim_v1.json
       manual_handoff: false
       risks:
       - R2

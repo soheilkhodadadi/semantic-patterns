@@ -1335,21 +1335,82 @@ def test_actual_iteration2_tranche_workflow_is_wired():
         in prelim_retraining_task.commands[0]
     )
 
+    prelim_validation_phase = find_phase(
+        model, iteration_id="3", phase_name="preliminary-validation-asset-rebaseline"
+    )
+    assert prelim_validation_phase is not None
+    assert prelim_validation_phase.canonical is False
+    assert prelim_validation_phase.depends_on == [
+        "iteration3/preliminary-source-window-sentence-materialization"
+    ]
+    assert (
+        "data/validation/held_out_sentences_v2.csv" in prelim_validation_phase.required_artifacts
+    )
+    freeze_task = next(
+        task
+        for task in prelim_validation_phase.tasks
+        if task.task_id == "iteration3.prelim.freeze_heldout_v2"
+    )
+    assert freeze_task.manual_handoff is True
+    assert "semantic_ai_washing.labeling.freeze_heldout_v2" in freeze_task.commands[0]
+
+    prelim_benchmark_phase = find_phase(
+        model, iteration_id="3", phase_name="preliminary-model-benchmark-wave1"
+    )
+    assert prelim_benchmark_phase is not None
+    assert prelim_benchmark_phase.canonical is False
+    assert prelim_benchmark_phase.depends_on == [
+        "iteration3/preliminary-validation-asset-rebaseline",
+        "iteration3/preliminary-centroid-retraining",
+    ]
+    assert (
+        "reports/evaluation/model_benchmark_matrix_prelim_v1.json"
+        in prelim_benchmark_phase.required_artifacts
+    )
+    benchmark_task = next(
+        task
+        for task in prelim_benchmark_phase.tasks
+        if task.task_id == "iteration3.prelim.benchmark_wave1_candidates"
+    )
+    assert (
+        "semantic_ai_washing.classification.benchmark_preliminary_models"
+        in benchmark_task.commands[0]
+    )
+
+    prelim_selection_phase = find_phase(
+        model, iteration_id="3", phase_name="preliminary-model-selection"
+    )
+    assert prelim_selection_phase is not None
+    assert prelim_selection_phase.canonical is False
+    assert prelim_selection_phase.depends_on == ["iteration3/preliminary-model-benchmark-wave1"]
+    selection_task = next(
+        task
+        for task in prelim_selection_phase.tasks
+        if task.task_id == "iteration3.prelim.publish_selected_model_eval"
+    )
+    assert (
+        "semantic_ai_washing.classification.publish_selected_preliminary_eval"
+        in selection_task.commands[0]
+    )
+
+    prelim_wave2_phase = find_phase(
+        model, iteration_id="3", phase_name="preliminary-model-benchmark-wave2"
+    )
+    assert prelim_wave2_phase is not None
+    assert prelim_wave2_phase.canonical is False
+
     prelim_eval_phase = find_phase(
         model, iteration_id="3", phase_name="preliminary-heldout-evaluation"
     )
     assert prelim_eval_phase is not None
     assert prelim_eval_phase.canonical is False
-    assert "reports/evaluation/heldout_eval_prelim_v1.json" in prelim_eval_phase.required_artifacts
+    assert "reports/evaluation/heldout_eval_prelim_v2.json" in prelim_eval_phase.required_artifacts
     prelim_eval_task = next(
         task
         for task in prelim_eval_phase.tasks
-        if task.task_id == "iteration3.prelim.evaluate_heldout"
+        if task.task_id == "iteration3.prelim.verify_selected_heldout_eval"
     )
-    assert (
-        "semantic_ai_washing.classification.evaluate_preliminary_heldout"
-        in prelim_eval_task.commands[0]
-    )
+    assert prelim_eval_task.commands == []
 
     prelim_classify_phase = find_phase(
         model, iteration_id="3", phase_name="preliminary-active-window-classification"
@@ -1357,7 +1418,7 @@ def test_actual_iteration2_tranche_workflow_is_wired():
     assert prelim_classify_phase is not None
     assert prelim_classify_phase.canonical is False
     assert (
-        "data/processed/classifications/year=2024/model=mpnet_prelim_v1/classified_sentences.parquet"
+        "data/processed/classifications/year=2024/model=prelim_selected_model_v1/classified_sentences.parquet"
         in prelim_classify_phase.required_artifacts
     )
     prelim_classify_task = next(
@@ -1367,6 +1428,10 @@ def test_actual_iteration2_tranche_workflow_is_wired():
     )
     assert (
         "semantic_ai_washing.classification.classify_active_window_preliminary"
+        in prelim_classify_task.commands[0]
+    )
+    assert (
+        "--selected-model-manifest artifacts/models/prelim_selected_model_v1.json"
         in prelim_classify_task.commands[0]
     )
 
@@ -1388,6 +1453,7 @@ def test_actual_iteration2_tranche_workflow_is_wired():
         "semantic_ai_washing.aggregation.build_preliminary_narrative_measures"
         in prelim_measures_task.commands[0]
     )
+    assert "--model-id prelim_selected_model_v1" in prelim_measures_task.commands[0]
 
     prelim_panel_phase = find_phase(
         model, iteration_id="4", phase_name="preliminary-panel-assembly-2021-2024"

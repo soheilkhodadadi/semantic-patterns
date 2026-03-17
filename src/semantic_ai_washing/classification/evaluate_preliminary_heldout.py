@@ -1,4 +1,4 @@
-"""Evaluate the preliminary centroid model on the frozen held-out set."""
+"""Evaluate a preliminary classifier on a held-out benchmark asset."""
 
 from __future__ import annotations
 
@@ -8,19 +8,18 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
-from sklearn.metrics import accuracy_score, confusion_matrix, f1_score
 
+from semantic_ai_washing.classification.benchmark_utils import (
+    compute_metrics,
+    heldout_overlap_count,
+    load_benchmark_frame,
+)
+from semantic_ai_washing.classification.model_runtime import load_manifest, predict_sentences
 from semantic_ai_washing.classification.preliminary_pipeline import (
-    embed_sentences,
     classify_embeddings,
+    embed_sentences,
     load_centroids,
     sha256_file,
-)
-from semantic_ai_washing.labeling.common import (
-    ALLOWED_LABELS,
-    ensure_allowed_label,
-    normalize_sentence,
-    load_table,
 )
 
 
@@ -31,59 +30,98 @@ def _load_metadata(path: str | Path) -> dict[str, Any]:
     return payload
 
 
-def _load_held_out(path: str | Path) -> pd.DataFrame:
-    frame = pd.read_csv(path)
-    required_columns = {"sentence", "label"}
-    missing = sorted(required_columns - set(frame.columns))
-    if missing:
-        raise ValueError(f"Held-out data missing required columns: {missing}")
-    frame = frame.copy()
-    frame["label"] = frame["label"].map(ensure_allowed_label)
-    frame = frame[frame["label"].notna()].copy()
-    if frame.empty:
-        raise ValueError("Held-out file does not contain valid labeled rows.")
-    return frame
-
-
-def _heldout_overlap_count(labels_master_path: str | Path, held_out: pd.DataFrame) -> int:
-    labels_master = load_table(labels_master_path)
-    if "sentence" not in labels_master.columns:
-        raise ValueError("Labels master must include `sentence` for leakage checks.")
-    label_norms = labels_master["sentence"].fillna("").astype(str).map(normalize_sentence)
-    held_norms = held_out["sentence"].fillna("").astype(str).map(normalize_sentence)
-    return int(label_norms.isin(set(held_norms)).sum())
+def _pending_selected_payload(args: argparse.Namespace, status: str) -> dict[str, Any]:
+    payload = {
+        "status": status,
+        "generated_at_utc": pd.Timestamp.utcnow().isoformat(),
+        "model_id": "",
+        "summary": {
+            "status": status,
+            "preliminary_only": True,
+            "source_window_id": str(args.source_window_id),
+            "reviewed_items": 0,
+            "accuracy": 0.0,
+            "macro_f1": 0.0,
+            "leakage_detected": False,
+            "heldout_overlap_count": 0,
+            "publication_grade_threshold": float(args.accuracy_threshold),
+            "publication_grade_threshold_passed": False,
+            "valid_evaluation_state": False,
+            "benchmark_name": Path(args.held_out).name,
+        },
+        "inputs": {
+            "held_out": str(args.held_out),
+            "labels_master": str(args.labels_master),
+            "selected_model_manifest": str(args.selected_model_manifest),
+            "held_out_sha256": sha256_file(args.held_out),
+            "labels_master_sha256": sha256_file(args.labels_master),
+            "selected_model_manifest_sha256": sha256_file(args.selected_model_manifest),
+        },
+        "confusion_matrix": {},
+    }
+    return payload
 
 
 def run_evaluation(args: argparse.Namespace) -> dict[str, Any]:
     output_path = Path(args.output_report)
     output_path.parent.mkdir(parents=True, exist_ok=True)
+    selected_model_manifest = getattr(args, "selected_model_manifest", "")
 
-    metadata = _load_metadata(args.model_metadata)
-    held_out = _load_held_out(args.held_out)
-    overlap_count = _heldout_overlap_count(args.labels_master, held_out)
+    held_out = load_benchmark_frame(args.held_out)
+    overlap_count = heldout_overlap_count(args.labels_master, held_out)
     leakage_detected = overlap_count > 0
 
-    centroids = load_centroids(args.centroids)
-    embeddings = embed_sentences(
-        held_out["sentence"].fillna("").astype(str).tolist(),
-        backend=str(metadata.get("embedding_backend", args.embedding_backend)),
-        model_name=str(metadata.get("model_name", args.model_name)),
-        batch_size=int(args.batch_size),
-        hash_dim=int(metadata.get("hash_dim", args.hash_dim)),
-    )
-    predicted, _score_rows = classify_embeddings(embeddings, centroids)
-
-    y_true = held_out["label"].astype(str).tolist()
-    accuracy = float(accuracy_score(y_true, predicted))
-    macro_f1 = float(f1_score(y_true, predicted, labels=list(ALLOWED_LABELS), average="macro"))
-    confusion = confusion_matrix(y_true, predicted, labels=list(ALLOWED_LABELS))
-    confusion_payload = {
-        label: {
-            inner: int(confusion[row_idx, col_idx]) for col_idx, inner in enumerate(ALLOWED_LABELS)
+    metadata: dict[str, Any]
+    inputs: dict[str, Any]
+    if selected_model_manifest:
+        selected = load_manifest(selected_model_manifest)
+        selected_status = str(selected.get("status", "")).strip()
+        if selected_status != "selected" or not isinstance(selected.get("winner"), dict):
+            payload = _pending_selected_payload(args, "pending_selected_model")
+            output_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+            return payload
+        runtime_manifest = dict(selected["winner"])
+        predicted, _score_rows = predict_sentences(
+            held_out["sentence"].fillna("").astype(str).tolist(),
+            runtime_manifest,
+        )
+        metadata = {
+            "model_id": runtime_manifest.get("model_id", ""),
+            "source_window_id": runtime_manifest.get("source_window_id", args.source_window_id),
+            "embedding_backend": runtime_manifest.get("runtime", {}).get("embedding_backend", ""),
+            "model_name": runtime_manifest.get("runtime", {}).get("model_name", ""),
         }
-        for row_idx, label in enumerate(ALLOWED_LABELS)
-    }
+        inputs = {
+            "held_out": str(args.held_out),
+            "labels_master": str(args.labels_master),
+            "selected_model_manifest": str(selected_model_manifest),
+            "held_out_sha256": sha256_file(args.held_out),
+            "labels_master_sha256": sha256_file(args.labels_master),
+            "selected_model_manifest_sha256": sha256_file(selected_model_manifest),
+        }
+    else:
+        metadata = _load_metadata(args.model_metadata)
+        centroids = load_centroids(args.centroids)
+        embeddings = embed_sentences(
+            held_out["sentence"].fillna("").astype(str).tolist(),
+            backend=str(metadata.get("embedding_backend", args.embedding_backend)),
+            model_name=str(metadata.get("model_name", args.model_name)),
+            batch_size=int(args.batch_size),
+            hash_dim=int(metadata.get("hash_dim", args.hash_dim)),
+        )
+        predicted, _score_rows = classify_embeddings(embeddings, centroids)
+        inputs = {
+            "held_out": str(args.held_out),
+            "labels_master": str(args.labels_master),
+            "centroids": str(args.centroids),
+            "model_metadata": str(args.model_metadata),
+            "held_out_sha256": sha256_file(args.held_out),
+            "labels_master_sha256": sha256_file(args.labels_master),
+            "centroids_sha256": sha256_file(args.centroids),
+            "model_metadata_sha256": sha256_file(args.model_metadata),
+        }
 
+    metrics = compute_metrics(held_out["label"].astype(str).tolist(), predicted)
     valid_state = not leakage_detected and len(held_out) > 0
     status = "passed" if valid_state else "failed"
     report = {
@@ -95,27 +133,28 @@ def run_evaluation(args: argparse.Namespace) -> dict[str, Any]:
             "preliminary_only": True,
             "source_window_id": metadata.get("source_window_id", args.source_window_id),
             "reviewed_items": int(len(held_out)),
-            "accuracy": accuracy,
-            "macro_f1": macro_f1,
+            "accuracy": metrics["accuracy"],
+            "macro_f1": metrics["macro_f1"],
             "leakage_detected": leakage_detected,
             "heldout_overlap_count": int(overlap_count),
             "publication_grade_threshold": float(args.accuracy_threshold),
-            "publication_grade_threshold_passed": accuracy >= float(args.accuracy_threshold),
+            "publication_grade_threshold_passed": metrics["accuracy"]
+            >= float(args.accuracy_threshold),
             "valid_evaluation_state": valid_state,
             "embedding_backend": metadata.get("embedding_backend", args.embedding_backend),
             "model_name": metadata.get("model_name", args.model_name),
+            "benchmark_name": Path(args.held_out).name,
+            "binary_relevance_accuracy": metrics["binary_relevance_accuracy"],
+            "actionable_speculative_conditional_accuracy": metrics[
+                "actionable_speculative_conditional_accuracy"
+            ],
+            "actionable_speculative_conditional_macro_f1": metrics[
+                "actionable_speculative_conditional_macro_f1"
+            ],
         },
-        "inputs": {
-            "held_out": str(args.held_out),
-            "labels_master": str(args.labels_master),
-            "centroids": str(args.centroids),
-            "model_metadata": str(args.model_metadata),
-            "held_out_sha256": sha256_file(args.held_out),
-            "labels_master_sha256": sha256_file(args.labels_master),
-            "centroids_sha256": sha256_file(args.centroids),
-            "model_metadata_sha256": sha256_file(args.model_metadata),
-        },
-        "confusion_matrix": confusion_payload,
+        "inputs": inputs,
+        "per_class": metrics["per_class"],
+        "confusion_matrix": metrics["confusion_matrix"],
     }
     output_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
     if status != "passed":
@@ -133,6 +172,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--model-metadata", default="artifacts/models/mpnet_prelim_v1/metadata.json"
     )
+    parser.add_argument("--selected-model-manifest", default="")
     parser.add_argument(
         "--output-report", default="reports/evaluation/heldout_eval_prelim_v1.json"
     )

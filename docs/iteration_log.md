@@ -2598,3 +2598,59 @@ Rules:
 - Truthful interpretation:
   - the preliminary model artifacts are valid and ready for downstream active-window classification once sentence materialization completes
   - current held-out predictive quality is well below the publication-grade threshold and will need diagnosis/remediation later
+
+## 2026-03-16 - Iteration 3 Validation-Asset Rebaseline and Wave-1 Benchmark Setup
+
+- Kept the active-window sentence-materialization process running in the background and left it uninterrupted while classifier work proceeded in parallel.
+- Published the diagnostic boundary benchmark from the finalized adjudicated IRR slice:
+  - `data/validation/irr_boundary_benchmark_v1.csv`
+  - `reports/validation/irr_boundary_benchmark_v1.json`
+- Published the multi-asset validation registry:
+  - `reports/validation/validation_asset_registry_v2.json`
+- Registry truth at this checkpoint:
+  - historical benchmark remains `data/validation/held_out_sentences.csv`
+  - the planned current-rubric primary benchmark `data/validation/held_out_sentences_v2.csv` does not exist yet
+  - IRR adjudication rows are preserved as a diagnostic-only boundary benchmark
+- Trained two additional local preliminary baselines on the frozen train split:
+  - `artifacts/models/mpnet_logreg_prelim_v1/model.pkl`
+  - `artifacts/models/mpnet_logreg_prelim_v1/metadata.json`
+  - `artifacts/models/binary_relevance_then_as_v1/relevance_model.pkl`
+  - `artifacts/models/binary_relevance_then_as_v1/actionable_speculative_model.pkl`
+  - `artifacts/models/binary_relevance_then_as_v1/metadata.json`
+- Ran the wave-1 benchmark harness across four local candidates:
+  - `legacy_two_stage_mpnet_rules`
+  - `mpnet_prelim_v1`
+  - `mpnet_logreg_prelim_v1`
+  - `binary_relevance_then_as_v1`
+- Benchmark artifacts written:
+  - `reports/evaluation/model_benchmark_matrix_prelim_v1.json`
+  - `reports/evaluation/model_benchmark_matrix_prelim_v1.md`
+  - `reports/evaluation/models/*.json`
+  - `artifacts/models/prelim_selected_model_v1.json`
+  - `reports/evaluation/heldout_eval_prelim_v2.json`
+- Truthful benchmark status at this checkpoint:
+  - `status = pending_primary_benchmark`
+  - no winner selected yet because `held_out_sentences_v2.csv` is not frozen
+  - selected-model evaluation is therefore also `pending_selected_model`
+- Secondary benchmark snapshot before `held_out_v2` exists:
+  - historical held-out accuracy / macro-F1
+    - `legacy_two_stage_mpnet_rules = 0.5794 / 0.5740`
+    - `mpnet_prelim_v1 = 0.4299 / 0.4478`
+    - `mpnet_logreg_prelim_v1 = 0.4626 / 0.4662`
+    - `binary_relevance_then_as_v1 = 0.4065 / 0.4158`
+  - frozen-validation accuracy / macro-F1
+    - `legacy_two_stage_mpnet_rules = 0.5135 / 0.4873`
+    - `mpnet_prelim_v1 = 0.7117 / 0.6158`
+    - `mpnet_logreg_prelim_v1 = 0.7568 / 0.6570`
+    - `binary_relevance_then_as_v1 = 0.7838 / 0.6609`
+- Director artifacts refreshed for the new benchmark lane:
+  - `docs/director/roadmap_master.md`
+  - `director/plans/plan_ea7f34e78c91cd38.md`
+  - `director/plans/runbook_ea7f34e78c91cd38.yaml`
+  - `director/decisions/decision_ea7f34e78c91cd38.json`
+  - `director/plans/manifest_ea7f34e78c91cd38.json`
+- Operational lesson recorded for future iterations:
+  - when a long-running extraction or other CPU-heavy batch is monopolizing the machine, keep the batch alive but avoid opening many additional long-lived shell jobs in the main chat
+  - prefer one of two low-blast-radius responses:
+    - temporarily lower the batch priority with `renice` so short benchmark jobs can complete
+    - use delegated sidecar execution or sub-agents for bounded non-blocking work, while keeping the main thread focused on planning, review, and integration

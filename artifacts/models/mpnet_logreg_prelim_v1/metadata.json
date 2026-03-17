@@ -1,0 +1,47 @@
+{
+  "status": "trained",
+  "generated_at_utc": "2026-03-17T02:14:13.819930+00:00",
+  "model_id": "mpnet_logreg_prelim_v1",
+  "model_type": "logreg_multiclass",
+  "preliminary_only": true,
+  "source_window_id": "active_2021_2024",
+  "embedding_backend": "sentence_transformers",
+  "model_name": "sentence-transformers/all-mpnet-base-v2",
+  "hash_dim": 64,
+  "batch_size": 32,
+  "runtime": {
+    "model_pickle": "artifacts/models/mpnet_logreg_prelim_v1/model.pkl",
+    "model_pickle_sha256": "d34b7a19340a0554ff065ff5ed3907c3223a45267d987ca27a63117f1119aada",
+    "embedding_backend": "sentence_transformers",
+    "model_name": "sentence-transformers/all-mpnet-base-v2",
+    "hash_dim": 64,
+    "batch_size": 32
+  },
+  "inputs": {
+    "labels_master": "data/labels/v1/labels_master.parquet",
+    "split_registry": "data/metadata/splits/split_registry_v1.csv",
+    "labels_master_sha256": "ec479d493138c27103c00f6b17e0c62bb54e380862fc0d75b12098381db42fc5",
+    "split_registry_sha256": "eacaeddec7a7b089cda40958cbfed80709558ce66d36b6d7e6adc672b7a47293"
+  },
+  "outputs": {
+    "model_pickle": "artifacts/models/mpnet_logreg_prelim_v1/model.pkl",
+    "model_pickle_sha256": "d34b7a19340a0554ff065ff5ed3907c3223a45267d987ca27a63117f1119aada"
+  },
+  "summary": {
+    "rows_total": 551,
+    "rows_train": 440,
+    "rows_validation_reserved": 111,
+    "train_class_counts": {
+      "Actionable": 86,
+      "Speculative": 79,
+      "Irrelevant": 275
+    },
+    "validation_class_counts": {
+      "Actionable": 22,
+      "Speculative": 20,
+      "Irrelevant": 69
+    },
+    "split_version": "v1",
+    "seed": 20260315
+  }
+}

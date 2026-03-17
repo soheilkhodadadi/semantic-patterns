@@ -1,0 +1,15 @@
+{
+  "status": "pending_selected_model",
+  "generated_at_utc": "2026-03-17T02:15:36.482203+00:00",
+  "summary": {
+    "status": "pending_selected_model",
+    "selected_model_id": "",
+    "primary_benchmark_name": "held_out_v2"
+  },
+  "inputs": {
+    "selected_manifest": "artifacts/models/prelim_selected_model_v1.json",
+    "selected_manifest_sha256": "6da9fa920651fecea26b080b8684e021c480d7351e3d5e8756275db14fbbb3be",
+    "benchmark_matrix": "reports/evaluation/model_benchmark_matrix_prelim_v1.json",
+    "benchmark_matrix_sha256": "4491e45c1d79ab4909d6ff59e997288e42a279ec2a3bd04c9d106f1b669ee7fe"
+  }
+}

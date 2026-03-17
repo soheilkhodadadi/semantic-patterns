@@ -1,0 +1,10 @@
+{
+  "status": "pending_primary_benchmark",
+  "generated_at_utc": "2026-03-17T02:15:36.482203+00:00",
+  "preliminary_only": true,
+  "source_window_id": "active_2021_2024",
+  "selection_reason": "Primary benchmark held_out_v2 is not frozen yet.",
+  "benchmark_matrix": "reports/evaluation/model_benchmark_matrix_prelim_v1.json",
+  "benchmark_matrix_sha256": "4491e45c1d79ab4909d6ff59e997288e42a279ec2a3bd04c9d106f1b669ee7fe",
+  "winner": null
+}

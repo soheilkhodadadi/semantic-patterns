@@ -1,0 +1,165 @@
+{
+  "model_id": "legacy_two_stage_mpnet_rules",
+  "model_type": "legacy_two_stage_mpnet_rules",
+  "benchmarks": {
+    "historical_held_out": {
+      "accuracy": 0.5794392523364486,
+      "macro_f1": 0.5740190200423281,
+      "per_class": {
+        "Actionable": {
+          "precision": 0.8805970149253731,
+          "recall": 0.7283950617283951,
+          "f1": 0.7972972972972973,
+          "support": 81
+        },
+        "Speculative": {
+          "precision": 0.74,
+          "recall": 0.3854166666666667,
+          "f1": 0.5068493150684932,
+          "support": 96
+        },
+        "Irrelevant": {
+          "precision": 0.28865979381443296,
+          "recall": 0.7567567567567568,
+          "f1": 0.417910447761194,
+          "support": 37
+        }
+      },
+      "confusion_matrix": {
+        "Actionable": {
+          "Actionable": 59,
+          "Speculative": 6,
+          "Irrelevant": 16
+        },
+        "Speculative": {
+          "Actionable": 6,
+          "Speculative": 37,
+          "Irrelevant": 53
+        },
+        "Irrelevant": {
+          "Actionable": 2,
+          "Speculative": 7,
+          "Irrelevant": 28
+        }
+      },
+      "binary_relevance_accuracy": 0.6355140186915887,
+      "binary_relevance_macro_f1": 0.5763021626561072,
+      "actionable_speculative_conditional_items": 177,
+      "actionable_speculative_conditional_accuracy": 0.8418079096045198,
+      "actionable_speculative_conditional_macro_f1": 0.8368018967334037,
+      "runtime_seconds": 14.770371,
+      "benchmark_name": "historical_held_out",
+      "benchmark_role": "secondary",
+      "benchmark_rows": 214,
+      "benchmark_sha256": "0655a14cf69b1a9160471533689b286b6a4da9a2cbf468afab2623aa8c08b99e",
+      "leakage_detected": false,
+      "leakage_count": 0
+    },
+    "irr_boundary_benchmark": {
+      "accuracy": 0.38333333333333336,
+      "macro_f1": 0.3891547049441786,
+      "per_class": {
+        "Actionable": {
+          "precision": 0.43902439024390244,
+          "recall": 0.5142857142857142,
+          "f1": 0.47368421052631576,
+          "support": 35
+        },
+        "Speculative": {
+          "precision": 0.22641509433962265,
+          "recall": 0.34285714285714286,
+          "f1": 0.2727272727272727,
+          "support": 35
+        },
+        "Irrelevant": {
+          "precision": 0.6153846153846154,
+          "recall": 0.32,
+          "f1": 0.42105263157894735,
+          "support": 50
+        }
+      },
+      "confusion_matrix": {
+        "Actionable": {
+          "Actionable": 18,
+          "Speculative": 12,
+          "Irrelevant": 5
+        },
+        "Speculative": {
+          "Actionable": 18,
+          "Speculative": 12,
+          "Irrelevant": 5
+        },
+        "Irrelevant": {
+          "Actionable": 5,
+          "Speculative": 29,
+          "Irrelevant": 16
+        }
+      },
+      "binary_relevance_accuracy": 0.6333333333333333,
+      "binary_relevance_macro_f1": 0.576379974326059,
+      "actionable_speculative_conditional_items": 70,
+      "actionable_speculative_conditional_accuracy": 0.5,
+      "actionable_speculative_conditional_macro_f1": 0.49989793835476626,
+      "runtime_seconds": 2.882702,
+      "benchmark_name": "irr_boundary_benchmark",
+      "benchmark_role": "secondary",
+      "benchmark_rows": 120,
+      "benchmark_sha256": "1a1d4c9cdfdb8ff59b2b3c4a0a3b96ca25688cc28c92d01ab4ca5cfa7f2465e9",
+      "leakage_detected": false,
+      "leakage_count": 0
+    },
+    "frozen_validation_split": {
+      "accuracy": 0.5135135135135135,
+      "macro_f1": 0.4872883199322094,
+      "per_class": {
+        "Actionable": {
+          "precision": 0.53125,
+          "recall": 0.7727272727272727,
+          "f1": 0.6296296296296297,
+          "support": 22
+        },
+        "Speculative": {
+          "precision": 0.14634146341463414,
+          "recall": 0.3,
+          "f1": 0.19672131147540983,
+          "support": 20
+        },
+        "Irrelevant": {
+          "precision": 0.8947368421052632,
+          "recall": 0.4927536231884058,
+          "f1": 0.6355140186915887,
+          "support": 69
+        }
+      },
+      "confusion_matrix": {
+        "Actionable": {
+          "Actionable": 17,
+          "Speculative": 3,
+          "Irrelevant": 2
+        },
+        "Speculative": {
+          "Actionable": 12,
+          "Speculative": 6,
+          "Irrelevant": 2
+        },
+        "Irrelevant": {
+          "Actionable": 3,
+          "Speculative": 32,
+          "Irrelevant": 34
+        }
+      },
+      "binary_relevance_accuracy": 0.6486486486486487,
+      "binary_relevance_macro_f1": 0.64819179195449,
+      "actionable_speculative_conditional_items": 42,
+      "actionable_speculative_conditional_accuracy": 0.5952380952380952,
+      "actionable_speculative_conditional_macro_f1": 0.5757575757575757,
+      "runtime_seconds": 2.464908,
+      "benchmark_name": "frozen_validation_split",
+      "benchmark_role": "secondary",
+      "benchmark_rows": 111,
+      "benchmark_sha256": "e26f04140c5c5821a5c1a3a05fd3f437ede12fa6da1d7312dd547a16ca20dff6",
+      "leakage_detected": false,
+      "leakage_count": 0
+    }
+  }
+}

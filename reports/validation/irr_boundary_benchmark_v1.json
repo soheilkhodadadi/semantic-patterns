@@ -1,0 +1,22 @@
+{
+  "status": "passed",
+  "generated_at_utc": "2026-03-17T02:10:01.316605+00:00",
+  "summary": {
+    "status": "passed",
+    "rows_total": 120,
+    "rows_disagreement_case": 26,
+    "rows_agreement_case": 94,
+    "label_counts": {
+      "Irrelevant": 50,
+      "Actionable": 35,
+      "Speculative": 35
+    },
+    "resolution_source_counts": {
+      "agreement": 94,
+      "third_adjudicator": 26
+    }
+  },
+  "outputs": {
+    "benchmark_csv": "data/validation/irr_boundary_benchmark_v1.csv"
+  }
+}

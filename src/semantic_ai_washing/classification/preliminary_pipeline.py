@@ -1,4 +1,4 @@
-"""Shared helpers for the preliminary centroid workflow."""
+"""Shared helpers for the preliminary classifier workflow."""
 
 from __future__ import annotations
 
@@ -15,10 +15,17 @@ DEFAULT_MODEL_NAME = "sentence-transformers/all-mpnet-base-v2"
 DEFAULT_EMBEDDING_BACKEND = "sentence_transformers"
 DEFAULT_HASH_DIM = 64
 
+_SENTENCE_TRANSFORMER_CACHE: dict[str, object] = {}
+
 
 def sha256_file(path: str | Path) -> str:
+    if path is None:
+        return ""
+    text = str(path).strip()
+    if not text:
+        return ""
     resolved = Path(path)
-    if not resolved.exists():
+    if not resolved.exists() or resolved.is_dir():
         return ""
     hasher = hashlib.sha256()
     with resolved.open("rb") as handle:
@@ -52,6 +59,14 @@ def hash_embed_sentence(text: str, *, dim: int = DEFAULT_HASH_DIM) -> np.ndarray
     return vector / norm
 
 
+def _load_sentence_transformer(model_name: str):
+    if model_name not in _SENTENCE_TRANSFORMER_CACHE:
+        from sentence_transformers import SentenceTransformer
+
+        _SENTENCE_TRANSFORMER_CACHE[model_name] = SentenceTransformer(model_name)
+    return _SENTENCE_TRANSFORMER_CACHE[model_name]
+
+
 def embed_sentences(
     sentences: Iterable[str],
     *,
@@ -70,9 +85,7 @@ def embed_sentences(
     if backend != "sentence_transformers":
         raise ValueError(f"Unsupported embedding backend: {backend}")
 
-    from sentence_transformers import SentenceTransformer
-
-    model = SentenceTransformer(model_name)
+    model = _load_sentence_transformer(model_name)
     embeddings = model.encode(
         sentence_list,
         batch_size=batch_size,

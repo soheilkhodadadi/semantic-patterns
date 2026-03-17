@@ -1,7 +1,7 @@
 <!-- generated_file: true -->
 <!-- source_model: /Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/model/roadmap_model.yaml -->
-<!-- source_sha256: bb7cad542cdba649885b201127aa308228eec4ef774be059fc021131fb4a071a -->
-<!-- rendered_at: 2026-03-16T16:14:37.749564+00:00 -->
+<!-- source_sha256: 5da48b0d716fe5fcdaf9f41cad7a89d71416d20aebf749a09462cc7c6068e325 -->
+<!-- rendered_at: 2026-03-17T02:16:10.108576+00:00 -->
 
 # Roadmap Master
 
@@ -10,8 +10,8 @@ This document is generated from the canonical roadmap YAML model.
 Optimization proposals may recommend resequencing tasks or phases beyond the canonical order shown here.
 
 ## Branching Policy
-- integration branch template: `iteration{iteration_id}/integration`
-- work branch template: `iteration{iteration_id}/{slug}`
+- integration branch template: `codex/iteration{iteration_id}/integration`
+- work branch template: `codex/iteration{iteration_id}/{slug}`
 - merge target: `main`
 - preferred merge strategy: `ff_only_if_possible_else_pr_merge_commit`
 - review approval required before next iteration: `true`
@@ -127,7 +127,7 @@ Optimization proposals may recommend resequencing tasks or phases beyond the can
   - summary: After truthful IRR closeout, allow stakeholder-facing preliminary results on the active 2021-2024 window without weakening publication-grade gates.
   - target iteration: `2`
   - source refs: email thread 2026-03-15
-  - mapped phases: iteration2/irr-disagreement-diagnostic, iteration2/preliminary-results-authorization, iteration3/preliminary-kickoff-and-preflight, iteration4/preliminary-panel-assembly-2021-2024, iteration5/preliminary-results-package, iteration5/preliminary-results-table-planning
+  - mapped phases: iteration2/irr-disagreement-diagnostic, iteration2/preliminary-results-authorization, iteration3/preliminary-kickoff-and-preflight, iteration3/preliminary-validation-asset-rebaseline, iteration3/preliminary-model-benchmark-wave1, iteration3/preliminary-model-selection, iteration4/preliminary-panel-assembly-2021-2024, iteration5/preliminary-results-package, iteration5/preliminary-results-table-planning
   - mapped gates: preliminary_results_internal_only
 
 ## Methodology Alignment
@@ -870,7 +870,7 @@ Exit criteria: Rubric realignment report and revised protocol v2.4 are published
 
 ## Iteration 3 - Retraining, Measure Construction, and Development Predictive Validity
 Goal: Retrain on the proposal-aligned adjudicated labels, build named firm-year measures, and test whether the rubric directionally predicts later AI capability before publication-scale deployment.
-Entry criteria: Iteration 2 review approved., Iteration 3 kickoff completed on iteration3/integration., Label sufficiency gate passed with at least 500 adjudicated labels, at least 80 labels per class, human-human IRR > 0.7, and provisional rubric freeze recorded.
+Entry criteria: Iteration 2 review approved., Iteration 3 kickoff completed on codex/iteration3/integration., Label sufficiency gate passed with at least 500 adjudicated labels, at least 80 labels per class, human-human IRR > 0.7, and provisional rubric freeze recorded.
 Exit criteria: Retraining, held-out evaluation, active-window classification, and ai_total merge-integrity QA are complete., Named firm-year narrative measures are published explicitly., Development predictive-validity gate is documented before publication-scale rollout., Iteration 3 review approved.
 
 ### iteration3/preliminary-kickoff-and-preflight
@@ -909,6 +909,45 @@ Exit criteria: Retraining, held-out evaluation, active-window classification, an
   - tags: preliminary_results, sentence_materialization
   - risks: R1, R5
 
+### iteration3/preliminary-validation-asset-rebaseline
+- Title: Preliminary Validation Asset Rebaseline
+- Goal: Freeze the new current-rubric held-out path and explicitly separate historical, boundary, and canonical preliminary evaluation assets.
+- Lifecycle: `planned`
+- Depends on: iteration3/preliminary-source-window-sentence-materialization
+- Source window: `active_2021_2024`
+- Required artifacts: data/validation/irr_boundary_benchmark_v1.csv, reports/validation/irr_boundary_benchmark_v1.json, reports/validation/validation_asset_registry_v2.json, data/validation/held_out_sentences_v2_review_sheet.csv, data/validation/held_out_sentences_v2_review_sheet.xlsx, reports/validation/held_out_v2_sampling_report.json, data/validation/held_out_sentences_v2.csv, reports/validation/held_out_sentences_v2_freeze.json
+- Tags: preliminary_results, evaluation_assets
+
+#### Tasks
+- `iteration3.prelim.publish_irr_boundary_benchmark` Publish IRR boundary benchmark
+  - kind: `build` gate_class: `science` automation: `full`
+  - depends_on: iteration3.prelim.materialize_active_window_sentence_tables
+  - inputs: data/labels/v1/adjudication.parquet
+  - outputs: data/validation/irr_boundary_benchmark_v1.csv, reports/validation/irr_boundary_benchmark_v1.json
+  - tags: preliminary_results, evaluation_assets
+  - risks: R2
+- `iteration3.prelim.sample_heldout_v2_candidates` Sample held-out v2 review candidates
+  - kind: `build` gate_class: `science` automation: `full`
+  - depends_on: iteration3.prelim.materialize_active_window_sentence_tables
+  - inputs: none
+  - outputs: data/validation/held_out_sentences_v2_review_sheet.csv, data/validation/held_out_sentences_v2_review_sheet.xlsx, reports/validation/held_out_v2_sampling_report.json
+  - tags: preliminary_results, evaluation_assets
+  - risks: R2, R6
+- `iteration3.prelim.freeze_heldout_v2` Freeze held-out v2 after review
+  - kind: `manual` gate_class: `science` automation: `manual`
+  - depends_on: iteration3.prelim.sample_heldout_v2_candidates
+  - inputs: none
+  - outputs: data/validation/held_out_sentences_v2.csv, reports/validation/held_out_sentences_v2_freeze.json
+  - tags: preliminary_results, evaluation_assets
+  - risks: R3
+- `iteration3.prelim.publish_validation_asset_registry_v2` Publish validation asset registry v2
+  - kind: `build` gate_class: `science` automation: `full`
+  - depends_on: iteration3.prelim.publish_irr_boundary_benchmark
+  - inputs: none
+  - outputs: reports/validation/validation_asset_registry_v2.json
+  - tags: preliminary_results, evaluation_assets
+  - risks: R2
+
 ### iteration3/preliminary-centroid-retraining
 - Title: Preliminary Centroid Retraining
 - Goal: Train a preliminary-only model namespace for the active 2021-2024 window without overwriting publication-grade artifacts.
@@ -927,39 +966,107 @@ Exit criteria: Retraining, held-out evaluation, active-window classification, an
   - tags: preliminary_results, retraining, centroid
   - risks: R2, R6
 
+### iteration3/preliminary-model-benchmark-wave1
+- Title: Preliminary Model Benchmark Wave 1
+- Goal: Benchmark low-blast-radius local candidate models on the current validation asset stack before selecting an active-window classifier.
+- Lifecycle: `planned`
+- Depends on: iteration3/preliminary-validation-asset-rebaseline, iteration3/preliminary-centroid-retraining
+- Source window: `active_2021_2024`
+- Required artifacts: artifacts/models/mpnet_logreg_prelim_v1/model.pkl, artifacts/models/mpnet_logreg_prelim_v1/metadata.json, artifacts/models/binary_relevance_then_as_v1/relevance_model.pkl, artifacts/models/binary_relevance_then_as_v1/actionable_speculative_model.pkl, artifacts/models/binary_relevance_then_as_v1/metadata.json, reports/evaluation/model_benchmark_matrix_prelim_v1.json, reports/evaluation/model_benchmark_matrix_prelim_v1.md, artifacts/models/prelim_selected_model_v1.json
+- Tags: preliminary_results, benchmarking
+
+#### Tasks
+- `iteration3.prelim.train_logreg_baseline` Train MPNet logistic-regression baseline
+  - kind: `build` gate_class: `science` automation: `full`
+  - depends_on: iteration3.prelim.train_centroids
+  - inputs: none
+  - outputs: artifacts/models/mpnet_logreg_prelim_v1/model.pkl, artifacts/models/mpnet_logreg_prelim_v1/metadata.json
+  - tags: preliminary_results, benchmarking
+  - risks: R2
+- `iteration3.prelim.train_binary_relevance_then_as` Train binary relevance then A/S baseline
+  - kind: `build` gate_class: `science` automation: `full`
+  - depends_on: iteration3.prelim.train_centroids
+  - inputs: none
+  - outputs: artifacts/models/binary_relevance_then_as_v1/relevance_model.pkl, artifacts/models/binary_relevance_then_as_v1/actionable_speculative_model.pkl, artifacts/models/binary_relevance_then_as_v1/metadata.json
+  - tags: preliminary_results, benchmarking
+  - risks: R2
+- `iteration3.prelim.benchmark_wave1_candidates` Benchmark wave-1 candidate models
+  - kind: `validation` gate_class: `science` automation: `full`
+  - depends_on: iteration3.prelim.train_logreg_baseline, iteration3.prelim.train_binary_relevance_then_as
+  - inputs: none
+  - outputs: reports/evaluation/model_benchmark_matrix_prelim_v1.json, reports/evaluation/model_benchmark_matrix_prelim_v1.md, artifacts/models/prelim_selected_model_v1.json
+  - tags: preliminary_results, benchmarking
+  - risks: R2, R3
+
+### iteration3/preliminary-model-selection
+- Title: Preliminary Model Selection
+- Goal: Select a single preliminary model only after the new canonical held-out asset is frozen and benchmarked.
+- Lifecycle: `planned`
+- Depends on: iteration3/preliminary-model-benchmark-wave1
+- Source window: `active_2021_2024`
+- Required artifacts: artifacts/models/prelim_selected_model_v1.json, reports/evaluation/heldout_eval_prelim_v2.json
+- Tags: preliminary_results, benchmarking, selection
+
+#### Tasks
+- `iteration3.prelim.publish_selected_model_eval` Publish selected-model held-out evaluation
+  - kind: `validation` gate_class: `science` automation: `full`
+  - depends_on: iteration3.prelim.benchmark_wave1_candidates
+  - inputs: none
+  - outputs: reports/evaluation/heldout_eval_prelim_v2.json
+  - tags: preliminary_results, evaluation
+  - risks: R2, R3
+
+### iteration3/preliminary-model-benchmark-wave2
+- Title: Preliminary Model Benchmark Wave 2
+- Goal: Escalate to SetFit, OpenAI batch, or cross-encoder benchmarking only if wave 1 fails to clear the preliminary gate.
+- Lifecycle: `planned`
+- Depends on: iteration3/preliminary-model-benchmark-wave1
+- Source window: `active_2021_2024`
+- Required artifacts: none
+- Tags: preliminary_results, benchmarking, escalation
+
+#### Tasks
+- `iteration3.prelim.plan_wave2_benchmarks` Plan wave-2 benchmark escalation
+  - kind: `manual` gate_class: `science` automation: `manual`
+  - depends_on: iteration3.prelim.benchmark_wave1_candidates
+  - inputs: none
+  - outputs: none
+  - tags: preliminary_results, benchmarking, escalation
+  - risks: R2, R3
+
 ### iteration3/preliminary-heldout-evaluation
 - Title: Preliminary Held-Out Evaluation
-- Goal: Evaluate the preliminary model truthfully on the frozen held-out split without relaxing leakage checks or implying publication-grade authorization.
+- Goal: Evaluate the selected preliminary model truthfully on the frozen current-rubric held-out without relaxing leakage checks or implying publication-grade authorization.
 - Lifecycle: `planned`
-- Depends on: iteration3/preliminary-centroid-retraining
+- Depends on: iteration3/preliminary-model-selection
 - Source window: `active_2021_2024`
-- Required artifacts: reports/evaluation/heldout_eval_prelim_v1.json
+- Required artifacts: reports/evaluation/heldout_eval_prelim_v2.json
 - Tags: preliminary_results, evaluation
 
 #### Tasks
-- `iteration3.prelim.evaluate_heldout` Evaluate preliminary model on held-out data
+- `iteration3.prelim.verify_selected_heldout_eval` Verify selected-model held-out evaluation
   - kind: `validation` gate_class: `science` automation: `full`
-  - depends_on: iteration3.prelim.train_centroids
-  - inputs: artifacts/models/mpnet_prelim_v1/centroids.json, artifacts/models/mpnet_prelim_v1/metadata.json, data/validation/held_out_sentences.csv
-  - outputs: reports/evaluation/heldout_eval_prelim_v1.json
+  - depends_on: iteration3.prelim.publish_selected_model_eval
+  - inputs: none
+  - outputs: reports/evaluation/heldout_eval_prelim_v2.json
   - tags: preliminary_results, evaluation
   - risks: R2, R3
 
 ### iteration3/preliminary-active-window-classification
 - Title: Preliminary Active Window Classification
-- Goal: Classify the active 2021-2024 source window into a separate preliminary artifact namespace for internal results work.
+- Goal: Classify the active 2021-2024 source window into a separate preliminary artifact namespace for internal results work using the selected preliminary model manifest.
 - Lifecycle: `planned`
 - Depends on: iteration3/preliminary-heldout-evaluation
 - Source window: `active_2021_2024`
-- Required artifacts: data/processed/classifications/year=2021/model=mpnet_prelim_v1/classified_sentences.parquet, data/processed/classifications/year=2022/model=mpnet_prelim_v1/classified_sentences.parquet, data/processed/classifications/year=2023/model=mpnet_prelim_v1/classified_sentences.parquet, data/processed/classifications/year=2024/model=mpnet_prelim_v1/classified_sentences.parquet, reports/classification/active_window_coverage_prelim_v1.json
+- Required artifacts: data/processed/classifications/year=2021/model=prelim_selected_model_v1/classified_sentences.parquet, data/processed/classifications/year=2022/model=prelim_selected_model_v1/classified_sentences.parquet, data/processed/classifications/year=2023/model=prelim_selected_model_v1/classified_sentences.parquet, data/processed/classifications/year=2024/model=prelim_selected_model_v1/classified_sentences.parquet, reports/classification/active_window_coverage_prelim_v1.json
 - Tags: preliminary_results, batch_classification
 
 #### Tasks
-- `iteration3.prelim.classify_active_window` Classify the active window with the preliminary model
+- `iteration3.prelim.classify_active_window` Classify the active window with the selected preliminary model
   - kind: `build` gate_class: `data` automation: `full`
-  - depends_on: iteration3.prelim.evaluate_heldout
-  - inputs: artifacts/models/mpnet_prelim_v1/centroids.json, artifacts/models/mpnet_prelim_v1/metadata.json
-  - outputs: data/processed/classifications/year=2021/model=mpnet_prelim_v1/classified_sentences.parquet, data/processed/classifications/year=2022/model=mpnet_prelim_v1/classified_sentences.parquet, data/processed/classifications/year=2023/model=mpnet_prelim_v1/classified_sentences.parquet, data/processed/classifications/year=2024/model=mpnet_prelim_v1/classified_sentences.parquet, reports/classification/active_window_coverage_prelim_v1.json
+  - depends_on: iteration3.prelim.verify_selected_heldout_eval
+  - inputs: artifacts/models/prelim_selected_model_v1.json
+  - outputs: data/processed/classifications/year=2021/model=prelim_selected_model_v1/classified_sentences.parquet, data/processed/classifications/year=2022/model=prelim_selected_model_v1/classified_sentences.parquet, data/processed/classifications/year=2023/model=prelim_selected_model_v1/classified_sentences.parquet, data/processed/classifications/year=2024/model=prelim_selected_model_v1/classified_sentences.parquet, reports/classification/active_window_coverage_prelim_v1.json
   - tags: preliminary_results, batch_classification
   - risks: R2, R6
 
@@ -976,7 +1083,7 @@ Exit criteria: Retraining, held-out evaluation, active-window classification, an
 - `iteration3.prelim.publish_firm_year_measures` Publish preliminary firm-year narrative measures
   - kind: `build` gate_class: `science` automation: `full`
   - depends_on: iteration3.prelim.classify_active_window
-  - inputs: reports/classification/active_window_coverage_prelim_v1.json
+  - inputs: reports/classification/active_window_coverage_prelim_v1.json, artifacts/models/prelim_selected_model_v1.json
   - outputs: data/processed/aggregates/firm_year_ai_metrics_prelim_v1.parquet, data/processed/aggregates/firm_year_narrative_measures_prelim_v1.parquet, reports/classification/firm_year_narrative_measures_prelim_v1.json
   - tags: preliminary_results, measures
   - risks: R2, R6

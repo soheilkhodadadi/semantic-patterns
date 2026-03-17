@@ -1,18 +1,19 @@
-"""Train preliminary centroid artifacts from the frozen split registry."""
+"""Train a preliminary two-stage relevance then A/S classifier on MPNet embeddings."""
 
 from __future__ import annotations
 
 import argparse
 import json
+import pickle
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
+from sklearn.linear_model import LogisticRegression
 
 from semantic_ai_washing.classification.preliminary_pipeline import (
     DEFAULT_EMBEDDING_BACKEND,
     DEFAULT_MODEL_NAME,
-    compute_centroids,
     embed_sentences,
     sha256_file,
 )
@@ -32,36 +33,26 @@ def _load_training_frame(
         raise ValueError(f"Labels master missing required columns: {missing_labels}")
     if missing_split:
         raise ValueError(f"Split registry missing required columns: {missing_split}")
-
     labels_master = labels_master.copy()
     labels_master["label"] = labels_master["label"].map(ensure_allowed_label)
     labels_master = labels_master[labels_master["label"].notna()].copy()
-    if labels_master.empty:
-        raise ValueError("Labels master does not contain canonical labels.")
-
     merged = labels_master.merge(
         split_registry[["sentence_id", "split", "split_version", "seed"]],
         on="sentence_id",
         how="left",
         validate="one_to_one",
     )
-    if merged["split"].isna().any():
-        missing = int(merged["split"].isna().sum())
-        raise ValueError(f"Split registry is missing {missing} sentence assignments.")
-
     train = merged.loc[merged["split"] == "train"].copy()
     validation = merged.loc[merged["split"] == "validation"].copy()
     if train.empty:
         raise ValueError("Frozen split registry does not contain any training rows.")
-
     train_counts = {label: int((train["label"] == label).sum()) for label in ALLOWED_LABELS}
     validation_counts = {
         label: int((validation["label"] == label).sum()) for label in ALLOWED_LABELS
     }
     if any(count == 0 for count in train_counts.values()):
         raise ValueError(f"Training split must include all labels; observed counts={train_counts}")
-
-    metadata = {
+    return train, {
         "rows_total": int(len(merged)),
         "rows_train": int(len(train)),
         "rows_validation_reserved": int(len(validation)),
@@ -70,15 +61,14 @@ def _load_training_frame(
         "split_version": str(split_registry["split_version"].astype(str).mode().iloc[0]),
         "seed": int(split_registry["seed"].astype(int).mode().iloc[0]),
     }
-    return train, metadata
 
 
 def run_training(args: argparse.Namespace) -> dict[str, Any]:
-    embeddings_output = Path(args.embeddings_output)
-    centroids_output = Path(args.centroids_output)
+    relevance_output = Path(args.relevance_model_output)
+    as_output = Path(args.actionable_speculative_model_output)
     metadata_output = Path(args.metadata_output)
-    embeddings_output.parent.mkdir(parents=True, exist_ok=True)
-    centroids_output.parent.mkdir(parents=True, exist_ok=True)
+    relevance_output.parent.mkdir(parents=True, exist_ok=True)
+    as_output.parent.mkdir(parents=True, exist_ok=True)
     metadata_output.parent.mkdir(parents=True, exist_ok=True)
 
     train, split_meta = _load_training_frame(args.labels_master, args.split_registry)
@@ -89,31 +79,56 @@ def run_training(args: argparse.Namespace) -> dict[str, Any]:
         batch_size=int(args.batch_size),
         hash_dim=int(args.hash_dim),
     )
-    centroids = compute_centroids(train["label"].astype(str).tolist(), embeddings)
 
-    embeddings_frame = train[
-        [
-            column
-            for column in ["sentence_id", "sentence", "label", "source_cik", "source_year"]
-            if column in train.columns
-        ]
-    ].copy()
-    embeddings_frame["embedding"] = embeddings.tolist()
-    embeddings_frame.to_parquet(embeddings_output, index=False)
+    relevance_labels = [
+        "Irrelevant" if label == "Irrelevant" else "Non-Irrelevant"
+        for label in train["label"].astype(str)
+    ]
+    relevance_model = LogisticRegression(
+        class_weight="balanced",
+        max_iter=int(args.max_iter),
+        random_state=int(args.seed),
+        solver="lbfgs",
+    )
+    relevance_model.fit(embeddings, relevance_labels)
 
-    centroids_output.write_text(json.dumps(centroids, indent=2), encoding="utf-8")
+    as_mask = train["label"].isin(["Actionable", "Speculative"]).to_numpy()
+    if int(as_mask.sum()) < 2:
+        raise ValueError("Need at least two non-irrelevant rows to train the A/S head.")
+    as_model = LogisticRegression(
+        class_weight="balanced",
+        max_iter=int(args.max_iter),
+        random_state=int(args.seed),
+        solver="lbfgs",
+    )
+    as_model.fit(embeddings[as_mask], train.loc[as_mask, "label"].astype(str).tolist())
+
+    with relevance_output.open("wb") as handle:
+        pickle.dump({"model": relevance_model}, handle)
+    with as_output.open("wb") as handle:
+        pickle.dump({"model": as_model}, handle)
 
     metadata = {
         "status": "trained",
         "generated_at_utc": pd.Timestamp.utcnow().isoformat(),
         "model_id": str(args.model_id),
-        "model_type": "centroid_multiclass",
+        "model_type": "binary_relevance_then_as",
         "preliminary_only": True,
         "source_window_id": str(args.source_window_id),
         "embedding_backend": str(args.embedding_backend),
         "model_name": str(args.model_name),
         "hash_dim": int(args.hash_dim),
         "batch_size": int(args.batch_size),
+        "runtime": {
+            "relevance_model_pickle": str(relevance_output),
+            "relevance_model_pickle_sha256": sha256_file(relevance_output),
+            "actionable_speculative_model_pickle": str(as_output),
+            "actionable_speculative_model_pickle_sha256": sha256_file(as_output),
+            "embedding_backend": str(args.embedding_backend),
+            "model_name": str(args.model_name),
+            "hash_dim": int(args.hash_dim),
+            "batch_size": int(args.batch_size),
+        },
         "inputs": {
             "labels_master": str(args.labels_master),
             "split_registry": str(args.split_registry),
@@ -121,10 +136,10 @@ def run_training(args: argparse.Namespace) -> dict[str, Any]:
             "split_registry_sha256": sha256_file(args.split_registry),
         },
         "outputs": {
-            "embeddings": str(embeddings_output),
-            "embeddings_sha256": sha256_file(embeddings_output),
-            "centroids": str(centroids_output),
-            "centroids_sha256": sha256_file(centroids_output),
+            "relevance_model_pickle": str(relevance_output),
+            "relevance_model_pickle_sha256": sha256_file(relevance_output),
+            "actionable_speculative_model_pickle": str(as_output),
+            "actionable_speculative_model_pickle_sha256": sha256_file(as_output),
         },
         "summary": split_meta,
     }
@@ -137,20 +152,25 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--labels-master", default="data/labels/v1/labels_master.parquet")
     parser.add_argument("--split-registry", default="data/metadata/splits/split_registry_v1.csv")
     parser.add_argument(
-        "--embeddings-output", default="artifacts/models/mpnet_prelim_v1/embeddings.parquet"
+        "--relevance-model-output",
+        default="artifacts/models/binary_relevance_then_as_v1/relevance_model.pkl",
     )
     parser.add_argument(
-        "--centroids-output", default="artifacts/models/mpnet_prelim_v1/centroids.json"
+        "--actionable-speculative-model-output",
+        default="artifacts/models/binary_relevance_then_as_v1/actionable_speculative_model.pkl",
     )
     parser.add_argument(
-        "--metadata-output", default="artifacts/models/mpnet_prelim_v1/metadata.json"
+        "--metadata-output",
+        default="artifacts/models/binary_relevance_then_as_v1/metadata.json",
     )
-    parser.add_argument("--model-id", default="mpnet_prelim_v1")
+    parser.add_argument("--model-id", default="binary_relevance_then_as_v1")
     parser.add_argument("--source-window-id", default="active_2021_2024")
     parser.add_argument("--embedding-backend", default=DEFAULT_EMBEDDING_BACKEND)
     parser.add_argument("--model-name", default=DEFAULT_MODEL_NAME)
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--hash-dim", type=int, default=64)
+    parser.add_argument("--max-iter", type=int, default=2000)
+    parser.add_argument("--seed", type=int, default=20260315)
     return parser.parse_args()
 
 
@@ -158,11 +178,10 @@ def main() -> None:
     args = parse_args()
     metadata = run_training(args)
     print(
-        "[prelim-train] trained "
-        f"train_rows={metadata['summary']['rows_train']} "
-        f"validation_reserved={metadata['summary']['rows_validation_reserved']}"
+        "[prelim-binary] trained "
+        f"train_rows={metadata['summary']['rows_train']} validation_reserved={metadata['summary']['rows_validation_reserved']}"
     )
-    print(f"[prelim-train] metadata -> {args.metadata_output}")
+    print(f"[prelim-binary] metadata -> {args.metadata_output}")
 
 
 if __name__ == "__main__":
