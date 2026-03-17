@@ -214,3 +214,7 @@ director/cache/*
 director/snapshots/atlas_metadata.json
 director/snapshots/ingest_manifest.json
 director/snapshots/iteration_state_compiled.json
+
+# Generated manuscript build outputs
+output/doc/*.docx
+output/paper/*.md

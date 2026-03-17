@@ -122,6 +122,11 @@ director-status:
 	@$(VENV_PYTHON) -m semantic_ai_washing.director.cli status
 	
 
+## Build the repo-native paper draft into markdown and docx
+.PHONY: paper-build
+paper-build:
+	@python3 scripts/build_paper.py
+
 
 
 ## Delete all compiled Python files
