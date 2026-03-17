@@ -168,6 +168,7 @@ def run_materialization(args: argparse.Namespace) -> dict[str, Any]:
                 source_root=args.source_root,
                 keywords_path=args.keywords_path,
                 min_tokens=int(args.min_tokens),
+                max_tokens=int(args.max_tokens),
                 sample_size=int(args.sample_size),
             )
 
@@ -210,6 +211,7 @@ def run_materialization(args: argparse.Namespace) -> dict[str, Any]:
             "index_csv": args.index_csv,
             "source_root_hint": args.source_root_hint,
             "keywords_path": args.keywords_path,
+            "max_tokens": int(args.max_tokens),
         },
     }
     inventory_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
@@ -246,6 +248,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--keywords-path", default="data/metadata/ai_keywords.txt")
     parser.add_argument("--min-tokens", type=int, default=6)
+    parser.add_argument("--max-tokens", type=int, default=120)
     parser.add_argument("--sample-size", type=int, default=200)
     parser.add_argument(
         "--refresh-index-if-missing-or-empty",

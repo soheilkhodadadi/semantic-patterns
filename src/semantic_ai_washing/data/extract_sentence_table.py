@@ -29,6 +29,8 @@ DEFAULT_REPORT = "reports/data/pilot_2024_sentence_quality.json"
 DEFAULT_KEYWORDS = "data/metadata/ai_keywords.txt"
 EXTRACTOR_VERSION = "sentence_table_v1"
 INTEGRITY_FLAG_COUNT = 4
+DEFAULT_MAX_TOKENS = 120
+DEFAULT_MAX_FRAGMENT_SCORE = 0.0
 
 OUTPUT_COLUMNS = [
     "sentence_id",
@@ -130,6 +132,8 @@ def extract_sentence_table(
     source_root: str = "",
     keywords_path: str = DEFAULT_KEYWORDS,
     min_tokens: int = 6,
+    max_tokens: int = DEFAULT_MAX_TOKENS,
+    max_fragment_score: float = DEFAULT_MAX_FRAGMENT_SCORE,
     sample_size: int = 200,
 ) -> dict[str, Any]:
     manifest = pd.read_csv(
@@ -156,6 +160,8 @@ def extract_sentence_table(
     integrity_counts: Counter[str] = Counter()
     total_segmented_sentences = 0
     total_ai_sentences = 0
+    dropped_fragment_rows = 0
+    dropped_token_rows = 0
 
     for manifest_row in manifest.itertuples(index=False):
         relative_path = Path(str(manifest_row.path))
@@ -189,8 +195,14 @@ def extract_sentence_table(
                 min_tokens=min_tokens,
                 source_section=source_section,
             )
-            rows.append(row)
             integrity_counts.update(flags)
+            if float(row["fragment_score"]) > float(max_fragment_score):
+                dropped_fragment_rows += 1
+                continue
+            if int(row["token_count"]) < int(min_tokens) or int(row["token_count"]) > int(max_tokens):
+                dropped_token_rows += 1
+                continue
+            rows.append(row)
 
     sentence_table = pd.DataFrame(rows, columns=OUTPUT_COLUMNS)
     if not sentence_table.empty:
@@ -248,6 +260,13 @@ def extract_sentence_table(
                 if not sentence_table.empty
                 else []
             ),
+            "quality_gate": {
+                "min_tokens": int(min_tokens),
+                "max_tokens": int(max_tokens),
+                "max_fragment_score": float(max_fragment_score),
+                "dropped_fragment_rows": int(dropped_fragment_rows),
+                "dropped_token_rows": int(dropped_token_rows),
+            },
         },
         "coverage_metrics": {
             "quarter_counts": {
@@ -286,6 +305,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--source-root", default="")
     parser.add_argument("--keywords", default=DEFAULT_KEYWORDS)
     parser.add_argument("--min-tokens", type=int, default=6)
+    parser.add_argument("--max-tokens", type=int, default=DEFAULT_MAX_TOKENS)
+    parser.add_argument("--max-fragment-score", type=float, default=DEFAULT_MAX_FRAGMENT_SCORE)
     parser.add_argument("--sample-size", type=int, default=200)
     return parser.parse_args()
 
@@ -300,6 +321,8 @@ def main() -> None:
         source_root=args.source_root,
         keywords_path=args.keywords,
         min_tokens=args.min_tokens,
+        max_tokens=args.max_tokens,
+        max_fragment_score=args.max_fragment_score,
         sample_size=args.sample_size,
     )
     print(f"[i] Wrote sentence table: {args.output}")

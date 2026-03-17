@@ -240,6 +240,15 @@ def predict_candidate_labels(
 def run_sampling(args: argparse.Namespace) -> dict:
     years = [int(value) for value in args.years]
     pool = load_sentence_pool(args.input_root, years)
+    include_forms = [
+        str(value).strip().upper()
+        for value in str(getattr(args, "include_forms", "") or "").split(",")
+        if str(value).strip()
+    ]
+    if include_forms:
+        pool = pool[pool["source_form"].fillna("").astype(str).str.upper().isin(include_forms)].copy()
+        if pool.empty:
+            raise ValueError(f"No sentence rows remain after form filter: {include_forms}")
     exclusions = load_exclusions(args.labels_master, args.historical_held_out)
     eligible = pool[~pool["sentence_norm"].isin(exclusions)].copy()
     eligible["candidate_label"] = predict_candidate_labels(
@@ -273,6 +282,11 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--output-report", default="reports/validation/held_out_v2_sampling_report.json"
+    )
+    parser.add_argument(
+        "--include-forms",
+        default="",
+        help="Optional comma-separated form filter, e.g. `10-K`.",
     )
     parser.add_argument("--prelabeler", choices=list(PRELABELERS), default="legacy_two_stage")
     return parser.parse_args()
