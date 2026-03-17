@@ -24,7 +24,7 @@ from semantic_ai_washing.data.index_sec_filings import (
 from semantic_ai_washing.data.materialize_active_window_sentences import run_materialization
 
 DEFAULT_YEARS = (2016, 2017, 2018, 2019, 2020)
-DEFAULT_FORMS = ("10-K", "10-K-A")
+DEFAULT_FORMS = ("10-K",)
 
 
 def _now_utc() -> str:

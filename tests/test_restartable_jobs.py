@@ -7,6 +7,9 @@ from pathlib import Path
 import pandas as pd
 
 from semantic_ai_washing.data.run_historical_backfill import run_backfill
+from semantic_ai_washing.labeling.run_assistive_prelabel_restartable import (
+    run_restartable_prelabel,
+)
 from semantic_ai_washing.labeling.sample_heldout_v2_restartable import run_sampling_restartable
 
 
@@ -164,3 +167,85 @@ def test_run_backfill_fails_when_requested_year_is_missing(tmp_path) -> None:
     assert report["summary"]["missing_years"] == [2017]
     progress = json.loads(Path(args.progress_report).read_text(encoding="utf-8"))
     assert progress["status"] == "failed"
+
+
+def test_run_restartable_prelabel_loops_until_pending_rows_clear(tmp_path, monkeypatch) -> None:
+    input_csv = tmp_path / "heldout.csv"
+    output_csv = tmp_path / "heldout_prelabeled.csv"
+    report_path = tmp_path / "heldout_report.json"
+    progress_path = tmp_path / "heldout_progress.json"
+
+    pd.DataFrame(
+        [
+            {
+                "sentence_id": "s1",
+                "sentence": "We deployed AI in production.",
+                "source_file": "a.txt",
+                "sentence_index": 1,
+                "label": "",
+            },
+            {
+                "sentence_id": "s2",
+                "sentence": "We plan to use AI.",
+                "source_file": "b.txt",
+                "sentence_index": 2,
+                "label": "",
+            },
+        ]
+    ).to_csv(input_csv, index=False)
+
+    def fake_generate(**kwargs):
+        source = output_csv if output_csv.exists() else input_csv
+        frame = pd.read_csv(source)
+        for column in [
+            "assistive_label",
+            "assistive_confidence",
+            "assistive_rationale",
+            "assistive_model",
+            "assistive_generated_at",
+            "assistive_prompt_hash",
+        ]:
+            if column not in frame.columns:
+                frame[column] = ""
+        pending = frame["assistive_label"].fillna("").astype(str).str.strip().eq("")
+        next_index = frame[pending].index[0]
+        frame.at[next_index, "assistive_label"] = "Actionable"
+        frame.at[next_index, "assistive_confidence"] = "high"
+        frame.at[next_index, "assistive_rationale"] = "fact claim"
+        frame.to_csv(output_csv, index=False)
+        report = {
+            "status": "in_progress",
+            "usage": {"estimated_cost_usd": 0.01},
+            "errors": [],
+        }
+        Path(report_path).write_text(json.dumps(report), encoding="utf-8")
+        return report, 0
+
+    monkeypatch.setattr(
+        "semantic_ai_washing.labeling.run_assistive_prelabel_restartable.generate_assistive_prelabels",
+        fake_generate,
+    )
+
+    args = Namespace(
+        input_csv=str(input_csv),
+        output_csv=str(output_csv),
+        report=str(report_path),
+        progress_report=str(progress_path),
+        policy="director/config/api_assistive_policy_heldout_v2.yaml",
+        cost_policy="director/config/cost_policy.yaml",
+        mode="live",
+        max_rows_per_call=1,
+        max_requests=0,
+        max_total_cost_usd=5.0,
+        sleep_seconds=0.0,
+    )
+
+    report, exit_code = run_restartable_prelabel(args)
+
+    assert exit_code == 0
+    assert report["status"] == "in_progress"
+    frame = pd.read_csv(output_csv)
+    assert frame["assistive_label"].fillna("").astype(str).str.strip().ne("").all()
+    progress = json.loads(progress_path.read_text(encoding="utf-8"))
+    assert progress["status"] == "passed"
+    assert progress["counts"]["pending_rows"] == 0
