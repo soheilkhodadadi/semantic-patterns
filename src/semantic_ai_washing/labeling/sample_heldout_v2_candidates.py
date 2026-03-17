@@ -18,9 +18,22 @@ DEFAULT_YEARS = (2021, 2022, 2023, 2024)
 TARGET_PER_LABEL = 60
 TARGET_TOTAL = 180
 LABELS = ("Actionable", "Speculative", "Irrelevant")
+REVIEW_COLUMNS = [
+    "sentence_id",
+    "sentence",
+    "source_cik",
+    "source_year",
+    "source_form",
+    "source_file",
+    "sentence_index",
+    "candidate_label",
+    "label",
+    "review_note",
+    "benchmark_asset_role",
+]
 
 
-def _load_sentence_pool(root: str | Path, years: list[int]) -> pd.DataFrame:
+def load_sentence_pool(root: str | Path, years: list[int]) -> pd.DataFrame:
     frames = []
     for year in years:
         path = Path(root) / f"year={year}" / "ai_sentences.parquet"
@@ -45,7 +58,7 @@ def _load_sentence_pool(root: str | Path, years: list[int]) -> pd.DataFrame:
     return pool
 
 
-def _load_exclusions(labels_master: str | Path, held_out: str | Path) -> set[str]:
+def load_exclusions(labels_master: str | Path, held_out: str | Path) -> set[str]:
     labels = pd.read_parquet(labels_master)
     if "sentence" not in labels.columns:
         raise ValueError("Labels master must include `sentence`.")
@@ -58,34 +71,28 @@ def _load_exclusions(labels_master: str | Path, held_out: str | Path) -> set[str
     return norms
 
 
-def run_sampling(args: argparse.Namespace) -> dict:
-    years = [int(value) for value in args.years]
-    pool = _load_sentence_pool(args.input_root, years)
-    exclusions = _load_exclusions(args.labels_master, args.historical_held_out)
-    eligible = pool[~pool["sentence_norm"].isin(exclusions)].copy()
+def select_candidate_review_rows(eligible: pd.DataFrame) -> pd.DataFrame:
     if eligible.empty:
         raise ValueError("No eligible sentences remain after exclusions.")
-
-    legacy = build_legacy_two_stage_runtime()
-    predicted, _scores = predict_sentences(eligible["sentence"].astype(str).tolist(), legacy)
-    eligible["candidate_label"] = predicted
-    eligible = eligible.sort_values(["source_year", "source_cik", "sentence_id"]).reset_index(
-        drop=True
-    )
+    if "candidate_label" not in eligible.columns:
+        raise ValueError("Eligible candidate pool must include `candidate_label`.")
+    eligible = eligible.copy()
+    eligible["source_cik_norm"] = eligible["source_cik"].fillna("").astype(str)
 
     selected_frames = []
     used_ciks: set[str] = set()
     shortfall: dict[str, int] = {}
     for label in LABELS:
         bucket = eligible[
-            (eligible["candidate_label"] == label) & (~eligible["source_cik"].isin(used_ciks))
+            (eligible["candidate_label"] == label)
+            & (~eligible["source_cik_norm"].isin(used_ciks))
         ].copy()
         bucket = bucket.groupby("source_year", group_keys=False).head(15)
         if len(bucket) < TARGET_PER_LABEL:
             remainder = eligible[
                 (eligible["candidate_label"] == label)
                 & (~eligible["sentence_id"].isin(bucket["sentence_id"]))
-                & (~eligible["source_cik"].isin(used_ciks))
+                & (~eligible["source_cik_norm"].isin(used_ciks))
             ].copy()
             if not remainder.empty:
                 bucket = pd.concat(
@@ -93,43 +100,33 @@ def run_sampling(args: argparse.Namespace) -> dict:
                 )
         bucket = bucket.head(TARGET_PER_LABEL).copy()
         shortfall[label] = TARGET_PER_LABEL - int(len(bucket))
-        used_ciks.update(bucket["source_cik"].astype(str).tolist())
+        used_ciks.update(bucket["source_cik_norm"].tolist())
         selected_frames.append(bucket)
 
     selected = pd.concat(selected_frames, ignore_index=True)
     if len(selected) != TARGET_TOTAL:
         raise ValueError(
-            f"Unable to build a full 180-row candidate pack; selected={len(selected)} shortfall={shortfall}"
+            "Unable to build a full 180-row candidate pack; "
+            f"selected={len(selected)} shortfall={shortfall}"
         )
     selected = selected.sort_values(
         ["candidate_label", "source_year", "source_cik", "sentence_id"]
     ).reset_index(drop=True)
+    selected = selected.drop(columns=["source_cik_norm"], errors="ignore")
     selected["label"] = ""
     selected["review_note"] = ""
     selected["benchmark_asset_role"] = "canonical_current_rubric_evaluation_set_candidate"
+    return selected
 
-    review_columns = [
-        "sentence_id",
-        "sentence",
-        "source_cik",
-        "source_year",
-        "source_form",
-        "source_file",
-        "sentence_index",
-        "candidate_label",
-        "label",
-        "review_note",
-        "benchmark_asset_role",
-    ]
-    output_csv = Path(args.output_csv)
-    output_xlsx = Path(args.output_xlsx)
-    output_report = Path(args.output_report)
-    output_csv.parent.mkdir(parents=True, exist_ok=True)
-    output_report.parent.mkdir(parents=True, exist_ok=True)
-    selected[review_columns].to_csv(output_csv, index=False)
-    write_excel(output_xlsx, selected[review_columns], sheet_name="held_out_v2_review")
 
-    report = {
+def build_sampling_report(
+    *,
+    selected: pd.DataFrame,
+    years: list[int],
+    output_csv: str | Path,
+    output_xlsx: str | Path,
+) -> dict:
+    return {
         "status": "pending_review",
         "generated_at_utc": pd.Timestamp.utcnow().isoformat(),
         "summary": {
@@ -145,8 +142,52 @@ def run_sampling(args: argparse.Namespace) -> dict:
             "review_xlsx": str(output_xlsx),
         },
     }
+
+
+def write_review_package(
+    *,
+    selected: pd.DataFrame,
+    years: list[int],
+    output_csv: str | Path,
+    output_xlsx: str | Path,
+    output_report: str | Path,
+) -> dict:
+    output_csv = Path(output_csv)
+    output_xlsx = Path(output_xlsx)
+    output_report = Path(output_report)
+    output_csv.parent.mkdir(parents=True, exist_ok=True)
+    output_report.parent.mkdir(parents=True, exist_ok=True)
+    selected[REVIEW_COLUMNS].to_csv(output_csv, index=False)
+    write_excel(output_xlsx, selected[REVIEW_COLUMNS], sheet_name="held_out_v2_review")
+    report = build_sampling_report(
+        selected=selected,
+        years=years,
+        output_csv=output_csv,
+        output_xlsx=output_xlsx,
+    )
     output_report.write_text(json.dumps(report, indent=2), encoding="utf-8")
     return report
+
+
+def run_sampling(args: argparse.Namespace) -> dict:
+    years = [int(value) for value in args.years]
+    pool = load_sentence_pool(args.input_root, years)
+    exclusions = load_exclusions(args.labels_master, args.historical_held_out)
+    eligible = pool[~pool["sentence_norm"].isin(exclusions)].copy()
+    legacy = build_legacy_two_stage_runtime()
+    predicted, _scores = predict_sentences(eligible["sentence"].astype(str).tolist(), legacy)
+    eligible["candidate_label"] = predicted
+    eligible = eligible.sort_values(["source_year", "source_cik", "sentence_id"]).reset_index(
+        drop=True
+    )
+    selected = select_candidate_review_rows(eligible)
+    return write_review_package(
+        selected=selected,
+        years=years,
+        output_csv=args.output_csv,
+        output_xlsx=args.output_xlsx,
+        output_report=args.output_report,
+    )
 
 
 def parse_args() -> argparse.Namespace:
