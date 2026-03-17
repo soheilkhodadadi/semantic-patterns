@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import http.client
 import json
 import os
+import time
 import urllib.error
 import urllib.request
 from typing import Any
@@ -48,6 +50,7 @@ def call_responses_api(
     timeout_seconds: int = 60,
     store: bool = False,
     extra_payload: dict[str, Any] | None = None,
+    max_retries: int = 2,
 ) -> dict[str, Any]:
     """Call the OpenAI Responses API and return decoded JSON."""
     resolved_api_key = (api_key or os.getenv("OPENAI_API_KEY", "")).strip()
@@ -73,20 +76,30 @@ def call_responses_api(
         method="POST",
     )
 
-    try:
-        with urllib.request.urlopen(req, timeout=timeout_seconds) as resp:
-            raw = resp.read().decode("utf-8")
-    except urllib.error.HTTPError as exc:
-        response_body = exc.read().decode("utf-8", errors="replace")
-        raise OpenAIResponsesHTTPError(
-            status_code=int(exc.code),
-            message=f"Responses API HTTP error: {exc.code}",
-            response_body=response_body,
-        ) from exc
-    except urllib.error.URLError as exc:
-        raise OpenAIResponsesError(f"Responses API network error: {exc.reason}") from exc
-    except TimeoutError as exc:
-        raise OpenAIResponsesError("Responses API request timed out") from exc
+    attempt = 0
+    while True:
+        try:
+            with urllib.request.urlopen(req, timeout=timeout_seconds) as resp:
+                raw = resp.read().decode("utf-8")
+            break
+        except urllib.error.HTTPError as exc:
+            response_body = exc.read().decode("utf-8", errors="replace")
+            raise OpenAIResponsesHTTPError(
+                status_code=int(exc.code),
+                message=f"Responses API HTTP error: {exc.code}",
+                response_body=response_body,
+            ) from exc
+        except (urllib.error.URLError, TimeoutError, http.client.RemoteDisconnected) as exc:
+            if attempt >= int(max_retries):
+                if isinstance(exc, urllib.error.URLError):
+                    raise OpenAIResponsesError(f"Responses API network error: {exc.reason}") from exc
+                if isinstance(exc, TimeoutError):
+                    raise OpenAIResponsesError("Responses API request timed out") from exc
+                raise OpenAIResponsesError(
+                    "Responses API remote end closed connection without response"
+                ) from exc
+            attempt += 1
+            time.sleep(min(2**attempt, 5))
 
     try:
         payload = json.loads(raw)
