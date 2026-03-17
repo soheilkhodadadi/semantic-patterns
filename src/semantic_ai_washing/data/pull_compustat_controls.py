@@ -91,15 +91,22 @@ def load_company_list(path="data/metadata/company_list_50.csv") -> pd.DataFrame:
     cik_col = next((cols[k] for k in ["cik", "sec_cik", "cik_code"] if k in cols), None)
     tic_col = next((cols[k] for k in ["ticker", "tic", "symbol"] if k in cols), None)
 
-    if name_col is None:
+    if name_col is None and cik_col is None and tic_col is None:
         raise ValueError(
-            "company_list_50.csv must contain a company name column (e.g., name/company/company_name/issuer)."
+            "Company list must contain at least one of: company name, cik, or ticker."
         )
 
     out = pd.DataFrame()
-    out["name_src"] = df[name_col].astype(str).str.strip()
+    if name_col is not None:
+        out["name_src"] = df[name_col].fillna("").astype(str).str.strip()
+    else:
+        out["name_src"] = pd.Series([""] * len(df), index=df.index)
     out["cik"] = df[cik_col].apply(normalize_cik) if cik_col else ""
-    out["ticker_src"] = df[tic_col].apply(normalize_ticker) if tic_col else ""
+    if tic_col:
+        out["ticker_src"] = df[tic_col].apply(normalize_ticker)
+    else:
+        out["ticker_src"] = pd.Series([""] * len(df), index=df.index)
+    out = out[(out["name_src"] != "") | (out["cik"] != "") | (out["ticker_src"] != "")].copy()
     return out
 
 
@@ -204,30 +211,35 @@ def build_cik_gvkey_crosswalk(conn, companies: pd.DataFrame) -> pd.DataFrame:
 
     # Attach original company names where available (by cik or ticker)
     companies["cik_nz"] = companies["cik"].replace("", np.nan)
-    companies["ticker_nz"] = companies["ticker_src"].replace("", np.nan)
+    companies["ticker_nz"] = companies["ticker_src"].replace("", np.nan).astype("object")
     cross = cross.merge(
         companies[["cik_nz", "ticker_nz", "name_src"]],
         left_on="cik",
         right_on="cik_nz",
         how="left",
     )
-    cross = cross.merge(
-        companies[["cik_nz", "ticker_nz", "name_src"]],
-        left_on="ticker_comp",
-        right_on="ticker_nz",
-        how="left",
-        suffixes=("", "_by_tic"),
-    )
+    if companies["ticker_nz"].notna().any():
+        cross["ticker_comp"] = cross["ticker_comp"].astype("object")
+        cross = cross.merge(
+            companies[["cik_nz", "ticker_nz", "name_src"]],
+            left_on="ticker_comp",
+            right_on="ticker_nz",
+            how="left",
+            suffixes=("", "_by_tic"),
+        )
+    else:
+        cross["name_src_by_tic"] = pd.NA
 
-    # Prefer name from cik match then ticker match then comp name
-    cross["name_src_final"] = (
-        cross["name_src"].fillna(cross["name_src_by_tic"]).fillna(cross["name_comp"])
-    )
+    # Prefer names supplied with the input list, but treat blank strings as missing so
+    # scaled CIK-only universes still retain Compustat company names.
+    name_from_cik = cross["name_src"].replace("", np.nan)
+    name_from_ticker = cross["name_src_by_tic"].replace("", np.nan)
+    cross["name_src_final"] = name_from_cik.fillna(name_from_ticker).fillna(cross["name_comp"])
     cross = cross.rename(columns={"name_src_final": "name"})
     cross = cross[["cik", "gvkey", "ticker_comp", "name", "sic"]].drop_duplicates()
 
     # Basic report
-    print(f"[✓] Crosswalk rows: {len(cross)} (unique firms from your 50)")
+    print(f"[✓] Crosswalk rows: {len(cross)}")
     missing_cik = (cross["cik"] == "").sum()
     if missing_cik:
         print(f"[!] {missing_cik} rows missing CIK in crosswalk (ticker/name-matched).")
@@ -239,7 +251,9 @@ def build_cik_gvkey_crosswalk(conn, companies: pd.DataFrame) -> pd.DataFrame:
 # ---------------------------
 
 
-def pull_funda(conn, gvkeys: list, start_year: int, end_year: int) -> pd.DataFrame:
+def pull_funda(
+    conn, gvkeys: list, start_year: int, end_year: int, chunk_size: int = 1000
+) -> pd.DataFrame:
     """
     Use an explicit IN (%s, %s, ...) list and pass a flat params sequence.
     This avoids 'can't adapt type list' from pandas/psycopg2 when using ANY(%s).
@@ -252,22 +266,25 @@ def pull_funda(conn, gvkeys: list, start_year: int, end_year: int) -> pd.DataFra
     if not gvkeys:
         return pd.DataFrame()
 
-    # Build placeholders for the IN clause
-    placeholders = ", ".join(["%s"] * len(gvkeys))
+    frames = []
+    for start in range(0, len(gvkeys), chunk_size):
+        chunk = gvkeys[start : start + chunk_size]
+        placeholders = ", ".join(["%s"] * len(chunk))
+        sql = dedent(f"""
+            SELECT gvkey, datadate, fyear, fyr, indfmt, consol, datafmt, popsrc,
+                   at, dltt, che, xrd, capx, ib, ni, oibdp, sale, emp
+            FROM comp.funda
+            WHERE indfmt='INDL' AND consol='C' AND datafmt='STD' AND popsrc='D'
+              AND gvkey IN ({placeholders})
+              AND fyear BETWEEN %s AND %s;
+        """)
+        params = chunk + [start_year, end_year]
+        frames.append(pd.read_sql(sql, conn, params=params))
 
-    sql = dedent(f"""
-        SELECT gvkey, datadate, fyear, fyr, indfmt, consol, datafmt, popsrc,
-               at, dltt, che, xrd, capx, ib, ni, oibdp, sale, emp
-        FROM comp.funda
-        WHERE indfmt='INDL' AND consol='C' AND datafmt='STD' AND popsrc='D'
-          AND gvkey IN ({placeholders})
-          AND fyear BETWEEN %s AND %s;
-    """)
+    if not frames:
+        return pd.DataFrame()
 
-    # Pass scalars only (flattened)
-    params = gvkeys + [start_year, end_year]
-
-    df = pd.read_sql(sql, conn, params=params)
+    df = pd.concat(frames, ignore_index=True)
     df["datadate"] = pd.to_datetime(df["datadate"], errors="coerce")
     df["fyear"] = pd.to_numeric(df["fyear"], errors="coerce").astype("Int64")
     return df
@@ -391,6 +408,12 @@ def main():
     ap.add_argument("--out-crosswalk", default="data/externals/crosswalks/cik_gvkey.csv")
     ap.add_argument("--out-controls", default="data/interim/controls/controls_by_firm_year.csv")
     ap.add_argument("--out-qc", default="reports/controls_qc.md")
+    ap.add_argument(
+        "--gvkey-chunk-size",
+        type=int,
+        default=1000,
+        help="Chunk size for scaled Compustat gvkey pulls (default: 1000).",
+    )
     args = ap.parse_args()
 
     ensure_dirs()
@@ -411,7 +434,13 @@ def main():
         print(
             f"🔎 Pulling Compustat funda for {len(gvkeys)} gvkeys {args.start_year}–{args.end_year} ..."
         )
-        funda = pull_funda(conn, gvkeys, args.start_year, args.end_year)
+        funda = pull_funda(
+            conn,
+            gvkeys,
+            args.start_year,
+            args.end_year,
+            chunk_size=args.gvkey_chunk_size,
+        )
 
     finally:
         conn.close()

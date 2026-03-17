@@ -2654,3 +2654,45 @@ Rules:
   - prefer one of two low-blast-radius responses:
     - temporarily lower the batch priority with `renice` so short benchmark jobs can complete
     - use delegated sidecar execution or sub-agents for bounded non-blocking work, while keeping the main thread focused on planning, review, and integration
+
+## 2026-03-16 — Iteration 3 controls/patents expansion while sentence extraction runs
+
+- Kept the active-window sentence materialization batch running in the background and expanded the panel-input lane in parallel rather than waiting on extraction.
+- Built broader annual-filer company-universe artifacts from `data/metadata/available_filings_index.csv`:
+  - `data/metadata/company_lists/company_list_active_annual_2021_2024.csv`
+  - `data/metadata/company_lists/company_list_active_annual_allyears_2021_2024.csv`
+- Chose the stricter `all-years` annual universe as the first preliminary default:
+  - `5196` firms present in all four years `2021–2024`
+- Refactored `semantic_ai_washing.data.pull_compustat_controls` so broader CIK-only universes work cleanly:
+  - company lists may now be CIK-only
+  - gvkey pulls are chunked for scale
+  - blank source names no longer overwrite Compustat company names in the WRDS crosswalk
+- Refreshed WRDS controls for the strict annual all-years universe:
+  - crosswalk: `4333` matched CIK↔GVKEY rows
+  - controls: `27839` firm-years for `2018–2024`
+  - QC report: `reports/controls_qc_active_annual_allyears_2021_2024.md`
+- Used `data/external/cik_ticker_list.csv` as a secondary enrichment layer rather than the primary identity source:
+  - WRDS crosswalk remains the backbone for `cik/gvkey/sic/name`
+  - `cik_ticker_list.csv` fills missing tickers and supplies extra alias names where useful
+- Rebuilt the patent company-identity layer for the broader universe:
+  - `data/metadata/company_lookup_active_annual_allyears_2021_2024.csv`
+  - `data/metadata/company_aliases_active_annual_allyears_2021_2024.csv`
+  - lookup coverage at this checkpoint:
+    - `4380` firms with normalized names
+    - `1051` derived alias rows
+- Refactored `semantic_ai_washing.patents.extract_filtered_patents` for scalable local PatentsView runs:
+  - added explicit `--data-root`, lookup, alias, and output args
+  - stream `patent_assignee.tsv` in chunks using normalized exact-term matching
+  - keep filtered chunk loading for `patent.tsv` and `patent_abstract.tsv`
+- Ran the expanded PatentsView extraction against `/Users/soheilkhodadadi/DataWork/patentsview` for the strict annual all-years lookup:
+  - `120` firms with at least one patent since `2019`
+  - `92` firms with at least one AI patent since `2019`
+  - outputs written locally under `data/processed/patents/` with the `active_annual_allyears_2019plus` suffix
+- Added a preliminary regression/table scaffold sidecar:
+  - `src/semantic_ai_washing/analysis/generate_preliminary_regression_spec.py`
+  - `reports/analysis/regression_specification_prelim_v1.json`
+  - current truthful status is `blocked` because the existing regression-ready panel is still missing the expected narrative columns (`n_A`, `n_S`)
+- Validation for this checkpoint:
+  - `make lint`
+  - `PYTHONPATH=src ./.venv/bin/python -m pytest -q tests/test_controls_and_universe.py tests/test_patent_lookup_builder.py`
+  - `PYTHONPATH=src ./.venv/bin/python -m semantic_ai_washing.analysis.generate_preliminary_regression_spec`
