@@ -21,6 +21,15 @@ def run_freeze(args: argparse.Namespace) -> tuple[dict, int]:
         raise ValueError(f"Reviewed hold-out v2 sheet missing required columns: {missing}")
     reviewed = reviewed.copy()
     reviewed["label"] = reviewed["label"].map(ensure_allowed_label)
+    excluded_ids = {
+        str(sentence_id).strip()
+        for sentence_id in getattr(args, "exclude_sentence_ids", []) or []
+        if str(sentence_id).strip()
+    }
+    if excluded_ids:
+        reviewed = reviewed[
+            ~reviewed["sentence_id"].fillna("").astype(str).isin(excluded_ids)
+        ].copy()
     pending = reviewed[reviewed["label"].isna()].copy()
     output_csv = Path(args.output_csv)
     output_report = Path(args.output_report)
@@ -30,7 +39,10 @@ def run_freeze(args: argparse.Namespace) -> tuple[dict, int]:
     status = "pending_review"
     exit_code = 1
     counts = {label: int((reviewed["label"] == label).sum()) for label in ALLOWED_LABELS}
-    if pending.empty and counts == TARGET_COUNTS:
+    target_counts_met = counts == TARGET_COUNTS
+    enforce_target_counts = bool(getattr(args, "enforce_target_counts", True))
+    ready_to_freeze = pending.empty and (target_counts_met or not enforce_target_counts)
+    if ready_to_freeze:
         status = "frozen"
         exit_code = 0
         reviewed[[column for column in reviewed.columns if column != "candidate_label"]].to_csv(
@@ -46,6 +58,10 @@ def run_freeze(args: argparse.Namespace) -> tuple[dict, int]:
             "rows_pending_review": int(len(pending)),
             "label_counts": counts,
             "target_counts": TARGET_COUNTS,
+            "target_counts_met": target_counts_met,
+            "enforce_target_counts": enforce_target_counts,
+            "excluded_sentence_ids": sorted(excluded_ids),
+            "rows_excluded": int(len(excluded_ids)),
         },
         "outputs": {
             "held_out_v2_csv": str(output_csv),
@@ -64,6 +80,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output-report", default="reports/validation/held_out_sentences_v2_freeze.json"
     )
+    parser.add_argument(
+        "--exclude-sentence-ids",
+        nargs="*",
+        default=[],
+        help="Sentence IDs to exclude from the frozen benchmark asset.",
+    )
+    parser.add_argument(
+        "--allow-unbalanced",
+        dest="enforce_target_counts",
+        action="store_false",
+        help="Freeze a fully reviewed asset even if label counts differ from TARGET_COUNTS.",
+    )
+    parser.set_defaults(enforce_target_counts=True)
     return parser.parse_args()
 
 

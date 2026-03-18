@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from pathlib import Path
 from typing import Iterable
 
@@ -60,11 +61,51 @@ def hash_embed_sentence(text: str, *, dim: int = DEFAULT_HASH_DIM) -> np.ndarray
 
 
 def _load_sentence_transformer(model_name: str):
-    if model_name not in _SENTENCE_TRANSFORMER_CACHE:
+    resolved_model_name = _resolve_sentence_transformer_source(model_name)
+    if resolved_model_name not in _SENTENCE_TRANSFORMER_CACHE:
         from sentence_transformers import SentenceTransformer
 
-        _SENTENCE_TRANSFORMER_CACHE[model_name] = SentenceTransformer(model_name)
-    return _SENTENCE_TRANSFORMER_CACHE[model_name]
+        _SENTENCE_TRANSFORMER_CACHE[resolved_model_name] = SentenceTransformer(resolved_model_name)
+    return _SENTENCE_TRANSFORMER_CACHE[resolved_model_name]
+
+
+def _huggingface_hub_root() -> Path:
+    explicit_cache = os.environ.get("HUGGINGFACE_HUB_CACHE") or os.environ.get("HF_HUB_CACHE")
+    if explicit_cache:
+        return Path(explicit_cache)
+    hf_home = os.environ.get("HF_HOME")
+    if hf_home:
+        return Path(hf_home) / "hub"
+    return Path.home() / ".cache" / "huggingface" / "hub"
+
+
+def _resolve_sentence_transformer_source(model_name: str) -> str:
+    candidate = str(model_name).strip()
+    if not candidate:
+        return candidate
+    if Path(candidate).expanduser().exists():
+        return str(Path(candidate).expanduser())
+
+    repo_cache = _huggingface_hub_root() / f"models--{candidate.replace('/', '--')}"
+    snapshots_dir = repo_cache / "snapshots"
+    if not snapshots_dir.exists():
+        return candidate
+
+    ref_path = repo_cache / "refs" / "main"
+    if ref_path.exists():
+        snapshot_name = ref_path.read_text(encoding="utf-8").strip()
+        resolved = snapshots_dir / snapshot_name
+        if resolved.exists():
+            return str(resolved)
+
+    snapshots = sorted(
+        [path for path in snapshots_dir.iterdir() if path.is_dir()],
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    )
+    if snapshots:
+        return str(snapshots[0])
+    return candidate
 
 
 def embed_sentences(

@@ -2,6 +2,59 @@
   "model_id": "mpnet_logreg_prelim_v1",
   "model_type": "logreg_multiclass",
   "benchmarks": {
+    "held_out_v2": {
+      "accuracy": 0.6892655367231638,
+      "macro_f1": 0.6615963075537543,
+      "per_class": {
+        "Actionable": {
+          "precision": 0.5842696629213483,
+          "recall": 0.8524590163934426,
+          "f1": 0.6933333333333334,
+          "support": 61
+        },
+        "Speculative": {
+          "precision": 0.5,
+          "recall": 0.5862068965517241,
+          "f1": 0.5396825396825397,
+          "support": 29
+        },
+        "Irrelevant": {
+          "precision": 0.9814814814814815,
+          "recall": 0.6091954022988506,
+          "f1": 0.75177304964539,
+          "support": 87
+        }
+      },
+      "confusion_matrix": {
+        "Actionable": {
+          "Actionable": 52,
+          "Speculative": 8,
+          "Irrelevant": 1
+        },
+        "Speculative": {
+          "Actionable": 12,
+          "Speculative": 17,
+          "Irrelevant": 0
+        },
+        "Irrelevant": {
+          "Actionable": 25,
+          "Speculative": 9,
+          "Irrelevant": 53
+        }
+      },
+      "binary_relevance_accuracy": 0.8022598870056498,
+      "binary_relevance_macro_f1": 0.7937269004095495,
+      "actionable_speculative_conditional_items": 90,
+      "actionable_speculative_conditional_accuracy": 0.7666666666666667,
+      "actionable_speculative_conditional_macro_f1": 0.725090909090909,
+      "runtime_seconds": 2.356514,
+      "benchmark_name": "held_out_v2",
+      "benchmark_role": "primary",
+      "benchmark_rows": 177,
+      "benchmark_sha256": "ca75be1812580ff9cc9b387dd57ca53be947ec1f03157f46fe775e58ebeb99b1",
+      "leakage_detected": false,
+      "leakage_count": 0
+    },
     "historical_held_out": {
       "accuracy": 0.46261682242990654,
       "macro_f1": 0.46622046000927986,
@@ -47,7 +100,7 @@
       "actionable_speculative_conditional_items": 177,
       "actionable_speculative_conditional_accuracy": 0.8192090395480226,
       "actionable_speculative_conditional_macro_f1": 0.8078697421981004,
-      "runtime_seconds": 2.977935,
+      "runtime_seconds": 2.809715,
       "benchmark_name": "historical_held_out",
       "benchmark_role": "secondary",
       "benchmark_rows": 214,
@@ -100,7 +153,7 @@
       "actionable_speculative_conditional_items": 70,
       "actionable_speculative_conditional_accuracy": 0.8714285714285714,
       "actionable_speculative_conditional_macro_f1": 0.8711919852790839,
-      "runtime_seconds": 3.583732,
+      "runtime_seconds": 3.416953,
       "benchmark_name": "irr_boundary_benchmark",
       "benchmark_role": "secondary",
       "benchmark_rows": 120,
@@ -153,7 +206,7 @@
       "actionable_speculative_conditional_items": 42,
       "actionable_speculative_conditional_accuracy": 0.6666666666666666,
       "actionable_speculative_conditional_macro_f1": 0.6597222222222223,
-      "runtime_seconds": 1.647456,
+      "runtime_seconds": 1.495877,
       "benchmark_name": "frozen_validation_split",
       "benchmark_role": "secondary",
       "benchmark_rows": 111,

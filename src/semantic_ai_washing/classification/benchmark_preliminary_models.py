@@ -233,19 +233,25 @@ def run_benchmark(args: argparse.Namespace) -> dict[str, Any]:
     model_report_dir.mkdir(parents=True, exist_ok=True)
 
     assets, missing = _load_benchmark_assets(args)
-    candidates = [
-        build_legacy_two_stage_runtime(
-            tau=float(args.legacy_tau),
-            eps_irr=float(args.legacy_eps_irr),
-            min_tokens=int(args.legacy_min_tokens),
-            rule_boosts=bool(args.legacy_rule_boosts),
-        ),
-        build_centroid_runtime(
-            metadata_path=args.centroid_metadata, centroids_path=args.centroid_model
-        ),
-        build_pickle_runtime(metadata_path=args.logreg_metadata),
-        build_pickle_runtime(metadata_path=args.binary_metadata),
-    ]
+    candidates = []
+    if not bool(getattr(args, "skip_legacy", False)):
+        candidates.append(
+            build_legacy_two_stage_runtime(
+                tau=float(args.legacy_tau),
+                eps_irr=float(args.legacy_eps_irr),
+                min_tokens=int(args.legacy_min_tokens),
+                rule_boosts=bool(args.legacy_rule_boosts),
+            )
+        )
+    candidates.extend(
+        [
+            build_centroid_runtime(
+                metadata_path=args.centroid_metadata, centroids_path=args.centroid_model
+            ),
+            build_pickle_runtime(metadata_path=args.logreg_metadata),
+            build_pickle_runtime(metadata_path=args.binary_metadata),
+        ]
+    )
 
     scores: dict[str, dict[str, Any]] = {}
     models_payload: list[dict[str, Any]] = []
@@ -286,6 +292,9 @@ def run_benchmark(args: argparse.Namespace) -> dict[str, Any]:
             "primary_benchmark_name": PRIMARY_BENCHMARK_NAME,
             "primary_benchmark_available": PRIMARY_BENCHMARK_NAME in assets,
             "missing_benchmarks": missing,
+            "skipped_candidates": ["legacy_two_stage_mpnet_rules"]
+            if bool(getattr(args, "skip_legacy", False))
+            else [],
             "selected_model_id": winner_payload["model_id"] if winner_payload else "",
             "selection_reason": selection_reason,
             "minimum_gate": thresholds,
@@ -358,6 +367,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--legacy-min-tokens", type=int, default=6)
     parser.add_argument("--legacy-rule-boosts", action="store_true", default=True)
     parser.add_argument("--no-legacy-rule-boosts", dest="legacy_rule_boosts", action="store_false")
+    parser.add_argument(
+        "--skip-legacy",
+        action="store_true",
+        help="Skip the legacy two-stage baseline when benchmarking modern preliminary models.",
+    )
     return parser.parse_args()
 
 

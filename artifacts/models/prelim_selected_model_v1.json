@@ -1,10 +1,34 @@
 {
-  "status": "pending_primary_benchmark",
-  "generated_at_utc": "2026-03-17T02:15:36.482203+00:00",
+  "status": "selected",
+  "generated_at_utc": "2026-03-18T02:33:41.120542+00:00",
   "preliminary_only": true,
   "source_window_id": "active_2021_2024",
-  "selection_reason": "Primary benchmark held_out_v2 is not frozen yet.",
+  "selection_reason": "Selected by primary benchmark macro_f1, then accuracy, then A/S conditional accuracy, with no major regression on secondary benchmarks.",
   "benchmark_matrix": "reports/evaluation/model_benchmark_matrix_prelim_v1.json",
-  "benchmark_matrix_sha256": "4491e45c1d79ab4909d6ff59e997288e42a279ec2a3bd04c9d106f1b669ee7fe",
-  "winner": null
+  "benchmark_matrix_sha256": "e18bad4d5772eca99db2fd6e5055b3f6c4ddc562a90143207796726b570086bb",
+  "winner": {
+    "model_id": "binary_relevance_then_as_v1",
+    "model_type": "binary_relevance_then_as",
+    "source_window_id": "active_2021_2024",
+    "preliminary_only": true,
+    "runtime": {
+      "relevance_model_pickle": "artifacts/models/binary_relevance_then_as_v1/relevance_model.pkl",
+      "relevance_model_pickle_sha256": "e4fd53b55843ffc5a5e87e2b094444462e08776c6068927c6b05bc049476a8e2",
+      "actionable_speculative_model_pickle": "artifacts/models/binary_relevance_then_as_v1/actionable_speculative_model.pkl",
+      "actionable_speculative_model_pickle_sha256": "66bfe9125fa02412c632b23ae46087bb5b2d416fe7f9033ed79be153ddbc0d87",
+      "embedding_backend": "sentence_transformers",
+      "model_name": "sentence-transformers/all-mpnet-base-v2",
+      "hash_dim": 64,
+      "batch_size": 32,
+      "metadata": "artifacts/models/binary_relevance_then_as_v1/metadata.json",
+      "metadata_sha256": "23ffe5233102581ef9479b936c0dee3bdd1b606bc6840dde57b9f880a529cd55"
+    },
+    "primary_benchmark": "held_out_v2",
+    "primary_metrics": {
+      "accuracy": 0.7062146892655368,
+      "macro_f1": 0.672898240145464,
+      "actionable_speculative_conditional_accuracy": 0.7555555555555555,
+      "actionable_speculative_conditional_macro_f1": 0.7201808931599774
+    }
+  }
 }

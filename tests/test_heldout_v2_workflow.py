@@ -205,3 +205,48 @@ def test_freeze_heldout_v2_requires_complete_balanced_labels(tmp_path: Path) -> 
     frozen = pd.read_csv(args.output_csv)
     assert len(frozen) == 180
     assert "candidate_label" not in frozen.columns
+
+
+def test_freeze_heldout_v2_allows_reviewed_unbalanced_asset_with_exclusions(tmp_path: Path) -> None:
+    reviewed = tmp_path / "reviewed.csv"
+    pd.DataFrame.from_records(
+        [
+            {
+                "sentence_id": "keep-actionable",
+                "sentence": "Actionable sentence",
+                "candidate_label": "Actionable",
+                "label": "Actionable",
+            },
+            {
+                "sentence_id": "keep-irrelevant",
+                "sentence": "Irrelevant sentence",
+                "candidate_label": "Irrelevant",
+                "label": "Irrelevant",
+            },
+            {
+                "sentence_id": "drop-invalid",
+                "sentence": "Broken OCR",
+                "candidate_label": "Irrelevant",
+                "label": "Irrelevant",
+            },
+        ]
+    ).to_csv(reviewed, index=False)
+
+    args = argparse.Namespace(
+        reviewed_input=str(reviewed),
+        output_csv=str(tmp_path / "held_out_v2.csv"),
+        output_report=str(tmp_path / "held_out_v2_report.json"),
+        exclude_sentence_ids=["drop-invalid"],
+        enforce_target_counts=False,
+    )
+
+    report, exit_code = freeze_heldout_v2.run_freeze(args)
+
+    assert exit_code == 0
+    assert report["status"] == "frozen"
+    assert report["summary"]["target_counts_met"] is False
+    assert report["summary"]["enforce_target_counts"] is False
+    assert report["summary"]["rows_excluded"] == 1
+    frozen = pd.read_csv(args.output_csv)
+    assert len(frozen) == 2
+    assert "drop-invalid" not in set(frozen["sentence_id"])
