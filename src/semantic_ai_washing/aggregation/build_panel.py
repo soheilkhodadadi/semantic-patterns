@@ -122,6 +122,10 @@ def main():
         "roa",
         "sales_growth",
         "emp",
+        "market_to_book",
+        "firm_age",
+        "sa_index",
+        "hhi",
     ]
     cols = [c for c in preferred if c in panel.columns] + [
         c for c in panel.columns if c not in preferred

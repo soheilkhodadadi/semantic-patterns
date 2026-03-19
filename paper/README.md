@@ -27,6 +27,7 @@ The build script will use it automatically when present. If it is absent, Pandoc
 From the repo root:
 
 ```bash
+make paper-refresh
 make paper-build
 ```
 
@@ -38,5 +39,6 @@ Outputs:
 ## Notes
 
 - This layer is meant for dynamic methodology/results/discussion content.
+- Generated snippets and tables are refreshed from pipeline artifacts by `make paper-refresh`.
 - It does not replace Zotero-in-Word right now.
 - After the deadline, we can decide whether to keep the hybrid workflow or migrate more of the manuscript into the repo.

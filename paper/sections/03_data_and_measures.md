@@ -9,3 +9,9 @@ Use this file to summarize:
 - patent matching and coverage
 
 Generated tables can be linked or summarized from `paper/generated/tables/`.
+
+{{ include: paper/generated/snippets/data_construction_prelim_v1.md }}
+
+## Current Cleanup Coverage
+
+{{ include: paper/generated/tables/sentence_cleanup_prelim_v1.md }}

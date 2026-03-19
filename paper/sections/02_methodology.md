@@ -23,3 +23,5 @@ Write the baseline panel specification here using LaTeX math syntax, for example
 $$
 Y_{i,t+1} = \alpha + \beta_1 \text{AI\_Focus}_{i,t} + \beta_2 \text{SpecShare}_{i,t} + \gamma X_{i,t} + \mu_i + \lambda_t + \varepsilon_{i,t}
 $$
+
+{{ include: paper/generated/snippets/regression_design_prelim_v1.md }}

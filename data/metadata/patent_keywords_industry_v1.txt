@@ -1,0 +1,47 @@
+# Core umbrella terms
+artificial intelligence
+machine learning
+deep learning
+language model
+large language model
+generative ai
+foundation model
+
+# Industry-usable AI / automation terms
+intelligent automation
+robotic process automation
+predictive analytics
+predictive model
+recommendation system
+recommender system
+anomaly detection
+autonomous system
+autonomous vehicle
+decision support system
+expert system
+knowledge graph
+
+# Canonical AI methods
+neural network
+artificial neural network
+natural language processing
+computer vision
+speech recognition
+speech synthesis
+reinforcement learning
+deep reinforcement learning
+federated learning
+transfer learning
+
+# Common model families in patent language
+convolutional neural network
+recurrent neural network
+transformer
+transformer model
+lstm
+generative adversarial network
+diffusion model
+support vector machine
+random forest
+decision tree
+gradient boosting

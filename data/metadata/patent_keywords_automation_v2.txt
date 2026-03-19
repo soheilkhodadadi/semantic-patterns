@@ -1,0 +1,63 @@
+# Applied AI / ML vocabulary
+artificial intelligence
+machine learning
+deep learning
+generative ai
+generative artificial intelligence
+foundation model
+language model
+large language model
+neural network
+artificial neural network
+natural language processing
+computer vision
+machine vision
+speech recognition
+speech synthesis
+reinforcement learning
+deep reinforcement learning
+federated learning
+transfer learning
+supervised learning
+unsupervised learning
+self-supervised learning
+convolutional neural network
+recurrent neural network
+transformer model
+transformer neural network
+long short-term memory
+lstm model
+support vector machine
+bayesian network
+random forest
+decision tree
+gradient boosting
+generative adversarial network
+diffusion model
+anomaly detection
+recommendation system
+recommender system
+predictive model
+predictive analytics
+predictive maintenance
+classification model
+object detection
+image recognition
+semantic segmentation
+optical character recognition
+pattern recognition
+knowledge graph
+
+# Older AI / automation terminology for long-horizon patent series
+expert system
+knowledge-based system
+decision support system
+intelligent agent
+machine intelligence
+fuzzy logic
+genetic algorithm
+evolutionary algorithm
+robotic process automation
+intelligent automation
+autonomous system
+autonomous vehicle

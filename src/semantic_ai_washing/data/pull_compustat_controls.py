@@ -30,7 +30,9 @@ Outputs
 import os
 import re
 import argparse
+import json
 from textwrap import dedent
+from datetime import datetime, timezone
 
 import numpy as np
 import pandas as pd
@@ -67,6 +69,17 @@ def ensure_dirs():
     os.makedirs("data/externals/crosswalks", exist_ok=True)
     os.makedirs("data/interim/controls", exist_ok=True)
     os.makedirs("reports", exist_ok=True)
+
+
+def write_progress(path: str, status: str, **payload) -> None:
+    report = {
+        "status": status,
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+    }
+    report.update(payload)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as fh:
+        json.dump(report, fh, indent=2)
 
 
 # ---------------------------
@@ -409,6 +422,11 @@ def main():
     ap.add_argument("--out-controls", default="data/interim/controls/controls_by_firm_year.csv")
     ap.add_argument("--out-qc", default="reports/controls_qc.md")
     ap.add_argument(
+        "--progress-report",
+        default="reports/controls_progress.json",
+        help="Progress JSON path for long-running WRDS pulls.",
+    )
+    ap.add_argument(
         "--gvkey-chunk-size",
         type=int,
         default=1000,
@@ -417,22 +435,50 @@ def main():
     args = ap.parse_args()
 
     ensure_dirs()
+    write_progress(
+        args.progress_report,
+        "starting",
+        start_year=args.start_year,
+        end_year=args.end_year,
+        company_list=args.company_list,
+        out_crosswalk=args.out_crosswalk,
+        out_controls=args.out_controls,
+        out_qc=args.out_qc,
+    )
 
     # Load your 50 firms
     companies = load_company_list(args.company_list)
     print(f"[✓] Loaded {len(companies)} companies from {args.company_list}")
+    write_progress(
+        args.progress_report,
+        "companies_loaded",
+        company_rows=int(len(companies)),
+    )
 
     # Connect and build crosswalk
     conn = connect_wrds()
     try:
+        write_progress(args.progress_report, "wrds_connected")
         cross = build_cik_gvkey_crosswalk(conn, companies)
         cross.to_csv(args.out_crosswalk, index=False)
         print(f"[✓] Saved crosswalk to {args.out_crosswalk}")
+        write_progress(
+            args.progress_report,
+            "crosswalk_saved",
+            crosswalk_rows=int(len(cross)),
+            out_crosswalk=args.out_crosswalk,
+        )
 
         # Pull funda for the gvkeys we found
         gvkeys = cross["gvkey"].dropna().astype(str).unique().tolist()
         print(
             f"🔎 Pulling Compustat funda for {len(gvkeys)} gvkeys {args.start_year}–{args.end_year} ..."
+        )
+        write_progress(
+            args.progress_report,
+            "pulling_funda",
+            gvkeys=int(len(gvkeys)),
+            gvkey_chunk_size=args.gvkey_chunk_size,
         )
         funda = pull_funda(
             conn,
@@ -441,7 +487,20 @@ def main():
             args.end_year,
             chunk_size=args.gvkey_chunk_size,
         )
+        write_progress(
+            args.progress_report,
+            "funda_loaded",
+            funda_rows=int(len(funda)),
+        )
 
+    except Exception as exc:
+        write_progress(
+            args.progress_report,
+            "failed",
+            error_type=type(exc).__name__,
+            error=str(exc),
+        )
+        raise
     finally:
         conn.close()
 
@@ -465,6 +524,12 @@ def main():
             ]
         ).to_csv(args.out_controls, index=False)
         write_qc_report(args.out_qc, cross, pd.DataFrame(), args.start_year, args.end_year)
+        write_progress(
+            args.progress_report,
+            "completed_empty",
+            out_controls=args.out_controls,
+            out_qc=args.out_qc,
+        )
         return
 
     # Compute controls and merge back to cik via crosswalk
@@ -498,6 +563,13 @@ def main():
 
     # QC report
     write_qc_report(args.out_qc, cross, controls, args.start_year, args.end_year)
+    write_progress(
+        args.progress_report,
+        "completed",
+        control_rows=int(len(controls)),
+        out_controls=args.out_controls,
+        out_qc=args.out_qc,
+    )
 
 
 if __name__ == "__main__":

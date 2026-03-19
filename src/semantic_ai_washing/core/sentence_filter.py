@@ -183,7 +183,7 @@ _LEADING_SINGLETON_PREFIX_RE = re.compile(
     r"^\s*[A-Z]\s+(?=(?:The|We|Our|This|These|In|Artificial|Machine|Data|Cyber|Generative|AI)\b)"
 )
 _HEADING_PREFIX_RE = re.compile(
-    r"^(?P<prefix>(?:[A-Z][A-Za-z0-9,&/\-]+(?:\s+[A-Z][A-Za-z0-9,&/\-]+){0,7}))\s+"
+    r"^(?P<prefix>(?:[A-Z][A-Za-z0-9,&/\-]+(?:\s+(?:[A-Z][A-Za-z0-9,&/\-]+|and|of|for|to|the|in|on)){0,7}))\s+"
     r"(?P<body>(?:We|Our|The|This|These|With|In|By|As|At|From|EPAM|Artificial|Machine)\b.*)$"
 )
 _KNOWN_HEADING_PREFIX_RE = re.compile(
@@ -200,6 +200,34 @@ _ITEM_1_RE = re.compile(r"^\s*item\s*1\b(?!\s*a\b)", re.I)
 _ITEM_7_RE = re.compile(r"^\s*item\s*7\b", re.I)
 _APOSTROPHE_SPLIT_RE = re.compile(
     r"\b(?P<stem>[A-Za-z0-9][A-Za-z0-9.&/\-]{1,})\s+s\b(?=(?:\s+[A-Za-z0-9(]|[,.;:)]|$))"
+)
+_ARTIFACT_AI_FALSE_POSITIVE_RE = [
+    re.compile(r"^\s*\(\s*ai\s*\)\s+", re.I),
+    re.compile(r"\b10\(\s*ai\s*\)\b", re.I),
+    re.compile(r"\bai\.\d+[a-z]?\b", re.I),
+    re.compile(
+        r"\b(?:prior to|pursuant to|under|if|means|clause|section|subsection)\s+\(\s*ai\s*\)(?:\b|\s)",
+        re.I,
+    ),
+]
+_REAL_AI_CONTEXT_RE = re.compile(
+    r"\b(?:"
+    r"artificial intelligence|"
+    r"machine learning|"
+    r"deep learning|"
+    r"neural(?:\s+network|\s+networks)?|"
+    r"natural language processing|"
+    r"nlp|"
+    r"computer vision|"
+    r"generative ai|"
+    r"use of ai|"
+    r"ai technologies|"
+    r"ai systems|"
+    r"ai models|"
+    r"ai tools|"
+    r"video ai"
+    r")\b",
+    re.I,
 )
 
 
@@ -275,6 +303,16 @@ def clean_extracted_sentence(text: str) -> str:
     if not re.search(r"[A-Za-z]", cleaned):
         return ""
     return cleaned
+
+
+def is_artifact_only_ai_false_positive(text: str) -> bool:
+    """Return True for legal/OCR clause markers that matched the bare `AI` keyword."""
+    cleaned = clean_extracted_sentence(text)
+    if not cleaned:
+        return False
+    if _REAL_AI_CONTEXT_RE.search(cleaned):
+        return False
+    return any(pattern.search(cleaned) for pattern in _ARTIFACT_AI_FALSE_POSITIVE_RE)
 
 
 def get_sentence_integrity_flags(text: str, min_tokens: int = 6) -> list[str]:
@@ -646,6 +684,8 @@ def filter_ai_sentences_with_sections(
             continue
         current_section = _next_section_label(current_section, sentence)
         if len(sentence) < 4 or sentence.strip().isdigit():
+            continue
+        if is_artifact_only_ai_false_positive(sentence):
             continue
         if rx.search(sentence):
             out.append((sentence.strip(), current_section))

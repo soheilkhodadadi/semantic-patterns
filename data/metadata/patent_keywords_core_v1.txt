@@ -1,0 +1,24 @@
+# Clear umbrella terms
+artificial intelligence
+machine learning
+deep learning
+language model
+large language model
+generative ai
+
+# Canonical AI methods
+neural network
+artificial neural network
+natural language processing
+computer vision
+reinforcement learning
+deep reinforcement learning
+
+# Canonical model families
+convolutional neural network
+recurrent neural network
+transformer
+transformer model
+lstm
+generative adversarial network
+diffusion model

@@ -1,11 +1,12 @@
 # src/analysis/prepare_panel_for_regression.py
+import argparse
 import os
 import pandas as pd
 import numpy as np
 
-INP = "data/processed/panel/panel_ai_patents_controls.csv"
-OUT = "data/processed/panel/panel_reg_ready.csv"
-QC = "reports/panel_clean_qc.md"
+DEFAULT_INP = "data/processed/panel/panel_ai_patents_controls.csv"
+DEFAULT_OUT = "data/processed/panel/panel_reg_ready.csv"
+DEFAULT_QC = "reports/panel_clean_qc.md"
 
 NUM_COLS_LIKELY = [
     "n_total",
@@ -27,6 +28,10 @@ NUM_COLS_LIKELY = [
     "roa",
     "sales_growth",
     "emp",
+    "market_to_book",
+    "firm_age",
+    "sa_index",
+    "hhi",
     "sic",
 ]
 
@@ -44,11 +49,21 @@ def df_to_md(df: pd.DataFrame) -> str:
     return "\n".join(out)
 
 
-def main():
-    os.makedirs(os.path.dirname(OUT), exist_ok=True)
-    os.makedirs(os.path.dirname(QC), exist_ok=True)
+def parse_args():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--input", default=DEFAULT_INP)
+    ap.add_argument("--output", default=DEFAULT_OUT)
+    ap.add_argument("--qc", default=DEFAULT_QC)
+    return ap.parse_args()
 
-    df = pd.read_csv(INP)
+
+def main():
+    args = parse_args()
+
+    os.makedirs(os.path.dirname(args.output), exist_ok=True)
+    os.makedirs(os.path.dirname(args.qc), exist_ok=True)
+
+    df = pd.read_csv(args.input)
 
     # keys
     if "cik" not in df or "year" not in df:
@@ -108,7 +123,7 @@ def main():
     dup = reg_df.duplicated(subset=["cik", "year"]).sum()
 
     # save
-    reg_df.to_csv(OUT, index=False)
+    reg_df.to_csv(args.output, index=False)
 
     # QC
     miss = (
@@ -122,7 +137,7 @@ def main():
         .rename(columns={"index": "column"})
     )
     kept_rate = round(after / max(1, before), 3)
-    with open(QC, "w") as f:
+    with open(args.qc, "w") as f:
         f.write("# Panel Cleaning QC\n\n")
         f.write(f"- Input rows: **{before}**\n")
         f.write(f"- Kept rows (complete for baseline): **{after}** (rate={kept_rate})\n")
@@ -130,7 +145,7 @@ def main():
         f.write("## Missingness (required fields)\n\n")
         f.write(df_to_md(miss))
 
-    print(f"[✓] Wrote {OUT} ({after} rows) and {QC}")
+    print(f"[✓] Wrote {args.output} ({after} rows) and {args.qc}")
 
 
 if __name__ == "__main__":

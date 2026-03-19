@@ -218,3 +218,45 @@ director/snapshots/iteration_state_compiled.json
 # Generated manuscript build outputs
 output/doc/*.docx
 output/paper/*.md
+
+# Ignore all generated output bundles, but keep placeholder directories
+output/*
+!output/doc/
+!output/paper/
+!output/doc/.gitkeep
+!output/paper/.gitkeep
+
+# Generated regression/result bundles
+results/
+tmp/
+tmp_doc.docx
+
+# Generated paper fragments and local source inputs
+paper/generated/*
+!paper/generated/figures/
+!paper/generated/snippets/
+!paper/generated/tables/
+paper/generated/figures/*
+paper/generated/snippets/*
+paper/generated/tables/*
+!paper/generated/figures/.gitkeep
+!paper/generated/snippets/.gitkeep
+!paper/generated/tables/.gitkeep
+paper/source/
+paper/literature/
+
+# Generated reports and diagnostics
+reports/classification/
+reports/data/
+reports/labels/
+reports/panels/
+reports/analysis/*.json
+reports/merge_qc*.md
+reports/panel_clean_qc*.md
+reports/controls_progress_*.json
+reports/controls_qc_active_annual_allyears_*.md
+reports/evaluation/legacy_two_stage_eval_default/
+
+# Generated metadata indexes
+data/metadata/available_filings_index_*.csv
+data/metadata/source_windows_*.json

@@ -5,12 +5,14 @@ from __future__ import annotations
 import json
 import pickle
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from semantic_ai_washing.classification.preliminary_pipeline import (
+    _load_sentence_transformer,
     classify_embeddings,
     embed_sentences,
     load_centroids,
+    _resolve_sentence_transformer_source,
     sha256_file,
 )
 from semantic_ai_washing.labeling.common import ALLOWED_LABELS
@@ -97,6 +99,58 @@ def _load_pickle(path: str | Path) -> Any:
         with resolved.open("rb") as handle:
             _MODEL_CACHE[key] = pickle.load(handle)
     return _MODEL_CACHE[key]
+
+
+def warm_runtime(
+    manifest: dict[str, Any], *, on_stage: Callable[[str], None] | None = None
+) -> None:
+    model_type = str(manifest.get("model_type", "")).strip()
+    runtime = manifest.get("runtime", {}) if isinstance(manifest.get("runtime", {}), dict) else {}
+
+    def emit(stage: str) -> None:
+        if on_stage is not None:
+            on_stage(stage)
+
+    if model_type == "centroid_multiclass":
+        emit("load_centroids")
+        load_centroids(runtime["centroids"])
+        backend = str(runtime.get("embedding_backend", "sentence_transformers"))
+        if backend == "sentence_transformers":
+            emit("load_embedding_model")
+            _load_sentence_transformer(
+                _resolve_sentence_transformer_source(
+                    str(runtime.get("model_name", "sentence-transformers/all-mpnet-base-v2"))
+                )
+            )
+        return
+
+    if model_type == "logreg_multiclass":
+        emit("load_model_pickle")
+        _load_pickle(runtime["model_pickle"])
+        backend = str(runtime.get("embedding_backend", "sentence_transformers"))
+        if backend == "sentence_transformers":
+            emit("load_embedding_model")
+            _load_sentence_transformer(
+                _resolve_sentence_transformer_source(
+                    str(runtime.get("model_name", "sentence-transformers/all-mpnet-base-v2"))
+                )
+            )
+        return
+
+    if model_type == "binary_relevance_then_as":
+        emit("load_relevance_pickle")
+        _load_pickle(runtime["relevance_model_pickle"])
+        emit("load_actionable_speculative_pickle")
+        _load_pickle(runtime["actionable_speculative_model_pickle"])
+        backend = str(runtime.get("embedding_backend", "sentence_transformers"))
+        if backend == "sentence_transformers":
+            emit("load_embedding_model")
+            _load_sentence_transformer(
+                _resolve_sentence_transformer_source(
+                    str(runtime.get("model_name", "sentence-transformers/all-mpnet-base-v2"))
+                )
+            )
+        return
 
 
 def predict_sentences(

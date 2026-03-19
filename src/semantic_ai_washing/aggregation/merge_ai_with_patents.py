@@ -5,7 +5,7 @@ Merge AI sentence frequencies (firm-year) with patents (firm-year).
 Inputs (defaults can be overridden via CLI):
   --ai-freq   data/processed/ai_frequencies_by_firm_year.csv
   --patents   data/processed/patents/ai_patent_counts_filtered_2019plus.csv
-  --lookup    data/metadata/company_lookup.csv
+  --lookup    data/metadata/company_lookup_active_annual_allyears_2021_2024.csv
 
 Output:
   data/final/ai_freq_patents_firm_year.csv
@@ -22,6 +22,8 @@ import os
 import re
 import pandas as pd
 
+from semantic_ai_washing.labeling.common import load_table
+
 
 def normalize_cik(x) -> str:
     if pd.isna(x) or str(x).strip() == "":
@@ -36,16 +38,19 @@ def main():
     p.add_argument(
         "--patents", default="data/processed/patents/ai_patent_counts_filtered_2019plus.csv"
     )
-    p.add_argument("--lookup", default="data/metadata/company_lookup.csv")
+    p.add_argument("--lookup", default="data/metadata/company_lookup_active_annual_allyears_2021_2024.csv")
     p.add_argument("--out", default="data/final/ai_freq_patents_firm_year.csv")
     args = p.parse_args()
 
     # --- Load AI frequencies ---
     if not os.path.exists(args.ai_freq):
         raise FileNotFoundError(f"Missing AI frequency file: {args.ai_freq}")
-    ai = pd.read_csv(args.ai_freq)
+    ai = load_table(args.ai_freq)
 
     # Expect keys and counts
+    if {"source_cik", "source_year"}.issubset(ai.columns):
+        ai = ai.rename(columns={"source_cik": "cik", "source_year": "year"})
+
     required_ai = {"cik", "year"}
     if not required_ai.issubset(set(ai.columns)):
         raise ValueError(f"{args.ai_freq} must contain at least columns: {required_ai}")
@@ -64,7 +69,7 @@ def main():
     # --- Load patents counts ---
     if not os.path.exists(args.patents):
         raise FileNotFoundError(f"Missing patents file: {args.patents}")
-    pt = pd.read_csv(args.patents)
+    pt = load_table(args.patents)
 
     # Standardize expected fields from our extractor
     # (cik, name, year, patents_total, patents_ai, ai_share)
@@ -97,7 +102,7 @@ def main():
     # --- Load lookup for ticker/name enrichment ---
     if not os.path.exists(args.lookup):
         raise FileNotFoundError(f"Missing lookup: {args.lookup}")
-    lk = pd.read_csv(args.lookup)
+    lk = load_table(args.lookup)
     # expected: cik, name, ticker (ticker optional)
     for col in ["cik", "name"]:
         if col not in lk.columns:

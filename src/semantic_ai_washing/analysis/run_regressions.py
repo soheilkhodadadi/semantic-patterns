@@ -12,6 +12,19 @@ try:
 except Exception:
     Document = None
 
+
+def _dataframe_to_markdown_fallback(df: pd.DataFrame) -> str:
+    cols = [str(col) for col in df.columns]
+    lines = [
+        "| " + " | ".join([""] + cols) + " |",
+        "| " + " | ".join(["---"] * (len(cols) + 1)) + " |",
+    ]
+    for row_name, row in df.iterrows():
+        values = ["" if pd.isna(row[col]) else str(row[col]) for col in df.columns]
+        lines.append("| " + " | ".join([str(row_name)] + values) + " |")
+    return "\n".join(lines)
+
+
 # ---------- Helpers to make column names robust ----------
 ALT_NAMES = {
     "n_A": ["n_A", "n_actionable", "actionable", "nA", "count_actionable", "act_count", "A_count"],
@@ -37,6 +50,10 @@ ALT_NAMES = {
     "roa": ["roa", "return_on_assets"],
     "sales_growth": ["sales_growth", "sales_g", "g_sales"],
     "emp": ["emp", "employees", "employment"],
+    "market_to_book": ["market_to_book", "mb", "mtb", "m_b"],
+    "firm_age": ["firm_age", "age", "listing_age"],
+    "sa_index": ["sa_index", "sa", "hadlock_pierce_sa"],
+    "hhi": ["hhi", "industry_hhi", "sic_hhi"],
 }
 
 # Pretty names for output tables
@@ -45,6 +62,11 @@ VAR_LABELS = {
     "n_S": "Speculative (count)",
     "ActShare": "Actionable share",
     "SpecShare": "Speculative share",
+    "share_I": "Irrelevant share",
+    "SpecMinusAct": "Speculative minus actionable share",
+    "AI_Focus": "AI focus",
+    "CredAI": "CredAI",
+    "A_S": "log((1 + A) / (1 + S))",
     "log_docs": "log(# AI sentences)",
     "ln_assets": "log(Assets)",
     "leverage": "Leverage",
@@ -54,6 +76,10 @@ VAR_LABELS = {
     "roa": "ROA",
     "sales_growth": "Sales growth",
     "emp": "Employees (k)",
+    "market_to_book": "Market-to-book",
+    "firm_age": "Firm age",
+    "sa_index": "SA index",
+    "hhi": "Industry HHI",
     "Intercept": "Constant",
     "log_n_A": "log(Actionable mentions + 1)",
     "log_n_S": "log(Speculative mentions + 1)",
@@ -106,6 +132,10 @@ def standardize_columns(df: pd.DataFrame) -> pd.DataFrame:
         "roa",
         "sales_growth",
         "emp",
+        "market_to_book",
+        "firm_age",
+        "sa_index",
+        "hhi",
     ]:
         nm = _resolve(df, k)
         if nm and (nm != k):
@@ -144,6 +174,8 @@ def add_engineered_cols(df: pd.DataFrame) -> pd.DataFrame:
         df["ActShare"] = df["n_A"] / denom
         df["SpecShare"] = df["n_S"] / denom
         df["log_docs"] = np.log1p(df["n_total"].fillna(0))
+        if "n_I" in df.columns:
+            df["share_I"] = df["n_I"] / denom
     else:
         # Fall back to any provided share columns
         if "share_A" in df.columns:
@@ -153,6 +185,9 @@ def add_engineered_cols(df: pd.DataFrame) -> pd.DataFrame:
         # log_docs only if n_total exists
         if "n_total" in df.columns:
             df["log_docs"] = np.log1p(df["n_total"].fillna(0))
+
+    if "log_docs" in df.columns:
+        df["AI_Focus"] = df["log_docs"]
 
     # --- Log-counts (with +1) if counts exist
     if "n_A" in df.columns:
@@ -180,6 +215,23 @@ def add_engineered_cols(df: pd.DataFrame) -> pd.DataFrame:
         df["SpecMinusAct"] = df["SpecShare"] - df["ActShare"]
     else:
         df["SpecMinusAct"] = np.nan
+
+    if all(c in df.columns for c in ["n_A", "n_S"]):
+        act = df["n_A"].fillna(0).clip(lower=0)
+        spec = df["n_S"].fillna(0).clip(lower=0)
+        df["A_S"] = np.log1p(act) - np.log1p(spec)
+
+        act_std = act.std(ddof=0)
+        spec_std = spec.std(ddof=0)
+        if pd.notna(act_std) and act_std > 0 and pd.notna(spec_std) and spec_std > 0:
+            act_z = (act - act.mean()) / act_std
+            spec_z = (spec - spec.mean()) / spec_std
+            df["CredAI"] = act_z - spec_z
+        else:
+            df["CredAI"] = np.nan
+    else:
+        df["A_S"] = np.nan
+        df["CredAI"] = np.nan
 
     return df
 
@@ -214,6 +266,10 @@ def _available_controls(df: pd.DataFrame):
         "roa",
         "sales_growth",
         "emp",
+        "market_to_book",
+        "firm_age",
+        "sa_index",
+        "hhi",
     ]
     return [c for c in cand if c in df.columns]
 
@@ -256,6 +312,10 @@ def build_clean_table(results_dict):
         "roa",
         "sales_growth",
         "emp",
+        "market_to_book",
+        "firm_age",
+        "sa_index",
+        "hhi",
         "Intercept",
     ]
     # Determine which terms actually appear
@@ -326,7 +386,6 @@ def run_all_models(df, outdir, mode="minimal"):
         ):
             rhs = (
                 ["log_n_A", "log_n_S"]
-                + (["log_docs"] if "log_docs" in df.columns else [])
                 + controls
             )
             f = f"log_patents_ai_lead1 ~ {' + '.join(rhs)} + C(cik) + C(year)"
@@ -344,7 +403,6 @@ def run_all_models(df, outdir, mode="minimal"):
         ):
             rhs = (
                 ["has_actionable", "has_spec_only"]
-                + (["log_docs"] if "log_docs" in df.columns else [])
                 + controls
             )
             f = f"log_patents_ai_lead1 ~ {' + '.join(rhs)} + C(cik) + C(year)"
@@ -362,7 +420,6 @@ def run_all_models(df, outdir, mode="minimal"):
         ):
             rhs = (
                 ["log_n_A", "log_n_S"]
-                + (["log_docs"] if "log_docs" in df.columns else [])
                 + controls
             )
             f = f"log_patents_ai_lead0 ~ {' + '.join(rhs)} + C(cik) + C(year)"
@@ -380,7 +437,6 @@ def run_all_models(df, outdir, mode="minimal"):
         ):
             rhs = (
                 ["has_actionable", "has_spec_only"]
-                + (["log_docs"] if "log_docs" in df.columns else [])
                 + controls
             )
             f = f"any_pat_1 ~ {' + '.join(rhs)} + C(cik) + C(year)"
@@ -401,7 +457,7 @@ def run_all_models(df, outdir, mode="minimal"):
             # Levels (if counts available)
             if have_counts:
                 rhs_terms = (
-                    ["n_A", "n_S"] + (["log_docs"] if "log_docs" in df.columns else []) + controls
+                    ["n_A", "n_S"] + controls
                 )
                 f1 = f"{dep} ~ {' + '.join(rhs_terms)} {fe}"
                 try:
@@ -414,7 +470,6 @@ def run_all_models(df, outdir, mode="minimal"):
             if have_shares:
                 rhs_terms = (
                     ["ActShare", "SpecShare"]
-                    + (["log_docs"] if "log_docs" in df.columns else [])
                     + controls
                 )
                 f2 = f"{dep} ~ {' + '.join(rhs_terms)} {fe}"
@@ -428,7 +483,6 @@ def run_all_models(df, outdir, mode="minimal"):
             if have_counts and all(c in df.columns for c in ["log_n_A", "log_n_S"]):
                 rhs_terms = (
                     ["log_n_A", "log_n_S"]
-                    + (["log_docs"] if "log_docs" in df.columns else [])
                     + controls
                 )
                 f_log = f"{dep} ~ {' + '.join(rhs_terms)} {fe}"
@@ -442,7 +496,6 @@ def run_all_models(df, outdir, mode="minimal"):
             if have_counts and all(c in df.columns for c in ["has_actionable", "has_spec_only"]):
                 rhs_terms = (
                     ["has_actionable", "has_spec_only"]
-                    + (["log_docs"] if "log_docs" in df.columns else [])
                     + controls
                 )
                 f_dum = f"{dep} ~ {' + '.join(rhs_terms)} {fe}"
@@ -461,8 +514,6 @@ def run_all_models(df, outdir, mode="minimal"):
             if have_shares:
                 rhs_terms += ["ActShare", "SpecShare"]
             rhs_terms += controls
-            if "log_docs" in df.columns:
-                rhs_terms += ["log_docs"]
             if rhs_terms:
                 f_bin = f"any_pat_1 ~ {' + '.join(rhs_terms)} + C(cik) + C(year)"
                 try:
@@ -476,8 +527,6 @@ def run_all_models(df, outdir, mode="minimal"):
             # LPM with log-counts
             if have_counts and all(c in df.columns for c in ["log_n_A", "log_n_S"]):
                 rhs_terms_log = ["log_n_A", "log_n_S"] + controls
-                if "log_docs" in df.columns:
-                    rhs_terms_log += ["log_docs"]
                 f_bin_log = f"any_pat_1 ~ {' + '.join(rhs_terms_log)} + C(cik) + C(year)"
                 try:
                     res_bin_log = fit_ols_fe(
@@ -490,8 +539,6 @@ def run_all_models(df, outdir, mode="minimal"):
             # LPM with dummies
             if have_counts and all(c in df.columns for c in ["has_actionable", "has_spec_only"]):
                 rhs_terms_dum = ["has_actionable", "has_spec_only"] + controls
-                if "log_docs" in df.columns:
-                    rhs_terms_dum += ["log_docs"]
                 f_bin_dum = f"any_pat_1 ~ {' + '.join(rhs_terms_dum)} + C(cik) + C(year)"
                 try:
                     res_bin_dum = fit_ols_fe(
@@ -564,7 +611,11 @@ def run_all_models(df, outdir, mode="minimal"):
     clean_tbl = build_clean_table(results)
     md_path = os.path.join(outdir, "baseline_table_clean.md")
     html_path = os.path.join(outdir, "baseline_table_clean.html")
-    clean_tbl.to_markdown(md_path)
+    try:
+        clean_tbl.to_markdown(md_path)
+    except ImportError:
+        with open(md_path, "w") as f:
+            f.write(_dataframe_to_markdown_fallback(clean_tbl))
     clean_tbl.to_html(html_path)
 
     # Optional Word export if python-docx is available

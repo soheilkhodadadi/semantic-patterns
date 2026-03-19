@@ -1,0 +1,36 @@
+# Precise AI / ML umbrella terms
+artificial intelligence
+machine learning
+deep learning
+generative ai
+generative artificial intelligence
+foundation model
+language model
+large language model
+
+# Canonical AI methods
+neural network
+artificial neural network
+natural language processing
+computer vision
+machine vision
+speech recognition
+reinforcement learning
+deep reinforcement learning
+federated learning
+transfer learning
+supervised learning
+unsupervised learning
+self-supervised learning
+
+# Specific model families with low ambiguity
+convolutional neural network
+recurrent neural network
+transformer model
+transformer neural network
+long short-term memory
+lstm model
+support vector machine
+bayesian network
+generative adversarial network
+diffusion model

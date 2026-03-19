@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 import shutil
 import subprocess
 import sys
@@ -57,12 +58,33 @@ def validate_inputs(paths: list[Path]) -> None:
         raise FileNotFoundError(f"Missing paper sections:\n{formatted}")
 
 
+INCLUDE_PATTERN = re.compile(r"\{\{\s*include:\s*([^\}]+)\s*\}\}")
+
+
+def render_includes(text: str, *, current_path: Path, depth: int = 0) -> str:
+    if depth > 8:
+        raise ValueError(f"Include nesting too deep while rendering {current_path}")
+
+    def replace(match: re.Match[str]) -> str:
+        target = match.group(1).strip()
+        include_path = (REPO_ROOT / target).resolve()
+        if not include_path.exists():
+            raise FileNotFoundError(
+                f"Include target referenced from {current_path} does not exist: {target}"
+            )
+        included = include_path.read_text(encoding="utf-8").rstrip()
+        return render_includes(included, current_path=include_path, depth=depth + 1)
+
+    return INCLUDE_PATTERN.sub(replace, text)
+
+
 def assemble_markdown(output_path: Path, paths: list[Path]) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     chunks: list[str] = []
     for path in paths:
         relative = path.relative_to(REPO_ROOT)
-        text = path.read_text(encoding="utf-8").rstrip()
+        raw_text = path.read_text(encoding="utf-8").rstrip()
+        text = render_includes(raw_text, current_path=path).rstrip()
         chunks.append(f"<!-- begin: {relative} -->\n\n{text}\n\n<!-- end: {relative} -->")
     output_path.write_text("\n\n".join(chunks) + "\n", encoding="utf-8")
 

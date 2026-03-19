@@ -121,10 +121,16 @@ director-plan:
 director-status:
 	@$(VENV_PYTHON) -m semantic_ai_washing.director.cli status
 	
+## Refresh generated paper snippets/tables from current artifacts
+.PHONY: paper-refresh
+paper-refresh:
+	@python3 -m semantic_ai_washing.analysis.generate_paper_assets
+
 
 ## Build the repo-native paper draft into markdown and docx
 .PHONY: paper-build
 paper-build:
+	@python3 -m semantic_ai_washing.analysis.generate_paper_assets
 	@python3 scripts/build_paper.py
 
 

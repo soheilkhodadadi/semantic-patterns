@@ -13,13 +13,17 @@ import pandas as pd
 
 
 DEFAULT_REPORT_PATH = "reports/analysis/regression_specification_prelim_v1.json"
-DEFAULT_PANEL_INPUT = "data/processed/panel/panel_ai_patents_controls.csv"
-DEFAULT_PANEL_REG_READY = "data/processed/panel/panel_reg_ready.csv"
-DEFAULT_OUTPUT_DIR = "results/01_baseline/tables"
+DEFAULT_PANEL_INPUT = (
+    "data/processed/panel/panel_ai_patents_controls_2016_2024_applied_v2_legalnorm_unique.csv"
+)
+DEFAULT_PANEL_REG_READY = (
+    "data/processed/panel/panel_reg_ready_2016_2024_applied_v2_legalnorm_unique.csv"
+)
+DEFAULT_OUTPUT_DIR = "results/01_baseline/tables_2016_2024_applied_v2_legalnorm_unique"
 
 
 MINIMAL_REQUIRED_COLUMNS = ["cik", "year", "n_A", "n_S", "patents_ai"]
-OPTIONAL_REQUIRED_COLUMNS = ["n_total"]
+OPTIONAL_REQUIRED_COLUMNS = ["n_total", "n_I", "sic", "sic2"]
 CONTROL_CANDIDATES = [
     "ln_assets",
     "leverage",
@@ -30,34 +34,428 @@ CONTROL_CANDIDATES = [
     "sales_growth",
     "emp",
 ]
+
 PRIMARY_MODEL_SPEC = [
     {
         "model_id": "OLS_k1_logcounts",
         "model_name": "Patents t+1 (log) ~ log counts + FE",
-        "equation": "log_patents_ai_lead1 ~ log_n_A + log_n_S + [log_docs] + controls + C(cik) + C(year)",
+        "equation": "log_patents_ai_lead1 ~ log_n_A + log_n_S + controls + C(cik) + C(year)",
         "notes": "Primary k=1 count specification with firm/year fixed effects and firm-clustered SEs.",
         "estimator": "OLS",
     },
     {
         "model_id": "OLS_k1_dummies",
         "model_name": "Patents t+1 (log) ~ dummies + FE",
-        "equation": "log_patents_ai_lead1 ~ has_actionable + has_spec_only + [log_docs] + controls + C(cik) + C(year)",
+        "equation": "log_patents_ai_lead1 ~ has_actionable + has_spec_only + controls + C(cik) + C(year)",
         "notes": "Primary k=1 disclosure-binary specification.",
         "estimator": "OLS",
     },
     {
         "model_id": "OLS_k0_logcounts",
         "model_name": "Patents t (log) ~ log counts + FE",
-        "equation": "log_patents_ai_lead0 ~ log_n_A + log_n_S + [log_docs] + controls + C(cik) + C(year)",
+        "equation": "log_patents_ai_lead0 ~ log_n_A + log_n_S + controls + C(cik) + C(year)",
         "notes": "Contemporaneous log-count specification for robustness.",
         "estimator": "OLS",
     },
     {
         "model_id": "LPM_anypat_k1_dummies",
         "model_name": "Any AI patent t+1 (LPM) ~ dummies + FE",
-        "equation": "any_pat_1 ~ has_actionable + has_spec_only + [log_docs] + controls + C(cik) + C(year)",
+        "equation": "any_pat_1 ~ has_actionable + has_spec_only + controls + C(cik) + C(year)",
         "notes": "Binary outcome alternative: whether firm has >0 AI patents in t+1.",
         "estimator": "OLS (LPM)",
+    },
+]
+
+PORTFOLIO_MODEL_SPEC = [
+    {
+        "model_id": "portfolio_lpm_anypat_k1_dummies_fe",
+        "model_name": "Any AI patent t+1 (LPM) ~ disclosure dummies + firm/year FE",
+        "family": "headline_dual",
+        "estimator": "LPM",
+        "dependent_variable": "any_pat_1",
+        "rhs": ["has_actionable", "has_spec_only"],
+        "include_log_docs": False,
+        "controls": CONTROL_CANDIDATES,
+        "fixed_effects": ["firm", "year"],
+        "cluster": "cik",
+        "sample_filter": "full",
+        "tier": "baseline",
+        "notes": "Headline binary future-patent specification with firm and year fixed effects.",
+    },
+    {
+        "model_id": "portfolio_logit_anypat_k1_dummies_industry_year",
+        "model_name": "Any AI patent t+1 (logit) ~ disclosure dummies + industry/year FE",
+        "family": "headline_dual",
+        "estimator": "LOGIT",
+        "dependent_variable": "any_pat_1",
+        "rhs": ["has_actionable", "has_spec_only"],
+        "include_log_docs": False,
+        "controls": CONTROL_CANDIDATES,
+        "fixed_effects": ["industry", "year"],
+        "cluster": "cik",
+        "sample_filter": "full",
+        "tier": "baseline",
+        "notes": "Logit robustness that avoids high-dimensional firm FE.",
+    },
+    {
+        "model_id": "portfolio_poisson_patents_k1_logcounts_fe",
+        "model_name": "Patents t+1 (Poisson) ~ log counts + industry/year FE",
+        "family": "count_models",
+        "estimator": "POISSON",
+        "dependent_variable": "patents_ai_lead1",
+        "rhs": ["log_n_A", "log_n_S"],
+        "include_log_docs": False,
+        "controls": CONTROL_CANDIDATES,
+        "fixed_effects": ["industry", "year"],
+        "cluster": "cik",
+        "sample_filter": "full",
+        "tier": "baseline",
+        "notes": "Count-outcome robustness using logged narrative counts.",
+    },
+    {
+        "model_id": "portfolio_lpm_anypat_k1_shares_fe",
+        "model_name": "Any AI patent t+1 (LPM) ~ shares + firm/year FE",
+        "family": "share_models",
+        "estimator": "LPM",
+        "dependent_variable": "any_pat_1",
+        "rhs": ["ActShare", "SpecShare"],
+        "include_log_docs": False,
+        "controls": CONTROL_CANDIDATES,
+        "fixed_effects": ["firm", "year"],
+        "cluster": "cik",
+        "sample_filter": "full",
+        "tier": "robustness",
+        "notes": "Share-based robustness using actionable and speculative narrative shares.",
+    },
+    {
+        "model_id": "portfolio_logit_anypat_k1_shares_industry_year",
+        "model_name": "Any AI patent t+1 (logit) ~ shares + industry/year FE",
+        "family": "share_models",
+        "estimator": "LOGIT",
+        "dependent_variable": "any_pat_1",
+        "rhs": ["ActShare", "SpecShare"],
+        "include_log_docs": False,
+        "controls": CONTROL_CANDIDATES,
+        "fixed_effects": ["industry", "year"],
+        "cluster": "cik",
+        "sample_filter": "full",
+        "tier": "robustness",
+        "notes": "Share-based binary-outcome robustness.",
+    },
+    {
+        "model_id": "portfolio_lpm_anypat_k1_dummies_nonfin",
+        "model_name": "Any AI patent t+1 (LPM) ~ dummies + FE, non-financial firms",
+        "family": "headline_dual",
+        "estimator": "LPM",
+        "dependent_variable": "any_pat_1",
+        "rhs": ["has_actionable", "has_spec_only"],
+        "include_log_docs": False,
+        "controls": CONTROL_CANDIDATES,
+        "fixed_effects": ["firm", "year"],
+        "cluster": "cik",
+        "sample_filter": "non_financial",
+        "tier": "robustness",
+        "notes": "Headline trim excluding SIC 6000-6999 firms.",
+    },
+    {
+        "model_id": "portfolio_lpm_anypat_k1_dummies_nonreg",
+        "model_name": "Any AI patent t+1 (LPM) ~ dummies + FE, non-financial/non-utility firms",
+        "family": "headline_dual",
+        "estimator": "LPM",
+        "dependent_variable": "any_pat_1",
+        "rhs": ["has_actionable", "has_spec_only"],
+        "include_log_docs": False,
+        "controls": CONTROL_CANDIDATES,
+        "fixed_effects": ["firm", "year"],
+        "cluster": "cik",
+        "sample_filter": "non_financial_non_utility",
+        "tier": "appendix",
+        "notes": "Cleaner corporate baseline excluding financials and utilities.",
+    },
+    {
+        "model_id": "portfolio_ols_logcounts_k1_nonfin",
+        "model_name": "Patents t+1 (log) ~ log counts + FE, non-financial firms",
+        "family": "count_models",
+        "estimator": "OLS",
+        "dependent_variable": "log_patents_ai_lead1",
+        "rhs": ["log_n_A", "log_n_S"],
+        "include_log_docs": False,
+        "controls": CONTROL_CANDIDATES,
+        "fixed_effects": ["firm", "year"],
+        "cluster": "cik",
+        "sample_filter": "non_financial",
+        "tier": "appendix",
+        "notes": "Sample-trim robustness for the log-count count model.",
+    },
+    {
+        "model_id": "portfolio_lpm_anypat_k1_dummies_industry_year",
+        "model_name": "Any AI patent t+1 (LPM) ~ disclosure dummies + industry/year FE",
+        "family": "headline_dual",
+        "estimator": "LPM",
+        "dependent_variable": "any_pat_1",
+        "rhs": ["has_actionable", "has_spec_only"],
+        "include_log_docs": False,
+        "controls": CONTROL_CANDIDATES,
+        "fixed_effects": ["industry", "year"],
+        "cluster": "cik",
+        "sample_filter": "full",
+        "tier": "appendix",
+        "notes": "Industry-year FE comparison to the firm/year headline model.",
+    },
+    {
+        "model_id": "portfolio_poisson_patents_k1_dummies_nonfin",
+        "model_name": "Patents t+1 (Poisson) ~ disclosure dummies + industry/year FE, non-financial firms",
+        "family": "count_models",
+        "estimator": "POISSON",
+        "dependent_variable": "patents_ai_lead1",
+        "rhs": ["has_actionable", "has_spec_only"],
+        "include_log_docs": False,
+        "controls": CONTROL_CANDIDATES,
+        "fixed_effects": ["industry", "year"],
+        "cluster": "cik",
+        "sample_filter": "non_financial",
+        "tier": "appendix",
+        "notes": "Count robustness combining non-financial trim with disclosure dummies.",
+    },
+    {
+        "model_id": "portfolio_poisson_patents_k1_shares_nonreg",
+        "model_name": "Patents t+1 (Poisson) ~ shares + industry/year FE, non-financial/non-utility firms",
+        "family": "count_models",
+        "estimator": "POISSON",
+        "dependent_variable": "patents_ai_lead1",
+        "rhs": ["ActShare", "SpecShare"],
+        "include_log_docs": False,
+        "controls": CONTROL_CANDIDATES,
+        "fixed_effects": ["industry", "year"],
+        "cluster": "cik",
+        "sample_filter": "non_financial_non_utility",
+        "tier": "appendix",
+        "notes": "Share-based count robustness on the cleanest corporate sample.",
+    },
+    {
+        "model_id": "portfolio_ols_logdv_leveliv_fe",
+        "model_name": "log patents t+1 (OLS) ~ raw counts + firm/year FE",
+        "family": "functional_form",
+        "estimator": "OLS",
+        "dependent_variable": "log_patents_ai_lead1",
+        "rhs": ["n_A", "n_S"],
+        "include_log_docs": False,
+        "controls": CONTROL_CANDIDATES,
+        "fixed_effects": ["firm", "year"],
+        "cluster": "cik",
+        "sample_filter": "full",
+        "tier": "appendix",
+        "notes": "Unlogged RHS variant.",
+    },
+    {
+        "model_id": "portfolio_ols_leveldv_logiv_fe",
+        "model_name": "patents t+1 (OLS) ~ log counts + firm/year FE",
+        "family": "functional_form",
+        "estimator": "OLS",
+        "dependent_variable": "patents_ai_lead1",
+        "rhs": ["log_n_A", "log_n_S"],
+        "include_log_docs": False,
+        "controls": CONTROL_CANDIDATES,
+        "fixed_effects": ["firm", "year"],
+        "cluster": "cik",
+        "sample_filter": "full",
+        "tier": "appendix",
+        "notes": "Raw-count dependent variable with logged narrative counts.",
+    },
+    {
+        "model_id": "portfolio_ols_leveldv_leveliv_fe",
+        "model_name": "patents t+1 (OLS) ~ raw counts + firm/year FE",
+        "family": "functional_form",
+        "estimator": "OLS",
+        "dependent_variable": "patents_ai_lead1",
+        "rhs": ["n_A", "n_S"],
+        "include_log_docs": False,
+        "controls": CONTROL_CANDIDATES,
+        "fixed_effects": ["firm", "year"],
+        "cluster": "cik",
+        "sample_filter": "full",
+        "tier": "appendix",
+        "notes": "Fully unlogged exploratory count specification.",
+    },
+    {
+        "model_id": "portfolio_lpm_anypat_k1_gap_fe",
+        "model_name": "Any AI patent t+1 (LPM) ~ speculative minus actionable share + firm/year FE",
+        "family": "credibility_metrics",
+        "estimator": "LPM",
+        "dependent_variable": "any_pat_1",
+        "rhs": ["SpecMinusAct"],
+        "include_log_docs": False,
+        "controls": CONTROL_CANDIDATES,
+        "fixed_effects": ["firm", "year"],
+        "cluster": "cik",
+        "sample_filter": "full",
+        "tier": "appendix",
+        "notes": "Single-gap alternative credibility measure.",
+    },
+    {
+        "model_id": "portfolio_lpm_anypat_k1_dummies_hightech",
+        "model_name": "Any AI patent t+1 (LPM) ~ dummies + FE, high-tech industries",
+        "family": "cross_sectional",
+        "estimator": "LPM",
+        "dependent_variable": "any_pat_1",
+        "rhs": ["has_actionable", "has_spec_only"],
+        "include_log_docs": False,
+        "controls": CONTROL_CANDIDATES,
+        "fixed_effects": ["firm", "year"],
+        "cluster": "cik",
+        "sample_filter": "sic2_in:35,36,37,73,87",
+        "tier": "appendix",
+        "notes": "Cross-sectional split focused on technology-intensive SIC2 groups.",
+    },
+    {
+        "model_id": "portfolio_lpm_anypat_k1_dummies_sic2_73",
+        "model_name": "Any AI patent t+1 (LPM) ~ dummies + FE, SIC2 73 business services",
+        "family": "cross_sectional",
+        "estimator": "LPM",
+        "dependent_variable": "any_pat_1",
+        "rhs": ["has_actionable", "has_spec_only"],
+        "include_log_docs": False,
+        "controls": CONTROL_CANDIDATES,
+        "fixed_effects": ["firm", "year"],
+        "cluster": "cik",
+        "sample_filter": "sic2_eq:73",
+        "tier": "appendix",
+        "notes": "Cross-sectional split for the business-services/software-heavy slice.",
+    },
+    {
+        "model_id": "portfolio_lpm_anypat_k1_actionable_only_fe",
+        "model_name": "Any AI patent t+1 (LPM) ~ actionable disclosure + firm/year FE",
+        "family": "single_regressor",
+        "estimator": "LPM",
+        "dependent_variable": "any_pat_1",
+        "rhs": ["has_actionable"],
+        "include_log_docs": False,
+        "controls": CONTROL_CANDIDATES,
+        "fixed_effects": ["firm", "year"],
+        "cluster": "cik",
+        "sample_filter": "full",
+        "tier": "appendix",
+        "notes": "Actionable-only headline-style model.",
+    },
+    {
+        "model_id": "portfolio_lpm_anypat_k1_speculative_only_fe",
+        "model_name": "Any AI patent t+1 (LPM) ~ speculative-only disclosure + firm/year FE",
+        "family": "single_regressor",
+        "estimator": "LPM",
+        "dependent_variable": "any_pat_1",
+        "rhs": ["has_spec_only"],
+        "include_log_docs": False,
+        "controls": CONTROL_CANDIDATES,
+        "fixed_effects": ["firm", "year"],
+        "cluster": "cik",
+        "sample_filter": "full",
+        "tier": "appendix",
+        "notes": "Speculative-only headline-style model.",
+    },
+    {
+        "model_id": "portfolio_lpm_anypat_k1_actionable_only_industry_year",
+        "model_name": "Any AI patent t+1 (LPM) ~ actionable disclosure + industry/year FE",
+        "family": "single_regressor",
+        "estimator": "LPM",
+        "dependent_variable": "any_pat_1",
+        "rhs": ["has_actionable"],
+        "include_log_docs": False,
+        "controls": CONTROL_CANDIDATES,
+        "fixed_effects": ["industry", "year"],
+        "cluster": "cik",
+        "sample_filter": "full",
+        "tier": "appendix",
+        "notes": "Actionable-only industry/year FE variant.",
+    },
+    {
+        "model_id": "portfolio_lpm_anypat_k1_speculative_only_industry_year",
+        "model_name": "Any AI patent t+1 (LPM) ~ speculative-only disclosure + industry/year FE",
+        "family": "single_regressor",
+        "estimator": "LPM",
+        "dependent_variable": "any_pat_1",
+        "rhs": ["has_spec_only"],
+        "include_log_docs": False,
+        "controls": CONTROL_CANDIDATES,
+        "fixed_effects": ["industry", "year"],
+        "cluster": "cik",
+        "sample_filter": "full",
+        "tier": "appendix",
+        "notes": "Speculative-only industry/year FE variant.",
+    },
+    {
+        "model_id": "portfolio_lpm_anypat_k1_actionable_only_nofe",
+        "model_name": "Any AI patent t+1 (LPM) ~ actionable disclosure, no FE",
+        "family": "single_regressor",
+        "estimator": "LPM",
+        "dependent_variable": "any_pat_1",
+        "rhs": ["has_actionable"],
+        "include_log_docs": False,
+        "controls": CONTROL_CANDIDATES,
+        "fixed_effects": [],
+        "cluster": "cik",
+        "sample_filter": "full",
+        "tier": "appendix",
+        "notes": "Actionable-only no-FE reference.",
+    },
+    {
+        "model_id": "portfolio_lpm_anypat_k1_speculative_only_nofe",
+        "model_name": "Any AI patent t+1 (LPM) ~ speculative-only disclosure, no FE",
+        "family": "single_regressor",
+        "estimator": "LPM",
+        "dependent_variable": "any_pat_1",
+        "rhs": ["has_spec_only"],
+        "include_log_docs": False,
+        "controls": CONTROL_CANDIDATES,
+        "fixed_effects": [],
+        "cluster": "cik",
+        "sample_filter": "full",
+        "tier": "appendix",
+        "notes": "Speculative-only no-FE reference.",
+    },
+    {
+        "model_id": "portfolio_lpm_anypat_k1_aifocus_fe",
+        "model_name": "Any AI patent t+1 (LPM) ~ AI_Focus + firm/year FE",
+        "family": "credibility_metrics",
+        "estimator": "LPM",
+        "dependent_variable": "any_pat_1",
+        "rhs": ["AI_Focus"],
+        "include_log_docs": False,
+        "controls": CONTROL_CANDIDATES,
+        "fixed_effects": ["firm", "year"],
+        "cluster": "cik",
+        "sample_filter": "full",
+        "tier": "appendix",
+        "notes": "Narrative intensity as its own focal regressor family.",
+    },
+    {
+        "model_id": "portfolio_lpm_anypat_k1_credai_fe",
+        "model_name": "Any AI patent t+1 (LPM) ~ CredAI + firm/year FE",
+        "family": "credibility_metrics",
+        "estimator": "LPM",
+        "dependent_variable": "any_pat_1",
+        "rhs": ["CredAI"],
+        "include_log_docs": False,
+        "controls": CONTROL_CANDIDATES,
+        "fixed_effects": ["firm", "year"],
+        "cluster": "cik",
+        "sample_filter": "full",
+        "tier": "appendix",
+        "notes": "Credibility index from standardized actionable minus speculative counts.",
+    },
+    {
+        "model_id": "portfolio_lpm_anypat_k1_asratio_fe",
+        "model_name": "Any AI patent t+1 (LPM) ~ A_S + firm/year FE",
+        "family": "credibility_metrics",
+        "estimator": "LPM",
+        "dependent_variable": "any_pat_1",
+        "rhs": ["A_S"],
+        "include_log_docs": False,
+        "controls": CONTROL_CANDIDATES,
+        "fixed_effects": ["firm", "year"],
+        "cluster": "cik",
+        "sample_filter": "full",
+        "tier": "appendix",
+        "notes": "Actionable-to-speculative log ratio from the methodology credibility architecture.",
     },
 ]
 
@@ -105,6 +503,10 @@ def expected_outputs(outdir: str | Path) -> list[str]:
         str(outdir_path / "baseline_table_clean.html"),
         str(outdir_path / "baseline_coefficients.csv"),
         str(outdir_path / "baseline_table_clean.docx"),
+        str(outdir_path / "portfolio_summary.md"),
+        str(outdir_path / "portfolio_summary.csv"),
+        str(outdir_path / "portfolio_manifest.json"),
+        str(outdir_path / "portfolio_coefficients.csv"),
     ]
 
 
@@ -119,6 +521,7 @@ def panel_summary(path: str | Path) -> tuple[dict[str, Any], dict[str, Any], lis
             "nonnull_counts": {},
         }
         return summary, {"status": "missing"}, ["panel_reg_ready missing"]
+
     frame = pd.read_csv(path)
     missing_required = [c for c in MINIMAL_REQUIRED_COLUMNS if c not in frame.columns]
     duplicate_keys = 0
@@ -141,10 +544,8 @@ def panel_summary(path: str | Path) -> tuple[dict[str, Any], dict[str, Any], lis
     gating = []
     status = "ready" if not missing_required else "blocked"
 
-    if any(c not in frame.columns for c in MINIMAL_REQUIRED_COLUMNS):
-        status = "blocked"
-        missing = [c for c in MINIMAL_REQUIRED_COLUMNS if c not in frame.columns]
-        gating.extend([f"missing_required_column::{c}" for c in missing])
+    if missing_required:
+        gating.extend([f"missing_required_column::{c}" for c in missing_required])
     if summary["rows"] == 0:
         status = "blocked"
         gating.append("panel_reg_ready_empty")
@@ -174,14 +575,12 @@ def build_spec(args: argparse.Namespace) -> dict[str, Any]:
     if not panel_input_meta["exists"]:
         blocking_issues.append("missing_panel_input")
         todos.append(
-            f"Run semantic_ai_washing.aggregation.build_panel with input ai-patents and controls "
-            f"to create {args.panel_input}."
+            f"Run semantic_ai_washing.aggregation.build_panel to create {args.panel_input}."
         )
     if not panel_ready_meta["exists"]:
         blocking_issues.append("missing_panel_reg_ready")
         todos.append(
-            "Run semantic_ai_washing.analysis.prepare_panel_for_regression to materialize "
-            f"{args.panel_reg_ready}."
+            f"Run semantic_ai_washing.analysis.prepare_panel_for_regression to create {args.panel_reg_ready}."
         )
     if panel_summary_payload["missing_required_columns"]:
         blocking_issues.extend(panel_summary_payload["missing_required_columns"])
@@ -190,9 +589,7 @@ def build_spec(args: argparse.Namespace) -> dict[str, Any]:
         )
     if panel_summary_payload.get("duplicate_cik_year", 0) > 0:
         blocking_issues.append("panel_reg_ready_duplicate_cik_year")
-        todos.append(
-            "Resolve duplicate (cik, year) rows in panel_reg_ready before running regression."
-        )
+        todos.append("Resolve duplicate (cik, year) rows in panel_reg_ready before running regression.")
 
     if not panel_ready_meta["exists"] or not panel_input_meta["exists"]:
         status = "blocked"
@@ -202,9 +599,6 @@ def build_spec(args: argparse.Namespace) -> dict[str, Any]:
         status = "blocked"
     else:
         status = "ready"
-
-    if not status:
-        status = panel_gate["status"]
 
     spec = {
         "artifact": "preliminary_regression_spec_prelim_v1",
@@ -230,14 +624,7 @@ def build_spec(args: argparse.Namespace) -> dict[str, Any]:
                     "share_I",
                     "patents_ai",
                     "patents_total",
-                    "ln_assets",
-                    "leverage",
-                    "cash",
-                    "rd_intensity",
-                    "capx_at",
-                    "roa",
-                    "sales_growth",
-                    "emp",
+                    *CONTROL_CANDIDATES,
                     "sic",
                 ],
             },
@@ -250,6 +637,11 @@ def build_spec(args: argparse.Namespace) -> dict[str, Any]:
                     *CONTROL_CANDIDATES,
                     "share_A",
                     "share_S",
+                    "share_I",
+                    "AI_Focus",
+                    "CredAI",
+                    "A_S",
+                    "SpecMinusAct",
                     "log_docs",
                     "log_n_A",
                     "log_n_S",
@@ -260,35 +652,16 @@ def build_spec(args: argparse.Namespace) -> dict[str, Any]:
                     "SpecShare",
                 ],
             },
-            "crosswalks": {
-                "path": "data/externals/crosswalks/cik_gvkey.csv",
-                "status": "required_for_panel_work_not_required_for_current_script",
-            },
         },
         "data_quality": {
             "panel_reg_ready": panel_summary_payload,
             "blocking_issues": blocking_issues,
         },
         "modeling": {
-            "estimation_mode": "minimal",
-            "fallback_mode": "full",
+            "estimation_mode": "portfolio_modular",
+            "fallback_mode": "minimal",
             "primary_models": PRIMARY_MODEL_SPEC,
-            "full_model_catalog": [
-                "OLS_k0_levels",
-                "OLS_k0_shares",
-                "OLS_k0_logcounts",
-                "OLS_k0_dummies",
-                "OLS_k1_levels",
-                "OLS_k1_shares",
-                "OLS_k1_logcounts",
-                "OLS_k1_dummies",
-                "OLS_k2_levels",
-                "OLS_k2_logcounts",
-                "OLS_k2_dummies",
-                "LPM_anypat_k1",
-                "LPM_anypat_k1_logcounts",
-                "LPM_anypat_k1_dummies",
-            ],
+            "portfolio_models": PORTFOLIO_MODEL_SPEC,
             "leads_supported": [0, 1, 2],
             "dependent_variables": {
                 "patents_count": "patents_ai",
@@ -302,13 +675,21 @@ def build_spec(args: argparse.Namespace) -> dict[str, Any]:
             "features": {
                 "counts": ["n_A", "n_S", "n_I", "n_total"],
                 "shares": ["share_A", "share_S", "share_I", "ActShare", "SpecShare"],
-                "doc_transform": "log_docs",
+                "credibility_metrics": ["AI_Focus", "CredAI", "A_S", "SpecMinusAct"],
+                "doc_transform": "log_docs (descriptive only; not a default control)",
                 "controls": CONTROL_CANDIDATES,
             },
             "estimator_conventions": {
-                "fixed_effects": ["firm (C(cik))", "year (C(year))"],
                 "cluster": "cik",
                 "standard_errors": "clustered",
+            },
+            "sample_filters_supported": {
+                "full": "All cleaned firm-year observations in the regression-ready panel.",
+                "non_financial": "Exclude SIC 6000-6999 firm-years.",
+                "non_financial_non_utility": "Exclude SIC 4900-4999 and SIC 6000-6999 firm-years.",
+                "sic2_eq:<code>": "Keep only SIC2 equal to the supplied two-digit code.",
+                "sic2_in:<a,b,...>": "Keep only SIC2 codes in the supplied comma-separated set.",
+                "sic2_notin:<a,b,...>": "Drop SIC2 codes in the supplied comma-separated set.",
             },
         },
         "outputs": {
@@ -318,18 +699,14 @@ def build_spec(args: argparse.Namespace) -> dict[str, Any]:
         "gating_and_todos": {
             "ready": status == "ready",
             "status": status,
-            "todos": todos
-            or (
-                ["No blocking issues detected; run in minimal mode."] if status == "ready" else []
-            ),
+            "todos": todos or (["No blocking issues detected; run portfolio families."] if status == "ready" else []),
         },
         "commands": {
             "build_panel": "python -m semantic_ai_washing.aggregation.build_panel",
             "prepare_panel": "python -m semantic_ai_washing.analysis.prepare_panel_for_regression",
-            "run_regressions_minimal": "python -m semantic_ai_washing.analysis.run_regressions --panel "
-            f"{args.panel_reg_ready} --outdir {args.outdir} --mode minimal",
-            "run_regressions_full": "python -m semantic_ai_washing.analysis.run_regressions --panel "
-            f"{args.panel_reg_ready} --outdir {args.outdir} --mode full",
+            "run_regressions_minimal": f"python -m semantic_ai_washing.analysis.run_regressions --panel {args.panel_reg_ready} --outdir {args.outdir} --mode minimal",
+            "run_regressions_full": f"python -m semantic_ai_washing.analysis.run_regressions --panel {args.panel_reg_ready} --outdir {args.outdir} --mode full",
+            "run_regressions_portfolio": f"python -m semantic_ai_washing.analysis.run_regression_portfolio --panel {args.panel_reg_ready} --spec-path {args.output} --outdir {args.outdir}",
         },
     }
     return spec

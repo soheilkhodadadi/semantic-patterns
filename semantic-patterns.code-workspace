@@ -5,12 +5,29 @@
 		}
 	],
   "settings": {
-    "python.pythonPath": "./venv/bin/python",
+    "python.defaultInterpreterPath": "./.venv/bin/python",
     "files.exclude": {
       "**/.git": true,
       "**/.DS_Store": true,
       "**/__pycache__": true,
-      "**/*.log": true,
+      "**/*.log": true
+    },
+    "files.watcherExclude": {
+      "**/.git/**": true,
+      "**/__pycache__/**": true,
+      "**/data/processed/**": true,
+      "**/data/interim/**": true,
+      "**/results/**": true,
+      "**/output/**": true,
+      "**/tmp/**": true,
+      "**/paper/generated/**": true
+    },
+    "search.exclude": {
+      "**/data/processed/**": true,
+      "**/data/interim/**": true,
+      "**/results/**": true,
+      "**/output/**": true,
+      "**/tmp/**": true
     },
     "python.linting.enabled": true,
     "python.formatting.provider": "black",

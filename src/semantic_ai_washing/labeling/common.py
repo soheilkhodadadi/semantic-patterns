@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Iterable
 
 import pandas as pd
+import pyarrow.parquet as pq
 
 ALLOWED_LABELS = ("Actionable", "Speculative", "Irrelevant")
 
@@ -100,7 +101,12 @@ def load_table(path: str | Path) -> pd.DataFrame:
     if suffix == ".csv":
         return pd.read_csv(resolved)
     if suffix == ".parquet":
-        return pd.read_parquet(resolved)
+        try:
+            return pd.read_parquet(resolved)
+        except TimeoutError:
+            # Local parquet reads occasionally time out in the desktop runtime even
+            # though the file is healthy. Fall back to a direct ParquetFile read.
+            return pq.ParquetFile(resolved).read().to_pandas()
     if suffix in {".xlsx", ".xls"}:
         return pd.read_excel(resolved)
     raise ValueError(f"Unsupported table format: {resolved}")

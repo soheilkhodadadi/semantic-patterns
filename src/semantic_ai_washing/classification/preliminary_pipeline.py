@@ -63,9 +63,21 @@ def hash_embed_sentence(text: str, *, dim: int = DEFAULT_HASH_DIM) -> np.ndarray
 def _load_sentence_transformer(model_name: str):
     resolved_model_name = _resolve_sentence_transformer_source(model_name)
     if resolved_model_name not in _SENTENCE_TRANSFORMER_CACHE:
+        os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
+        os.environ.setdefault("HF_HUB_OFFLINE", "1")
+        os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+        os.environ.setdefault("USE_TF", "0")
+        os.environ.setdefault("USE_FLAX", "0")
+        os.environ.setdefault("TQDM_DISABLE", "1")
+        os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+        os.environ.setdefault("TRANSFORMERS_NO_ADVISORY_WARNINGS", "1")
         from sentence_transformers import SentenceTransformer
 
-        _SENTENCE_TRANSFORMER_CACHE[resolved_model_name] = SentenceTransformer(resolved_model_name)
+        _SENTENCE_TRANSFORMER_CACHE[resolved_model_name] = SentenceTransformer(
+            resolved_model_name,
+            device="cpu",
+            local_files_only=True,
+        )
     return _SENTENCE_TRANSFORMER_CACHE[resolved_model_name]
 
 

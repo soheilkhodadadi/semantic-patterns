@@ -2715,3 +2715,67 @@ Rules:
   - `PYTHONPATH=src ./.venv/bin/python -m semantic_ai_washing.labeling.sample_heldout_v2_candidates --input-root data/processed/sentences --years 2021 2022 2023 2024 --output-csv data/validation/held_out_sentences_v2_review_sheet.csv --output-xlsx data/validation/held_out_sentences_v2_review_sheet.xlsx --output-report reports/validation/held_out_v2_sampling_report.json`
 - Follow-on freeze command after review labels are completed:
   - `PYTHONPATH=src ./.venv/bin/python -m semantic_ai_washing.labeling.freeze_heldout_v2 --reviewed-input data/validation/held_out_sentences_v2_review_sheet.xlsx --output-csv data/validation/held_out_sentences_v2.csv --output-report reports/validation/held_out_sentences_v2_freeze.json`
+
+## 2026-03-17 — Held-out freeze, benchmark winner, and sentence-hygiene actions
+
+- Froze the current-rubric `10-K`-only held-out asset from the reviewed clean sheet with explicit exclusions for invalid non-sentence rows.
+- Published:
+  - `data/validation/held_out_sentences_v2.csv`
+  - `reports/validation/held_out_sentences_v2_freeze.json`
+- Truthful freeze status:
+  - `rows_total = 177`
+  - `rows_excluded = 3`
+  - unbalanced reviewed distribution accepted for this benchmark freeze:
+    - `Actionable = 61`
+    - `Speculative = 29`
+    - `Irrelevant = 87`
+- Reran the preliminary benchmark matrix on the frozen asset and selected:
+  - `binary_relevance_then_as_v1`
+- Published benchmark artifacts:
+  - `reports/evaluation/model_benchmark_matrix_prelim_v1.json`
+  - `reports/evaluation/model_benchmark_matrix_prelim_v1.md`
+  - `artifacts/models/prelim_selected_model_v1.json`
+  - `reports/evaluation/heldout_eval_prelim_v2.json`
+- Held-out v2 winner metrics:
+  - accuracy `= 0.7062`
+  - macro-F1 `= 0.6729`
+  - binary relevance accuracy `= 0.8192`
+  - actionable/speculative conditional accuracy `= 0.7556`
+  - leakage detected `= false`
+- Interpretation:
+  - the selected preliminary model is good enough for the current preliminary lane
+  - it still does **not** clear the publication-grade `0.80` accuracy bar
+- Completed exploratory historical `10-K` fast-track extraction for:
+  - `2016`
+  - `2017`
+  - `2018`
+  - `2019`
+  - `2020`
+- Held-out review notes surfaced five reusable sentence-hygiene issue groups and the intended pipeline home for each:
+  - clause-marker false positives such as `(ai)`, `10(ai)`, `ai.1d`
+    - source fix: reject these during AI sentence matching when no real AI context is present
+  - heading / fragment contamination such as heading prefixes and numeric list prefixes
+    - cleaner fix: normalize/strip prefixes and recompute sentence integrity fields
+  - OCR / garbage / unreadable rows
+    - cleaner fix: drop via noise heuristics rather than send to classification
+  - executive biography / past-role AI mentions
+    - classifier / rubric fix: keep in universe, but default to `Irrelevant` unless tied to current focal-firm operations
+  - generic strategy / risk / broad market-tech mentions
+    - classifier / rubric fix: do not default these to `Actionable`; route to `Speculative` or `Irrelevant` depending on substance
+- Implemented sentence-hygiene hardening:
+  - `semantic_ai_washing.core.sentence_filter`
+    - added narrow source-side rejection for artifact-only `AI` matches
+    - widened heading-prefix cleanup for title-style headings with connector words
+  - `semantic_ai_washing.data.clean_sentence_tables`
+    - now applies sentence cleanup/normalization before gating
+    - strips leading numeric list prefixes where safe
+    - recomputes `sentence_norm`, `sentence_text_id`, `integrity_flags`, `fragment_score`, and `token_count`
+    - drops artifact-only `AI` rows and OCR-like junk rows
+  - new regression tests:
+    - `tests/test_sentence_filter_false_positives.py`
+    - expanded `tests/test_clean_sentence_tables.py`
+- Cleaned sentence universe snapshot after hardening:
+  - input rows `= 116,828`
+  - retained rows `= 106,977`
+  - dropped rows `= 9,851`
+  - clean root: `data/processed/sentences_clean/`

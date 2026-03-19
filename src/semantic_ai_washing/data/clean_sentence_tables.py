@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -10,14 +11,22 @@ from typing import Any
 
 import pandas as pd
 
+from semantic_ai_washing.core.sentence_filter import (
+    clean_extracted_sentence,
+    get_sentence_integrity_flags,
+    is_artifact_only_ai_false_positive,
+    normalize_sentence_text,
+)
+
 
 DEFAULT_INPUT_ROOT = "data/processed/sentences"
 DEFAULT_OUTPUT_ROOT = "data/processed/sentences_clean"
 DEFAULT_REPORT = "reports/data/sentence_cleanup_v1.json"
-DEFAULT_YEARS = (2016, 2021, 2022, 2023, 2024)
+DEFAULT_YEARS = (2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024)
 DEFAULT_MIN_TOKENS = 6
 DEFAULT_MAX_TOKENS = 120
 DEFAULT_MAX_FRAGMENT_SCORE = 0.0
+INTEGRITY_FLAG_COUNT = 4
 
 TABLE_LIKE_PATTERNS = [
     re.compile(pattern, flags=re.IGNORECASE)
@@ -30,8 +39,21 @@ TABLE_LIKE_PATTERNS = [
         r"\bsecuritization transaction\b",
         r"\bstart date end date\b",
         r"\bform 10-d\b",
+        r"\bpoint of beginning\b",
+        r"\bdegrees?\s+\d+\s+minutes?\b",
     )
 ]
+LEADING_NUMERIC_PREFIX_RE = re.compile(
+    r"^\s*\d{1,3}\s+(?=(?:we|our|the|this|these|in|from|based|privacy|competitors|retaining)\b)",
+    re.I,
+)
+SPACED_LETTERS_RE = re.compile(r"(?:\b[A-Za-z]\b(?:\s+|$)){8,}")
+NOISY_TOKEN_RE = re.compile(r"(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d.,:/\\'\-]{5,}")
+MIXED_GLYPH_RE = re.compile(r"[A-Za-z][^A-Za-z\s]{2,}[A-Za-z]|[A-Za-z]{1,3}[\\/][A-Za-z]{1,3}")
+
+
+def _sha1_short(payload: str) -> str:
+    return hashlib.sha1(payload.encode("utf-8")).hexdigest()[:16]
 
 
 def _resolve_year_path(root: str | Path, year: int) -> Path:
@@ -43,6 +65,41 @@ def _is_table_like_sentence(text: str) -> bool:
     return any(pattern.search(sentence) for pattern in TABLE_LIKE_PATTERNS)
 
 
+def _strip_leading_numeric_prefix(text: str) -> str:
+    return LEADING_NUMERIC_PREFIX_RE.sub("", str(text or "")).strip()
+
+
+def _looks_like_ocr_noise(text: str) -> bool:
+    sentence = str(text or "").strip()
+    if not sentence:
+        return True
+    if SPACED_LETTERS_RE.search(sentence):
+        return True
+
+    chars = [ch for ch in sentence if not ch.isspace()]
+    if not chars:
+        return True
+    letters = sum(ch.isalpha() for ch in chars)
+    non_letters = len(chars) - letters
+    if non_letters / max(len(chars), 1) >= 0.58:
+        return True
+
+    tokens = [token.strip("()[]{}\"'.,;:") for token in sentence.split() if token.strip()]
+    if not tokens:
+        return True
+    noisy_token_count = sum(
+        1 for token in tokens if NOISY_TOKEN_RE.search(token) or MIXED_GLYPH_RE.search(token)
+    )
+    return len(tokens) >= 8 and (noisy_token_count / len(tokens)) >= 0.35
+
+
+def _clean_sentence_text(text: str) -> str:
+    cleaned = clean_extracted_sentence(text)
+    cleaned = _strip_leading_numeric_prefix(cleaned)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    return cleaned
+
+
 def _cleanup_frame(
     frame: pd.DataFrame,
     *,
@@ -51,23 +108,53 @@ def _cleanup_frame(
     max_fragment_score: float,
 ) -> tuple[pd.DataFrame, dict[str, int]]:
     working = frame.copy()
-    if "token_count" not in working.columns:
-        working["token_count"] = (
-            working["sentence"].fillna("").astype(str).str.split().map(len).astype(int)
-        )
-    if "fragment_score" not in working.columns:
-        working["fragment_score"] = 0.0
+    working["sentence"] = working["sentence"].fillna("").astype(str).map(_clean_sentence_text)
+    working["sentence_norm"] = working["sentence"].map(normalize_sentence_text)
+    if "sentence_text_id" in working.columns:
+        working["sentence_text_id"] = working["sentence_norm"].map(_sha1_short)
+    flags = working["sentence"].map(lambda text: get_sentence_integrity_flags(text, min_tokens=min_tokens))
+    working["integrity_flags"] = flags.map(lambda values: json.dumps(values, separators=(",", ":"), ensure_ascii=True))
+    working["fragment_score"] = flags.map(
+        lambda values: round(len(values) / INTEGRITY_FLAG_COUNT, 6)
+    )
+    working["token_count"] = (
+        working["sentence"].fillna("").astype(str).str.split().map(len).astype(int)
+    )
 
-    working["_table_like"] = working["sentence"].fillna("").astype(str).map(_is_table_like_sentence)
+    working["_empty_after_clean"] = working["sentence"].astype(str).str.strip() == ""
+    working["_table_like"] = working["sentence"].map(_is_table_like_sentence)
+    working["_artifact_ai_false_positive"] = working["sentence"].map(
+        is_artifact_only_ai_false_positive
+    )
+    working["_ocr_like"] = working["sentence"].map(_looks_like_ocr_noise)
 
-    too_short_mask = working["token_count"].astype(int) < int(min_tokens)
+    too_short_mask = working["_empty_after_clean"] | (
+        working["token_count"].astype(int) < int(min_tokens)
+    )
     too_long_mask = working["token_count"].astype(int) > int(max_tokens)
     fragment_mask = working["fragment_score"].astype(float) > float(max_fragment_score)
     table_like_mask = working["_table_like"].astype(bool)
-    keep_mask = ~(too_short_mask | too_long_mask | fragment_mask | table_like_mask)
+    artifact_ai_mask = working["_artifact_ai_false_positive"].astype(bool)
+    ocr_like_mask = working["_ocr_like"].astype(bool)
+    keep_mask = ~(
+        too_short_mask
+        | too_long_mask
+        | fragment_mask
+        | table_like_mask
+        | artifact_ai_mask
+        | ocr_like_mask
+    )
 
     cleaned = working.loc[keep_mask].copy()
-    cleaned.drop(columns=["_table_like"], inplace=True)
+    cleaned.drop(
+        columns=[
+            "_empty_after_clean",
+            "_table_like",
+            "_artifact_ai_false_positive",
+            "_ocr_like",
+        ],
+        inplace=True,
+    )
 
     return cleaned, {
         "rows_input": int(len(working)),
@@ -77,6 +164,8 @@ def _cleanup_frame(
         "dropped_too_long": int(too_long_mask.sum()),
         "dropped_fragment_like": int(fragment_mask.sum()),
         "dropped_table_like": int(table_like_mask.sum()),
+        "dropped_artifact_ai_false_positive": int(artifact_ai_mask.sum()),
+        "dropped_ocr_like": int(ocr_like_mask.sum()),
     }
 
 

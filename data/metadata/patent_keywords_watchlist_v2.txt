@@ -1,0 +1,17 @@
+# Diagnostics-only terms.
+# These are useful for review and expansion work, but they should not screen in
+# a patent by themselves for the main AI patent series.
+
+genai
+chatgpt
+openai
+copilot
+foundation model
+pretrained model
+representation learning
+token embedding
+multimodal model
+bayesian network
+fuzzy logic
+genetic algorithm
+evolutionary algorithm

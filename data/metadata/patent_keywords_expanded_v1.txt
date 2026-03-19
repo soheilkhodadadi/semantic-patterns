@@ -1,0 +1,65 @@
+# Core umbrella terms
+artificial intelligence
+machine learning
+deep learning
+generative ai
+generative artificial intelligence
+foundation model
+language model
+large language model
+
+# Learning paradigms
+reinforcement learning
+deep reinforcement learning
+supervised learning
+unsupervised learning
+self-supervised learning
+semi-supervised learning
+federated learning
+transfer learning
+representation learning
+
+# Neural architectures and model families
+neural network
+neural networks
+artificial neural network
+convolutional neural network
+recurrent neural network
+transformer
+transformer model
+lstm
+generative adversarial network
+diffusion model
+support vector machine
+random forest
+decision tree
+gradient boosting
+bayesian network
+
+# Language and text
+natural language processing
+natural language understanding
+natural language generation
+semantic parsing
+token embedding
+pretrained model
+
+# Vision, speech, and multimodal
+computer vision
+machine vision
+image recognition
+object detection
+semantic segmentation
+speech recognition
+speech synthesis
+multimodal model
+
+# Knowledge systems and optimization
+knowledge graph
+knowledge representation
+expert system
+anomaly detection
+recommendation system
+recommender system
+fuzzy logic
+genetic algorithm

@@ -16,11 +16,19 @@ Outputs:
 """
 
 import argparse
+import json
 import os
-import re
 from collections import defaultdict
+from datetime import datetime, timezone
 
 import pandas as pd
+
+from semantic_ai_washing.patents.keyword_matching import (
+    compile_boundary_pattern,
+    load_keywords,
+    matched_keywords,
+    normalize_org_name,
+)
 
 parser = argparse.ArgumentParser(
     description="Extract AI-related patents per firm-year with example titles/abstracts."
@@ -35,12 +43,12 @@ parser.add_argument(
 )
 parser.add_argument(
     "--company-lookup",
-    default="data/metadata/company_lookup.csv",
+    default="data/metadata/company_lookup_active_annual_allyears_2021_2024.csv",
     help="Canonical company lookup CSV with columns cik/name/name_clean.",
 )
 parser.add_argument(
     "--company-aliases",
-    default="data/metadata/company_aliases.csv",
+    default="data/metadata/company_aliases_active_annual_allyears_2021_2024.csv",
     help="Optional aliases CSV with cik/alias entries.",
 )
 parser.add_argument(
@@ -57,6 +65,16 @@ parser.add_argument(
     "--output-diag",
     default="data/processed/patents/patents_diagnostics_{suffix}.csv",
     help="Diagnostics CSV path (supports {suffix}).",
+)
+parser.add_argument(
+    "--keywords-path",
+    default="data/metadata/patent_keywords.txt",
+    help="Keyword file used to tag AI-related patent text.",
+)
+parser.add_argument(
+    "--progress-report",
+    default="reports/data/patent_extraction_progress_{suffix}.json",
+    help="Progress JSON path (supports {suffix}).",
 )
 parser.add_argument(
     "--assignee-chunksize",
@@ -82,8 +100,10 @@ abstract_path = os.path.join(data_root, "patent_abstract.tsv")
 output_counts_path = args.output_counts.format(suffix=suffix)
 output_examples_path = args.output_examples.format(suffix=suffix)
 diag_path = args.output_diag.format(suffix=suffix)
+progress_path = args.progress_report.format(suffix=suffix)
 os.makedirs(os.path.dirname(output_counts_path), exist_ok=True)
 os.makedirs(os.path.dirname(output_examples_path), exist_ok=True)
+os.makedirs(os.path.dirname(progress_path), exist_ok=True)
 
 firm_lookup_path = args.company_lookup
 firm_aliases_path = args.company_aliases
@@ -102,14 +122,24 @@ if os.path.exists(firm_aliases_path):
             firm_aliases[cik_].append(alias_clean)
 
 
-def normalize_org_name(value: str) -> str:
-    return re.sub(r"[^\w\s]", "", str(value).lower()).strip()
-
-
+def write_progress(status: str, **payload) -> None:
+    report = {
+        "status": status,
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "min_year": min_year,
+        "data_root": data_root,
+        "keywords_path": args.keywords_path,
+        "output_counts_path": output_counts_path,
+        "output_examples_path": output_examples_path,
+        "output_diag_path": diag_path,
+    }
+    report.update(payload)
+    with open(progress_path, "w", encoding="utf-8") as fh:
+        json.dump(report, fh, indent=2)
 def build_term_index(
     firms: pd.DataFrame, aliases: dict[str, list[str]]
 ) -> dict[str, list[dict[str, str]]]:
-    term_index: dict[str, list[dict[str, str]]] = defaultdict(list)
+    raw_index: dict[str, list[dict[str, str]]] = defaultdict(list)
     for _, firm in firms.iterrows():
         cik = str(firm.get("cik", "")).strip()
         name = str(firm.get("name", "")).strip()
@@ -128,7 +158,13 @@ def build_term_index(
             if term in seen:
                 continue
             seen.add(term)
-            term_index[term].append({"cik": cik, "name": name, "match_rule": rule})
+            raw_index[term].append({"cik": cik, "name": name, "match_rule": rule})
+
+    term_index: dict[str, list[dict[str, str]]] = {}
+    for term, rows in raw_index.items():
+        unique_ciks = {row["cik"] for row in rows}
+        if len(unique_ciks) == 1:
+            term_index[term] = rows
     return term_index
 
 
@@ -138,6 +174,7 @@ def stream_assignee_matches(
     chunk_size: int,
 ) -> pd.DataFrame:
     matched_blocks = []
+    chunks_scanned = 0
     for chunk in pd.read_csv(
         path,
         sep="\t",
@@ -145,6 +182,7 @@ def stream_assignee_matches(
         dtype={"patent_id": str},
         chunksize=chunk_size,
     ):
+        chunks_scanned += 1
         chunk = chunk.dropna(subset=["disambig_assignee_organization"]).copy()
         chunk["org_clean"] = chunk["disambig_assignee_organization"].map(normalize_org_name)
         chunk = chunk[chunk["org_clean"].isin(term_index)]
@@ -167,6 +205,13 @@ def stream_assignee_matches(
                 )
         if records:
             matched_blocks.append(pd.DataFrame.from_records(records))
+        if chunks_scanned % 10 == 0:
+            matched_rows = sum(len(block) for block in matched_blocks)
+            write_progress(
+                "matching_assignees",
+                assignee_chunks_scanned=chunks_scanned,
+                assignee_matches_accumulated=matched_rows,
+            )
 
     if not matched_blocks:
         return pd.DataFrame(
@@ -176,11 +221,18 @@ def stream_assignee_matches(
         subset=["patent_id", "cik"]
     )
 
+write_progress("starting")
 
 term_index = build_term_index(firm_df, firm_aliases)
+write_progress("term_index_ready", normalized_company_terms=len(term_index))
 print(f"🔍 Streaming assignee matches against {len(term_index)} normalized company terms...")
 matched_df = stream_assignee_matches(assignee_path, term_index, args.assignee_chunksize)
 matched_firms = matched_df["cik"].nunique() if not matched_df.empty else 0
+write_progress(
+    "assignee_matching_complete",
+    firms_matched=int(matched_firms),
+    patent_rows_matched=int(len(matched_df)),
+)
 print(f"[✓] Firms matched: {matched_firms} | Firms unmatched: {len(firm_df) - matched_firms}")
 print(f"[✓] Patent rows matched (pre-merge): {len(matched_df)}")
 
@@ -192,6 +244,7 @@ def load_filtered_patent_rows(path: str, cols: list[str], patent_ids: set[str]) 
     result = []
     if not patent_ids:
         return pd.DataFrame(columns=cols)
+    chunks_scanned = 0
     for chunk in pd.read_csv(
         path,
         sep="\t",
@@ -199,10 +252,19 @@ def load_filtered_patent_rows(path: str, cols: list[str], patent_ids: set[str]) 
         dtype={"patent_id": str},
         chunksize=args.patent_chunksize,
     ):
+        chunks_scanned += 1
         mask = chunk["patent_id"].isin(patent_ids)
         chunk = chunk.loc[mask]
         if not chunk.empty:
             result.append(chunk)
+        if chunks_scanned % 10 == 0:
+            matched_rows = sum(len(block) for block in result)
+            write_progress(
+                "loading_patent_rows",
+                loading_path=os.path.basename(path),
+                patent_chunks_scanned=chunks_scanned,
+                filtered_rows_accumulated=matched_rows,
+            )
     if not result:
         return pd.DataFrame(columns=cols)
     return pd.concat(result, ignore_index=True)
@@ -221,11 +283,17 @@ if matched_df.empty:
     pd.DataFrame(columns=["cik", "name", "patents_total", "patents_ai"]).to_csv(
         diag_path, index=False
     )
+    write_progress("completed_empty", firms_matched=0, patent_rows_matched=0)
     raise SystemExit(0)
 
 print("📄 Loading filtered patent and abstract data...")
 patents = load_filtered_patent_rows(patent_path, PATENT_COLUMNS, patent_ids)
 abstracts = load_filtered_patent_rows(abstract_path, ABSTRACT_COLUMNS, patent_ids)
+write_progress(
+    "patent_rows_loaded",
+    patent_rows=int(len(patents)),
+    abstract_rows=int(len(abstracts)),
+)
 
 df = matched_df.merge(patents, on="patent_id", how="inner")
 df = df.merge(abstracts, on="patent_id", how="left")
@@ -240,13 +308,20 @@ df["year"] = df["year"].astype(int)
 df = df[df["year"] >= min_year].copy()
 df["patent_dt"] = pd.to_datetime(df["patent_date"], errors="coerce")
 
-# Load AI keywords
-with open("data/metadata/patent_keywords.txt") as f:
-    keywords = [line.strip().lower() for line in f if line.strip()]
-pattern = re.compile("|".join([re.escape(k) for k in keywords]), flags=re.IGNORECASE)
+keywords = load_keywords(args.keywords_path)
+pattern = compile_boundary_pattern(keywords)
+write_progress("keywords_loaded", keyword_count=len(keywords))
 
 # Tag AI patents
-df["has_ai"] = df["text"].apply(lambda x: bool(pattern.search(x)))
+df["matched_keywords"] = df["text"].apply(
+    lambda value: matched_keywords(value, pattern)
+)
+df["has_ai"] = df["matched_keywords"] != ""
+write_progress(
+    "keyword_tagging_complete",
+    candidate_patent_rows=int(len(df)),
+    ai_patent_rows=int(df["has_ai"].sum()),
+)
 
 # Aggregate totals and AI counts per firm-year
 print("📊 Aggregating patent counts per firm-year...")
@@ -268,7 +343,7 @@ if not df_ai.empty:
         .tail(1)
     )
     examples_out = examples[
-        ["cik", "name", "year", "patent_id", "patent_title", "patent_abstract"]
+        ["cik", "name", "year", "patent_id", "patent_title", "patent_abstract", "matched_keywords"]
     ].drop_duplicates()
     examples_out.to_csv(output_examples_path, index=False)
     print(f"[✓] Saved example titles/abstracts to {output_examples_path}")
@@ -306,3 +381,11 @@ if not top_ai.empty:
         print(
             f"   - {r['name']} (cik={r['cik']}): AI {int(r['patents_ai'])} / Total {int(r['patents_total'])}"
         )
+
+write_progress(
+    "completed",
+    firm_year_rows=int(len(agg)),
+    firms_with_any_patents=int(n_firms_any),
+    firms_with_ai_patents=int(n_firms_ai),
+    examples_rows=int(len(examples_out)) if "examples_out" in locals() else 0,
+)
