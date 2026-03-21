@@ -1,58 +1,143 @@
-# Semantic Patterns: AI-Washing Detection Pipeline
+# Semantic Patterns: AI Disclosure, Composition, and Patent Validation
 
 ## Overview
 
-This repository contains a research pipeline for identifying and classifying AI-related language in SEC 10-K filings.  
-The workflow extracts AI-related sentences, classifies each sentence as **Actionable**, **Speculative**, or **Irrelevant**, and aggregates sentence-level predictions to firm-year features for downstream analysis.
+This repository contains a research pipeline for measuring AI-related corporate disclosure in SEC filings and validating those disclosure measures against external innovation outcomes.
 
-## Python and Environment
+The current `2016-2024` delivery lane does four things:
 
-- Python baseline: **3.11+**
-- Canonical repo environment: **`.venv`**
-- Recommended local runtime on Apple Silicon: **native arm64 Python 3.11**
+1. extracts AI-related sentences from annual filings
+2. classifies those sentences as `Actionable`, `Speculative`, or `Irrelevant`
+3. aggregates sentence-level outputs into firm-year disclosure measures
+4. merges those measures with AI patent outcomes and Compustat controls for panel analysis
 
-Quick start:
+The repo still contains legacy-compatible extraction/classification entry points, but the authoritative preliminary-delivery artifacts now live in the broader `2016-2024` panel and reporting workflow described below.
+
+## Environment
+
+- Python baseline: `3.11+`
+- canonical local environment: repo-local `.venv`
+- recommended setup:
 
 ```bash
 make bootstrap
 source .venv/bin/activate
-make doctor
-```
-
-Detailed setup, WRDS configuration, and Apple Silicon notes live in
-[`docs/environment_setup.md`](docs/environment_setup.md).
-
-## Reliable Local Setup
-
-For reproducible local runs, prefer the repo-local `.venv` interpreter over conda base or any legacy local `venv/`:
-
-```bash
-make bootstrap
 make doctor
 make format
 make lint
 pytest -q
 ```
 
-If your shell defaults to conda base, activate the project environment explicitly and use the repo-local interpreter for all work:
+Detailed environment notes are in [docs/environment_setup.md](docs/environment_setup.md).
 
-```bash
-source .venv/bin/activate
-```
+## Current State
 
-## Data Layout
+The repo is now in a usable preliminary-delivery state for the `2016-2024` analysis window.
 
-Expected locations (relative to repository root):
+Current authoritative artifacts include:
 
-- Raw/processed filing text root: `data/processed/sec/<year>/...`
-- AI keywords: `data/metadata/ai_keywords.txt`
-- Validation and centroids: `data/validation/...`
+- cleaned narrative backbone:
+  - `data/processed/aggregates/firm_year_narrative_measures_prelim_clean_v1.parquet`
+- promoted patent series:
+  - `data/processed/patents/ai_patent_counts_filtered_active_annual_allyears_2016plus_applied_v2_legalnorm_unique_lightweight.csv`
+- controls backbone:
+  - `data/interim/controls/controls_by_firm_year_active_annual_allyears_2016_2024_v3.csv`
+- merged conditional panel:
+  - `data/processed/panel/panel_ai_patents_controls_2016_2024_applied_v2_legalnorm_unique.csv`
+- regression-ready conditional panel:
+  - `data/processed/panel/panel_reg_ready_2016_2024_applied_v2_legalnorm_unique.csv`
+- merged ever-speaker annual panel:
+  - `data/processed/panel/panel_ai_patents_controls_ever_speaker_2016_2024_v1.csv`
+- regression-ready ever-speaker annual panel:
+  - `data/processed/panel/panel_reg_ready_ever_speaker_2016_2024_v1.csv`
 
-The extraction and classification scripts discover files from these default paths unless overridden by CLI flags.
+Current delivery status is tracked in [docs/preliminary_delivery_status_2026-03-20.md](docs/preliminary_delivery_status_2026-03-20.md).
 
-## Quickstart Pipeline
+## Panels and Sample Definitions
 
-### 1) Extract AI-related sentences
+Two panel objects are relevant right now:
+
+### 1. Conditional AI-speaking panel
+
+This panel keeps firm-years in which companies are already speaking about AI.
+
+Use it for:
+- conditional validation checks
+- appendix-style regressions
+- comparing results against earlier exploratory runs
+
+Main files:
+- `data/processed/panel/panel_ai_patents_controls_2016_2024_applied_v2_legalnorm_unique.csv`
+- `data/processed/panel/panel_reg_ready_2016_2024_applied_v2_legalnorm_unique.csv`
+
+### 2. Ever-speaker annual panel
+
+This panel keeps all years from `2016` through `2024` for firms that mention AI at least once during the window, including zero-disclosure years.
+
+Use it for:
+- main-text timing analysis
+- lag / contemporaneous / lead patent tests
+- the current delivery package
+
+Main files:
+- `data/processed/panel/panel_ai_patents_controls_ever_speaker_2016_2024_v1.csv`
+- `data/processed/panel/panel_reg_ready_ever_speaker_2016_2024_v1.csv`
+
+The rationale for this rebuild is documented in:
+- [reports/analysis/sample_construction_audit_v1.md](reports/analysis/sample_construction_audit_v1.md)
+- [reports/analysis/sample_comparison_ever_speaker_v1.md](reports/analysis/sample_comparison_ever_speaker_v1.md)
+
+## Patents and Controls
+
+The current external-validation backbone depends on two major inputs beyond the disclosure layer.
+
+### Patent series
+
+The promoted patent series is generated from the lightweight patent extraction path with improved assignee matching and legal-suffix normalization.
+
+Key output:
+- `data/processed/patents/ai_patent_counts_filtered_active_annual_allyears_2016plus_applied_v2_legalnorm_unique_lightweight.csv`
+
+Key script family:
+- `python -m semantic_ai_washing.patents.extract_filtered_patents_lightweight`
+
+### Compustat controls
+
+The annual controls backbone covers `2016-2024` and feeds the merged panel build.
+
+Key output:
+- `data/interim/controls/controls_by_firm_year_active_annual_allyears_2016_2024_v3.csv`
+
+Key script:
+- `python -m semantic_ai_washing.data.pull_compustat_controls`
+
+## Legacy vs Current Classification Backbone
+
+The repo still supports the legacy-compatible extract/classify/aggregate flow:
+
+1. `*_ai_sentences.txt`
+2. `*_classified.csv`
+3. aggregated counts
+
+That path remains useful for:
+- new extraction runs
+- sentence-level QA
+- classifier evaluation and benchmarking
+
+The current `2016-2024` delivery lane, however, is anchored on cleaned downstream artifacts:
+
+- `firm_year_narrative_measures_prelim_clean_v1.parquet`
+- merged panel files under `data/processed/panel/`
+- delivery tables under `paper/generated/tables/`
+- Word review outputs under `output/doc/`
+
+So the sentence pipeline is still the foundation, but the authoritative delivery objects are the cleaned panel and table/report outputs built on top of it.
+
+## How To Run the Current Pipeline
+
+All examples below assume the repo-local environment is active and `PYTHONPATH=src` is set where needed.
+
+### 1. Extract AI-related sentences
 
 ```bash
 python -m semantic_ai_washing.data.extract_ai_sentences \
@@ -62,14 +147,7 @@ python -m semantic_ai_washing.data.extract_ai_sentences \
   --years 2024
 ```
 
-Useful options:
-
-- `--limit 1` for a quick smoke run
-- `--force` to overwrite existing `*_ai_sentences.txt`
-- `--file <path>` to process one filing directly
-- `--log-level DEBUG` for verbose extraction diagnostics
-
-### 2) Classify extracted sentences
+### 2. Classify extracted sentences
 
 ```bash
 python -m semantic_ai_washing.classification.classify_all_ai_sentences \
@@ -81,21 +159,91 @@ python -m semantic_ai_washing.classification.classify_all_ai_sentences \
   --min-tokens 6
 ```
 
-### 3) Aggregate to firm-year counts/features
+### 3. Build cleaned narrative measures
 
 ```bash
-python -m semantic_ai_washing.aggregation.aggregate_classification_counts
+env PYTHONPATH=src ./.venv/bin/python -m semantic_ai_washing.aggregation.build_preliminary_narrative_measures
 ```
 
-## Outputs
+### 4. Pull controls
 
-- `*_ai_sentences.txt`: extracted AI-related sentences (one sentence per line)
-- `*_classified.csv`: per-sentence predicted label and score columns
-- `data/final/ai_frequencies_by_firm_year.csv`: firm-year aggregated counts and `log1p` features
+```bash
+env PYTHONPATH=src ./.venv/bin/python -m semantic_ai_washing.data.pull_compustat_controls \
+  --start-year 2016 \
+  --end-year 2024 \
+  --company-list data/metadata/company_lookup_active_annual_allyears_2021_2024.csv \
+  --out-crosswalk data/externals/crosswalks/cik_gvkey_active_annual_allyears_2021_2024_v3.csv \
+  --out-controls data/interim/controls/controls_by_firm_year_active_annual_allyears_2016_2024_v3.csv \
+  --out-qc reports/controls_qc_active_annual_allyears_2016_2024_v3.md
+```
 
-## Evaluation and Testing
+### 5. Build the ever-speaker annual panel
 
-Held-out classifier evaluation:
+```bash
+env PYTHONPATH=src ./.venv/bin/python -m semantic_ai_washing.aggregation.build_ever_speaker_annual_panel \
+  --narrative data/processed/aggregates/firm_year_narrative_measures_prelim_clean_v1.parquet \
+  --patents data/processed/patents/ai_patent_counts_filtered_active_annual_allyears_2016plus_applied_v2_legalnorm_unique_lightweight.csv \
+  --controls data/interim/controls/controls_by_firm_year_active_annual_allyears_2016_2024_v3.csv \
+  --out data/processed/panel/panel_ai_patents_controls_ever_speaker_2016_2024_v1.csv
+```
+
+### 6. Prepare the regression-ready ever-speaker sample
+
+```bash
+env PYTHONPATH=src ./.venv/bin/python -m semantic_ai_washing.analysis.prepare_panel_for_regression \
+  --input data/processed/panel/panel_ai_patents_controls_ever_speaker_2016_2024_v1.csv \
+  --output data/processed/panel/panel_reg_ready_ever_speaker_2016_2024_v1.csv \
+  --qc reports/panel_clean_qc_ever_speaker_2016_2024_v1.md
+```
+
+### 7. Run modular regression bundles
+
+```bash
+env PYTHONPATH=src ./.venv/bin/python -m semantic_ai_washing.analysis.run_modular_regression_portfolio \
+  --panel data/processed/panel/panel_reg_ready_ever_speaker_2016_2024_v1.csv \
+  --spec-path reports/analysis/regression_specification_prelim_v1.json \
+  --outdir results/01_baseline/tables_2016_2024_applied_v2_legalnorm_unique \
+  --bundle-name example_bundle
+```
+
+### 8. Generate standalone delivery tables
+
+Markdown:
+
+```bash
+env PYTHONPATH=src ./.venv/bin/python -m semantic_ai_washing.analysis.generate_delivery_table_artifacts
+```
+
+DOCX:
+
+```bash
+env PYTHONPATH=src ./.venv/bin/python -m semantic_ai_washing.analysis.build_delivery_table_docs
+```
+
+### 9. Refresh paper-facing snippets and draft
+
+```bash
+env PYTHONPATH=src ./.venv/bin/python -m semantic_ai_washing.analysis.generate_paper_assets
+env PYTHONPATH=src ./.venv/bin/python scripts/build_paper.py
+```
+
+## Delivery Outputs
+
+Current delivery-facing objects include:
+
+- generated markdown tables:
+  - `paper/generated/tables/`
+- standalone Word tables:
+  - `output/doc/delivery_tables_v1/`
+- monthly reports:
+  - `output/doc/reports/`
+- compiled paper outputs:
+  - `output/paper/manuscript_compiled.md`
+  - `output/doc/ai_washing_preliminary_draft.docx`
+
+## Evaluation and QA
+
+Classifier evaluation:
 
 ```bash
 python -m semantic_ai_washing.tests.evaluate_classifier_on_held_out \
@@ -106,7 +254,7 @@ python -m semantic_ai_washing.tests.evaluate_classifier_on_held_out \
   --min-tokens 6
 ```
 
-Project QA commands:
+Project QA:
 
 ```bash
 make format
@@ -114,20 +262,31 @@ make lint
 .venv/bin/pytest -q
 ```
 
-CI runs Ruff + pytest on each push and pull request.
+## Repository Structure
 
-## Project Structure
+- `src/semantic_ai_washing/data/`: extraction, external pulls, and raw data preparation
+- `src/semantic_ai_washing/classification/`: sentence classification, embeddings, centroids, evaluation helpers
+- `src/semantic_ai_washing/aggregation/`: disclosure aggregation, patent merges, panel builders
+- `src/semantic_ai_washing/analysis/`: regressions, delivery tables, paper assets, reporting
+- `paper/`: manuscript sections, generated tables/snippets, literature inputs
+- `output/`: compiled paper artifacts, Word review docs, monthly reports
+- `reports/analysis/`: planning notes, spec cards, delivery blueprints, sample audits
+- `docs/`: environment, workflow, and pipeline notes
 
-- `src/semantic_ai_washing/data/`: extraction and data-prep scripts
-- `src/semantic_ai_washing/core/`: reusable sentence filtering and classification logic
-- `src/semantic_ai_washing/classification/`: batch classification and centroid tooling
-- `src/semantic_ai_washing/aggregation/`: firm-year aggregation and merges
-- `src/semantic_ai_washing/analysis/`: analysis and reporting scripts
-- `tests/`: pytest-based regression tests
+## Documentation Map
+
+Useful starting points:
+
+- [docs/environment_setup.md](docs/environment_setup.md)
+- [docs/preliminary_delivery_status_2026-03-20.md](docs/preliminary_delivery_status_2026-03-20.md)
+- [docs/preliminary_results_execution_plan.md](docs/preliminary_results_execution_plan.md)
+- [docs/modular_regression_workflow.md](docs/modular_regression_workflow.md)
+- [reports/analysis/preliminary_delivery_story_roadmap_v1.md](reports/analysis/preliminary_delivery_story_roadmap_v1.md)
 
 ## Development Workflow
 
-Use canonical module execution (`python -m semantic_ai_washing...`) for all new work.  
-Legacy `src/...` entrypoint scripts are compatibility shims and should not be the default for new documentation or automation.
+Use canonical module execution (`python -m semantic_ai_washing...`) for all new work.
 
-Branching, PR, and merge conventions are documented in [CONTRIBUTING.md](CONTRIBUTING.md).
+Legacy `src/...` entrypoints are compatibility shims and should not be the default for new automation or public documentation.
+
+Branching and merge conventions are documented in [CONTRIBUTING.md](CONTRIBUTING.md).

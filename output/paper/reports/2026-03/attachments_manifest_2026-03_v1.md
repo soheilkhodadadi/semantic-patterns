@@ -30,6 +30,10 @@ This note lists the canonical artifacts that can be attached or referenced along
   - This is the standalone Word version of the current summary-statistics table. It is meant for direct visual review and formatting checks rather than for running analysis.
 - `output/doc/delivery_tables_v1/table_2_core_patent_validation_prelim_v1.docx`
   - This is the standalone Word version of the current conditional validation table from the narrower AI-speaking panel. It is still useful as an appendix or conditional check, even though the next main-text timing table will be built on the ever-speaker panel.
+- `output/doc/delivery_tables_v1/table_2_ai_focus_timing_prelim_v1.docx`
+  - This is the new main-text timing table on the rebuilt ever-speaker annual panel using `AI_Focus` as the focal regressor and `log(1 + AI patents)` at `t-2`, `t-1`, `t`, `t+1`, and `t+2` as the outcomes. It is the cleanest first broad-disclosure timing object for the delivery package.
+- `output/doc/delivery_tables_v1/table_3_disclosure_composition_timing_prelim_v1.docx`
+  - This is the new main-text disclosure-composition timing table on the rebuilt ever-speaker annual panel. Panel A shows actionable disclosure timing and Panel B shows speculative-only disclosure timing against AI patent outcomes across the same five horizons. It is the first table that directly operationalizes the project’s core substantive distinction on the corrected sample.
 - `output/doc/reports/2026-03/executive_update_2026-03_v1.docx`
   - This is the short one-page March executive update intended for quick stakeholder review. It summarizes what changed materially and what the next gate is.
 - `output/doc/reports/2026-03/detailed_update_2026-03_v1.docx`

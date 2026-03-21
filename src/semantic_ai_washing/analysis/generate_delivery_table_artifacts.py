@@ -1,8 +1,4 @@
-"""Generate standalone delivery-phase table artifacts.
-
-This module keeps preliminary delivery tables modular so they can be regenerated
-independently of the full paper build.
-"""
+"""Generate standalone delivery-phase table artifacts."""
 
 from __future__ import annotations
 
@@ -10,30 +6,22 @@ import argparse
 import csv
 import math
 import os
-import statistics
 from pathlib import Path
 
+from semantic_ai_washing.analysis.delivery_table_payloads import (
+    fmt_num,
+    sig_stars,
+    summarize_table_1,
+    summarize_table_2_timing_focus,
+    summarize_table_3_timing_composition,
+    to_markdown_table,
+)
 
-TABLE1_VARS: list[tuple[str, str]] = [
-    ("n_A", "Actionable AI sentences"),
-    ("n_S", "Speculative AI sentences"),
-    ("n_I", "Irrelevant AI sentences"),
-    ("AI_Focus", "AI disclosure intensity, log(1 + AI sentences)"),
-    ("share_A", "Actionable share of AI sentences"),
-    ("share_S", "Speculative share of AI sentences"),
-    ("CredAI", "Credibility index, z(A) - z(S)"),
-    ("A_S", "Actionable-to-speculative ratio, log(1 + A / (1 + S))"),
-    ("patents_ai", "AI patents"),
-    ("patents_total", "Total patents"),
-    ("ln_assets", "Log assets"),
-    ("leverage", "Leverage"),
-    ("cash", "Cash/assets"),
-    ("rd_intensity", "R&D/assets"),
-    ("capx_at", "CAPX/assets"),
-    ("roa", "Return on assets"),
-    ("sales_growth", "Sales growth"),
-    ("emp", "Employees"),
-]
+DEFAULT_PANEL = "data/processed/panel/panel_reg_ready_ever_speaker_2016_2024_v1.csv"
+DEFAULT_PORTFOLIO_COEFFS = (
+    "results/01_baseline/tables_2016_2024_applied_v2_legalnorm_unique/portfolio_coefficients.csv"
+)
+DEFAULT_OUTPUT_DIR = "paper/generated/tables"
 
 
 def _write_text(path: str | Path, text: str) -> None:
@@ -47,107 +35,6 @@ def _write_text(path: str | Path, text: str) -> None:
 
 def _split_csv_arg(raw_value: str) -> set[str]:
     return {item.strip().lower() for item in raw_value.split(",") if item.strip()}
-
-
-def _fmt_num(value: float | None, digits: int = 3) -> str:
-    if value is None or math.isnan(value):
-        return ""
-    return f"{value:.{digits}f}"
-
-
-def _sig_band(pvalue: float | None) -> str:
-    if pvalue is None or math.isnan(pvalue):
-        return "unstable"
-    if pvalue < 0.01:
-        return "1%"
-    if pvalue < 0.05:
-        return "5%"
-    if pvalue < 0.10:
-        return "10%"
-    return "n.s."
-
-
-def _sig_stars(pvalue: float | None) -> str:
-    if pvalue is None or math.isnan(pvalue):
-        return ""
-    if pvalue < 0.01:
-        return "***"
-    if pvalue < 0.05:
-        return "**"
-    if pvalue < 0.10:
-        return "*"
-    return ""
-
-
-def _to_markdown_table(headers: list[str], rows: list[list[str]]) -> str:
-    lines = [
-        "| " + " | ".join(headers) + " |",
-        "| " + " | ".join(["---"] * len(headers)) + " |",
-    ]
-    for row in rows:
-        lines.append("| " + " | ".join(row) + " |")
-    return "\n".join(lines) + "\n"
-
-
-def _quantile(values: list[float], p: float) -> float:
-    if not values:
-        return float("nan")
-    n = len(values)
-    k = (n - 1) * p
-    floor_i = math.floor(k)
-    ceil_i = math.ceil(k)
-    if floor_i == ceil_i:
-        return values[int(k)]
-    return values[floor_i] * (ceil_i - k) + values[ceil_i] * (k - floor_i)
-
-
-def build_table_1(panel_path: str | Path) -> str:
-    values: dict[str, list[float]] = {column: [] for column, _ in TABLE1_VARS}
-    with Path(panel_path).open(newline="", encoding="utf-8") as handle:
-        reader = csv.DictReader(handle)
-        for row in reader:
-            for column, _ in TABLE1_VARS:
-                raw = row.get(column, "")
-                if raw in {"", None}:
-                    continue
-                try:
-                    value = float(raw)
-                except ValueError:
-                    continue
-                if math.isnan(value) or math.isinf(value):
-                    continue
-                values[column].append(value)
-
-    rows: list[list[str]] = []
-    for column, definition in TABLE1_VARS:
-        arr = values[column]
-        arr.sort()
-        nobs = len(arr)
-        mean = sum(arr) / nobs if nobs else float("nan")
-        sd = statistics.stdev(arr) if nobs > 1 else float("nan")
-        rows.append(
-            [
-                column,
-                definition,
-                f"{nobs:,}",
-                _fmt_num(mean),
-                _fmt_num(sd),
-                _fmt_num(_quantile(arr, 0.25)),
-                _fmt_num(_quantile(arr, 0.50)),
-                _fmt_num(_quantile(arr, 0.75)),
-            ]
-        )
-
-    table = _to_markdown_table(
-        ["Variable", "Definition", "N", "Mean", "SD", "P25", "Median", "P75"],
-        rows,
-    )
-    note = (
-        "\nNotes: Summary statistics are computed on the regression-ready `2016–2024` firm-year sample. "
-        "Variable-specific `N` varies because some control variables have missing values. "
-        "This table is intended for the main text.\n"
-    )
-    return table + note
 
 
 def _load_coeff_lookup(coeff_path: str | Path) -> dict[tuple[str, str], tuple[float, float | None, int | None]]:
@@ -173,7 +60,14 @@ def _load_coeff_lookup(coeff_path: str | Path) -> dict[tuple[str, str], tuple[fl
     return lookup
 
 
-def build_table_2(coeff_path: str | Path) -> str:
+def _render_table_1_markdown(payload: dict[str, object]) -> str:
+    headers: list[str] = payload["headers"]  # type: ignore[assignment]
+    rows: list[dict[str, str]] = payload["rows"]  # type: ignore[assignment]
+    body = [[row[header] for header in headers] for row in rows]
+    return to_markdown_table(headers, body) + "\nNotes: " + str(payload["note"]) + "\n"
+
+
+def _render_conditional_appendix_table(coeff_path: str | Path) -> str:
     lookup = _load_coeff_lookup(coeff_path)
     row_specs = [
         (
@@ -201,7 +95,6 @@ def build_table_2(coeff_path: str | Path) -> str:
             "full",
         ),
     ]
-
     rows: list[list[str]] = []
     for outcome, focal, model_id, term, fe_label, sample in row_specs:
         coef, pvalue, nobs = lookup.get((model_id, term), (float("nan"), None, None))
@@ -211,41 +104,55 @@ def build_table_2(coeff_path: str | Path) -> str:
                 focal,
                 fe_label,
                 sample,
-                f"{coef:.3f}{_sig_stars(pvalue)}" if not math.isnan(coef) else "",
-                _fmt_num(pvalue),
-                _sig_band(pvalue),
+                f"{coef:.3f}{sig_stars(pvalue)}" if not math.isnan(coef) else "",
+                fmt_num(pvalue),
                 f"{nobs:,}" if nobs is not None else "",
             ]
         )
-
-    table = _to_markdown_table(
-        ["Outcome", "Focal variable", "FE", "Sample", "Coef.", "p-value", "Sig.", "N"],
-        rows,
+    table = to_markdown_table(
+        ["Outcome", "Focal variable", "FE", "Sample", "Coef.", "p-value", "N"], rows
     )
     note = (
-        "\nNotes: Each row is a separate regression. The dependent variable is an indicator for whether the firm has any AI patent in `t+1`. "
-        "All rows use the same control set: `ln_assets`, `leverage`, `cash`, `rd_intensity`, `capx_at`, `roa`, `sales_growth`, and `emp`. "
-        "Standard errors are clustered at the firm level. Constants are omitted from the displayed table. "
-        "This table is intended for the main text as the first patent-validation table.\n"
+        "Notes: Each row is a separate regression estimated on the narrower AI-speaking panel. "
+        "The dependent variable is an indicator for whether the firm has any AI patent in t+1. "
+        "All rows use the same control set and firm-clustered standard errors. "
+        "Constants are omitted from the displayed table. This table now belongs in the appendix as a conditional validation check."
     )
-    return table + note
+    return table + "\n" + note + "\n"
+
+
+def _render_timing_payload_markdown(payload: dict[str, object]) -> str:
+    models: list[dict[str, str]] = payload["models"]  # type: ignore[assignment]
+    panels: list[dict[str, object]] = payload["panels"]  # type: ignore[assignment]
+    sections: list[str] = [f"## {payload['title']}\n", str(payload["note"]), ""]
+
+    headers = ["Variable", *[model["label"] for model in models]]
+    for panel in panels:
+        heading = panel.get("heading")
+        if heading:
+            sections.append(f"### {heading}\n")
+        rows = [
+            [str(panel["label"]), *list(panel["coef_cells"])],
+            ["", *list(panel["se_cells"])],
+        ]
+        for footer in panel["footer_rows"]:  # type: ignore[index]
+            rows.append([str(footer["label"]), *[str(cell) for cell in footer["cells"]]])
+        sections.append(to_markdown_table(headers, rows))
+    return "\n".join(sections).rstrip() + "\n"
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--panel",
-        default="data/processed/panel/panel_reg_ready_2016_2024_applied_v2_legalnorm_unique.csv",
-    )
-    parser.add_argument(
-        "--portfolio-coeffs",
-        default="results/01_baseline/tables_2016_2024_applied_v2_legalnorm_unique/portfolio_coefficients.csv",
-    )
-    parser.add_argument("--output-dir", default="paper/generated/tables")
+    parser.add_argument("--panel", default=DEFAULT_PANEL)
+    parser.add_argument("--portfolio-coeffs", default=DEFAULT_PORTFOLIO_COEFFS)
+    parser.add_argument("--output-dir", default=DEFAULT_OUTPUT_DIR)
     parser.add_argument(
         "--tables",
-        default="table1,table2",
-        help="Comma-separated list of tables to generate: table1, table2",
+        default="table1,table2_timing_focus,table3_timing_composition",
+        help=(
+            "Comma-separated list of tables to generate: table1, table2_timing_focus, "
+            "table3_timing_composition, table2_conditional_appendix"
+        ),
     )
     return parser.parse_args()
 
@@ -253,17 +160,30 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     selected = _split_csv_arg(args.tables)
+    output_dir = Path(args.output_dir)
 
     if "table1" in selected:
         _write_text(
-            Path(args.output_dir) / "table_1_summary_statistics_prelim_v1.md",
-            build_table_1(args.panel),
+            output_dir / "table_1_summary_statistics_prelim_v1.md",
+            _render_table_1_markdown(summarize_table_1(args.panel)),
         )
 
-    if "table2" in selected:
+    if "table2_timing_focus" in selected:
         _write_text(
-            Path(args.output_dir) / "table_2_core_patent_validation_prelim_v1.md",
-            build_table_2(args.portfolio_coeffs),
+            output_dir / "table_2_ai_focus_timing_prelim_v1.md",
+            _render_timing_payload_markdown(summarize_table_2_timing_focus(args.panel)),
+        )
+
+    if "table3_timing_composition" in selected:
+        _write_text(
+            output_dir / "table_3_disclosure_composition_timing_prelim_v1.md",
+            _render_timing_payload_markdown(summarize_table_3_timing_composition(args.panel)),
+        )
+
+    if "table2_conditional_appendix" in selected:
+        _write_text(
+            output_dir / "table_2_core_patent_validation_prelim_v1.md",
+            _render_conditional_appendix_table(args.portfolio_coeffs),
         )
 
     print(f"[delivery-tables] wrote selected tables under {args.output_dir}")

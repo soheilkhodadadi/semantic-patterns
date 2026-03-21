@@ -12,6 +12,7 @@ The preliminary pipeline is now in a usable delivery state:
 - merged panel and regression-ready panel built
 - rebuilt ever-speaker annual panel and regression-ready sample built
 - broader regression portfolio estimated
+- standalone main-text delivery tables generated on the ever-speaker panel
 - manuscript markdown refreshed to reflect the current headline regression framing
 
 ## Authoritative Data Artifacts
@@ -41,38 +42,29 @@ The preliminary pipeline is now in a usable delivery state:
   - `results/01_baseline/tables_2016_2024_applied_v2_legalnorm_unique/portfolio_summary.md`
 - compiled manuscript markdown:
   - `output/paper/manuscript_compiled.md`
-- latest generated headline table:
-  - `paper/generated/tables/regression_headline_prelim_v1.md`
+- main-text timing tables:
+  - `paper/generated/tables/table_2_ai_focus_timing_prelim_v1.md`
+  - `paper/generated/tables/table_3_disclosure_composition_timing_prelim_v1.md`
+- standalone Word timing tables:
+  - `output/doc/delivery_tables_v1/table_2_ai_focus_timing_prelim_v1.docx`
+  - `output/doc/delivery_tables_v1/table_3_disclosure_composition_timing_prelim_v1.docx`
 
 ## Headline Empirical Read
 
-Current main-text framing should emphasize separate one-variable future-patent LPMs rather than crowded omnibus specifications.
+Current main-text framing should now emphasize the timing structure on the ever-speaker annual panel.
 
-Headline coefficients from the refreshed paper assets:
+From the new timing tables:
 
-- speculative-only disclosure, firm/year FE:
-  - `0.048`
-  - `p = 0.086`
-  - significance band: `10%`
-- actionable-only disclosure, firm/year FE:
-  - `-0.023`
-  - `p = 0.409`
-  - significance band: `n.s.`
-- speculative share, firm/year FE:
-  - `0.079`
-  - `p = 0.029`
-  - significance band: `5%`
+- `AI_Focus` is positive and statistically significant at every horizon:
+  - `t-2 = 0.039***`
+  - `t-1 = 0.056***`
+  - `t = 0.056***`
+  - `t+1 = 0.047***`
+  - `t+2 = 0.031***`
+- actionable disclosure is near zero at `t-2`, then positive and statistically significant from `t-1` through `t+2`
+- speculative-only disclosure is negative and significant at `t-2`, `t-1`, and `t`, then fades toward zero at `t+1` and `t+2`
 
-Exploratory but not headline:
-
-- actionable-only, no FE:
-  - `0.089`
-  - `p = 0.000`
-  - likely sensitive to omitted-variable structure
-- `AI_Focus`, firm/year FE:
-  - `-0.039`
-  - `p = 0.001`
-  - useful as a credibility-style exploratory metric, not yet a headline replacement
+The earlier conditional validation table remains useful, but it now belongs in the appendix rather than the main-text empirical sequence.
 
 ## Modeling Decisions Locked In For The Preliminary Draft
 
@@ -98,7 +90,7 @@ env PYTHONPATH=src ./.venv/bin/python scripts/build_paper.py
 
 ## Immediate Next Work
 
-1. Rebuild `Table 1` so the main-text version is anchored on the ever-speaker annual panel.
-2. Estimate the new main-text `Table 2` on AI patent timing outcomes in the ever-speaker annual panel.
-3. Move the current conditional validation table from the speaking-only panel to the appendix.
-4. Build the FE ladder / sample-trim companion for the strongest timing specification.
+1. Validate and tighten the new ever-speaker `Table 2` and `Table 3` timing objects for the main-text sequence.
+2. Decide which timing result should anchor the next FE ladder / sample-trim companion.
+3. Keep the current conditional validation table as appendix support rather than as a main-text anchor.
+4. Refresh manuscript-facing paper assets once the next table boundary is locked.

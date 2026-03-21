@@ -5,8 +5,6 @@ from __future__ import annotations
 import argparse
 import csv
 import math
-import os
-import statistics
 from pathlib import Path
 
 from docx import Document
@@ -16,79 +14,28 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Inches, Pt
 
+from semantic_ai_washing.analysis.delivery_table_payloads import (
+    fmt_num,
+    sig_stars,
+    summarize_table_1,
+    summarize_table_2_timing_focus,
+    summarize_table_3_timing_composition,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
-DEFAULT_MERGED_PANEL = (
-    "data/processed/panel/panel_ai_patents_controls_2016_2024_applied_v2_legalnorm_unique.csv"
-)
-DEFAULT_REG_READY_PANEL = (
-    "data/processed/panel/panel_reg_ready_2016_2024_applied_v2_legalnorm_unique.csv"
-)
+DEFAULT_REG_READY_PANEL = "data/processed/panel/panel_reg_ready_ever_speaker_2016_2024_v1.csv"
 DEFAULT_PORTFOLIO_COEFFS = (
     "results/01_baseline/tables_2016_2024_applied_v2_legalnorm_unique/portfolio_coefficients.csv"
 )
 DEFAULT_OUTPUT_DIR = "output/doc/delivery_tables_v1"
-
-TABLE1_VARS: list[tuple[str, str]] = [
-    ("n_A", "Actionable AI sentences"),
-    ("n_S", "Speculative AI sentences"),
-    ("n_I", "Irrelevant AI sentences"),
-    ("AI_Focus", "AI focus"),
-    ("share_A", "Actionable share"),
-    ("share_S", "Speculative share"),
-    ("CredAI", "CredAI"),
-    ("A_S", "Actionable/speculative ratio"),
-    ("patents_ai", "AI patents"),
-    ("patents_total", "Total patents"),
-    ("ln_assets", "Log assets"),
-    ("leverage", "Leverage"),
-    ("cash", "Cash/assets"),
-    ("rd_intensity", "R&D/assets"),
-    ("capx_at", "CAPX/assets"),
-    ("roa", "Return on assets"),
-    ("sales_growth", "Sales growth"),
-    ("emp", "Employees"),
-]
 
 
 def _split_csv_arg(raw_value: str) -> set[str]:
     return {item.strip().lower() for item in raw_value.split(",") if item.strip()}
 
 
-def _fmt_num(value: float | None, digits: int = 3) -> str:
-    if value is None or math.isnan(value):
-        return ""
-    return f"{value:.{digits}f}"
-
-
-def _sig_stars(pvalue: float | None) -> str:
-    if pvalue is None or math.isnan(pvalue):
-        return ""
-    if pvalue < 0.01:
-        return "***"
-    if pvalue < 0.05:
-        return "**"
-    if pvalue < 0.10:
-        return "*"
-    return ""
-
-
-def _quantile(values: list[float], p: float) -> float:
-    if not values:
-        return float("nan")
-    n = len(values)
-    k = (n - 1) * p
-    floor_i = math.floor(k)
-    ceil_i = math.ceil(k)
-    if floor_i == ceil_i:
-        return values[int(k)]
-    return values[floor_i] * (ceil_i - k) + values[ceil_i] * (k - floor_i)
-
-
-def _load_coeff_lookup(
-    coeff_path: str | Path,
-) -> dict[tuple[str, str], tuple[float, float, float | None, int | None]]:
+def _load_coeff_lookup(coeff_path: str | Path) -> dict[tuple[str, str], tuple[float, float, float | None, int | None]]:
     lookup: dict[tuple[str, str], tuple[float, float, float | None, int | None]] = {}
     with Path(coeff_path).open(newline="", encoding="utf-8") as handle:
         reader = csv.DictReader(handle)
@@ -112,125 +59,58 @@ def _load_coeff_lookup(
     return lookup
 
 
-def _summarize_table_1(panel_path: str | Path) -> dict[str, object]:
-    values: dict[str, list[float]] = {column: [] for column, _ in TABLE1_VARS}
-    with Path(panel_path).open(newline="", encoding="utf-8") as handle:
-        reader = csv.DictReader(handle)
-        for row in reader:
-            for column, _ in TABLE1_VARS:
-                raw = row.get(column, "")
-                if raw in {"", None}:
-                    continue
-                try:
-                    value = float(raw)
-                except ValueError:
-                    continue
-                if math.isnan(value) or math.isinf(value):
-                    continue
-                values[column].append(value)
-
-    rows: list[dict[str, str]] = []
-    for column, label in TABLE1_VARS:
-        arr = values[column]
-        arr.sort()
-        nobs = len(arr)
-        mean = sum(arr) / nobs if nobs else float("nan")
-        sd = statistics.stdev(arr) if nobs > 1 else float("nan")
-        rows.append(
-            {
-                "Variable": label,
-                "Mean": _fmt_num(mean),
-                "Std. Dev.": _fmt_num(sd),
-                "p5": _fmt_num(_quantile(arr, 0.05)),
-                "p25": _fmt_num(_quantile(arr, 0.25)),
-                "p50": _fmt_num(_quantile(arr, 0.50)),
-                "p75": _fmt_num(_quantile(arr, 0.75)),
-                "p95": _fmt_num(_quantile(arr, 0.95)),
-                "N": f"{nobs:,}",
-            }
-        )
-
-    note = (
-        "This table presents summary statistics for the variables used in the analysis. "
-        "It reports the mean, standard deviation, selected percentiles (p5, p25, p50, p75, and p95), "
-        "and the number of observations (N) for the regression-ready 2016-2024 firm-year sample."
-    )
-    return {
-        "title": "Table 1. Summary Statistics",
-        "note": note,
-        "rows": rows,
-        "headers": ["Variable", "Mean", "Std. Dev.", "p5", "p25", "p50", "p75", "p95", "N"],
-    }
-
-
-def _summarize_table_2(coeff_path: str | Path) -> dict[str, object]:
+def _summarize_conditional_appendix_table(coeff_path: str | Path) -> dict[str, object]:
     lookup = _load_coeff_lookup(coeff_path)
     models = [
-        {
-            "number": "(1)",
-            "label": "Actionable-only",
-            "model_id": "portfolio_lpm_anypat_k1_actionable_only_fe",
-        },
-        {
-            "number": "(2)",
-            "label": "Speculative-only",
-            "model_id": "portfolio_lpm_anypat_k1_speculative_only_fe",
-        },
-        {
-            "number": "(3)",
-            "label": "Share model",
-            "model_id": "portfolio_lpm_anypat_k1_shares_fe",
-        },
+        {"number": "(1)", "label": "Actionable-only"},
+        {"number": "(2)", "label": "Speculative-only"},
+        {"number": "(3)", "label": "Share model"},
     ]
-
     row_specs = [
         ("Actionable disclosure", ["has_actionable", None, None]),
         ("Speculative-only disclosure", [None, "has_spec_only", None]),
         ("Actionable share", [None, None, "ActShare"]),
         ("Speculative share", [None, None, "SpecShare"]),
     ]
-
     body_rows: list[dict[str, object]] = []
     footer_n: list[str] = []
+    model_ids = [
+        "portfolio_lpm_anypat_k1_actionable_only_fe",
+        "portfolio_lpm_anypat_k1_speculative_only_fe",
+        "portfolio_lpm_anypat_k1_shares_fe",
+    ]
     for label, terms in row_specs:
         coef_cells: list[str] = []
         se_cells: list[str] = []
-        for model, term in zip(models, terms, strict=True):
+        for model_id, term in zip(model_ids, terms, strict=True):
             if term is None:
                 coef_cells.append("")
                 se_cells.append("")
                 continue
-            coef, se, pvalue, nobs = lookup.get(
-                (model["model_id"], term), (float("nan"), float("nan"), None, None)
-            )
-            coef_cells.append(f"{coef:.3f}{_sig_stars(pvalue)}" if not math.isnan(coef) else "")
+            coef, se, pvalue, nobs = lookup.get((model_id, term), (float("nan"), float("nan"), None, None))
+            coef_cells.append(f"{coef:.3f}{sig_stars(pvalue)}" if not math.isnan(coef) else "")
             se_cells.append(f"({se:.3f})" if not math.isnan(se) else "")
             footer_n.append(f"{nobs:,}" if nobs is not None else "")
         body_rows.append({"label": label, "cells": coef_cells, "kind": "coef"})
         body_rows.append({"label": "", "cells": se_cells, "kind": "se"})
 
-    footer_rows = [
-        {"label": "Controls", "cells": ["Y", "Y", "Y"]},
-        {"label": "Firm FE", "cells": ["Y", "Y", "Y"]},
-        {"label": "Year FE", "cells": ["Y", "Y", "Y"]},
-        {"label": "Observations", "cells": footer_n[:3] if footer_n else ["", "", ""]},
-    ]
-
     note = (
-        "This table presents firm-year panel regressions analyzing whether AI disclosure composition predicts future AI patenting. "
-        "The dependent variable is an indicator for whether the firm records any AI patent in t+1. "
-        "Column (1) uses actionable disclosure, column (2) uses speculative-only disclosure, and column (3) uses the disclosure-share specification. "
-        "Control variables include size, leverage, cash/assets, R&D/assets, CAPX/assets, ROA, sales growth, and employees. "
-        "Firm and year fixed effects are included in all columns. Standard errors clustered at the firm level are shown in parentheses. "
-        "Constants are omitted. (* p<0.1, ** p<0.05, *** p<0.01)."
+        "This appendix table presents the earlier conditional validation result estimated on the narrower AI-speaking panel. "
+        "The dependent variable is an indicator for whether the firm records any AI patent in t+1. Control variables include size, leverage, cash/assets, R&D/assets, CAPX/assets, ROA, sales growth, and employees. "
+        "Firm and year fixed effects are included in all columns. Standard errors clustered at the firm level are shown in parentheses. Constants are omitted. (* p<0.1, ** p<0.05, *** p<0.01)."
     )
     return {
-        "title": "Table 2. Disclosure Composition and Future AI Patenting",
+        "title": "Appendix Table. Conditional Disclosure Composition and Future AI Patenting",
         "note": note,
-        "models": models,
         "dependent_label": "Any AI patent in t+1",
+        "models": models,
         "body_rows": body_rows,
-        "footer_rows": footer_rows,
+        "footer_rows": [
+            {"label": "Controls", "cells": ["Y", "Y", "Y"]},
+            {"label": "Firm FE", "cells": ["Y", "Y", "Y"]},
+            {"label": "Year FE", "cells": ["Y", "Y", "Y"]},
+            {"label": "Observations", "cells": footer_n[:3] if footer_n else ["", "", ""]},
+        ],
     }
 
 
@@ -332,7 +212,7 @@ def _add_note(document: Document, text: str) -> None:
 
 
 def _build_table_1_doc(panel_path: str | Path, output_path: str | Path) -> None:
-    payload = _summarize_table_1(panel_path)
+    payload = summarize_table_1(panel_path)
     document = Document()
     _set_document_defaults(document)
     _add_title(document, str(payload["title"]))
@@ -363,20 +243,83 @@ def _build_table_1_doc(panel_path: str | Path, output_path: str | Path) -> None:
     for row_idx, row_payload in enumerate(rows, start=1):
         for col_idx, header in enumerate(headers):
             align = WD_ALIGN_PARAGRAPH.LEFT if col_idx == 0 else WD_ALIGN_PARAGRAPH.CENTER
-            _write_cell(
-                table.rows[row_idx].cells[col_idx],
-                row_payload[header],
-                align=align,
-                size=10.5,
-            )
+            _write_cell(table.rows[row_idx].cells[col_idx], row_payload[header], align=align, size=10.5)
     _apply_row_rule(table.rows[-1], bottom=True)
 
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
     document.save(str(output_path))
 
 
-def _build_table_2_doc(coeff_path: str | Path, output_path: str | Path) -> None:
-    payload = _summarize_table_2(coeff_path)
+def _build_panel_timing_doc(payload: dict[str, object], output_path: str | Path) -> None:
+    document = Document()
+    _set_document_defaults(document)
+    _add_title(document, str(payload["title"]))
+    _add_note(document, str(payload["note"]))
+
+    models: list[dict[str, str]] = payload["models"]  # type: ignore[assignment]
+    panels: list[dict[str, object]] = payload["panels"]  # type: ignore[assignment]
+    total_rows = 3
+    for panel in panels:
+        total_rows += (1 if panel.get("heading") else 0) + 2 + len(panel["footer_rows"])
+
+    cols = len(models) + 1
+    table = document.add_table(rows=total_rows, cols=cols)
+    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    table.autofit = False
+    _set_table_no_borders(table)
+
+    widths = [2.55] + [0.85] * len(models)
+    for index, width in enumerate(widths):
+        for row in table.rows:
+            row.cells[index].width = Inches(width)
+
+    _write_cell(table.rows[0].cells[0], "Variable", align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5, bold=True)
+    merged = table.rows[0].cells[1].merge(table.rows[0].cells[-1])
+    _write_cell(merged, str(payload["dependent_label"]), align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5, bold=True)
+    _apply_row_rule(table.rows[0], top=True)
+
+    _write_cell(table.rows[1].cells[0], "", align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5)
+    for idx, model in enumerate(models, start=1):
+        _write_cell(table.rows[1].cells[idx], model["label"], align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5)
+
+    _write_cell(table.rows[2].cells[0], "", align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5)
+    for idx, model in enumerate(models, start=1):
+        _write_cell(table.rows[2].cells[idx], model["number"], align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5)
+    _apply_row_rule(table.rows[2], bottom=True)
+
+    cursor = 3
+    for panel in panels:
+        heading = panel.get("heading")
+        if heading:
+            merged = table.rows[cursor].cells[0].merge(table.rows[cursor].cells[-1])
+            _write_cell(merged, str(heading), align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5, bold=True)
+            _apply_row_rule(table.rows[cursor], top=True)
+            cursor += 1
+
+        _write_cell(table.rows[cursor].cells[0], str(panel["label"]), align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5)
+        for idx, value in enumerate(panel["coef_cells"], start=1):
+            _write_cell(table.rows[cursor].cells[idx], str(value), align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5)
+        cursor += 1
+
+        _write_cell(table.rows[cursor].cells[0], "", align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5, italic=True)
+        for idx, value in enumerate(panel["se_cells"], start=1):
+            _write_cell(table.rows[cursor].cells[idx], str(value), align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5, italic=True)
+        cursor += 1
+
+        for footer in panel["footer_rows"]:  # type: ignore[index]
+            _write_cell(table.rows[cursor].cells[0], str(footer["label"]), align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5)
+            for idx, value in enumerate(footer["cells"], start=1):
+                _write_cell(table.rows[cursor].cells[idx], str(value), align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5)
+            cursor += 1
+
+        _apply_row_rule(table.rows[cursor - 1], bottom=True)
+
+    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+    document.save(str(output_path))
+
+
+def _build_conditional_appendix_doc(coeff_path: str | Path, output_path: str | Path) -> None:
+    payload = _summarize_conditional_appendix_table(coeff_path)
     document = Document()
     _set_document_defaults(document)
     _add_title(document, str(payload["title"]))
@@ -397,71 +340,29 @@ def _build_table_2_doc(coeff_path: str | Path, output_path: str | Path) -> None:
         for row in table.rows:
             row.cells[index].width = Inches(width)
 
-    _write_cell(
-        table.rows[0].cells[0],
-        "Variable",
-        align=WD_ALIGN_PARAGRAPH.LEFT,
-        size=10.5,
-        bold=True,
-    )
+    _write_cell(table.rows[0].cells[0], "Variable", align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5, bold=True)
     merged = table.rows[0].cells[1].merge(table.rows[0].cells[3])
-    _write_cell(
-        merged,
-        str(payload["dependent_label"]),
-        align=WD_ALIGN_PARAGRAPH.CENTER,
-        size=10.5,
-        bold=True,
-    )
+    _write_cell(merged, str(payload["dependent_label"]), align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5, bold=True)
     _apply_row_rule(table.rows[0], top=True)
 
     _write_cell(table.rows[1].cells[0], "", align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5)
     for idx, model in enumerate(models, start=1):
-        _write_cell(
-            table.rows[1].cells[idx],
-            model["number"],
-            align=WD_ALIGN_PARAGRAPH.CENTER,
-            size=10.5,
-            bold=False,
-        )
+        _write_cell(table.rows[1].cells[idx], model["number"], align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5)
     _apply_row_rule(table.rows[1], bottom=True)
 
     cursor = 2
     for row_payload in body_rows:
-        label = str(row_payload["label"])
-        cells: list[str] = row_payload["cells"]  # type: ignore[assignment]
         is_se = row_payload.get("kind") == "se"
-        _write_cell(
-            table.rows[cursor].cells[0],
-            label,
-            align=WD_ALIGN_PARAGRAPH.LEFT,
-            size=10.5,
-            italic=is_se,
-        )
-        for idx, value in enumerate(cells, start=1):
-            _write_cell(
-                table.rows[cursor].cells[idx],
-                value,
-                align=WD_ALIGN_PARAGRAPH.CENTER,
-                size=10.5,
-                italic=is_se,
-            )
+        _write_cell(table.rows[cursor].cells[0], str(row_payload["label"]), align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5, italic=is_se)
+        for idx, value in enumerate(row_payload["cells"], start=1):
+            _write_cell(table.rows[cursor].cells[idx], str(value), align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5, italic=is_se)
         cursor += 1
     _apply_row_rule(table.rows[cursor - 1], bottom=True)
 
     for footer in footer_rows:
-        _write_cell(
-            table.rows[cursor].cells[0],
-            str(footer["label"]),
-            align=WD_ALIGN_PARAGRAPH.LEFT,
-            size=10.5,
-        )
-        for idx, value in enumerate(footer["cells"], start=1):  # type: ignore[index]
-            _write_cell(
-                table.rows[cursor].cells[idx],
-                str(value),
-                align=WD_ALIGN_PARAGRAPH.CENTER,
-                size=10.5,
-            )
+        _write_cell(table.rows[cursor].cells[0], str(footer["label"]), align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5)
+        for idx, value in enumerate(footer["cells"], start=1):
+            _write_cell(table.rows[cursor].cells[idx], str(value), align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5)
         cursor += 1
     _apply_row_rule(table.rows[cursor - 1], bottom=True)
 
@@ -471,14 +372,16 @@ def _build_table_2_doc(coeff_path: str | Path, output_path: str | Path) -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--merged-panel", default=DEFAULT_MERGED_PANEL)
     parser.add_argument("--reg-ready-panel", default=DEFAULT_REG_READY_PANEL)
     parser.add_argument("--portfolio-coeffs", default=DEFAULT_PORTFOLIO_COEFFS)
     parser.add_argument("--output-dir", default=DEFAULT_OUTPUT_DIR)
     parser.add_argument(
         "--tables",
-        default="table1,table2",
-        help="Comma-separated list of standalone tables to build: table1, table2",
+        default="table1,table2_timing_focus,table3_timing_composition",
+        help=(
+            "Comma-separated list of standalone tables to build: table1, table2_timing_focus, "
+            "table3_timing_composition, table2_conditional_appendix"
+        ),
     )
     return parser.parse_args()
 
@@ -490,13 +393,22 @@ def main() -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     if "table1" in selected:
-        _build_table_1_doc(
-            args.reg_ready_panel,
-            output_dir / "table_1_summary_statistics_prelim_v1.docx",
+        _build_table_1_doc(args.reg_ready_panel, output_dir / "table_1_summary_statistics_prelim_v1.docx")
+
+    if "table2_timing_focus" in selected:
+        _build_panel_timing_doc(
+            summarize_table_2_timing_focus(args.reg_ready_panel),
+            output_dir / "table_2_ai_focus_timing_prelim_v1.docx",
         )
 
-    if "table2" in selected:
-        _build_table_2_doc(
+    if "table3_timing_composition" in selected:
+        _build_panel_timing_doc(
+            summarize_table_3_timing_composition(args.reg_ready_panel),
+            output_dir / "table_3_disclosure_composition_timing_prelim_v1.docx",
+        )
+
+    if "table2_conditional_appendix" in selected:
+        _build_conditional_appendix_doc(
             args.portfolio_coeffs,
             output_dir / "table_2_core_patent_validation_prelim_v1.docx",
         )

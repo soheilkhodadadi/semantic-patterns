@@ -1,18 +1,16 @@
-# Table 2 Spec Card
+# Appendix Conditional Validation Spec Card
 
 Table title:
-- `Table 2. Core Patent Validation: Future AI Patent Extensive Margin`
+- `Appendix Table. Conditional Disclosure Composition and Future AI Patenting`
 
 Status:
-- preliminary main-text table
+- appendix table
 
 ## Purpose
 
-This is the first indispensable empirical table.
+This table preserves the earlier speaking-only validation result so it remains available as a useful conditional check.
 
-Its job is to validate whether our filing-based disclosure measures line up with
-an external innovation outcome. For the preliminary package, the cleanest
-version of that validation is the extensive margin of future AI patenting.
+It is no longer the main-text empirical anchor because it conditions on firm-years in which firms are already discussing AI.
 
 ## Input
 
@@ -23,11 +21,9 @@ version of that validation is the extensive margin of future AI patenting.
 
 ## Sample
 
-- regression-ready firm-year panel
+- narrower AI-speaking regression sample
 - years:
   - `2016–2024`
-- main headline sample for this table:
-  - `3,617` firm-year observations
 
 ## Dependent Variable
 
@@ -39,6 +35,7 @@ version of that validation is the extensive margin of future AI patenting.
 
 - actionable disclosure (dummy), firm + year FE
 - speculative-only disclosure (dummy), firm + year FE
+- actionable share, firm + year FE
 - speculative share, firm + year FE
 
 ## Controls
@@ -58,55 +55,29 @@ version of that validation is the extensive margin of future AI patenting.
 - year fixed effects
 - clustered standard errors at the firm level
 
-## Columns
-
-- `Outcome`
-- `Focal variable`
-- `FE`
-- `Sample`
-- `Coef.`
-- `p-value`
-- `Sig.`
-- `N`
-
 ## Main-Text / Appendix Boundary
 
-- main text
+- appendix
 
 Reason:
-- this table performs the first direct validation against later patent outcomes
-- it uses one focal disclosure variable at a time
-- it avoids clutter from functional-form and FE ladder variants
-
-Those richer alternatives belong in later tables:
-
-- FE ladder:
-  - later main-text or appendix table
-- count-model / Poisson variants:
-  - appendix or robustness table
-- no-FE sensitivity:
-  - later comparison table, not this one
+- this remains a useful conditional-on-speaking validation object
+- it does not support the broader calendar-time timing interpretation we now want in the main text
+- the ever-speaker annual panel is the correct main-text base for timing analysis
 
 ## Interpretation Goal
 
-The reader should be able to see, quickly:
+The reader should be able to see:
 
-- whether actionable disclosure predicts later AI patenting
-- whether speculative disclosure predicts later AI patenting
-- whether speculative share behaves similarly or differently
-
-The current preliminary expectation is:
-
-- speculative-only disclosure is the clearest positive signal in this table
-- actionable disclosure is weaker in the comparable FE specification
+- whether the earlier positive speculative signal survives in the narrower speaking-only design
+- how that conditional result differs from the broader ever-speaker timing tables
 
 ## Caveats
 
-- this table is intentionally narrow and does not settle the full “AI washing” question
-- it validates disclosure composition against later AI patent incidence only
-- count intensity, FE ladder comparisons, and alternative estimators are deferred to later tables
+- this table should not be used as the main-text sample definition
+- it is conditional on already-speaking firm-years
+- timing interpretation is therefore limited relative to the ever-speaker annual panel
 
-## Output Artifact
+## Output Artifacts
 
 - `paper/generated/tables/table_2_core_patent_validation_prelim_v1.md`
-
+- `output/doc/delivery_tables_v1/table_2_core_patent_validation_prelim_v1.docx`
