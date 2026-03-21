@@ -63,7 +63,7 @@ def main():
     os.makedirs(os.path.dirname(args.output), exist_ok=True)
     os.makedirs(os.path.dirname(args.qc), exist_ok=True)
 
-    df = pd.read_csv(args.input)
+    df = pd.read_csv(args.input, low_memory=False)
 
     # keys
     if "cik" not in df or "year" not in df:

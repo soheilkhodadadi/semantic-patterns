@@ -5,7 +5,16 @@
 		}
 	],
   "settings": {
-    "python.defaultInterpreterPath": "./.venv/bin/python",
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv",
+    "python-envs.pythonProjects": [
+      {
+        "path": ".",
+        "envManager": "ms-python.python:venv"
+      }
+    ],
+    "python-envs.workspaceSearchPaths": [
+      "./.venv"
+    ],
     "files.exclude": {
       "**/.git": true,
       "**/.DS_Store": true,
@@ -29,8 +38,6 @@
       "**/output/**": true,
       "**/tmp/**": true
     },
-    "python.linting.enabled": true,
-    "python.formatting.provider": "black",
     "chatgpt.openOnStartup": true
   }
 }

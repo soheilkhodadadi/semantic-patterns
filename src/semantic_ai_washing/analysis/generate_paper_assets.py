@@ -40,6 +40,67 @@ def _read_text(path: str | Path) -> str:
     return Path(path).read_text(encoding="utf-8")
 
 
+def _load_portfolio_coeffs(portfolio_manifest_path: str | Path) -> pd.DataFrame:
+    manifest_path = Path(portfolio_manifest_path)
+    if not manifest_path.exists():
+        return pd.DataFrame()
+    manifest = _read_json(manifest_path)
+    coeff_path = manifest.get("portfolio_coefficients")
+    if not coeff_path or not Path(coeff_path).exists():
+        return pd.DataFrame()
+    return pd.read_csv(coeff_path)
+
+
+def _sig_band(pvalue: float | None) -> str:
+    if pvalue is None:
+        return "unstable"
+    if pvalue < 0.01:
+        return "1%"
+    if pvalue < 0.05:
+        return "5%"
+    if pvalue < 0.10:
+        return "10%"
+    return "n.s."
+
+
+def _sig_stars(pvalue: float | None) -> str:
+    if pvalue is None:
+        return ""
+    if pvalue < 0.01:
+        return "***"
+    if pvalue < 0.05:
+        return "**"
+    if pvalue < 0.10:
+        return "*"
+    return ""
+
+
+def _coef_cell(coef: float | None, pvalue: float | None) -> str:
+    if coef is None:
+        return ""
+    return f"{coef:.3f}{_sig_stars(pvalue)}"
+
+
+def _lookup_term(
+    coeffs: pd.DataFrame,
+    model_id: str,
+    term: str,
+) -> tuple[float | None, float | None, int | None]:
+    if coeffs.empty:
+        return None, None, None
+    match = coeffs.loc[
+        (coeffs["model"] == model_id) & (coeffs["term"] == term),
+        ["coef", "p", "N"],
+    ]
+    if match.empty:
+        return None, None, None
+    row = match.iloc[0]
+    coef = float(row["coef"]) if pd.notna(row["coef"]) else None
+    pvalue = float(row["p"]) if pd.notna(row["p"]) else None
+    nobs = int(row["N"]) if pd.notna(row["N"]) else None
+    return coef, pvalue, nobs
+
+
 def _build_benchmark_table(benchmark_matrix: dict[str, Any], selected_model_id: str) -> str:
     rows: list[dict[str, Any]] = []
     for model in benchmark_matrix.get("models", []):
@@ -204,73 +265,163 @@ def _build_results_status_snippet(
 
 def _build_regression_results_snippet(
     *,
-    regression_coefficients_path: str | Path,
+    portfolio_manifest_path: str | Path,
     panel_reg_ready_path: str | Path,
 ) -> str:
-    coeffs = pd.read_csv(
-        regression_coefficients_path,
-        usecols=["term", "coef", "p", "model", "N"],
-    )
+    coeffs = _load_portfolio_coeffs(portfolio_manifest_path)
     panel = pd.read_csv(panel_reg_ready_path, usecols=["year"])
     years = sorted(panel["year"].dropna().astype(int).unique()) if "year" in panel.columns else []
     year_span = f"{years[0]}–{years[-1]}" if years else "the available years"
-    focal = coeffs.loc[
-        coeffs["term"].isin(
-            ["log_n_A", "log_n_S", "has_actionable", "has_spec_only"]
-        )
-    ].copy()
-    if focal.empty:
+    if coeffs.empty:
         return (
-            "Baseline regressions ran, but the focal disclosure terms could not be summarized "
+            "Portfolio regressions ran, but the focal disclosure terms could not be summarized "
             "from the current coefficient export.\n"
         )
+    spec_fe_coef, spec_fe_p, spec_fe_n = _lookup_term(
+        coeffs, "portfolio_lpm_anypat_k1_speculative_only_fe", "has_spec_only"
+    )
+    act_fe_coef, act_fe_p, act_fe_n = _lookup_term(
+        coeffs, "portfolio_lpm_anypat_k1_actionable_only_fe", "has_actionable"
+    )
+    spec_nofe_coef, spec_nofe_p, _ = _lookup_term(
+        coeffs, "portfolio_lpm_anypat_k1_speculative_only_nofe", "has_spec_only"
+    )
+    act_nofe_coef, act_nofe_p, _ = _lookup_term(
+        coeffs, "portfolio_lpm_anypat_k1_actionable_only_nofe", "has_actionable"
+    )
+    specshare_coef, specshare_p, _ = _lookup_term(
+        coeffs, "portfolio_lpm_anypat_k1_shares_fe", "SpecShare"
+    )
+    aifocus_coef, aifocus_p, _ = _lookup_term(
+        coeffs, "portfolio_lpm_anypat_k1_aifocus_fe", "AI_Focus"
+    )
 
-    focal["significant_5pct"] = focal["p"] < 0.05
-    focal["significant_10pct"] = focal["p"] < 0.10
-    lpm_dummies = focal.loc[focal["model"] == "LPM_anypat_k1_dummies"].copy()
-    ols_counts = focal.loc[focal["model"] == "OLS_k1_logcounts"].copy()
-
-    spec_row = lpm_dummies.loc[lpm_dummies["term"] == "has_spec_only"]
-    act_row = lpm_dummies.loc[lpm_dummies["term"] == "has_actionable"]
-    count_hits = ols_counts.loc[ols_counts["significant_10pct"]]
-
-    if not spec_row.empty and float(spec_row.iloc[0]["p"]) < 0.10:
+    if spec_fe_p is not None and spec_fe_p < 0.10:
         headline = (
-            f"In the current `{year_span}` preliminary panel pass, the continuous patent-count models remain weak, "
-            "but the binary future-AI-patent specification shows a positive signal for speculative-only disclosure."
-        )
-    elif not count_hits.empty:
-        terms = ", ".join(sorted(count_hits["term"].astype(str).unique()))
-        headline = (
-            f"In the current `{year_span}` preliminary panel pass, the count-style patent models show activity in "
-            f"{terms}, while the binary outcome remains the key robustness check."
+            f"In the current `{year_span}` preliminary panel pass, the cleanest signal remains on the extensive margin: "
+            "in separate future-AI-patent LPMs with firm and year fixed effects, speculative-only disclosure is positive "
+            "while actionable disclosure remains statistically weak."
         )
     else:
         headline = (
-            f"In the current `{year_span}` preliminary panel pass, the focal AI-disclosure coefficients remain weak across the baseline specifications."
+            f"In the current `{year_span}` preliminary panel pass, the future-AI-patent LPM remains the most informative specification, "
+            "even though most count-style models are still weak."
         )
 
-    n_by_model = (
-        focal.groupby("model", dropna=False)["N"].max().sort_values().astype(int).tolist()
-    )
-    n_text = ", ".join(_fmt_int(value) for value in n_by_model)
+    n_values = [value for value in [spec_fe_n, act_fe_n] if value is not None]
+    n_text = ", ".join(_fmt_int(value) for value in sorted(set(n_values))) if n_values else ""
     detail_lines: list[str] = []
-    if not spec_row.empty:
+    if spec_fe_coef is not None:
         detail_lines.append(
-            f"`has_spec_only` in the future-patent LPM is {float(spec_row.iloc[0]['coef']):.3f} with p={float(spec_row.iloc[0]['p']):.3f}."
+            f"`has_spec_only` with firm/year fixed effects is {spec_fe_coef:.3f} (p={spec_fe_p:.3f}; {_sig_band(spec_fe_p)})."
         )
-    if not act_row.empty:
+    if act_fe_coef is not None:
         detail_lines.append(
-            f"`has_actionable` in the same LPM is {float(act_row.iloc[0]['coef']):.3f} with p={float(act_row.iloc[0]['p']):.3f}."
+            f"`has_actionable` in the matched actionable-only firm/year FE model is {act_fe_coef:.3f} (p={act_fe_p:.3f}; {_sig_band(act_fe_p)})."
+        )
+    if act_nofe_coef is not None and act_nofe_p is not None:
+        detail_lines.append(
+            f"Without fixed effects, actionable disclosure turns positive at {act_nofe_coef:.3f} (p={act_nofe_p:.3f}; {_sig_band(act_nofe_p)}), "
+            "which suggests substantial specification sensitivity."
+        )
+    if spec_nofe_coef is not None and spec_nofe_p is not None:
+        detail_lines.append(
+            f"The corresponding no-FE speculative-only estimate is {spec_nofe_coef:.3f} (p={spec_nofe_p:.3f}; {_sig_band(spec_nofe_p)})."
+        )
+    if specshare_coef is not None and specshare_p is not None:
+        detail_lines.append(
+            f"As a share-based robustness check, `SpecShare` is {specshare_coef:.3f} (p={specshare_p:.3f}; {_sig_band(specshare_p)})."
+        )
+    if aifocus_coef is not None and aifocus_p is not None:
+        detail_lines.append(
+            f"`AI_Focus` is {aifocus_coef:.3f} (p={aifocus_p:.3f}; {_sig_band(aifocus_p)}), which is better treated as an exploratory credibility-style construct than a headline replacement."
         )
     return (
         f"{headline}\n\n"
         f"The current regression-ready sample contains {_fmt_int(len(panel))} firm-year rows after panel cleaning. "
-        f"Depending on whether the specification uses contemporaneous or lead patent outcomes, the effective model "
-        f"sample sizes are {n_text} observations. "
+        + (f"The main future-patent headline models use {n_text} observations. " if n_text else "")
         + (" ".join(detail_lines) if detail_lines else "")
         + "\n"
     )
+
+
+def _build_headline_table(portfolio_manifest_path: str | Path) -> str:
+    coeffs = _load_portfolio_coeffs(portfolio_manifest_path)
+    if coeffs.empty:
+        return "_Headline regression table unavailable._\n"
+
+    model_rows = [
+        (
+            "Actionable only",
+            "Firm + year FE",
+            "full",
+            "portfolio_lpm_anypat_k1_actionable_only_fe",
+            "has_actionable",
+        ),
+        (
+            "Speculative only",
+            "Firm + year FE",
+            "full",
+            "portfolio_lpm_anypat_k1_speculative_only_fe",
+            "has_spec_only",
+        ),
+        (
+            "Actionable only",
+            "Industry + year FE",
+            "full",
+            "portfolio_lpm_anypat_k1_actionable_only_industry_year",
+            "has_actionable",
+        ),
+        (
+            "Speculative only",
+            "Industry + year FE",
+            "full",
+            "portfolio_lpm_anypat_k1_speculative_only_industry_year",
+            "has_spec_only",
+        ),
+        (
+            "Actionable only",
+            "No FE",
+            "full",
+            "portfolio_lpm_anypat_k1_actionable_only_nofe",
+            "has_actionable",
+        ),
+        (
+            "Speculative only",
+            "No FE",
+            "full",
+            "portfolio_lpm_anypat_k1_speculative_only_nofe",
+            "has_spec_only",
+        ),
+        (
+            "Speculative share",
+            "Firm + year FE",
+            "full",
+            "portfolio_lpm_anypat_k1_shares_fe",
+            "SpecShare",
+        ),
+    ]
+
+    rows: list[dict[str, Any]] = []
+    for label, fe_label, sample, model_id, term in model_rows:
+        coef, pvalue, nobs = _lookup_term(coeffs, model_id, term)
+        if coef is None:
+            continue
+        rows.append(
+            {
+                "Specification": label,
+                "FE": fe_label,
+                "Sample": sample,
+                "Coef.": _coef_cell(coef, pvalue),
+                "p-value": "" if pvalue is None else f"{pvalue:.3f}",
+                "Sig.": _sig_band(pvalue),
+                "N": _fmt_int(nobs),
+            }
+        )
+    table = pd.DataFrame(rows)
+    if table.empty:
+        return "_Headline regression table unavailable._\n"
+    return _to_markdown_table(table)
 
 
 def _build_portfolio_results_snippet(portfolio_manifest_path: str | Path) -> str:
@@ -458,7 +609,7 @@ def generate_assets(args: argparse.Namespace) -> None:
     _write_text(
         Path(args.output_dir) / "snippets" / "regression_results_prelim_v1.md",
         _build_regression_results_snippet(
-            regression_coefficients_path=args.regression_coefficients,
+            portfolio_manifest_path=args.portfolio_manifest,
             panel_reg_ready_path=args.panel_reg_ready,
         ),
     )
@@ -482,12 +633,10 @@ def generate_assets(args: argparse.Namespace) -> None:
             controls_path=args.controls_file,
         ),
     )
-    regression_table_path = Path(args.regression_table_markdown)
-    if regression_table_path.exists():
-        _write_text(
-            Path(args.output_dir) / "tables" / "regression_baseline_prelim_v1.md",
-            _read_text(regression_table_path),
-        )
+    _write_text(
+        Path(args.output_dir) / "tables" / "regression_headline_prelim_v1.md",
+        _build_headline_table(args.portfolio_manifest),
+    )
     _write_text(
         Path(args.output_dir) / "tables" / "regression_portfolio_prelim_v1.md",
         _build_portfolio_table(args.portfolio_manifest),

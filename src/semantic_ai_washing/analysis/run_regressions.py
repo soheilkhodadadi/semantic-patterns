@@ -240,9 +240,15 @@ def make_leads(df, k_list=(0, 1, 2)):
     df = df.sort_values(["cik", "year"]).copy()
     for k in k_list:
         if "patents_ai" in df.columns:
-            df[f"patents_ai_lead{k}"] = df.groupby("cik")["patents_ai"].shift(-k)
-            df[f"log_patents_ai_lead{k}"] = np.log1p(df[f"patents_ai_lead{k}"])
-            df[f"any_pat_{k}"] = (df[f"patents_ai_lead{k}"].fillna(0) > 0).astype(float)
+            lead_col = f"patents_ai_lead{k}"
+            log_col = f"log_patents_ai_lead{k}"
+            any_col = f"any_pat_{k}"
+            if lead_col not in df.columns:
+                df[lead_col] = df.groupby("cik")["patents_ai"].shift(-k)
+            if log_col not in df.columns:
+                df[log_col] = np.log1p(df[lead_col])
+            if any_col not in df.columns:
+                df[any_col] = (df[lead_col].fillna(0) > 0).astype(float)
     return df
 
 

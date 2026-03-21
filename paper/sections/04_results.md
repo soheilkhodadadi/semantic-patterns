@@ -31,13 +31,19 @@ Insert generated tables, describe the main coefficients, and note any caveats
 about sample scope or preliminary status.
 
 The headline discussion in the main text should stay anchored on the binary
-future-patent LPM and its closest sample trims. Count-intensity models and
-more flexible functional forms are useful diagnostics, but they should be
-framed as exploratory unless they materially sharpen the same story.
+future-patent LPM and its closest sample trims. For the main text, prefer
+separate actionable-only and speculative-only regressions over crowded omnibus
+tables. Count-intensity models and more flexible functional forms are useful
+diagnostics, but they should be framed as exploratory unless they materially
+sharpen the same story.
 
 {{ include: paper/generated/snippets/regression_results_prelim_v1.md }}
 
-{{ include: paper/generated/tables/regression_baseline_prelim_v1.md }}
+The headline table below reports one focal disclosure variable at a time, with
+controls included in the underlying regressions but constants omitted from the
+display.
+
+{{ include: paper/generated/tables/regression_headline_prelim_v1.md }}
 
 ## Regression Portfolio
 
