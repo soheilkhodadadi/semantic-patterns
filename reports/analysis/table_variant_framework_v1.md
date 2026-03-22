@@ -68,21 +68,27 @@ Variants:
 ### Table 4
 
 Core question:
-- does the forward-looking timing result survive standard specification discipline?
+- how do prior, contemporaneous, and future AI patent outcomes line up with disclosure type once we vary FE structure and sample trims?
 
 Variants:
 - `Table 4`
   - dependent variable:
-    - `log(1 + AI patents at t+1)`
+    - actionable disclosure
+  - rows:
+    - `log(1 + AI patents)` at `t-2`, `t-1`, `t`, `t+1`, `t+2`
   - columns:
     - firm + year FE
     - industry + year FE
     - non-financial trim
     - non-financial/non-utility trim
 - `Table 4B`
-  - same specification ladder
+  - same timing-matrix design
   - dependent variable:
-    - `log(1 + AI patents at t)`
+    - speculative-only disclosure
+
+Possible appendix companions:
+- raw-count timing versions of `Table 4 / Table 4B`
+- extra timing horizons if a reviewer-style question makes them necessary
 
 ## Next Table Topic
 

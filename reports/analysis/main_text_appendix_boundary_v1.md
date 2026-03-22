@@ -44,13 +44,22 @@ Why main text:
 
 ### Table 3
 
-- `FE Ladder / Timing Robustness`
+- `Disclosure Composition and AI Patent Timing`
 
 Why main text:
-- shows whether the timing result is stable under standard fixed-effect and sample choices
-- stays compact enough to support the main story without turning into an appendix dump
+- shows whether decomposition into actionable and speculative-only disclosure adds signal beyond broad AI-focus intensity
+- keeps the core composition result separate and readable
 
 ### Table 4
+
+- `Patent-Timing Matrix by Disclosure Type`
+
+Why main text:
+- mirrors the literature-style timing layout more closely
+- shows the full `t-2` through `t+2` pattern with FE/sample variants in columns
+- helps the reader see whether disclosure types are backward-looking, contemporaneous, or forward-looking
+
+### Table 5
 
 - `Credibility Metrics`
 
@@ -98,7 +107,8 @@ As of this preliminary delivery stage:
 
 - `Table 1` is main text
 - `Table 2` is main text
-- `Table 3` is the compact FE ladder / timing-robustness companion if it remains readable
+- `Table 3` is main text as the composition-timing companion
+- `Table 4 / Table 4B` are candidate main-text timing-matrix tables if they remain readable
 - the current conditional validation table from the speaking-only panel moves to the appendix
-- FE ladders beyond the compact headline comparison should not enter the paper until we decide whether they clarify or distract
+- FE ladders beyond the compact timing-matrix comparison should not enter the paper until we decide whether they clarify or distract
 - count models, Poisson models, and richer appendix-style robustness remain out of the main text for now

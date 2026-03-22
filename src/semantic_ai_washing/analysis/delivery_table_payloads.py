@@ -179,6 +179,67 @@ def _non_utility_mask(df: pd.DataFrame) -> pd.Series:
     return sic2.ne(49)
 
 
+def _spec_variant_defs(df: pd.DataFrame) -> list[dict[str, object]]:
+    return [
+        {
+            "number": "(1)",
+            "label": "Firm + year FE",
+            "absorb_col": "cik",
+            "mask": pd.Series(True, index=df.index),
+            "footer": {
+                "Controls": "Y",
+                "Firm FE": "Y",
+                "Industry FE": "N",
+                "Year FE": "Y",
+                "Non-fin.": "N",
+                "No util.": "N",
+            },
+        },
+        {
+            "number": "(2)",
+            "label": "Industry + year FE",
+            "absorb_col": "sic2",
+            "mask": df["sic2"].notna() if "sic2" in df.columns else pd.Series(False, index=df.index),
+            "footer": {
+                "Controls": "Y",
+                "Firm FE": "N",
+                "Industry FE": "Y",
+                "Year FE": "Y",
+                "Non-fin.": "N",
+                "No util.": "N",
+            },
+        },
+        {
+            "number": "(3)",
+            "label": "Firm + year FE, non-fin.",
+            "absorb_col": "cik",
+            "mask": _non_financial_mask(df),
+            "footer": {
+                "Controls": "Y",
+                "Firm FE": "Y",
+                "Industry FE": "N",
+                "Year FE": "Y",
+                "Non-fin.": "Y",
+                "No util.": "N",
+            },
+        },
+        {
+            "number": "(4)",
+            "label": "Firm + year FE, non-fin./non-util.",
+            "absorb_col": "cik",
+            "mask": _non_financial_mask(df) & _non_utility_mask(df),
+            "footer": {
+                "Controls": "Y",
+                "Firm FE": "Y",
+                "Industry FE": "N",
+                "Year FE": "Y",
+                "Non-fin.": "Y",
+                "No util.": "Y",
+            },
+        },
+    ]
+
+
 def summarize_table_1(panel_path: str | Path) -> dict[str, object]:
     values: dict[str, list[float]] = {column: [] for column, _ in TABLE1_VARS}
     with Path(panel_path).open(newline="", encoding="utf-8") as handle:
@@ -488,64 +549,7 @@ def _summarize_spec_ladder(
     note: str,
 ) -> dict[str, object]:
     df = load_panel(panel_path)
-    spec_defs = [
-        {
-            "number": "(1)",
-            "label": "Firm + year FE",
-            "absorb_col": "cik",
-            "mask": pd.Series(True, index=df.index),
-            "footer": {
-                "Controls": "Y",
-                "Firm FE": "Y",
-                "Industry FE": "N",
-                "Year FE": "Y",
-                "Non-fin.": "N",
-                "No util.": "N",
-            },
-        },
-        {
-            "number": "(2)",
-            "label": "Industry + year FE",
-            "absorb_col": "sic2",
-            "mask": df["sic2"].notna() if "sic2" in df.columns else pd.Series(False, index=df.index),
-            "footer": {
-                "Controls": "Y",
-                "Firm FE": "N",
-                "Industry FE": "Y",
-                "Year FE": "Y",
-                "Non-fin.": "N",
-                "No util.": "N",
-            },
-        },
-        {
-            "number": "(3)",
-            "label": "Firm + year FE, non-fin.",
-            "absorb_col": "cik",
-            "mask": _non_financial_mask(df),
-            "footer": {
-                "Controls": "Y",
-                "Firm FE": "Y",
-                "Industry FE": "N",
-                "Year FE": "Y",
-                "Non-fin.": "Y",
-                "No util.": "N",
-            },
-        },
-        {
-            "number": "(4)",
-            "label": "Firm + year FE, non-fin./non-util.",
-            "absorb_col": "cik",
-            "mask": _non_financial_mask(df) & _non_utility_mask(df),
-            "footer": {
-                "Controls": "Y",
-                "Firm FE": "Y",
-                "Industry FE": "N",
-                "Year FE": "Y",
-                "Non-fin.": "Y",
-                "No util.": "Y",
-            },
-        },
-    ]
+    spec_defs = _spec_variant_defs(df)
 
     panels: list[dict[str, object]] = []
     panel_defs = [
@@ -645,5 +649,110 @@ def summarize_table_4b_spec_ladder_t(panel_path: str | Path) -> dict[str, object
         dependent="log_patents_ai_lead0",
         title="Table 4B. Specification Ladder for Contemporaneous AI Patent Timing",
         dependent_label="Dependent variable: log(1 + AI patents at t)",
+        note=note,
+    )
+
+
+def _timing_row_label(label: str) -> str:
+    return f"log(1 + AI patents) at {label}"
+
+
+def _summarize_patent_timing_matrix(
+    panel_path: str | Path,
+    *,
+    dependent: str,
+    title: str,
+    dependent_label: str,
+    note: str,
+    outcomes: list[tuple[str, str]] = TIMING_LOG_AI_OUTCOMES,
+) -> dict[str, object]:
+    df = load_panel(panel_path)
+    spec_defs = _spec_variant_defs(df)
+    models = [{"number": spec["number"], "label": spec["label"]} for spec in spec_defs]
+
+    results_by_spec: list[tuple[object, float | None]] = []
+    nobs_cells: list[str] = []
+    adj_r2_cells: list[str] = []
+    footer_flags = {key: [] for key in ["Controls", "Firm FE", "Industry FE", "Year FE", "Non-fin.", "No util."]}
+
+    rhs_terms = [term for _, term in outcomes]
+    for spec in spec_defs:
+        spec_df = df.loc[spec["mask"]].copy()
+        result, _, adj_r2 = _fit_absorbed_ols(
+            spec_df,
+            dependent=dependent,
+            rhs_terms=rhs_terms,
+            absorb_col=str(spec["absorb_col"]),
+        )
+        results_by_spec.append((result, adj_r2))
+        nobs_cells.append(f"{int(result.nobs):,}")
+        adj_r2_cells.append(fmt_num(adj_r2))
+        for footer_key in footer_flags:
+            footer_flags[footer_key].append(str(spec["footer"][footer_key]))
+
+    body_rows: list[dict[str, object]] = []
+    for horizon_label, term in outcomes:
+        coef_cells: list[str] = []
+        se_cells: list[str] = []
+        for result, _adj_r2 in results_by_spec:
+            coef = result.params.get(term, float("nan"))
+            se = result.bse.get(term, float("nan"))
+            pvalue = result.pvalues.get(term)
+            coef_cells.append(f"{coef:.3f}{sig_stars(pvalue)}" if not math.isnan(coef) else "")
+            se_cells.append(f"({se:.3f})" if not math.isnan(se) else "")
+        body_rows.append({"label": _timing_row_label(horizon_label), "cells": coef_cells, "kind": "coef"})
+        body_rows.append({"label": "", "cells": se_cells, "kind": "se"})
+
+    footer_rows = [
+        {"label": "Controls", "cells": footer_flags["Controls"]},
+        {"label": "Firm FE", "cells": footer_flags["Firm FE"]},
+        {"label": "Industry FE", "cells": footer_flags["Industry FE"]},
+        {"label": "Year FE", "cells": footer_flags["Year FE"]},
+        {"label": "Non-fin.", "cells": footer_flags["Non-fin."]},
+        {"label": "No util.", "cells": footer_flags["No util."]},
+        {"label": "Adj. R²", "cells": adj_r2_cells},
+        {"label": "Observations", "cells": nobs_cells},
+    ]
+    return {
+        "title": title,
+        "note": note,
+        "dependent_label": dependent_label,
+        "models": models,
+        "body_rows": body_rows,
+        "footer_rows": footer_rows,
+    }
+
+
+def summarize_table_4_actionable_patent_timing(panel_path: str | Path) -> dict[str, object]:
+    note = (
+        "This table presents distributed-lag style firm-year regressions on the regression-ready ever-speaker annual panel. "
+        "The dependent variable is the actionable-disclosure indicator. Each column includes the full set of AI patent timing terms "
+        "from `t-2` through `t+2`, so the rows trace how prior, contemporaneous, and future AI patenting line up with actionable AI disclosure. "
+        "Columns vary the fixed-effects structure and sample trim while keeping the same baseline control set: size, leverage, cash/assets, "
+        "R&D/assets, CAPX/assets, ROA, sales growth, and employees. Standard errors clustered at the firm level are shown in parentheses. "
+        "Constants are omitted. (* p<0.1, ** p<0.05, *** p<0.01)."
+    )
+    return _summarize_patent_timing_matrix(
+        panel_path,
+        dependent="has_actionable",
+        title="Table 4. Actionable Disclosure and AI Patent Timing",
+        dependent_label="Dependent variable: Actionable disclosure",
+        note=note,
+    )
+
+
+def summarize_table_4b_speculative_patent_timing(panel_path: str | Path) -> dict[str, object]:
+    note = (
+        "This companion table presents the same distributed-lag style design as Table 4 but uses the speculative-only disclosure indicator as the dependent variable. "
+        "Each column includes the full set of AI patent timing terms from `t-2` through `t+2`, so the rows trace how prior, contemporaneous, and future AI patenting line up with speculative-only AI disclosure. "
+        "Columns vary the fixed-effects structure and sample trim while keeping the same baseline control set: size, leverage, cash/assets, "
+        "R&D/assets, CAPX/assets, ROA, sales growth, and employees. Standard errors clustered at the firm level are shown in parentheses. "
+        "Constants are omitted. (* p<0.1, ** p<0.05, *** p<0.01)."
+    )
+    return _summarize_patent_timing_matrix(
+        panel_path,
+        dependent="has_spec_only",
+        title="Table 4B. Speculative-Only Disclosure and AI Patent Timing",
+        dependent_label="Dependent variable: Speculative-only disclosure",
         note=note,
     )

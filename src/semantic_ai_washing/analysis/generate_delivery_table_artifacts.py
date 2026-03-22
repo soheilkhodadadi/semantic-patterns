@@ -16,8 +16,8 @@ from semantic_ai_washing.analysis.delivery_table_payloads import (
     summarize_table_2_timing_focus_counts,
     summarize_table_3_timing_composition,
     summarize_table_3_timing_composition_counts,
-    summarize_table_4_spec_ladder_tplus1,
-    summarize_table_4b_spec_ladder_t,
+    summarize_table_4_actionable_patent_timing,
+    summarize_table_4b_speculative_patent_timing,
     to_markdown_table,
 )
 
@@ -145,6 +145,24 @@ def _render_timing_payload_markdown(payload: dict[str, object]) -> str:
     return "\n".join(sections).rstrip() + "\n"
 
 
+def _render_row_matrix_payload_markdown(payload: dict[str, object]) -> str:
+    models: list[dict[str, str]] = payload["models"]  # type: ignore[assignment]
+    body_rows: list[dict[str, object]] = payload["body_rows"]  # type: ignore[assignment]
+    footer_rows: list[dict[str, object]] = payload["footer_rows"]  # type: ignore[assignment]
+    rows = []
+    for row_payload in body_rows:
+        rows.append([str(row_payload["label"]), *[str(cell) for cell in row_payload["cells"]]])
+    for footer in footer_rows:
+        rows.append([str(footer["label"]), *[str(cell) for cell in footer["cells"]]])
+    table = to_markdown_table(["Variable", *[model["label"] for model in models]], rows)
+    return (
+        f"## {payload['title']}\n\n"
+        f"{payload['note']}\n\n"
+        f"{payload['dependent_label']}\n\n"
+        f"{table}"
+    )
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--panel", default=DEFAULT_PANEL)
@@ -156,8 +174,8 @@ def parse_args() -> argparse.Namespace:
         help=(
             "Comma-separated list of tables to generate: table1, table2_timing_focus, "
             "table2_timing_focus_count, table3_timing_composition, "
-            "table3_timing_composition_count, table4_spec_ladder_tplus1, "
-            "table4b_spec_ladder_t, table2_conditional_appendix"
+            "table3_timing_composition_count, table4_actionable_patent_timing, "
+            "table4b_speculative_patent_timing, table2_conditional_appendix"
         ),
     )
     return parser.parse_args()
@@ -198,16 +216,16 @@ def main() -> None:
             _render_timing_payload_markdown(summarize_table_3_timing_composition_counts(args.panel)),
         )
 
-    if "table4_spec_ladder_tplus1" in selected:
+    if "table4_actionable_patent_timing" in selected:
         _write_text(
-            output_dir / "table_4_spec_ladder_tplus1_prelim_v1.md",
-            _render_timing_payload_markdown(summarize_table_4_spec_ladder_tplus1(args.panel)),
+            output_dir / "table_4_actionable_patent_timing_prelim_v1.md",
+            _render_row_matrix_payload_markdown(summarize_table_4_actionable_patent_timing(args.panel)),
         )
 
-    if "table4b_spec_ladder_t" in selected:
+    if "table4b_speculative_patent_timing" in selected:
         _write_text(
-            output_dir / "table_4b_spec_ladder_t_prelim_v1.md",
-            _render_timing_payload_markdown(summarize_table_4b_spec_ladder_t(args.panel)),
+            output_dir / "table_4b_speculative_patent_timing_prelim_v1.md",
+            _render_row_matrix_payload_markdown(summarize_table_4b_speculative_patent_timing(args.panel)),
         )
 
     if "table2_conditional_appendix" in selected:

@@ -22,8 +22,8 @@ from semantic_ai_washing.analysis.delivery_table_payloads import (
     summarize_table_2_timing_focus_counts,
     summarize_table_3_timing_composition,
     summarize_table_3_timing_composition_counts,
-    summarize_table_4_spec_ladder_tplus1,
-    summarize_table_4b_spec_ladder_t,
+    summarize_table_4_actionable_patent_timing,
+    summarize_table_4b_speculative_patent_timing,
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -374,6 +374,73 @@ def _build_conditional_appendix_doc(coeff_path: str | Path, output_path: str | P
     document.save(str(output_path))
 
 
+def _build_row_matrix_doc(payload: dict[str, object], output_path: str | Path) -> None:
+    document = Document()
+    _set_document_defaults(document)
+    _add_title(document, str(payload["title"]))
+    _add_note(document, str(payload["note"]))
+
+    body_rows: list[dict[str, object]] = payload["body_rows"]  # type: ignore[assignment]
+    footer_rows: list[dict[str, object]] = payload["footer_rows"]  # type: ignore[assignment]
+    models: list[dict[str, str]] = payload["models"]  # type: ignore[assignment]
+
+    total_rows = 3 + len(body_rows) + len(footer_rows)
+    table = document.add_table(rows=total_rows, cols=len(models) + 1)
+    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    table.autofit = False
+    _set_table_no_borders(table)
+
+    widths = [2.8] + [0.95] * len(models)
+    for index, width in enumerate(widths):
+        for row in table.rows:
+            row.cells[index].width = Inches(width)
+
+    _write_cell(table.rows[0].cells[0], "Variable", align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5, bold=True)
+    merged = table.rows[0].cells[1].merge(table.rows[0].cells[-1])
+    _write_cell(merged, str(payload["dependent_label"]), align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5, bold=True)
+    _apply_row_rule(table.rows[0], top=True)
+
+    _write_cell(table.rows[1].cells[0], "", align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5)
+    for idx, model in enumerate(models, start=1):
+        _write_cell(table.rows[1].cells[idx], model["label"], align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5)
+
+    _write_cell(table.rows[2].cells[0], "", align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5)
+    for idx, model in enumerate(models, start=1):
+        _write_cell(table.rows[2].cells[idx], model["number"], align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5)
+    _apply_row_rule(table.rows[2], bottom=True)
+
+    cursor = 3
+    for row_payload in body_rows:
+        is_se = row_payload.get("kind") == "se"
+        _write_cell(
+            table.rows[cursor].cells[0],
+            str(row_payload["label"]),
+            align=WD_ALIGN_PARAGRAPH.LEFT,
+            size=10.5,
+            italic=is_se,
+        )
+        for idx, value in enumerate(row_payload["cells"], start=1):
+            _write_cell(
+                table.rows[cursor].cells[idx],
+                str(value),
+                align=WD_ALIGN_PARAGRAPH.CENTER,
+                size=10.5,
+                italic=is_se,
+            )
+        cursor += 1
+    _apply_row_rule(table.rows[cursor - 1], bottom=True)
+
+    for footer in footer_rows:
+        _write_cell(table.rows[cursor].cells[0], str(footer["label"]), align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5)
+        for idx, value in enumerate(footer["cells"], start=1):
+            _write_cell(table.rows[cursor].cells[idx], str(value), align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5)
+        cursor += 1
+    _apply_row_rule(table.rows[cursor - 1], bottom=True)
+
+    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+    document.save(str(output_path))
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--reg-ready-panel", default=DEFAULT_REG_READY_PANEL)
@@ -385,8 +452,8 @@ def parse_args() -> argparse.Namespace:
         help=(
             "Comma-separated list of standalone tables to build: table1, table2_timing_focus, "
             "table2_timing_focus_count, table3_timing_composition, "
-            "table3_timing_composition_count, table4_spec_ladder_tplus1, "
-            "table4b_spec_ladder_t, table2_conditional_appendix"
+            "table3_timing_composition_count, table4_actionable_patent_timing, "
+            "table4b_speculative_patent_timing, table2_conditional_appendix"
         ),
     )
     return parser.parse_args()
@@ -425,16 +492,16 @@ def main() -> None:
             output_dir / "table_3b_disclosure_composition_timing_counts_prelim_v1.docx",
         )
 
-    if "table4_spec_ladder_tplus1" in selected:
-        _build_panel_timing_doc(
-            summarize_table_4_spec_ladder_tplus1(args.reg_ready_panel),
-            output_dir / "table_4_spec_ladder_tplus1_prelim_v1.docx",
+    if "table4_actionable_patent_timing" in selected:
+        _build_row_matrix_doc(
+            summarize_table_4_actionable_patent_timing(args.reg_ready_panel),
+            output_dir / "table_4_actionable_patent_timing_prelim_v1.docx",
         )
 
-    if "table4b_spec_ladder_t" in selected:
-        _build_panel_timing_doc(
-            summarize_table_4b_spec_ladder_t(args.reg_ready_panel),
-            output_dir / "table_4b_spec_ladder_t_prelim_v1.docx",
+    if "table4b_speculative_patent_timing" in selected:
+        _build_row_matrix_doc(
+            summarize_table_4b_speculative_patent_timing(args.reg_ready_panel),
+            output_dir / "table_4b_speculative_patent_timing_prelim_v1.docx",
         )
 
     if "table2_conditional_appendix" in selected:

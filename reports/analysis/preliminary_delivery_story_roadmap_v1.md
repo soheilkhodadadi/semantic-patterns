@@ -123,25 +123,50 @@ Expected read:
 Narrative role:
 - this table becomes the main empirical timing table for the preliminary package
 
-### Table 3. FE Ladder And Timing Robustness
+### Table 3. Disclosure Composition Timing
 
 Goal:
-- show whether the Table 2 timing relation survives standard specification discipline
-- separate main-text fixed-effect choices from appendix sensitivity work
+- show whether actionable and speculative-only disclosure differ once timing is measured on the ever-speaker panel
+- keep the composition story separate from the broad `AI_Focus` timing story
 
 Preferred variants:
-- firm + year FE
-- industry + year FE
-- no FE / lighter FE labeled as sensitivity only
-- non-financial sample
-- non-financial / non-utility sample
+- main version:
+  - `log(1 + AI patents)` timing outcomes
+- appendix companion:
+  - raw AI patent counts
 
 Expected read:
-- no-FE positive results may be larger and less trustworthy
-- FE models should be the anchor
-- sample trims should tell us whether the result is concentrated in regulated or unusual sectors
+- actionable and speculative-only disclosure need not share the same timing profile
+- this table should tell us whether composition adds information beyond broad AI-focus intensity
 
-### Table 4. Credibility Metrics Table
+### Table 4. Patent-Timing Matrix By Disclosure Type
+
+Goal:
+- mirror the literature-style distributed-lag layout more closely
+- show how AI patent timing lines up with disclosure type when the full `t-2` to `t+2` window enters the same model
+- let the reader compare FE/sample variants in columns instead of scattering them across separate tables
+
+Preferred form:
+- `Table 4`
+  - dependent variable:
+    - actionable disclosure
+- `Table 4B`
+  - dependent variable:
+    - speculative-only disclosure
+- shared rows:
+  - `log(1 + AI patents)` at `t-2`, `t-1`, `t`, `t+1`, `t+2`
+- shared columns:
+  - firm + year FE
+  - industry + year FE
+  - non-financial trim
+  - non-financial / non-utility trim
+
+Expected read:
+- actionable disclosure may line up more with nearby or future AI patenting
+- speculative-only disclosure may look more backward-looking or contemporaneous
+- the industry-FE column may be the least stable and should be read as a comparison, not automatically as the anchor
+
+### Table 5. Credibility Metrics Table
 
 Goal:
 - move from raw class counts into paper-level narrative credibility constructs
@@ -232,10 +257,10 @@ Specifically:
 1. rebuild `Table 1` so the main-text version is anchored on the ever-speaker panel
 2. build the new main-text `Table 2` on AI patent timing outcomes in the ever-speaker panel
 3. move the current conditional validation table to the appendix
-4. build `Table 3` as FE ladder / trims for the winning timing specification
-4. build `Figure 1` and `Figure 2`
-5. decide whether `Table 4` belongs in the main text or appendix
-6. only then assemble the next delivery packet
+4. build `Table 4 / Table 4B` as the literature-style patent-timing matrix family
+5. build `Figure 1` and `Figure 2`
+6. decide whether `Table 5` belongs in the main text or appendix
+7. only then assemble the next delivery packet
 
 ## Stop Rules
 
