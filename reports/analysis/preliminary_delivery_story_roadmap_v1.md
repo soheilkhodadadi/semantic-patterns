@@ -183,6 +183,10 @@ Expected read:
 - share-style measures such as `SpecShare` and `SpecMinusAct` may only sharpen under some FE choices
 - some credibility metrics may remain exploratory and belong in appendix if they do not sharpen the story
 
+Methodology caveat:
+- the methodology treats `A_S` and `A_S x PatentMismatch` as the core AI-washing specification
+- therefore the current credibility-metric table is informative, but it does not replace the later mismatch-based AI-washing table
+
 ## Main-Text Figure Sequence
 
 ### Figure 1. AI Disclosure Volume And Composition Over Time

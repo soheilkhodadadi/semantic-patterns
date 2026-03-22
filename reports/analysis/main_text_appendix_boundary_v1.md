@@ -64,7 +64,9 @@ Why main text:
 - `Credibility Metrics`
 
 Why main text:
-- moves beyond raw counts into the paper’s distinctive credibility constructs
+- can help benchmark which credibility-style constructs sharpen the broad AI-focus result
+- should remain in the main text only if it clearly sharpens the story beyond Tables 2-4
+- otherwise it should move to appendix and make room for the methodology-aligned `A_S x PatentMismatch` table once mismatch is implemented
 
 ### Main Figures
 
@@ -109,6 +111,7 @@ As of this preliminary delivery stage:
 - `Table 2` is main text
 - `Table 3` is main text as the composition-timing companion
 - `Table 4 / Table 4B` are candidate main-text timing-matrix tables if they remain readable
+- `Table 5 / Table 5B` are exploratory credibility tables and may move to appendix if they do not sharpen the main narrative
 - the current conditional validation table from the speaking-only panel moves to the appendix
 - FE ladders beyond the compact timing-matrix comparison should not enter the paper until we decide whether they clarify or distract
 - count models, Poisson models, and richer appendix-style robustness remain out of the main text for now
