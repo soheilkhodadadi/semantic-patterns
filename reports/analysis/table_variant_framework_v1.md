@@ -96,13 +96,18 @@ The next table topic after the `Table 4 / Table 4B` family is:
 
 - `Table 5`
   - credibility-metric family
-  - likely centered on:
+  - main version:
+    - `t+1` log AI patent outcome
+  - nearby companion:
+    - `t+2` log AI patent outcome
+  - centered on:
+    - `AI_Focus`
     - `SpecShare`
     - `CredAI`
     - `A_S`
     - `SpecMinusAct`
 
-That table should not be built until we have reviewed which timing object we want to emphasize in the current main-text sequence.
+Those tables let us compare whether the broad focus measure or the credibility-style constructs carry the stronger signal, and whether that signal persists beyond the first lead year.
 
 ## Selection Rule
 

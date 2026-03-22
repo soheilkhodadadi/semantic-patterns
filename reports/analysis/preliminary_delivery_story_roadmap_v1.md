@@ -179,8 +179,9 @@ Candidate metrics:
 - `SpecMinusAct`
 
 Expected read:
-- share-style measures may be more stable than raw counts
-- some metrics may remain exploratory and belong in appendix if they do not sharpen the story
+- `AI_Focus` may remain the most stable broad measure
+- share-style measures such as `SpecShare` and `SpecMinusAct` may only sharpen under some FE choices
+- some credibility metrics may remain exploratory and belong in appendix if they do not sharpen the story
 
 ## Main-Text Figure Sequence
 

@@ -61,6 +61,14 @@ TIMING_COUNT_AI_OUTCOMES: list[tuple[str, str]] = [
     ("t+2", "patents_ai_lead2"),
 ]
 
+CREDIBILITY_METRICS: list[tuple[str, str]] = [
+    ("AI_Focus", "AI_Focus"),
+    ("Speculative share", "SpecShare"),
+    ("CredAI", "CredAI"),
+    ("A/S ratio", "A_S"),
+    ("SpecShare - ActShare", "SpecMinusAct"),
+]
+
 
 def fmt_num(value: float | None, digits: int = 3) -> str:
     if value is None or math.isnan(value):
@@ -754,5 +762,108 @@ def summarize_table_4b_speculative_patent_timing(panel_path: str | Path) -> dict
         dependent="has_spec_only",
         title="Table 4B. Speculative-Only Disclosure and AI Patent Timing",
         dependent_label="Dependent variable: Speculative-only disclosure",
+        note=note,
+    )
+
+
+def _summarize_metric_matrix(
+    panel_path: str | Path,
+    *,
+    dependent: str,
+    title: str,
+    dependent_label: str,
+    note: str,
+    metrics: list[tuple[str, str]] = CREDIBILITY_METRICS,
+) -> dict[str, object]:
+    df = load_panel(panel_path)
+    spec_defs = _spec_variant_defs(df)
+    models = [{"number": spec["number"], "label": spec["label"]} for spec in spec_defs]
+
+    footer_flags = {key: [] for key in ["Controls", "Firm FE", "Industry FE", "Year FE", "Non-fin.", "No util."]}
+    results_by_spec: list[tuple[dict[str, tuple[float, float, float | None]], float | None, int]] = []
+
+    for spec in spec_defs:
+        spec_df = df.loc[spec["mask"]].copy()
+        metric_results: dict[str, tuple[float, float, float | None]] = {}
+        spec_nobs = 0
+        spec_adj_r2: float | None = None
+        for label, term in metrics:
+            result, _, adj_r2 = _fit_absorbed_ols(
+                spec_df,
+                dependent=dependent,
+                rhs_terms=[term],
+                absorb_col=str(spec["absorb_col"]),
+            )
+            coef = result.params.get(term, float("nan"))
+            se = result.bse.get(term, float("nan"))
+            pvalue = result.pvalues.get(term)
+            metric_results[label] = (coef, se, pvalue)
+            spec_nobs = int(result.nobs)
+            spec_adj_r2 = adj_r2
+        results_by_spec.append((metric_results, spec_adj_r2, spec_nobs))
+        for footer_key in footer_flags:
+            footer_flags[footer_key].append(str(spec["footer"][footer_key]))
+
+    body_rows: list[dict[str, object]] = []
+    for label, _term in metrics:
+        coef_cells: list[str] = []
+        se_cells: list[str] = []
+        for metric_results, _adj_r2, _nobs in results_by_spec:
+            coef, se, pvalue = metric_results[label]
+            coef_cells.append(f"{coef:.3f}{sig_stars(pvalue)}" if not math.isnan(coef) else "")
+            se_cells.append(f"({se:.3f})" if not math.isnan(se) else "")
+        body_rows.append({"label": label, "cells": coef_cells, "kind": "coef"})
+        body_rows.append({"label": "", "cells": se_cells, "kind": "se"})
+
+    footer_rows = [
+        {"label": "Controls", "cells": footer_flags["Controls"]},
+        {"label": "Firm FE", "cells": footer_flags["Firm FE"]},
+        {"label": "Industry FE", "cells": footer_flags["Industry FE"]},
+        {"label": "Year FE", "cells": footer_flags["Year FE"]},
+        {"label": "Non-fin.", "cells": footer_flags["Non-fin."]},
+        {"label": "No util.", "cells": footer_flags["No util."]},
+        {"label": "Adj. R²", "cells": [fmt_num(adj_r2) for _metric_results, adj_r2, _nobs in results_by_spec]},
+        {"label": "Observations", "cells": [f"{nobs:,}" for _metric_results, _adj_r2, nobs in results_by_spec]},
+    ]
+
+    return {
+        "title": title,
+        "note": note,
+        "dependent_label": dependent_label,
+        "models": models,
+        "body_rows": body_rows,
+        "footer_rows": footer_rows,
+    }
+
+
+def summarize_table_5_credibility_metrics_tplus1(panel_path: str | Path) -> dict[str, object]:
+    note = (
+        "This table presents credibility-metric regressions on the regression-ready ever-speaker annual panel. "
+        "The dependent variable is `log(1 + AI patents)` at `t+1`. Rows report one-variable regressions for the broad AI-focus measure and the main disclosure-credibility constructs: "
+        "`SpecShare`, `CredAI`, `A_S`, and `SpecMinusAct`. Columns vary the fixed-effects structure and sample trim while keeping the same baseline control set: size, leverage, cash/assets, "
+        "R&D/assets, CAPX/assets, ROA, sales growth, and employees. Standard errors clustered at the firm level are shown in parentheses. "
+        "Constants are omitted. (* p<0.1, ** p<0.05, *** p<0.01)."
+    )
+    return _summarize_metric_matrix(
+        panel_path,
+        dependent="log_patents_ai_lead1",
+        title="Table 5. Credibility Metrics and Future AI Patenting",
+        dependent_label="Dependent variable: log(1 + AI patents at t+1)",
+        note=note,
+    )
+
+
+def summarize_table_5b_credibility_metrics_tplus2(panel_path: str | Path) -> dict[str, object]:
+    note = (
+        "This companion table presents the same credibility-metric design as Table 5 but uses the longer-horizon outcome `log(1 + AI patents)` at `t+2`. "
+        "Rows report one-variable regressions for `AI_Focus`, `SpecShare`, `CredAI`, `A_S`, and `SpecMinusAct`. Columns vary the fixed-effects structure and sample trim while keeping the same baseline control set: "
+        "size, leverage, cash/assets, R&D/assets, CAPX/assets, ROA, sales growth, and employees. Standard errors clustered at the firm level are shown in parentheses. "
+        "Constants are omitted. (* p<0.1, ** p<0.05, *** p<0.01)."
+    )
+    return _summarize_metric_matrix(
+        panel_path,
+        dependent="log_patents_ai_lead2",
+        title="Table 5B. Credibility Metrics and Longer-Horizon AI Patenting",
+        dependent_label="Dependent variable: log(1 + AI patents at t+2)",
         note=note,
     )

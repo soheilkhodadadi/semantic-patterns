@@ -18,6 +18,8 @@ from semantic_ai_washing.analysis.delivery_table_payloads import (
     summarize_table_3_timing_composition_counts,
     summarize_table_4_actionable_patent_timing,
     summarize_table_4b_speculative_patent_timing,
+    summarize_table_5_credibility_metrics_tplus1,
+    summarize_table_5b_credibility_metrics_tplus2,
     to_markdown_table,
 )
 
@@ -175,7 +177,8 @@ def parse_args() -> argparse.Namespace:
             "Comma-separated list of tables to generate: table1, table2_timing_focus, "
             "table2_timing_focus_count, table3_timing_composition, "
             "table3_timing_composition_count, table4_actionable_patent_timing, "
-            "table4b_speculative_patent_timing, table2_conditional_appendix"
+            "table4b_speculative_patent_timing, table5_credibility_metrics_tplus1, "
+            "table5b_credibility_metrics_tplus2, table2_conditional_appendix"
         ),
     )
     return parser.parse_args()
@@ -226,6 +229,18 @@ def main() -> None:
         _write_text(
             output_dir / "table_4b_speculative_patent_timing_prelim_v1.md",
             _render_row_matrix_payload_markdown(summarize_table_4b_speculative_patent_timing(args.panel)),
+        )
+
+    if "table5_credibility_metrics_tplus1" in selected:
+        _write_text(
+            output_dir / "table_5_credibility_metrics_tplus1_prelim_v1.md",
+            _render_row_matrix_payload_markdown(summarize_table_5_credibility_metrics_tplus1(args.panel)),
+        )
+
+    if "table5b_credibility_metrics_tplus2" in selected:
+        _write_text(
+            output_dir / "table_5b_credibility_metrics_tplus2_prelim_v1.md",
+            _render_row_matrix_payload_markdown(summarize_table_5b_credibility_metrics_tplus2(args.panel)),
         )
 
     if "table2_conditional_appendix" in selected:

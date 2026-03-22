@@ -24,6 +24,8 @@ from semantic_ai_washing.analysis.delivery_table_payloads import (
     summarize_table_3_timing_composition_counts,
     summarize_table_4_actionable_patent_timing,
     summarize_table_4b_speculative_patent_timing,
+    summarize_table_5_credibility_metrics_tplus1,
+    summarize_table_5b_credibility_metrics_tplus2,
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -453,7 +455,8 @@ def parse_args() -> argparse.Namespace:
             "Comma-separated list of standalone tables to build: table1, table2_timing_focus, "
             "table2_timing_focus_count, table3_timing_composition, "
             "table3_timing_composition_count, table4_actionable_patent_timing, "
-            "table4b_speculative_patent_timing, table2_conditional_appendix"
+            "table4b_speculative_patent_timing, table5_credibility_metrics_tplus1, "
+            "table5b_credibility_metrics_tplus2, table2_conditional_appendix"
         ),
     )
     return parser.parse_args()
@@ -502,6 +505,18 @@ def main() -> None:
         _build_row_matrix_doc(
             summarize_table_4b_speculative_patent_timing(args.reg_ready_panel),
             output_dir / "table_4b_speculative_patent_timing_prelim_v1.docx",
+        )
+
+    if "table5_credibility_metrics_tplus1" in selected:
+        _build_row_matrix_doc(
+            summarize_table_5_credibility_metrics_tplus1(args.reg_ready_panel),
+            output_dir / "table_5_credibility_metrics_tplus1_prelim_v1.docx",
+        )
+
+    if "table5b_credibility_metrics_tplus2" in selected:
+        _build_row_matrix_doc(
+            summarize_table_5b_credibility_metrics_tplus2(args.reg_ready_panel),
+            output_dir / "table_5b_credibility_metrics_tplus2_prelim_v1.docx",
         )
 
     if "table2_conditional_appendix" in selected:

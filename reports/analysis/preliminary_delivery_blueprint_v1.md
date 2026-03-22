@@ -78,12 +78,18 @@ Purpose:
 - first indispensable empirical table on the broader panel
 - validate disclosure composition against AI patent outcomes across calendar-time horizons
 
-### Table 3. FE Ladder / Timing Robustness
+### Table 3. Disclosure Composition Timing
 
 Purpose:
-- show whether the central timing relation survives standard specification choices
+- show whether actionable and speculative-only disclosure differ once timing is measured on the ever-speaker panel
 
-### Table 4. Credibility Metrics
+### Table 4. Patent-Timing Matrix by Disclosure Type
+
+Purpose:
+- mirror the literature-style distributed-lag layout more closely
+- show prior, contemporaneous, and future AI patent timing in one table family
+
+### Table 5. Credibility Metrics
 
 Purpose:
 - move from raw class counts into the paper’s credibility constructs
@@ -193,10 +199,12 @@ Only after the modular artifacts are reviewed:
 1. `Table 1`
 2. `Table 2` AI patent timing and alignment on the ever-speaker panel
 3. current conditional validation table moved to appendix
-4. `Figure 1`
-5. `Figure 2`
-6. `Table 3` FE ladder / trims
-7. compact main-text vs appendix review
+4. `Table 3` disclosure composition timing
+5. `Table 4 / 4B` patent-timing matrix by disclosure type
+6. `Table 5 / 5B` credibility metrics
+7. `Figure 1`
+8. `Figure 2`
+9. compact main-text vs appendix review
 
 ## Current Practical Rule
 
