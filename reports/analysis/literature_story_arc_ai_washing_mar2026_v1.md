@@ -175,14 +175,16 @@ The most defensible preliminary story is:
 A disciplined preliminary package should therefore look like:
 
 - `Table 1`: summary statistics / variable definitions / coverage
-- `Table 2`: core patent-validation table
+- `Table 2`: AI-focus timing table on the ever-speaker panel
 - `Table 3`: separate actionable-only and speculative-only headline regressions
-- `Table 4`: FE ladder / sample trims
-- `Table 5`: credibility metrics (`SpecShare`, `AI_Focus`, `CredAI`, `A_S`, `SpecMinusAct`)
+- `Table 4`: disclosure-type timing matrix
+- `Table 6`: methodology-aligned `A_S x PatentMismatch` table
 - `Figure 1`: time series of overall AI mentions and actionable/speculative components
-- `Figure 2`: industry or sample heterogeneity
+- `Figure 2`: AI patent coverage over time
 - `Figure 3`: mismatch / patent-alignment style visualization
 - appendix:
+  - conditional validation table
+  - exploratory credibility metrics (`Table 5 / 5B`)
   - classifier benchmark
   - IRR / adjudication note
   - keyword methodology
@@ -198,4 +200,3 @@ The main problem is:
 - define the exact table ladder that supports that story
 - produce each table as a separate validated artifact
 - move only supporting material into the appendix
-

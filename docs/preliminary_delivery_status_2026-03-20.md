@@ -12,8 +12,9 @@ The preliminary pipeline is now in a usable delivery state:
 - merged panel and regression-ready panel built
 - rebuilt ever-speaker annual panel and regression-ready sample built
 - broader regression portfolio estimated
-- standalone main-text delivery tables generated on the ever-speaker panel
-- manuscript markdown refreshed to reflect the current headline regression framing
+- standalone delivery tables generated on the ever-speaker panel through the methodology-aligned mismatch stage
+- standalone delivery figures generated through the first mismatch visual
+- main-text versus appendix boundaries clarified in the delivery planning layer
 
 ## Authoritative Data Artifacts
 
@@ -42,18 +43,32 @@ The preliminary pipeline is now in a usable delivery state:
   - `results/01_baseline/tables_2016_2024_applied_v2_legalnorm_unique/portfolio_summary.md`
 - compiled manuscript markdown:
   - `output/paper/manuscript_compiled.md`
-- main-text timing tables:
+- current main-text table family:
+  - `paper/generated/tables/table_1_summary_statistics_prelim_v1.md`
   - `paper/generated/tables/table_2_ai_focus_timing_prelim_v1.md`
   - `paper/generated/tables/table_3_disclosure_composition_timing_prelim_v1.md`
-- standalone Word timing tables:
-  - `output/doc/delivery_tables_v1/table_2_ai_focus_timing_prelim_v1.docx`
-  - `output/doc/delivery_tables_v1/table_3_disclosure_composition_timing_prelim_v1.docx`
+  - `paper/generated/tables/table_4_actionable_patent_timing_prelim_v1.md`
+  - `paper/generated/tables/table_4b_speculative_patent_timing_prelim_v1.md`
+  - `paper/generated/tables/table_6_as_patent_mismatch_tplus1_prelim_v1.md`
+  - `paper/generated/tables/table_6b_as_patent_mismatch_tplus2_prelim_v1.md`
+- appendix table family:
+  - `paper/generated/tables/table_2_core_patent_validation_prelim_v1.md`
+  - `paper/generated/tables/table_5_credibility_metrics_tplus1_prelim_v1.md`
+  - `paper/generated/tables/table_5b_credibility_metrics_tplus2_prelim_v1.md`
+- current main-text figure family:
+  - `output/figures/delivery_figures_v1/figure_1_disclosure_volume_composition_prelim_v1.png`
+  - `output/figures/delivery_figures_v1/figure_2_ai_patent_coverage_prelim_v1.png`
+  - `output/figures/delivery_figures_v1/figure_3_patent_mismatch_alignment_prelim_v1.png`
 
 ## Headline Empirical Read
 
-Current main-text framing should now emphasize the timing structure on the ever-speaker annual panel.
+Current main-text framing should emphasize the ever-speaker annual panel and distinguish three layers of evidence:
 
-From the new timing tables:
+1. broad AI-disclosure intensity and composition timing
+2. disclosure-type timing matrices
+3. methodology-aligned AI-washing evidence via `A_S × PatentMismatch`
+
+From the timing tables:
 
 - `AI_Focus` is positive and statistically significant at every horizon:
   - `t-2 = 0.039***`
@@ -64,7 +79,13 @@ From the new timing tables:
 - actionable disclosure is near zero at `t-2`, then positive and statistically significant from `t-1` through `t+2`
 - speculative-only disclosure is negative and significant at `t-2`, `t-1`, and `t`, then fades toward zero at `t+1` and `t+2`
 
-The earlier conditional validation table remains useful, but it now belongs in the appendix rather than the main-text empirical sequence.
+From the methodology-aligned mismatch table:
+
+- `A/S ratio` enters positively at `t+1`
+- `A/S × PatentMismatch` enters negatively at `t+1` and remains negative at `t+2`
+- the negative interaction is strongest in the industry×year specification but remains directionally consistent in the firm-FE trims
+
+The earlier conditional validation table remains useful, but it now belongs in the appendix rather than the main-text empirical sequence. The exploratory credibility-metric table also moves to the appendix now that the methodology-aligned mismatch table is built.
 
 ## Modeling Decisions Locked In For The Preliminary Draft
 
@@ -90,7 +111,6 @@ env PYTHONPATH=src ./.venv/bin/python scripts/build_paper.py
 
 ## Immediate Next Work
 
-1. Validate and tighten the new ever-speaker `Table 2` and `Table 3` timing objects for the main-text sequence.
-2. Decide which timing result should anchor the next FE ladder / sample-trim companion.
-3. Keep the current conditional validation table as appendix support rather than as a main-text anchor.
-4. Refresh manuscript-facing paper assets once the next table boundary is locked.
+1. Refresh the modular review packet so it reflects the promoted main-text ladder through `Table 6` and `Figure 3`.
+2. Decide whether the next empirical object should be an industry-heterogeneity table, an industry-heterogeneity figure, or a writing-side result draft.
+3. Keep final manuscript insertion separate from table/figure production so the paper-polish step stays controlled.

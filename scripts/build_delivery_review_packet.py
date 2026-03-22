@@ -20,10 +20,51 @@ SECTION_ORDER = [
     ("Story Arc", "reports/analysis/literature_story_arc_ai_washing_mar2026_v1.md"),
     ("Table Plan", "reports/analysis/preliminary_results_table_plan_v1.md"),
     ("Boundary", "reports/analysis/main_text_appendix_boundary_v1.md"),
+    ("PatentMismatch Construct", "reports/analysis/patent_mismatch_construct_v1.md"),
     ("Table 1 Spec", "reports/analysis/table_1_summary_statistics_spec_v1.md"),
     ("Table 1 Artifact", "paper/generated/tables/table_1_summary_statistics_prelim_v1.md"),
-    ("Table 2 Spec", "reports/analysis/table_2_core_patent_validation_spec_v1.md"),
-    ("Table 2 Artifact", "paper/generated/tables/table_2_core_patent_validation_prelim_v1.md"),
+    ("Table 2 Spec", "reports/analysis/table_2_ai_focus_timing_spec_v1.md"),
+    ("Table 2 Artifact", "paper/generated/tables/table_2_ai_focus_timing_prelim_v1.md"),
+    ("Table 3 Spec", "reports/analysis/table_3_disclosure_composition_timing_spec_v1.md"),
+    (
+        "Table 3 Artifact",
+        "paper/generated/tables/table_3_disclosure_composition_timing_prelim_v1.md",
+    ),
+    ("Table 4 Spec", "reports/analysis/table_4_actionable_patent_timing_spec_v1.md"),
+    ("Table 4 Artifact", "paper/generated/tables/table_4_actionable_patent_timing_prelim_v1.md"),
+    ("Table 4B Spec", "reports/analysis/table_4b_speculative_patent_timing_spec_v1.md"),
+    (
+        "Table 4B Artifact",
+        "paper/generated/tables/table_4b_speculative_patent_timing_prelim_v1.md",
+    ),
+    ("Table 6 Spec", "reports/analysis/table_6_as_patent_mismatch_tplus1_spec_v1.md"),
+    ("Table 6 Artifact", "paper/generated/tables/table_6_as_patent_mismatch_tplus1_prelim_v1.md"),
+    ("Table 6B Spec", "reports/analysis/table_6b_as_patent_mismatch_tplus2_spec_v1.md"),
+    (
+        "Table 6B Artifact",
+        "paper/generated/tables/table_6b_as_patent_mismatch_tplus2_prelim_v1.md",
+    ),
+    ("Appendix Table A1 Spec", "reports/analysis/table_5_credibility_metrics_tplus1_spec_v1.md"),
+    (
+        "Appendix Table A1 Artifact",
+        "paper/generated/tables/table_5_credibility_metrics_tplus1_prelim_v1.md",
+    ),
+    ("Appendix Table A2 Spec", "reports/analysis/table_5b_credibility_metrics_tplus2_spec_v1.md"),
+    (
+        "Appendix Table A2 Artifact",
+        "paper/generated/tables/table_5b_credibility_metrics_tplus2_prelim_v1.md",
+    ),
+    (
+        "Appendix Conditional Validation Spec",
+        "reports/analysis/table_2_core_patent_validation_spec_v1.md",
+    ),
+    (
+        "Appendix Conditional Validation Artifact",
+        "paper/generated/tables/table_2_core_patent_validation_prelim_v1.md",
+    ),
+    ("Figure 1 Spec", "reports/analysis/figure_1_disclosure_volume_composition_spec_v1.md"),
+    ("Figure 2 Spec", "reports/analysis/figure_2_ai_patent_coverage_spec_v1.md"),
+    ("Figure 3 Spec", "reports/analysis/figure_3_patent_mismatch_alignment_spec_v1.md"),
 ]
 
 
@@ -61,12 +102,15 @@ def assemble_markdown(output_path: Path) -> None:
     chunks: list[str] = [
         "# Preliminary Delivery Review Packet\n",
         "This packet is intended for modular review of the preliminary delivery package.\n",
-        "It is not the manuscript itself. It is a working review document that keeps the current story, table plan, and first built tables in one editable place.\n",
+        "It is not the manuscript itself. It is a working review document that keeps the current story, table plan, main-text ladder, appendix candidates, and core spec cards in one editable place.\n",
+        "Standalone Word review files remain the authoritative place to inspect the table and figure layouts visually.\n",
     ]
     for title, rel_path in SECTION_ORDER:
         path = REPO_ROOT / rel_path
         text = path.read_text(encoding="utf-8").rstrip()
-        chunks.append(f"\n\n## {title}\n\n<!-- begin: {rel_path} -->\n\n{text}\n\n<!-- end: {rel_path} -->\n")
+        chunks.append(
+            f"\n\n## {title}\n\n<!-- begin: {rel_path} -->\n\n{text}\n\n<!-- end: {rel_path} -->\n"
+        )
     output_path.write_text("".join(chunks).rstrip() + "\n", encoding="utf-8")
 
 

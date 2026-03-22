@@ -141,7 +141,7 @@ Story:
 - frames the external validation target
 - shows how sparse AI patenting is
 
-### Figure 3. Patent Alignment and Mismatch by A/S Quartile
+### Figure 3. Patent Alignment and Mismatch by A/S Quantile
 
 Likely inputs:
 - `data/processed/panel/panel_reg_ready_ever_speaker_2016_2024_v1.csv`
