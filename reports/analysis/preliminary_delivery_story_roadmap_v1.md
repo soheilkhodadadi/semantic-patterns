@@ -247,11 +247,17 @@ Preferred form:
 - columns:
   - one-variable baseline specifications
   - multivariate baseline specification
+- reduced-baseline companions:
+  - `Table 7C`
+    - ever-mismatch outcome with a reduced baseline covariate set
+  - `Table 7D`
+    - mismatch-intensity outcome with a reduced baseline covariate set
 
 Expected read:
 - smaller firms should be more mismatch-prone in simple cross-section
 - lower investment-capacity variables should be associated with less mismatch if they proxy for genuine innovation capacity
 - some simple cross-sectional relations may attenuate materially in the multivariate column
+- reduced-baseline variants help distinguish real attenuation from complete-case sample loss
 
 Narrative role:
 - this table answers the "who exhibits mismatch?" question after Figures 3 and 4 make the phenomenon visible

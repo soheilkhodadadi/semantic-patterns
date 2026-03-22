@@ -130,6 +130,7 @@ Purpose:
 Status note:
 - built as a firm-level cross-sectional table with baseline `2016` characteristics
 - nearby companion uses mismatch intensity rather than a simple ever/never indicator
+- reduced-baseline companions (`7C / 7D`) recover sample size by omitting sparse `R&D` and employee controls
 
 ## Main-Text Figure Ladder
 

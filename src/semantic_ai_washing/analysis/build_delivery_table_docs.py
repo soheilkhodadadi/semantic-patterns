@@ -30,6 +30,8 @@ from semantic_ai_washing.analysis.delivery_table_payloads import (
     summarize_table_6b_as_patent_mismatch_tplus2,
     summarize_table_7_mismatch_determinants,
     summarize_table_7b_mismatch_intensity,
+    summarize_table_7c_mismatch_determinants_reduced,
+    summarize_table_7d_mismatch_intensity_reduced,
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -585,7 +587,8 @@ def parse_args() -> argparse.Namespace:
             "table4b_speculative_patent_timing, table5_credibility_metrics_tplus1, "
             "table5b_credibility_metrics_tplus2, table6_as_patent_mismatch_tplus1, "
             "table6b_as_patent_mismatch_tplus2, table7_mismatch_determinants, "
-            "table7b_mismatch_intensity, table2_conditional_appendix"
+            "table7b_mismatch_intensity, table7c_mismatch_determinants_reduced, "
+            "table7d_mismatch_intensity_reduced, table2_conditional_appendix"
         ),
     )
     return parser.parse_args()
@@ -672,6 +675,18 @@ def main() -> None:
         _build_row_matrix_doc(
             summarize_table_7b_mismatch_intensity(args.reg_ready_panel),
             output_dir / "table_7b_mismatch_intensity_prelim_v1.docx",
+        )
+
+    if "table7c_mismatch_determinants_reduced" in selected:
+        _build_row_matrix_doc(
+            summarize_table_7c_mismatch_determinants_reduced(args.reg_ready_panel),
+            output_dir / "table_7c_mismatch_determinants_reduced_prelim_v1.docx",
+        )
+
+    if "table7d_mismatch_intensity_reduced" in selected:
+        _build_row_matrix_doc(
+            summarize_table_7d_mismatch_intensity_reduced(args.reg_ready_panel),
+            output_dir / "table_7d_mismatch_intensity_reduced_prelim_v1.docx",
         )
 
     if "table2_conditional_appendix" in selected:

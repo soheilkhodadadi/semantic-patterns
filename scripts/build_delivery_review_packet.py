@@ -48,6 +48,16 @@ SECTION_ORDER = [
     ("Table 7 Artifact", "paper/generated/tables/table_7_mismatch_determinants_prelim_v1.md"),
     ("Table 7B Spec", "reports/analysis/table_7b_mismatch_intensity_spec_v1.md"),
     ("Table 7B Artifact", "paper/generated/tables/table_7b_mismatch_intensity_prelim_v1.md"),
+    ("Table 7C Spec", "reports/analysis/table_7c_mismatch_determinants_reduced_spec_v1.md"),
+    (
+        "Table 7C Artifact",
+        "paper/generated/tables/table_7c_mismatch_determinants_reduced_prelim_v1.md",
+    ),
+    ("Table 7D Spec", "reports/analysis/table_7d_mismatch_intensity_reduced_spec_v1.md"),
+    (
+        "Table 7D Artifact",
+        "paper/generated/tables/table_7d_mismatch_intensity_reduced_prelim_v1.md",
+    ),
     ("Appendix Table A1 Spec", "reports/analysis/table_5_credibility_metrics_tplus1_spec_v1.md"),
     (
         "Appendix Table A1 Artifact",

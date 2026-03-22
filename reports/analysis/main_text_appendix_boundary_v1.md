@@ -86,6 +86,10 @@ Why candidate main text:
 - it mirrors the literature's determinants step
 - it should remain compact and descriptive rather than becoming a mechanism section
 
+Why keep reduced variants nearby:
+- `Table 7C / 7D` recover most of the baseline firm sample
+- they are useful for deciding whether the full multivariate column is substantively informative or just overly sparse
+
 ### Main Figures
 
 - time series of AI disclosure composition

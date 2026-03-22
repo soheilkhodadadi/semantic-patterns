@@ -85,6 +85,14 @@ DETERMINANT_METRICS: list[tuple[str, str]] = [
     ("Employees (k)", "emp"),
 ]
 
+DETERMINANT_METRICS_REDUCED: list[tuple[str, str]] = [
+    ("Log assets", "ln_assets"),
+    ("Cash/assets", "cash"),
+    ("Leverage", "leverage"),
+    ("CAPX/assets", "capx_at"),
+    ("ROA", "roa"),
+]
+
 
 def fmt_num(value: float | None, digits: int = 3) -> str:
     if value is None or math.isnan(value):
@@ -1253,16 +1261,17 @@ def _summarize_mismatch_determinants(
     title: str,
     dependent_label: str,
     note: str,
+    metrics: list[tuple[str, str]] = DETERMINANT_METRICS,
 ) -> dict[str, object]:
     df = _build_mismatch_firm_sample(panel_path)
-    metric_terms = [term for _label, term in DETERMINANT_METRICS]
+    metric_terms = [term for _label, term in metrics]
     model_defs = [
         *[
             {"number": f"({idx})", "label": label, "rhs_terms": [term], "all_covars": "N"}
-            for idx, (label, term) in enumerate(DETERMINANT_METRICS, start=1)
+            for idx, (label, term) in enumerate(metrics, start=1)
         ],
         {
-            "number": f"({len(DETERMINANT_METRICS) + 1})",
+            "number": f"({len(metrics) + 1})",
             "label": "Multivar.",
             "rhs_terms": metric_terms,
             "all_covars": "Y",
@@ -1284,7 +1293,7 @@ def _summarize_mismatch_determinants(
             cluster_col="sic2",
         )
         metric_results: dict[str, tuple[float, float, float | None]] = {}
-        for label, term in DETERMINANT_METRICS:
+        for label, term in metrics:
             coef = result.params.get(term, float("nan"))
             se = result.bse.get(term, float("nan"))
             pvalue = result.pvalues.get(term)
@@ -1293,7 +1302,7 @@ def _summarize_mismatch_determinants(
         all_covars_flags.append(str(spec["all_covars"]))
 
     body_rows: list[dict[str, object]] = []
-    for label, _term in DETERMINANT_METRICS:
+    for label, _term in metrics:
         coef_cells: list[str] = []
         se_cells: list[str] = []
         for metric_results, _adj_r2, _nobs in results_by_spec:
@@ -1392,4 +1401,42 @@ def summarize_table_7b_mismatch_intensity(panel_path: str | Path) -> dict[str, o
         title="Table 7B. Firm-Level Determinants of PatentMismatch Intensity",
         dependent_label="Dependent variable: PatentMismatch share among AI-talking years, 2016-2024",
         note=note,
+    )
+
+
+def summarize_table_7c_mismatch_determinants_reduced(panel_path: str | Path) -> dict[str, object]:
+    note = (
+        "This refinement revisits the firm-level PatentMismatch determinants table using a reduced baseline characteristic set to preserve sample size. "
+        "The dependent variable is an indicator for whether the firm records at least one PatentMismatch incident during `2016-2024`. "
+        "Baseline characteristics are measured in 2016 and include log assets, cash/assets, leverage, CAPX/assets, and ROA. "
+        "R&D/assets and employees are omitted from this variant because they sharply reduce the multivariate complete-case sample. "
+        "All specifications include industry fixed effects based on baseline `sic2`, and standard errors clustered at the industry level are shown in parentheses. "
+        "Columns (1)-(5) report one-variable specifications; column (6) includes all reduced baseline characteristics jointly. Constants are omitted. (* p<0.1, ** p<0.05, *** p<0.01)."
+    )
+    return _summarize_mismatch_determinants(
+        panel_path,
+        dependent="ever_mismatch",
+        title="Table 7C. Firm-Level Determinants of PatentMismatch (Reduced Baseline Set)",
+        dependent_label="Dependent variable: any PatentMismatch incident, 2016-2024",
+        note=note,
+        metrics=DETERMINANT_METRICS_REDUCED,
+    )
+
+
+def summarize_table_7d_mismatch_intensity_reduced(panel_path: str | Path) -> dict[str, object]:
+    note = (
+        "This companion refinement revisits PatentMismatch intensity using the reduced baseline characteristic set that preserves sample size. "
+        "The dependent variable is the share of AI-talking years during `2016-2024` that are flagged as PatentMismatch. "
+        "Baseline characteristics are measured in 2016 and include log assets, cash/assets, leverage, CAPX/assets, and ROA. "
+        "R&D/assets and employees are omitted from this variant because they sharply reduce the multivariate complete-case sample. "
+        "All specifications include industry fixed effects based on baseline `sic2`, and standard errors clustered at the industry level are shown in parentheses. "
+        "Columns (1)-(5) report one-variable specifications; column (6) includes all reduced baseline characteristics jointly. Constants are omitted. (* p<0.1, ** p<0.05, *** p<0.01)."
+    )
+    return _summarize_mismatch_determinants(
+        panel_path,
+        dependent="mismatch_share_talk",
+        title="Table 7D. Firm-Level Determinants of PatentMismatch Intensity (Reduced Baseline Set)",
+        dependent_label="Dependent variable: PatentMismatch share among AI-talking years, 2016-2024",
+        note=note,
+        metrics=DETERMINANT_METRICS_REDUCED,
     )
