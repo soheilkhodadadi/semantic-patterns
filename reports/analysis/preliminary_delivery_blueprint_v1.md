@@ -102,13 +102,16 @@ Purpose:
 
 Status note:
 - informative but exploratory
-- may move to appendix now that the methodology-aligned mismatch table exists
+- now demoted to appendix in favor of the methodology-aligned mismatch table
 
 ### Table 6. A/S Ratio x PatentMismatch
 
 Purpose:
 - implement the methodology's core AI-washing specification directly
 - test whether the credibility-innovation link attenuates in mismatch years
+
+Status note:
+- promoted into the main-text ladder
 
 Core rows:
 - `A/S ratio`
@@ -138,21 +141,22 @@ Story:
 - frames the external validation target
 - shows how sparse AI patenting is
 
-### Figure 3. Industry Heterogeneity in Disclosure Composition
+### Figure 3. Patent Alignment and Mismatch by A/S Quartile
+
+Likely inputs:
+- `data/processed/panel/panel_reg_ready_ever_speaker_2016_2024_v1.csv`
+
+Story:
+- visual companion to the methodology-aligned mismatch table
+- shows how future AI patenting differs between mismatch and non-mismatch firm-years across the disclosure-credibility distribution
+
+### Figure 4. Industry Heterogeneity in Disclosure Composition
 
 Likely inputs:
 - `data/processed/panel/panel_ai_patents_controls_ever_speaker_2016_2024_v1.csv`
 
 Story:
 - gives a cross-sectional picture without needing another regression table
-
-### Figure 4. Patent Alignment by Disclosure-Composition Buckets
-
-Likely inputs:
-- `data/processed/panel/panel_ai_patents_controls_ever_speaker_2016_2024_v1.csv`
-
-Story:
-- intuitive visual partner to the patent-validation table
 
 ## Appendix Priorities
 
@@ -219,10 +223,11 @@ Only after the modular artifacts are reviewed:
 3. current conditional validation table moved to appendix
 4. `Table 3` disclosure composition timing
 5. `Table 4 / 4B` patent-timing matrix by disclosure type
-6. `Table 5 / 5B` credibility metrics
+6. `Table 6 / 6B` methodology-aligned mismatch tables
 7. `Figure 1`
 8. `Figure 2`
-9. compact main-text vs appendix review
+9. `Figure 3` mismatch visualization
+10. compact main-text vs appendix review
 
 ## Current Practical Rule
 

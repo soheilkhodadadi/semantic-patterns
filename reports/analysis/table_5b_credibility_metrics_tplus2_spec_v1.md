@@ -1,10 +1,10 @@
-# Table 5B Spec Card V1
+# Appendix Table A2 Spec Card V1
 
 Date:
 - `2026-03-21`
 
 Title:
-- `Table 5B. Credibility Metrics and Longer-Horizon AI Patenting`
+- `Appendix Table A2. Exploratory Credibility Metrics and Longer-Horizon AI Patenting`
 
 ## Purpose
 
@@ -71,8 +71,8 @@ Display rules:
 ## Narrative Role
 
 Expected use:
-- nearby companion to Table 5
-- helps decide whether any credibility-style signal persists beyond `t+1`
+- appendix-only exploratory companion to Appendix Table A1
+- helps decide whether any secondary credibility-style signal persists beyond `t+1`
 
 ## Output Artifacts
 

@@ -1041,16 +1041,16 @@ def _summarize_metric_matrix(
 
 def summarize_table_5_credibility_metrics_tplus1(panel_path: str | Path) -> dict[str, object]:
     note = (
-        "This table presents credibility-metric regressions on the regression-ready ever-speaker annual panel. "
+        "This appendix table presents exploratory credibility-metric regressions on the regression-ready ever-speaker annual panel. "
         "The dependent variable is `log(1 + AI patents)` at `t+1`. Rows report one-variable regressions for the broad AI-focus measure and the main disclosure-credibility constructs: "
         "`SpecShare`, `CredAI`, `A_S`, and `SpecMinusAct`. Columns vary the fixed-effects structure and sample trim while keeping the same baseline control set: size, leverage, cash/assets, "
         "R&D/assets, CAPX/assets, ROA, sales growth, and employees. Standard errors clustered at the firm level are shown in parentheses. "
-        "Constants are omitted. (* p<0.1, ** p<0.05, *** p<0.01)."
+        "Constants are omitted. This table is retained as an appendix companion rather than the main methodology-aligned AI-washing specification. (* p<0.1, ** p<0.05, *** p<0.01)."
     )
     return _summarize_metric_matrix(
         panel_path,
         dependent="log_patents_ai_lead1",
-        title="Table 5. Credibility Metrics and Future AI Patenting",
+        title="Appendix Table A1. Exploratory Credibility Metrics and Future AI Patenting",
         dependent_label="Dependent variable: log(1 + AI patents at t+1)",
         note=note,
     )
@@ -1058,15 +1058,15 @@ def summarize_table_5_credibility_metrics_tplus1(panel_path: str | Path) -> dict
 
 def summarize_table_5b_credibility_metrics_tplus2(panel_path: str | Path) -> dict[str, object]:
     note = (
-        "This companion table presents the same credibility-metric design as Table 5 but uses the longer-horizon outcome `log(1 + AI patents)` at `t+2`. "
+        "This appendix companion presents the same exploratory credibility-metric design as Appendix Table A1 but uses the longer-horizon outcome `log(1 + AI patents)` at `t+2`. "
         "Rows report one-variable regressions for `AI_Focus`, `SpecShare`, `CredAI`, `A_S`, and `SpecMinusAct`. Columns vary the fixed-effects structure and sample trim while keeping the same baseline control set: "
         "size, leverage, cash/assets, R&D/assets, CAPX/assets, ROA, sales growth, and employees. Standard errors clustered at the firm level are shown in parentheses. "
-        "Constants are omitted. (* p<0.1, ** p<0.05, *** p<0.01)."
+        "Constants are omitted. This table is retained as an appendix companion rather than the main methodology-aligned AI-washing specification. (* p<0.1, ** p<0.05, *** p<0.01)."
     )
     return _summarize_metric_matrix(
         panel_path,
         dependent="log_patents_ai_lead2",
-        title="Table 5B. Credibility Metrics and Longer-Horizon AI Patenting",
+        title="Appendix Table A2. Exploratory Credibility Metrics and Longer-Horizon AI Patenting",
         dependent_label="Dependent variable: log(1 + AI patents at t+2)",
         note=note,
     )

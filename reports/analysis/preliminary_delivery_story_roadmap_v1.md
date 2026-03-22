@@ -187,6 +187,9 @@ Methodology caveat:
 - the methodology treats `A_S` and `A_S x PatentMismatch` as the core AI-washing specification
 - therefore the current credibility-metric table is informative, but it does not replace the later mismatch-based AI-washing table
 
+Current placement:
+- appendix-only exploratory table family
+
 ### Table 6. Methodology-Aligned AI-Washing Table
 
 Goal:
@@ -217,6 +220,9 @@ Narrative role:
 - this is the first table that maps directly onto the methodology's explicit AI-washing specification
 - it should likely outrank the exploratory credibility-metric table in the main-text hierarchy
 
+Current placement:
+- promoted into the main-text ladder
+
 ## Main-Text Figure Sequence
 
 ### Figure 1. AI Disclosure Volume And Composition Over Time
@@ -239,14 +245,15 @@ Expected read:
 - AI patenting is sparse but meaningful
 - means alone understate how zero-heavy the distribution is
 
-### Figure 3. Timing / Alignment Visualization
+### Figure 3. Patent Alignment And Mismatch Visualization
 
 Purpose:
-- complement Table 3 with a more intuitive picture
-- show patent incidence around AI-disclosure years or around disclosure-composition buckets
+- complement Table 6 with a more intuitive picture
+- show how future AI patenting differs between mismatch and non-mismatch firm-years across the `A_S` distribution
 
 Expected read:
-- help the reader see whether alignment is backward-looking, contemporaneous, or forward-looking
+- non-mismatch firm-years should show a steeper positive relation between `A_S` and future AI patenting
+- mismatch firm-years should show attenuation of that relation
 
 ### Figure 4. Industry Heterogeneity
 
@@ -287,7 +294,8 @@ Specifically:
 2. does speculative disclosure remain positively related to later patent incidence once zero-disclosure years are restored?
 3. are the current conditional results mostly a within-speaking-years result, or do they survive in the broader annual panel?
 4. whether the methodology-aligned mismatch interaction behaves in the expected negative direction at `t+1` and `t+2`
-5. which variables deserve to stay in the main text, and which should be demoted to the appendix?
+5. whether Table 6 is strong enough to become the paper's main AI-washing table
+6. which remaining exploratory tables deserve appendix space
 
 ## Build Order
 
@@ -296,8 +304,10 @@ Specifically:
 3. move the current conditional validation table to the appendix
 4. build `Table 4 / Table 4B` as the literature-style patent-timing matrix family
 5. build `Figure 1` and `Figure 2`
-6. decide whether `Table 5` belongs in the main text or appendix
-7. only then assemble the next delivery packet
+6. promote `Table 6 / Table 6B` into the main-text ladder
+7. keep `Table 5 / Table 5B` in the appendix lane
+8. build `Figure 3` as the mismatch visualization companion
+9. only then assemble the next delivery packet
 
 ## Stop Rules
 

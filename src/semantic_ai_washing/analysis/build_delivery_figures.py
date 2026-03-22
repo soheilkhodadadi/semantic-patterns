@@ -12,9 +12,15 @@ from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml.ns import qn
 from docx.shared import Inches, Pt
+from semantic_ai_washing.analysis.delivery_table_payloads import (
+    _add_patent_mismatch,
+    _fit_absorbed_ols,
+    load_panel,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_PANEL = "data/processed/panel/panel_ai_patents_controls_ever_speaker_2016_2024_v1.csv"
+DEFAULT_REG_READY_PANEL = "data/processed/panel/panel_reg_ready_ever_speaker_2016_2024_v1.csv"
 DEFAULT_FIG_DIR = "output/figures/delivery_figures_v1"
 DEFAULT_DOC_DIR = "output/doc/delivery_figures_v1"
 
@@ -86,12 +92,14 @@ def _style_axes(ax) -> None:
     ax.grid(False, axis="x")
 
 
-def _load_panel(panel_path: str | Path) -> pd.DataFrame:
+def _load_merged_panel(panel_path: str | Path) -> pd.DataFrame:
     return pd.read_csv(panel_path, low_memory=False)
 
 
-def build_figure_1(panel_path: str | Path, output_dir: str | Path, doc_dir: str | Path) -> tuple[Path, Path]:
-    df = _load_panel(panel_path)
+def build_figure_1(
+    panel_path: str | Path, output_dir: str | Path, doc_dir: str | Path
+) -> tuple[Path, Path]:
+    df = _load_merged_panel(panel_path)
     yearly = (
         df.groupby("year", as_index=False)
         .agg(
@@ -113,18 +121,61 @@ def build_figure_1(panel_path: str | Path, output_dir: str | Path, doc_dir: str 
     fig, axes = plt.subplots(2, 1, figsize=(8.2, 8.8), constrained_layout=True)
 
     ax = axes[0]
-    ax.plot(yearly["year"], yearly["ai_total_mean"], color="#22333b", marker="o", linewidth=2.3, label="AI sentences")
-    ax.plot(yearly["year"], yearly["n_A_mean"], color="#2a9d8f", marker="o", linewidth=2.0, label="Actionable")
-    ax.plot(yearly["year"], yearly["n_S_mean"], color="#c46b48", marker="o", linewidth=2.0, label="Speculative")
+    ax.plot(
+        yearly["year"],
+        yearly["ai_total_mean"],
+        color="#22333b",
+        marker="o",
+        linewidth=2.3,
+        label="AI sentences",
+    )
+    ax.plot(
+        yearly["year"],
+        yearly["n_A_mean"],
+        color="#2a9d8f",
+        marker="o",
+        linewidth=2.0,
+        label="Actionable",
+    )
+    ax.plot(
+        yearly["year"],
+        yearly["n_S_mean"],
+        color="#c46b48",
+        marker="o",
+        linewidth=2.0,
+        label="Speculative",
+    )
     ax.set_title("Panel A. Mean AI Disclosure Counts per Firm-Year")
     ax.set_ylabel("Mean count")
     ax.legend(loc="upper left", frameon=False)
     _style_axes(ax)
 
     ax2 = axes[1]
-    ax2.plot(comp["year"], comp["act_share_mean"], color="#2a9d8f", marker="o", linewidth=2.2, label="Actionable share")
-    ax2.plot(comp["year"], comp["spec_share_mean"], color="#c46b48", marker="o", linewidth=2.2, label="Speculative share")
-    ax2.plot(yearly["year"], yearly["any_ai_share"], color="#6c757d", marker="o", linewidth=1.8, linestyle="--", label="Any AI talk share")
+    ax2.plot(
+        comp["year"],
+        comp["act_share_mean"],
+        color="#2a9d8f",
+        marker="o",
+        linewidth=2.2,
+        label="Actionable share",
+    )
+    ax2.plot(
+        comp["year"],
+        comp["spec_share_mean"],
+        color="#c46b48",
+        marker="o",
+        linewidth=2.2,
+        label="Speculative share",
+    )
+    ax2.plot(
+        yearly["year"],
+        yearly["any_ai_share"],
+        color="#6c757d",
+        marker="o",
+        linewidth=1.8,
+        linestyle="--",
+        label="Any AI talk share",
+    )
     ax2.set_title("Panel B. Disclosure Composition Over Time")
     ax2.set_xlabel("Year")
     ax2.set_ylabel("Share")
@@ -143,18 +194,28 @@ def build_figure_1(panel_path: str | Path, output_dir: str | Path, doc_dir: str 
         "Panel B plots mean actionable and speculative shares among AI-talking firm-years, together with the share of ever-speaker firm-years that contain any AI disclosure."
     )
     doc_path = Path(doc_dir) / "figure_1_disclosure_volume_composition_prelim_v1.docx"
-    _save_figure_docx("Figure 1. AI Disclosure Volume and Composition Over Time", note, image_path, doc_path)
+    _save_figure_docx(
+        "Figure 1. AI Disclosure Volume and Composition Over Time", note, image_path, doc_path
+    )
     return image_path, doc_path
 
 
-def build_figure_2(panel_path: str | Path, output_dir: str | Path, doc_dir: str | Path) -> tuple[Path, Path]:
-    df = _load_panel(panel_path)
+def build_figure_2(
+    panel_path: str | Path, output_dir: str | Path, doc_dir: str | Path
+) -> tuple[Path, Path]:
+    df = _load_merged_panel(panel_path)
     yearly = (
         df.groupby("year", as_index=False)
         .agg(
-            ai_patent_share=("patents_ai", lambda s: (pd.to_numeric(s, errors="coerce").fillna(0) > 0).mean()),
+            ai_patent_share=(
+                "patents_ai",
+                lambda s: (pd.to_numeric(s, errors="coerce").fillna(0) > 0).mean(),
+            ),
             ai_patent_mean=("patents_ai", "mean"),
-            log_ai_patent_mean=("patents_ai", lambda s: np.log1p(pd.to_numeric(s, errors="coerce").fillna(0)).mean()),
+            log_ai_patent_mean=(
+                "patents_ai",
+                lambda s: np.log1p(pd.to_numeric(s, errors="coerce").fillna(0)).mean(),
+            ),
         )
         .sort_values("year")
     )
@@ -171,8 +232,22 @@ def build_figure_2(panel_path: str | Path, output_dir: str | Path, doc_dir: str 
     _style_axes(ax)
 
     ax2 = axes[1]
-    ax2.plot(yearly["year"], yearly["ai_patent_mean"], color="#457b9d", marker="o", linewidth=2.1, label="Mean AI patents")
-    ax2.plot(yearly["year"], yearly["log_ai_patent_mean"], color="#a8dadc", marker="o", linewidth=2.1, label="Mean log(1 + AI patents)")
+    ax2.plot(
+        yearly["year"],
+        yearly["ai_patent_mean"],
+        color="#457b9d",
+        marker="o",
+        linewidth=2.1,
+        label="Mean AI patents",
+    )
+    ax2.plot(
+        yearly["year"],
+        yearly["log_ai_patent_mean"],
+        color="#a8dadc",
+        marker="o",
+        linewidth=2.1,
+        label="Mean log(1 + AI patents)",
+    )
     ax2.set_title("Panel B. Mean AI Patent Intensity")
     ax2.set_xlabel("Year")
     ax2.set_ylabel("Mean level")
@@ -194,9 +269,102 @@ def build_figure_2(panel_path: str | Path, output_dir: str | Path, doc_dir: str 
     return image_path, doc_path
 
 
+def build_figure_3(
+    reg_ready_panel_path: str | Path, output_dir: str | Path, doc_dir: str | Path
+) -> tuple[Path, Path]:
+    df = load_panel(reg_ready_panel_path)
+    df = _add_patent_mismatch(df)
+    talk = df.loc[df["any_ai_talk"].fillna(0).astype(int).eq(1) & df["A_S"].notna()].copy()
+
+    quartile_codes = pd.qcut(talk["A_S"], 4, labels=False, duplicates="drop")
+    n_bins = int(pd.Series(quartile_codes).dropna().nunique())
+    quartile_labels = [f"Q{i + 1}" for i in range(n_bins)]
+    if quartile_labels:
+        quartile_labels[0] = "Q1 Low A/S"
+        quartile_labels[-1] = f"Q{n_bins} High A/S"
+    talk["A_S_quartile"] = quartile_codes.map(
+        {idx: label for idx, label in enumerate(quartile_labels)}
+    )
+    quartile_medians = (
+        talk.groupby("A_S_quartile", observed=True)["A_S"].median().reindex(quartile_labels)
+    )
+
+    t1_result, _, _ = _fit_absorbed_ols(
+        df,
+        dependent="log_patents_ai_lead1",
+        rhs_terms=["A_S", "AS_x_PatentMismatch"],
+        absorb_col="cik",
+        include_year=True,
+    )
+    t2_result, _, _ = _fit_absorbed_ols(
+        df,
+        dependent="log_patents_ai_lead2",
+        rhs_terms=["A_S", "AS_x_PatentMismatch"],
+        absorb_col="cik",
+        include_year=True,
+    )
+
+    coef_map = {
+        "t1": {
+            0: t1_result.params.get("A_S", 0.0),
+            1: t1_result.params.get("A_S", 0.0) + t1_result.params.get("AS_x_PatentMismatch", 0.0),
+        },
+        "t2": {
+            0: t2_result.params.get("A_S", 0.0),
+            1: t2_result.params.get("A_S", 0.0) + t2_result.params.get("AS_x_PatentMismatch", 0.0),
+        },
+    }
+
+    _base_style()
+    fig, axes = plt.subplots(2, 1, figsize=(8.2, 8.8), constrained_layout=True)
+    color_map = {0: "#2a9d8f", 1: "#c46b48"}
+    label_map = {0: "No mismatch", 1: "PatentMismatch = 1"}
+
+    for ax, horizon_key, title in [
+        (axes[0], "t1", "Panel A. Predicted Future AI Patents at t+1"),
+        (axes[1], "t2", "Panel B. Predicted Future AI Patents at t+2"),
+    ]:
+        for mismatch_value in [0, 1]:
+            slope = coef_map[horizon_key][mismatch_value]
+            y_values = quartile_medians.astype(float) * float(slope)
+            ax.plot(
+                quartile_labels,
+                y_values,
+                color=color_map[mismatch_value],
+                marker="o",
+                linewidth=2.2,
+                label=label_map[mismatch_value],
+            )
+        ax.set_title(title)
+        ax.set_ylabel("Predicted within-sample effect")
+        _style_axes(ax)
+
+    axes[1].set_xlabel("A/S quartile among AI-talking firm-years")
+    axes[0].legend(loc="upper left", frameon=False)
+
+    fig_dir = Path(output_dir)
+    fig_dir.mkdir(parents=True, exist_ok=True)
+    image_path = fig_dir / "figure_3_patent_mismatch_alignment_prelim_v1.png"
+    fig.savefig(image_path, dpi=220, bbox_inches="tight")
+    plt.close(fig)
+
+    note = (
+        "This figure uses the firm+year fixed-effect mismatch specification from Table 6 and Table 6B. "
+        "The x-axis groups AI-talking firm-years into pooled quartiles of the `A_S` ratio, using the quartile medians as reference points. "
+        "The two lines plot the model-implied within-sample relation between `A_S` and future AI patenting for non-mismatch and mismatch firm-years. "
+        "PatentMismatch is defined from low-credibility disclosure (`low A_S / high SpecShare`) combined with weak contemporaneous AI patenting relative to the industry-year mean."
+    )
+    doc_path = Path(doc_dir) / "figure_3_patent_mismatch_alignment_prelim_v1.docx"
+    _save_figure_docx(
+        "Figure 3. Patent Alignment and Mismatch by A/S Quantile", note, image_path, doc_path
+    )
+    return image_path, doc_path
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--panel", default=DEFAULT_PANEL)
+    parser.add_argument("--reg-ready-panel", default=DEFAULT_REG_READY_PANEL)
     parser.add_argument("--figure-dir", default=DEFAULT_FIG_DIR)
     parser.add_argument("--doc-dir", default=DEFAULT_DOC_DIR)
     parser.add_argument("--figures", default="figure1,figure2")
@@ -214,6 +382,8 @@ def main() -> None:
         build_figure_1(args.panel, args.figure_dir, args.doc_dir)
     if "figure2" in selected:
         build_figure_2(args.panel, args.figure_dir, args.doc_dir)
+    if "figure3" in selected:
+        build_figure_3(args.reg_ready_panel, args.figure_dir, args.doc_dir)
     print(f"[delivery-figures] wrote selected figures under {args.figure_dir} and {args.doc_dir}")
 
 

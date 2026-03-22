@@ -125,15 +125,15 @@ Implication for current tables:
 - the current `Table 5 / 5B` should be treated as:
   - exploratory credibility-metric evidence
   - likely appendix or supervisor-review material
-- the real methodology-aligned AI-washing table still requires:
-  - construction of `PatentMismatch`
-  - a dedicated `A_S` interaction table
+- the methodology-aligned AI-washing table is now implemented as:
+  - `Table 6 / 6B`
+  - using `A_S` and `A_S x PatentMismatch`
 
 ## Delivery implication
 
 Recommended positioning now:
 - keep `Table 5 / 5B` as modular exploratory credibility tables
 - do **not** present them as the final AI-washing specification
-- reserve the methodology-aligned AI-washing table for the next stage after `PatentMismatch` is built
+- use `Table 6 / 6B` as the methodology-aligned AI-washing table family
 
 That keeps the delivery package honest while preserving the useful work already done.

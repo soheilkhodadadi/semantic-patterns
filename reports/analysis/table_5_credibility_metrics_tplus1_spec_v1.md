@@ -1,10 +1,10 @@
-# Table 5 Spec Card V1
+# Appendix Table A1 Spec Card V1
 
 Date:
 - `2026-03-21`
 
 Title:
-- `Table 5. Credibility Metrics and Future AI Patenting`
+- `Appendix Table A1. Exploratory Credibility Metrics and Future AI Patenting`
 
 ## Purpose
 
@@ -78,8 +78,8 @@ Display rules:
 ## Narrative Role
 
 Expected use:
-- credibility-metric main table candidate
-- should tell us whether the credibility constructs sharpen the broad AI-focus signal or remain exploratory
+- appendix-only exploratory companion
+- useful for benchmarking secondary credibility constructs against the methodology-aligned mismatch table
 
 ## Output Artifacts
 

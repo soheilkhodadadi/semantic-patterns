@@ -159,6 +159,15 @@ Recommended metrics:
 - `A_S`
 - `SpecMinusAct`
 
+Status:
+- exploratory appendix family
+
+### Table 6. A/S Ratio x PatentMismatch
+
+Purpose:
+- implement the methodology-aligned AI-washing specification directly
+- test whether the credibility-innovation slope attenuates in mismatch years
+
 ## Proposed Main-Text Figures
 
 ### Figure 1. Time Series Of AI Disclosure Composition
@@ -236,6 +245,6 @@ The next disciplined step should be:
 2. finalize `Table 2` core patent-validation spec
 3. finalize `Table 3` separate actionable/speculative headline table
 4. implement `Table 4` FE-ladder / trims table
-5. implement `Table 5` credibility-metrics table
-6. implement first mismatch construct for figure or appendix table
-
+5. implement `Table 6` methodology-aligned mismatch table
+6. build the mismatch visualization as the next main figure
+7. retain `Table 5` as appendix-only exploratory material
