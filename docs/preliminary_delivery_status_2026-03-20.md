@@ -13,7 +13,7 @@ The preliminary pipeline is now in a usable delivery state:
 - rebuilt ever-speaker annual panel and regression-ready sample built
 - broader regression portfolio estimated
 - standalone delivery tables generated on the ever-speaker panel through the methodology-aligned mismatch stage
-- standalone delivery figures generated through the first mismatch visual
+- standalone delivery figures generated through the mismatch-incidence figure
 - main-text versus appendix boundaries clarified in the delivery planning layer
 
 ## Authoritative Data Artifacts
@@ -59,6 +59,7 @@ The preliminary pipeline is now in a usable delivery state:
   - `output/figures/delivery_figures_v1/figure_1_disclosure_volume_composition_prelim_v1.png`
   - `output/figures/delivery_figures_v1/figure_2_ai_patent_coverage_prelim_v1.png`
   - `output/figures/delivery_figures_v1/figure_3_patent_mismatch_alignment_prelim_v1.png`
+  - `output/figures/delivery_figures_v1/figure_4_mismatch_incidence_industry_prelim_v1.png`
 
 ## Headline Empirical Read
 
@@ -111,6 +112,6 @@ env PYTHONPATH=src ./.venv/bin/python scripts/build_paper.py
 
 ## Immediate Next Work
 
-1. Refresh the modular review packet so it reflects the promoted main-text ladder through `Table 6` and `Figure 3`.
-2. Decide whether the next empirical object should be an industry-heterogeneity table, an industry-heterogeneity figure, or a writing-side result draft.
-3. Keep final manuscript insertion separate from table/figure production so the paper-polish step stays controlled.
+1. Decide whether the next empirical object should be `Table 7`, the determinants / correlates of `PatentMismatch`.
+2. Keep final manuscript insertion separate from table/figure production so the paper-polish step stays controlled.
+3. Refresh the modular review packet again only after the next main-text empirical object is validated.

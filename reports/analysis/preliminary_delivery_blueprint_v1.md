@@ -150,13 +150,14 @@ Story:
 - visual companion to the methodology-aligned mismatch table
 - shows how future AI patenting differs between mismatch and non-mismatch firm-years across the disclosure-credibility distribution
 
-### Figure 4. Industry Heterogeneity in Disclosure Composition
+### Figure 4. PatentMismatch Incidence Over Time and by Industry
 
 Likely inputs:
-- `data/processed/panel/panel_ai_patents_controls_ever_speaker_2016_2024_v1.csv`
+- `data/processed/panel/panel_reg_ready_ever_speaker_2016_2024_v1.csv`
 
 Story:
-- gives a cross-sectional picture without needing another regression table
+- makes the mismatch construct concrete after Table 6
+- shows when mismatch incidents intensify and which broad sectors account for the largest share of them
 
 ## Appendix Priorities
 

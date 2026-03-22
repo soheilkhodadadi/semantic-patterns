@@ -255,11 +255,11 @@ Expected read:
 - non-mismatch firm-years should show a steeper positive relation between `A_S` and future AI patenting
 - mismatch firm-years should show attenuation of that relation
 
-### Figure 4. Industry Heterogeneity
+### Figure 4. PatentMismatch Incidence Over Time And By Industry
 
 Purpose:
-- show where AI disclosure composition is most concentrated
-- provide cross-sectional context without overcrowding the main tables
+- make the mismatch construct vivid after the methodology-aligned table
+- show when mismatch incidents rise and where they are concentrated across broad sectors
 
 ## Appendix Sequence
 

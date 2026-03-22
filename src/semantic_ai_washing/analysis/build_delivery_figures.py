@@ -96,6 +96,20 @@ def _load_merged_panel(panel_path: str | Path) -> pd.DataFrame:
     return pd.read_csv(panel_path, low_memory=False)
 
 
+def _sector_bucket_from_sic2(series: pd.Series) -> pd.Series:
+    sic2 = pd.to_numeric(series, errors="coerce")
+    sector = pd.Series("Other", index=series.index, dtype="object")
+    sector.loc[sic2.between(10, 14, inclusive="both")] = "Mining"
+    sector.loc[sic2.between(15, 17, inclusive="both")] = "Construction"
+    sector.loc[sic2.between(20, 39, inclusive="both")] = "Manufacturing"
+    sector.loc[sic2.between(40, 49, inclusive="both")] = "Transport/Utilities"
+    sector.loc[sic2.between(50, 59, inclusive="both")] = "Trade"
+    sector.loc[sic2.between(60, 64, inclusive="both")] = "Finance/Insurance"
+    sector.loc[sic2.between(65, 67, inclusive="both")] = "Real Estate"
+    sector.loc[sic2.between(70, 89, inclusive="both")] = "Services"
+    return sector
+
+
 def build_figure_1(
     panel_path: str | Path, output_dir: str | Path, doc_dir: str | Path
 ) -> tuple[Path, Path]:
@@ -361,6 +375,118 @@ def build_figure_3(
     return image_path, doc_path
 
 
+def build_figure_4(
+    reg_ready_panel_path: str | Path, output_dir: str | Path, doc_dir: str | Path
+) -> tuple[Path, Path]:
+    df = load_panel(reg_ready_panel_path)
+    df = _add_patent_mismatch(df)
+    talk = df.loc[df["any_ai_talk"].fillna(0).astype(int).eq(1)].copy()
+    talk["sector_bucket"] = _sector_bucket_from_sic2(talk["sic2"])
+
+    yearly = (
+        talk.groupby("year", as_index=False)
+        .agg(
+            mismatch_count=("PatentMismatch", "sum"),
+            mismatch_share=("PatentMismatch", "mean"),
+            talk_count=("PatentMismatch", "size"),
+        )
+        .sort_values("year")
+    )
+    yearly["mismatch_share_pct"] = 100 * yearly["mismatch_share"]
+
+    sector = (
+        talk.groupby("sector_bucket", as_index=False)
+        .agg(
+            mismatch_count=("PatentMismatch", "sum"),
+            mismatch_share=("PatentMismatch", "mean"),
+            talk_count=("PatentMismatch", "size"),
+        )
+        .sort_values(["mismatch_count", "mismatch_share"], ascending=[False, False])
+    )
+    sector = sector.loc[sector["talk_count"] >= 25].head(6).copy()
+    sector = sector.sort_values("mismatch_count", ascending=True)
+
+    _base_style()
+    fig, axes = plt.subplots(2, 1, figsize=(8.2, 8.8), constrained_layout=True)
+
+    ax = axes[0]
+    ax.bar(
+        yearly["year"].astype(str),
+        yearly["mismatch_count"],
+        color="#c46b48",
+        alpha=0.85,
+        label="Mismatch incidents",
+    )
+    ax.set_title("Panel A. PatentMismatch Incidence Over Time")
+    ax.set_ylabel("Mismatch incidents")
+    _style_axes(ax)
+    ax.grid(False, axis="x")
+
+    ax_right = ax.twinx()
+    ax_right.plot(
+        yearly["year"].astype(str),
+        yearly["mismatch_share_pct"],
+        color="#1d3557",
+        marker="o",
+        linewidth=2.1,
+        label="Mismatch share (%)",
+    )
+    ax_right.set_ylabel("Mismatch share (%)")
+    ax_right.spines["top"].set_visible(False)
+    ax_right.grid(False)
+
+    handles_left, labels_left = ax.get_legend_handles_labels()
+    handles_right, labels_right = ax_right.get_legend_handles_labels()
+    ax.legend(
+        handles_left + handles_right, labels_left + labels_right, loc="upper left", frameon=False
+    )
+
+    ax2 = axes[1]
+    bars2 = ax2.barh(
+        sector["sector_bucket"],
+        sector["mismatch_count"],
+        color="#2a9d8f",
+        alpha=0.9,
+    )
+    ax2.set_title("Panel B. Industry Concentration of PatentMismatch Incidents")
+    ax2.set_xlabel("Mismatch incidents")
+    ax2.set_ylabel("")
+    _style_axes(ax2)
+    ax2.grid(True, axis="x", color="#d9d9d9", linewidth=0.7)
+    ax2.grid(False, axis="y")
+    for bar, share, talk_count in zip(
+        bars2, sector["mismatch_share"], sector["talk_count"], strict=True
+    ):
+        ax2.text(
+            bar.get_width() + 2,
+            bar.get_y() + bar.get_height() / 2,
+            f"{100 * share:.1f}% of talk years\nN={int(talk_count)}",
+            va="center",
+            ha="left",
+            fontsize=9,
+        )
+
+    fig_dir = Path(output_dir)
+    fig_dir.mkdir(parents=True, exist_ok=True)
+    image_path = fig_dir / "figure_4_mismatch_incidence_industry_prelim_v1.png"
+    fig.savefig(image_path, dpi=220, bbox_inches="tight")
+    plt.close(fig)
+
+    note = (
+        "This figure uses the regression-ready ever-speaker annual panel and restricts the plotted observations to AI-talking firm-years, because PatentMismatch is defined only for years with AI disclosure. "
+        "Panel A plots the annual count of PatentMismatch firm-years together with the share of AI-talking firm-years flagged as mismatch. "
+        "Panel B shows the six industry buckets with the highest number of mismatch incidents, with each bar annotated by the mismatch share among AI-talking firm-years in that sector."
+    )
+    doc_path = Path(doc_dir) / "figure_4_mismatch_incidence_industry_prelim_v1.docx"
+    _save_figure_docx(
+        "Figure 4. PatentMismatch Incidence Over Time and by Industry",
+        note,
+        image_path,
+        doc_path,
+    )
+    return image_path, doc_path
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--panel", default=DEFAULT_PANEL)
@@ -384,6 +510,8 @@ def main() -> None:
         build_figure_2(args.panel, args.figure_dir, args.doc_dir)
     if "figure3" in selected:
         build_figure_3(args.reg_ready_panel, args.figure_dir, args.doc_dir)
+    if "figure4" in selected:
+        build_figure_4(args.reg_ready_panel, args.figure_dir, args.doc_dir)
     print(f"[delivery-figures] wrote selected figures under {args.figure_dir} and {args.doc_dir}")
 
 
