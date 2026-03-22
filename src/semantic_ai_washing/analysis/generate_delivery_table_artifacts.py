@@ -16,6 +16,8 @@ from semantic_ai_washing.analysis.delivery_table_payloads import (
     summarize_table_2_timing_focus_counts,
     summarize_table_3_timing_composition,
     summarize_table_3_timing_composition_counts,
+    summarize_table_4_spec_ladder_tplus1,
+    summarize_table_4b_spec_ladder_t,
     to_markdown_table,
 )
 
@@ -154,7 +156,8 @@ def parse_args() -> argparse.Namespace:
         help=(
             "Comma-separated list of tables to generate: table1, table2_timing_focus, "
             "table2_timing_focus_count, table3_timing_composition, "
-            "table3_timing_composition_count, table2_conditional_appendix"
+            "table3_timing_composition_count, table4_spec_ladder_tplus1, "
+            "table4b_spec_ladder_t, table2_conditional_appendix"
         ),
     )
     return parser.parse_args()
@@ -193,6 +196,18 @@ def main() -> None:
         _write_text(
             output_dir / "table_3b_disclosure_composition_timing_counts_prelim_v1.md",
             _render_timing_payload_markdown(summarize_table_3_timing_composition_counts(args.panel)),
+        )
+
+    if "table4_spec_ladder_tplus1" in selected:
+        _write_text(
+            output_dir / "table_4_spec_ladder_tplus1_prelim_v1.md",
+            _render_timing_payload_markdown(summarize_table_4_spec_ladder_tplus1(args.panel)),
+        )
+
+    if "table4b_spec_ladder_t" in selected:
+        _write_text(
+            output_dir / "table_4b_spec_ladder_t_prelim_v1.md",
+            _render_timing_payload_markdown(summarize_table_4b_spec_ladder_t(args.panel)),
         )
 
     if "table2_conditional_appendix" in selected:

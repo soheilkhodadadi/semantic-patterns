@@ -65,14 +65,38 @@ Variants:
     - raw `AI patents` count
   - same two panels
 
+### Table 4
+
+Core question:
+- does the forward-looking timing result survive standard specification discipline?
+
+Variants:
+- `Table 4`
+  - dependent variable:
+    - `log(1 + AI patents at t+1)`
+  - columns:
+    - firm + year FE
+    - industry + year FE
+    - non-financial trim
+    - non-financial/non-utility trim
+- `Table 4B`
+  - same specification ladder
+  - dependent variable:
+    - `log(1 + AI patents at t)`
+
 ## Next Table Topic
 
-The next table topic after the `Table 2 / Table 3` family is:
+The next table topic after the `Table 4 / Table 4B` family is:
 
-- `Table 4`
-  - FE ladder / sample-trim robustness for the timing result we decide to anchor in the main text
+- `Table 5`
+  - credibility-metric family
+  - likely centered on:
+    - `SpecShare`
+    - `CredAI`
+    - `A_S`
+    - `SpecMinusAct`
 
-That table should not be built until we have visually reviewed the `A` and `B` variants for the current timing family.
+That table should not be built until we have reviewed which timing object we want to emphasize in the current main-text sequence.
 
 ## Selection Rule
 

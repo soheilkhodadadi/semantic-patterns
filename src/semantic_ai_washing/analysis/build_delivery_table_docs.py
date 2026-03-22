@@ -22,6 +22,8 @@ from semantic_ai_washing.analysis.delivery_table_payloads import (
     summarize_table_2_timing_focus_counts,
     summarize_table_3_timing_composition,
     summarize_table_3_timing_composition_counts,
+    summarize_table_4_spec_ladder_tplus1,
+    summarize_table_4b_spec_ladder_t,
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -383,7 +385,8 @@ def parse_args() -> argparse.Namespace:
         help=(
             "Comma-separated list of standalone tables to build: table1, table2_timing_focus, "
             "table2_timing_focus_count, table3_timing_composition, "
-            "table3_timing_composition_count, table2_conditional_appendix"
+            "table3_timing_composition_count, table4_spec_ladder_tplus1, "
+            "table4b_spec_ladder_t, table2_conditional_appendix"
         ),
     )
     return parser.parse_args()
@@ -420,6 +423,18 @@ def main() -> None:
         _build_panel_timing_doc(
             summarize_table_3_timing_composition_counts(args.reg_ready_panel),
             output_dir / "table_3b_disclosure_composition_timing_counts_prelim_v1.docx",
+        )
+
+    if "table4_spec_ladder_tplus1" in selected:
+        _build_panel_timing_doc(
+            summarize_table_4_spec_ladder_tplus1(args.reg_ready_panel),
+            output_dir / "table_4_spec_ladder_tplus1_prelim_v1.docx",
+        )
+
+    if "table4b_spec_ladder_t" in selected:
+        _build_panel_timing_doc(
+            summarize_table_4b_spec_ladder_t(args.reg_ready_panel),
+            output_dir / "table_4b_spec_ladder_t_prelim_v1.docx",
         )
 
     if "table2_conditional_appendix" in selected:
