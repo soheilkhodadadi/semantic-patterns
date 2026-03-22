@@ -10,6 +10,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from statsmodels.regression.linear_model import OLS
+from statsmodels.tools.tools import add_constant
 
 from semantic_ai_washing.analysis.run_regressions import add_engineered_cols, make_leads
 
@@ -72,6 +73,16 @@ CREDIBILITY_METRICS: list[tuple[str, str]] = [
 MISMATCH_METRICS: list[tuple[str, str]] = [
     ("A/S ratio", "A_S"),
     ("A/S ratio × PatentMismatch", "AS_x_PatentMismatch"),
+]
+
+DETERMINANT_METRICS: list[tuple[str, str]] = [
+    ("Log assets", "ln_assets"),
+    ("Cash/assets", "cash"),
+    ("Leverage", "leverage"),
+    ("R&D/assets", "rd_intensity"),
+    ("CAPX/assets", "capx_at"),
+    ("ROA", "roa"),
+    ("Employees (k)", "emp"),
 ]
 
 
@@ -536,6 +547,88 @@ def _fit_absorbed_ols(
         n_periods=n_periods,
     )
     return result, use, adj_r2
+
+
+def _fit_cross_section_ols(
+    df: pd.DataFrame,
+    *,
+    dependent: str,
+    rhs_terms: list[str],
+    absorb_col: str | None = None,
+    cluster_col: str | None = None,
+):
+    needed = [dependent, *rhs_terms]
+    if absorb_col:
+        needed.append(absorb_col)
+    if cluster_col:
+        needed.append(cluster_col)
+    missing = [column for column in needed if column not in df.columns]
+    if missing:
+        raise KeyError(f"Missing columns for cross-section model: {missing}")
+
+    use = df.dropna(subset=needed).copy()
+    numeric = [dependent, *rhs_terms]
+    use = _drop_infs(use, numeric)
+
+    x = use[rhs_terms].astype(float)
+    if absorb_col:
+        absorb = pd.to_numeric(use[absorb_col], errors="coerce")
+        use = use.loc[absorb.notna()].copy()
+        x = x.loc[use.index]
+        absorb = absorb.loc[use.index].astype(int).astype(str)
+        fe_dummies = pd.get_dummies(absorb, prefix="fe", drop_first=True, dtype=float)
+        x = pd.concat([x, fe_dummies], axis=1)
+
+    x = add_constant(x, has_constant="add")
+    y = use[dependent].astype(float)
+
+    fit_kwargs: dict[str, object] = {}
+    if cluster_col:
+        groups = pd.to_numeric(use[cluster_col], errors="coerce")
+        cluster_mask = groups.notna()
+        use = use.loc[cluster_mask].copy()
+        x = x.loc[use.index]
+        y = y.loc[use.index]
+        groups = groups.loc[use.index]
+        fit_kwargs = {"cov_type": "cluster", "cov_kwds": {"groups": groups}}
+
+    result = OLS(y, x).fit(**fit_kwargs)
+    return result, use, float(result.rsquared_adj)
+
+
+def _build_mismatch_firm_sample(panel_path: str | Path) -> pd.DataFrame:
+    df = load_panel(panel_path)
+    df = _add_patent_mismatch(df)
+    base = (
+        df.loc[
+            df["year"].eq(2016), ["cik", "sic2", *[term for _label, term in DETERMINANT_METRICS]]
+        ]
+        .sort_values("cik")
+        .drop_duplicates(subset=["cik"])
+        .copy()
+    )
+    firm_summary = (
+        df.groupby("cik", as_index=False)
+        .agg(
+            mismatch_years=("PatentMismatch", "sum"),
+            talk_years=("any_ai_talk", "sum"),
+        )
+        .copy()
+    )
+    talk_years = pd.to_numeric(firm_summary["talk_years"], errors="coerce").fillna(0)
+    mismatch_years = pd.to_numeric(firm_summary["mismatch_years"], errors="coerce").fillna(0)
+    firm_summary["ever_mismatch"] = (mismatch_years > 0).astype(int)
+    firm_summary["mismatch_share_talk"] = np.where(
+        talk_years > 0,
+        mismatch_years / talk_years,
+        np.nan,
+    )
+    merged = base.merge(
+        firm_summary[["cik", "ever_mismatch", "mismatch_share_talk", "talk_years"]],
+        on="cik",
+        how="left",
+    )
+    return merged
 
 
 def _summarize_timing_focus(
@@ -1153,6 +1246,88 @@ def _summarize_mismatch_matrix(
     }
 
 
+def _summarize_mismatch_determinants(
+    panel_path: str | Path,
+    *,
+    dependent: str,
+    title: str,
+    dependent_label: str,
+    note: str,
+) -> dict[str, object]:
+    df = _build_mismatch_firm_sample(panel_path)
+    metric_terms = [term for _label, term in DETERMINANT_METRICS]
+    model_defs = [
+        *[
+            {"number": f"({idx})", "label": label, "rhs_terms": [term], "all_covars": "N"}
+            for idx, (label, term) in enumerate(DETERMINANT_METRICS, start=1)
+        ],
+        {
+            "number": f"({len(DETERMINANT_METRICS) + 1})",
+            "label": "Multivar.",
+            "rhs_terms": metric_terms,
+            "all_covars": "Y",
+        },
+    ]
+
+    models = [{"number": spec["number"], "label": spec["label"]} for spec in model_defs]
+    results_by_spec: list[
+        tuple[dict[str, tuple[float, float, float | None]], float | None, int]
+    ] = []
+    all_covars_flags: list[str] = []
+
+    for spec in model_defs:
+        result, use, adj_r2 = _fit_cross_section_ols(
+            df,
+            dependent=dependent,
+            rhs_terms=list(spec["rhs_terms"]),
+            absorb_col="sic2",
+            cluster_col="sic2",
+        )
+        metric_results: dict[str, tuple[float, float, float | None]] = {}
+        for label, term in DETERMINANT_METRICS:
+            coef = result.params.get(term, float("nan"))
+            se = result.bse.get(term, float("nan"))
+            pvalue = result.pvalues.get(term)
+            metric_results[label] = (coef, se, pvalue)
+        results_by_spec.append((metric_results, adj_r2, len(use)))
+        all_covars_flags.append(str(spec["all_covars"]))
+
+    body_rows: list[dict[str, object]] = []
+    for label, _term in DETERMINANT_METRICS:
+        coef_cells: list[str] = []
+        se_cells: list[str] = []
+        for metric_results, _adj_r2, _nobs in results_by_spec:
+            coef, se, pvalue = metric_results[label]
+            coef_cells.append(f"{coef:.3f}{sig_stars(pvalue)}" if not math.isnan(coef) else "")
+            se_cells.append(f"({se:.3f})" if not math.isnan(se) else "")
+        body_rows.append({"label": label, "cells": coef_cells, "kind": "coef"})
+        body_rows.append({"label": "", "cells": se_cells, "kind": "se"})
+
+    footer_rows = [
+        {"label": "Industry FE", "cells": ["Y"] * len(models)},
+        {"label": "All baseline covars.", "cells": all_covars_flags},
+        {"label": "Baseline year", "cells": ["2016"] * len(models)},
+        {
+            "label": "Adj. R²",
+            "cells": [fmt_num(adj_r2) for _metric_results, adj_r2, _nobs in results_by_spec],
+        },
+        {
+            "label": "Observations",
+            "cells": [f"{nobs:,}" for _metric_results, _adj_r2, nobs in results_by_spec],
+        },
+    ]
+
+    return {
+        "title": title,
+        "note": note,
+        "dependent_label": dependent_label,
+        "models": models,
+        "body_rows": body_rows,
+        "footer_rows": footer_rows,
+        "landscape": True,
+    }
+
+
 def summarize_table_6_as_patent_mismatch_tplus1(panel_path: str | Path) -> dict[str, object]:
     note = (
         "This table presents the methodology-aligned AI-washing specification on the regression-ready ever-speaker annual panel. "
@@ -1182,5 +1357,39 @@ def summarize_table_6b_as_patent_mismatch_tplus2(panel_path: str | Path) -> dict
         dependent="log_patents_ai_lead2",
         title="Table 6B. A/S Ratio, Patent Mismatch, and Longer-Horizon AI Patenting",
         dependent_label="Dependent variable: log(1 + AI patents at t+2)",
+        note=note,
+    )
+
+
+def summarize_table_7_mismatch_determinants(panel_path: str | Path) -> dict[str, object]:
+    note = (
+        "This table presents firm-level cross-sectional regressions examining the determinants of PatentMismatch. "
+        "The dependent variable is an indicator for whether the firm records at least one PatentMismatch incident during `2016-2024`. "
+        "Independent variables are baseline firm characteristics measured in 2016: log assets, cash/assets, leverage, R&D/assets, CAPX/assets, ROA, and employees (k). "
+        "All specifications include industry fixed effects based on baseline `sic2`, and standard errors clustered at the industry level are shown in parentheses. "
+        "Columns (1)-(7) report one-variable specifications; column (8) includes all baseline characteristics jointly. Constants are omitted. (* p<0.1, ** p<0.05, *** p<0.01)."
+    )
+    return _summarize_mismatch_determinants(
+        panel_path,
+        dependent="ever_mismatch",
+        title="Table 7. Firm-Level Determinants of PatentMismatch",
+        dependent_label="Dependent variable: any PatentMismatch incident, 2016-2024",
+        note=note,
+    )
+
+
+def summarize_table_7b_mismatch_intensity(panel_path: str | Path) -> dict[str, object]:
+    note = (
+        "This companion table presents firm-level cross-sectional regressions using PatentMismatch intensity rather than the extensive-margin indicator. "
+        "The dependent variable is the share of AI-talking years during `2016-2024` that are flagged as PatentMismatch. "
+        "Independent variables are baseline firm characteristics measured in 2016: log assets, cash/assets, leverage, R&D/assets, CAPX/assets, ROA, and employees (k). "
+        "All specifications include industry fixed effects based on baseline `sic2`, and standard errors clustered at the industry level are shown in parentheses. "
+        "Columns (1)-(7) report one-variable specifications; column (8) includes all baseline characteristics jointly. Constants are omitted. (* p<0.1, ** p<0.05, *** p<0.01)."
+    )
+    return _summarize_mismatch_determinants(
+        panel_path,
+        dependent="mismatch_share_talk",
+        title="Table 7B. Firm-Level Determinants of PatentMismatch Intensity",
+        dependent_label="Dependent variable: PatentMismatch share among AI-talking years, 2016-2024",
         note=note,
     )

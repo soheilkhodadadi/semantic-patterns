@@ -223,6 +223,39 @@ Narrative role:
 Current placement:
 - promoted into the main-text ladder
 
+### Table 7. Firm-Level Determinants Of PatentMismatch
+
+Goal:
+- characterize which baseline firms are more likely to exhibit mismatch
+- mirror the comparison paper's determinants step without over-claiming mechanism
+
+Preferred form:
+- `Table 7`
+  - dependent variable:
+    - any PatentMismatch incident during `2016-2024`
+- `Table 7B`
+  - dependent variable:
+    - PatentMismatch share among AI-talking years during `2016-2024`
+- baseline regressors:
+  - `ln_assets`
+  - `cash`
+  - `leverage`
+  - `rd_intensity`
+  - `capx_at`
+  - `roa`
+  - `emp`
+- columns:
+  - one-variable baseline specifications
+  - multivariate baseline specification
+
+Expected read:
+- smaller firms should be more mismatch-prone in simple cross-section
+- lower investment-capacity variables should be associated with less mismatch if they proxy for genuine innovation capacity
+- some simple cross-sectional relations may attenuate materially in the multivariate column
+
+Narrative role:
+- this table answers the "who exhibits mismatch?" question after Figures 3 and 4 make the phenomenon visible
+
 ## Main-Text Figure Sequence
 
 ### Figure 1. AI Disclosure Volume And Composition Over Time
@@ -295,7 +328,8 @@ Specifically:
 3. are the current conditional results mostly a within-speaking-years result, or do they survive in the broader annual panel?
 4. whether the methodology-aligned mismatch interaction behaves in the expected negative direction at `t+1` and `t+2`
 5. whether Table 6 is strong enough to become the paper's main AI-washing table
-6. which remaining exploratory tables deserve appendix space
+6. whether a clean determinants table exists once the phenomenon is made visible
+7. which remaining exploratory tables deserve appendix space
 
 ## Build Order
 
@@ -307,7 +341,9 @@ Specifically:
 6. promote `Table 6 / Table 6B` into the main-text ladder
 7. keep `Table 5 / Table 5B` in the appendix lane
 8. build `Figure 3` as the mismatch visualization companion
-9. only then assemble the next delivery packet
+9. build `Figure 4` as the mismatch-incidence figure
+10. build `Table 7 / Table 7B` as the determinants companion
+11. only then assemble the next delivery packet
 
 ## Stop Rules
 

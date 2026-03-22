@@ -8,6 +8,7 @@ import math
 from pathlib import Path
 
 from docx import Document
+from docx.enum.section import WD_ORIENT
 from docx.enum.table import WD_ALIGN_VERTICAL, WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
@@ -27,6 +28,8 @@ from semantic_ai_washing.analysis.delivery_table_payloads import (
     summarize_table_5b_credibility_metrics_tplus2,
     summarize_table_6_as_patent_mismatch_tplus1,
     summarize_table_6b_as_patent_mismatch_tplus2,
+    summarize_table_7_mismatch_determinants,
+    summarize_table_7b_mismatch_intensity,
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -212,6 +215,16 @@ def _set_document_defaults(document: Document) -> None:
     normal.font.name = "Times New Roman"
     normal._element.rPr.rFonts.set(qn("w:eastAsia"), "Times New Roman")
     normal.font.size = Pt(11)
+
+
+def _set_landscape(document: Document) -> None:
+    section = document.sections[0]
+    section.orientation = WD_ORIENT.LANDSCAPE
+    section.page_width, section.page_height = section.page_height, section.page_width
+    section.top_margin = Inches(0.6)
+    section.bottom_margin = Inches(0.6)
+    section.left_margin = Inches(0.6)
+    section.right_margin = Inches(0.6)
 
 
 def _add_title(document: Document, title: str) -> None:
@@ -466,6 +479,8 @@ def _build_conditional_appendix_doc(coeff_path: str | Path, output_path: str | P
 def _build_row_matrix_doc(payload: dict[str, object], output_path: str | Path) -> None:
     document = Document()
     _set_document_defaults(document)
+    if payload.get("landscape"):
+        _set_landscape(document)
     _add_title(document, str(payload["title"]))
     _add_note(document, str(payload["note"]))
 
@@ -479,7 +494,10 @@ def _build_row_matrix_doc(payload: dict[str, object], output_path: str | Path) -
     table.autofit = False
     _set_table_no_borders(table)
 
-    widths = [2.8] + [0.95] * len(models)
+    if payload.get("landscape"):
+        widths = [2.45] + [0.90] * len(models)
+    else:
+        widths = [2.8] + [0.95] * len(models)
     for index, width in enumerate(widths):
         for row in table.rows:
             row.cells[index].width = Inches(width)
@@ -566,7 +584,8 @@ def parse_args() -> argparse.Namespace:
             "table3_timing_composition_count, table4_actionable_patent_timing, "
             "table4b_speculative_patent_timing, table5_credibility_metrics_tplus1, "
             "table5b_credibility_metrics_tplus2, table6_as_patent_mismatch_tplus1, "
-            "table6b_as_patent_mismatch_tplus2, table2_conditional_appendix"
+            "table6b_as_patent_mismatch_tplus2, table7_mismatch_determinants, "
+            "table7b_mismatch_intensity, table2_conditional_appendix"
         ),
     )
     return parser.parse_args()
@@ -641,6 +660,18 @@ def main() -> None:
         _build_row_matrix_doc(
             summarize_table_6b_as_patent_mismatch_tplus2(args.reg_ready_panel),
             output_dir / "table_6b_as_patent_mismatch_tplus2_prelim_v1.docx",
+        )
+
+    if "table7_mismatch_determinants" in selected:
+        _build_row_matrix_doc(
+            summarize_table_7_mismatch_determinants(args.reg_ready_panel),
+            output_dir / "table_7_mismatch_determinants_prelim_v1.docx",
+        )
+
+    if "table7b_mismatch_intensity" in selected:
+        _build_row_matrix_doc(
+            summarize_table_7b_mismatch_intensity(args.reg_ready_panel),
+            output_dir / "table_7b_mismatch_intensity_prelim_v1.docx",
         )
 
     if "table2_conditional_appendix" in selected:

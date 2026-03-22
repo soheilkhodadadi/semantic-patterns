@@ -12,7 +12,7 @@ The preliminary pipeline is now in a usable delivery state:
 - merged panel and regression-ready panel built
 - rebuilt ever-speaker annual panel and regression-ready sample built
 - broader regression portfolio estimated
-- standalone delivery tables generated on the ever-speaker panel through the methodology-aligned mismatch stage
+- standalone delivery tables generated on the ever-speaker panel through the first mismatch-determinants stage
 - standalone delivery figures generated through the mismatch-incidence figure
 - main-text versus appendix boundaries clarified in the delivery planning layer
 
@@ -51,6 +51,8 @@ The preliminary pipeline is now in a usable delivery state:
   - `paper/generated/tables/table_4b_speculative_patent_timing_prelim_v1.md`
   - `paper/generated/tables/table_6_as_patent_mismatch_tplus1_prelim_v1.md`
   - `paper/generated/tables/table_6b_as_patent_mismatch_tplus2_prelim_v1.md`
+  - `paper/generated/tables/table_7_mismatch_determinants_prelim_v1.md`
+  - `paper/generated/tables/table_7b_mismatch_intensity_prelim_v1.md`
 - appendix table family:
   - `paper/generated/tables/table_2_core_patent_validation_prelim_v1.md`
   - `paper/generated/tables/table_5_credibility_metrics_tplus1_prelim_v1.md`
@@ -86,6 +88,13 @@ From the methodology-aligned mismatch table:
 - `A/S × PatentMismatch` enters negatively at `t+1` and remains negative at `t+2`
 - the negative interaction is strongest in the industry×year specification but remains directionally consistent in the firm-FE trims
 
+From the firm-level mismatch determinants table:
+
+- larger firms are less mismatch-prone in the simple cross-section
+- higher R&D intensity is negatively associated with mismatch in the simple cross-section
+- leverage is positively associated with mismatch and remains the most persistent positive correlate in the intensity variant
+- several simple correlations attenuate in the multivariate column, so this evidence should be framed as descriptive rather than mechanistic
+
 The earlier conditional validation table remains useful, but it now belongs in the appendix rather than the main-text empirical sequence. The exploratory credibility-metric table also moves to the appendix now that the methodology-aligned mismatch table is built.
 
 ## Modeling Decisions Locked In For The Preliminary Draft
@@ -112,6 +121,6 @@ env PYTHONPATH=src ./.venv/bin/python scripts/build_paper.py
 
 ## Immediate Next Work
 
-1. Decide whether the next empirical object should be `Table 7`, the determinants / correlates of `PatentMismatch`.
+1. Decide whether `Table 7 / 7B` should stay in the main-text ladder or move to appendix once the results draft scaffold is assembled.
 2. Keep final manuscript insertion separate from table/figure production so the paper-polish step stays controlled.
-3. Refresh the modular review packet again only after the next main-text empirical object is validated.
+3. Refresh the modular review packet again after any further main-text promotion or demotion decision.

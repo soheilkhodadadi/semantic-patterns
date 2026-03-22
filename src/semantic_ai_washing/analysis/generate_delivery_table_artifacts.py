@@ -22,6 +22,8 @@ from semantic_ai_washing.analysis.delivery_table_payloads import (
     summarize_table_5b_credibility_metrics_tplus2,
     summarize_table_6_as_patent_mismatch_tplus1,
     summarize_table_6b_as_patent_mismatch_tplus2,
+    summarize_table_7_mismatch_determinants,
+    summarize_table_7b_mismatch_intensity,
     to_markdown_table,
 )
 
@@ -178,7 +180,8 @@ def parse_args() -> argparse.Namespace:
             "table3_timing_composition_count, table4_actionable_patent_timing, "
             "table4b_speculative_patent_timing, table5_credibility_metrics_tplus1, "
             "table5b_credibility_metrics_tplus2, table6_as_patent_mismatch_tplus1, "
-            "table6b_as_patent_mismatch_tplus2, table2_conditional_appendix"
+            "table6b_as_patent_mismatch_tplus2, table7_mismatch_determinants, "
+            "table7b_mismatch_intensity, table2_conditional_appendix"
         ),
     )
     return parser.parse_args()
@@ -267,6 +270,20 @@ def main() -> None:
             _render_row_matrix_payload_markdown(
                 summarize_table_6b_as_patent_mismatch_tplus2(args.panel)
             ),
+        )
+
+    if "table7_mismatch_determinants" in selected:
+        _write_text(
+            output_dir / "table_7_mismatch_determinants_prelim_v1.md",
+            _render_row_matrix_payload_markdown(
+                summarize_table_7_mismatch_determinants(args.panel)
+            ),
+        )
+
+    if "table7b_mismatch_intensity" in selected:
+        _write_text(
+            output_dir / "table_7b_mismatch_intensity_prelim_v1.md",
+            _render_row_matrix_payload_markdown(summarize_table_7b_mismatch_intensity(args.panel)),
         )
 
     if "table2_conditional_appendix" in selected:

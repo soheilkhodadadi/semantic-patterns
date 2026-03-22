@@ -121,6 +121,16 @@ Preferred variants:
 - `t+1` outcome as the main version
 - `t+2` outcome as the nearby companion
 
+### Table 7. Firm-Level Determinants of PatentMismatch
+
+Purpose:
+- characterize which baseline firm characteristics predict mismatch
+- follow the literature's "who exhibits the mismatch" step
+
+Status note:
+- built as a firm-level cross-sectional table with baseline `2016` characteristics
+- nearby companion uses mismatch intensity rather than a simple ever/never indicator
+
 ## Main-Text Figure Ladder
 
 ### Figure 1. Time Series of AI Disclosure Volume and Composition
@@ -228,7 +238,9 @@ Only after the modular artifacts are reviewed:
 7. `Figure 1`
 8. `Figure 2`
 9. `Figure 3` mismatch visualization
-10. compact main-text vs appendix review
+10. `Figure 4` mismatch incidence over time and by industry
+11. `Table 7 / 7B` firm-level determinants of PatentMismatch
+12. compact main-text vs appendix review
 
 ## Current Practical Rule
 

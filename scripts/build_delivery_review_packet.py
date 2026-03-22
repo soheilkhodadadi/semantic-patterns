@@ -44,6 +44,10 @@ SECTION_ORDER = [
         "Table 6B Artifact",
         "paper/generated/tables/table_6b_as_patent_mismatch_tplus2_prelim_v1.md",
     ),
+    ("Table 7 Spec", "reports/analysis/table_7_mismatch_determinants_spec_v1.md"),
+    ("Table 7 Artifact", "paper/generated/tables/table_7_mismatch_determinants_prelim_v1.md"),
+    ("Table 7B Spec", "reports/analysis/table_7b_mismatch_intensity_spec_v1.md"),
+    ("Table 7B Artifact", "paper/generated/tables/table_7b_mismatch_intensity_prelim_v1.md"),
     ("Appendix Table A1 Spec", "reports/analysis/table_5_credibility_metrics_tplus1_spec_v1.md"),
     (
         "Appendix Table A1 Artifact",
@@ -65,6 +69,7 @@ SECTION_ORDER = [
     ("Figure 1 Spec", "reports/analysis/figure_1_disclosure_volume_composition_spec_v1.md"),
     ("Figure 2 Spec", "reports/analysis/figure_2_ai_patent_coverage_spec_v1.md"),
     ("Figure 3 Spec", "reports/analysis/figure_3_patent_mismatch_alignment_spec_v1.md"),
+    ("Figure 4 Spec", "reports/analysis/figure_4_mismatch_incidence_industry_spec_v1.md"),
 ]
 
 

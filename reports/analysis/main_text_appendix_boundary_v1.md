@@ -77,6 +77,15 @@ Why main text:
 - it tests whether credible AI disclosure loses predictive power in mismatch years
 - it is more central to the paper's stated construct than the exploratory credibility bundle
 
+### Table 7
+
+- `Firm-Level Determinants of PatentMismatch`
+
+Why candidate main text:
+- it answers the next natural question after the mismatch tables and figures: who exhibits mismatch
+- it mirrors the literature's determinants step
+- it should remain compact and descriptive rather than becoming a mechanism section
+
 ### Main Figures
 
 - time series of AI disclosure composition
@@ -121,6 +130,7 @@ As of this preliminary delivery stage:
 - `Table 3` is main text as the composition-timing companion
 - `Table 4 / Table 4B` are candidate main-text timing-matrix tables if they remain readable
 - `Table 6 / Table 6B` are promoted main-text methodology-aligned AI-washing tables
+- `Table 7 / Table 7B` are candidate main-text determinants tables if they remain readable and do not over-crowd the results section
 - `Table 5 / Table 5B` are appendix-only exploratory credibility tables
 - the current conditional validation table from the speaking-only panel moves to the appendix
 - FE ladders beyond the compact timing-matrix comparison should not enter the paper until we decide whether they clarify or distract
