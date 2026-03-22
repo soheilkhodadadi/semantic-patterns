@@ -187,6 +187,36 @@ Methodology caveat:
 - the methodology treats `A_S` and `A_S x PatentMismatch` as the core AI-washing specification
 - therefore the current credibility-metric table is informative, but it does not replace the later mismatch-based AI-washing table
 
+### Table 6. Methodology-Aligned AI-Washing Table
+
+Goal:
+- implement the methodology's core AI-washing specification directly
+- test whether the positive link between credible AI disclosure and future AI patenting attenuates in mismatch years
+
+Core regressors:
+- `A_S`
+- `A_S x PatentMismatch`
+
+PatentMismatch construction:
+- low credibility in year `t`:
+  - low `A_S` or high `SpecShare` among AI-talking firm-years
+- weak contemporaneous AI patenting relative to the industry-year
+
+Preferred variants:
+- main version:
+  - `log(1 + AI patents)` at `t+1`
+- nearby companion:
+  - `log(1 + AI patents)` at `t+2`
+
+Expected read:
+- `A_S` should enter positively
+- `A_S x PatentMismatch` should enter negatively
+- the interaction should be clearer at `t+1` than at `t+2`
+
+Narrative role:
+- this is the first table that maps directly onto the methodology's explicit AI-washing specification
+- it should likely outrank the exploratory credibility-metric table in the main-text hierarchy
+
 ## Main-Text Figure Sequence
 
 ### Figure 1. AI Disclosure Volume And Composition Over Time
@@ -242,7 +272,8 @@ Purpose:
 - alternative functional forms
 - extra FE ladders
 - additional industry splits
-- patent-mismatch variants once implemented
+- exploratory credibility-metric tables if they do not sharpen the core story
+- extra patent-mismatch variants once the baseline interaction table is fixed
 
 ## What We Expect To Learn Next
 
@@ -255,7 +286,8 @@ Specifically:
 1. does actionable disclosure line up more with prior or same-year patenting than with future patenting?
 2. does speculative disclosure remain positively related to later patent incidence once zero-disclosure years are restored?
 3. are the current conditional results mostly a within-speaking-years result, or do they survive in the broader annual panel?
-4. which variables deserve to stay in the main text, and which should be demoted to the appendix?
+4. whether the methodology-aligned mismatch interaction behaves in the expected negative direction at `t+1` and `t+2`
+5. which variables deserve to stay in the main text, and which should be demoted to the appendix?
 
 ## Build Order
 

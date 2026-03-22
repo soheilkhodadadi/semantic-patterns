@@ -100,6 +100,24 @@ Purpose:
   - `A_S`
   - `SpecMinusAct`
 
+Status note:
+- informative but exploratory
+- may move to appendix now that the methodology-aligned mismatch table exists
+
+### Table 6. A/S Ratio x PatentMismatch
+
+Purpose:
+- implement the methodology's core AI-washing specification directly
+- test whether the credibility-innovation link attenuates in mismatch years
+
+Core rows:
+- `A/S ratio`
+- `A/S ratio x PatentMismatch`
+
+Preferred variants:
+- `t+1` outcome as the main version
+- `t+2` outcome as the nearby companion
+
 ## Main-Text Figure Ladder
 
 ### Figure 1. Time Series of AI Disclosure Volume and Composition

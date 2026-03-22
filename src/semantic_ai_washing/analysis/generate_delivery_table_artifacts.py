@@ -20,6 +20,8 @@ from semantic_ai_washing.analysis.delivery_table_payloads import (
     summarize_table_4b_speculative_patent_timing,
     summarize_table_5_credibility_metrics_tplus1,
     summarize_table_5b_credibility_metrics_tplus2,
+    summarize_table_6_as_patent_mismatch_tplus1,
+    summarize_table_6b_as_patent_mismatch_tplus2,
     to_markdown_table,
 )
 
@@ -43,7 +45,9 @@ def _split_csv_arg(raw_value: str) -> set[str]:
     return {item.strip().lower() for item in raw_value.split(",") if item.strip()}
 
 
-def _load_coeff_lookup(coeff_path: str | Path) -> dict[tuple[str, str], tuple[float, float | None, int | None]]:
+def _load_coeff_lookup(
+    coeff_path: str | Path,
+) -> dict[tuple[str, str], tuple[float, float | None, int | None]]:
     lookup: dict[tuple[str, str], tuple[float, float | None, int | None]] = {}
     with Path(coeff_path).open(newline="", encoding="utf-8") as handle:
         reader = csv.DictReader(handle)
@@ -157,12 +161,7 @@ def _render_row_matrix_payload_markdown(payload: dict[str, object]) -> str:
     for footer in footer_rows:
         rows.append([str(footer["label"]), *[str(cell) for cell in footer["cells"]]])
     table = to_markdown_table(["Variable", *[model["label"] for model in models]], rows)
-    return (
-        f"## {payload['title']}\n\n"
-        f"{payload['note']}\n\n"
-        f"{payload['dependent_label']}\n\n"
-        f"{table}"
-    )
+    return f"## {payload['title']}\n\n{payload['note']}\n\n{payload['dependent_label']}\n\n{table}"
 
 
 def parse_args() -> argparse.Namespace:
@@ -178,7 +177,8 @@ def parse_args() -> argparse.Namespace:
             "table2_timing_focus_count, table3_timing_composition, "
             "table3_timing_composition_count, table4_actionable_patent_timing, "
             "table4b_speculative_patent_timing, table5_credibility_metrics_tplus1, "
-            "table5b_credibility_metrics_tplus2, table2_conditional_appendix"
+            "table5b_credibility_metrics_tplus2, table6_as_patent_mismatch_tplus1, "
+            "table6b_as_patent_mismatch_tplus2, table2_conditional_appendix"
         ),
     )
     return parser.parse_args()
@@ -216,31 +216,57 @@ def main() -> None:
     if "table3_timing_composition_count" in selected:
         _write_text(
             output_dir / "table_3b_disclosure_composition_timing_counts_prelim_v1.md",
-            _render_timing_payload_markdown(summarize_table_3_timing_composition_counts(args.panel)),
+            _render_timing_payload_markdown(
+                summarize_table_3_timing_composition_counts(args.panel)
+            ),
         )
 
     if "table4_actionable_patent_timing" in selected:
         _write_text(
             output_dir / "table_4_actionable_patent_timing_prelim_v1.md",
-            _render_row_matrix_payload_markdown(summarize_table_4_actionable_patent_timing(args.panel)),
+            _render_row_matrix_payload_markdown(
+                summarize_table_4_actionable_patent_timing(args.panel)
+            ),
         )
 
     if "table4b_speculative_patent_timing" in selected:
         _write_text(
             output_dir / "table_4b_speculative_patent_timing_prelim_v1.md",
-            _render_row_matrix_payload_markdown(summarize_table_4b_speculative_patent_timing(args.panel)),
+            _render_row_matrix_payload_markdown(
+                summarize_table_4b_speculative_patent_timing(args.panel)
+            ),
         )
 
     if "table5_credibility_metrics_tplus1" in selected:
         _write_text(
             output_dir / "table_5_credibility_metrics_tplus1_prelim_v1.md",
-            _render_row_matrix_payload_markdown(summarize_table_5_credibility_metrics_tplus1(args.panel)),
+            _render_row_matrix_payload_markdown(
+                summarize_table_5_credibility_metrics_tplus1(args.panel)
+            ),
         )
 
     if "table5b_credibility_metrics_tplus2" in selected:
         _write_text(
             output_dir / "table_5b_credibility_metrics_tplus2_prelim_v1.md",
-            _render_row_matrix_payload_markdown(summarize_table_5b_credibility_metrics_tplus2(args.panel)),
+            _render_row_matrix_payload_markdown(
+                summarize_table_5b_credibility_metrics_tplus2(args.panel)
+            ),
+        )
+
+    if "table6_as_patent_mismatch_tplus1" in selected:
+        _write_text(
+            output_dir / "table_6_as_patent_mismatch_tplus1_prelim_v1.md",
+            _render_row_matrix_payload_markdown(
+                summarize_table_6_as_patent_mismatch_tplus1(args.panel)
+            ),
+        )
+
+    if "table6b_as_patent_mismatch_tplus2" in selected:
+        _write_text(
+            output_dir / "table_6b_as_patent_mismatch_tplus2_prelim_v1.md",
+            _render_row_matrix_payload_markdown(
+                summarize_table_6b_as_patent_mismatch_tplus2(args.panel)
+            ),
         )
 
     if "table2_conditional_appendix" in selected:

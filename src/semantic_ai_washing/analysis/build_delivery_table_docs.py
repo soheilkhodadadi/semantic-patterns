@@ -15,7 +15,6 @@ from docx.oxml.ns import qn
 from docx.shared import Inches, Pt
 
 from semantic_ai_washing.analysis.delivery_table_payloads import (
-    fmt_num,
     sig_stars,
     summarize_table_1,
     summarize_table_2_timing_focus,
@@ -26,6 +25,8 @@ from semantic_ai_washing.analysis.delivery_table_payloads import (
     summarize_table_4b_speculative_patent_timing,
     summarize_table_5_credibility_metrics_tplus1,
     summarize_table_5b_credibility_metrics_tplus2,
+    summarize_table_6_as_patent_mismatch_tplus1,
+    summarize_table_6b_as_patent_mismatch_tplus2,
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -41,7 +42,9 @@ def _split_csv_arg(raw_value: str) -> set[str]:
     return {item.strip().lower() for item in raw_value.split(",") if item.strip()}
 
 
-def _load_coeff_lookup(coeff_path: str | Path) -> dict[tuple[str, str], tuple[float, float, float | None, int | None]]:
+def _load_coeff_lookup(
+    coeff_path: str | Path,
+) -> dict[tuple[str, str], tuple[float, float, float | None, int | None]]:
     lookup: dict[tuple[str, str], tuple[float, float, float | None, int | None]] = {}
     with Path(coeff_path).open(newline="", encoding="utf-8") as handle:
         reader = csv.DictReader(handle)
@@ -93,7 +96,9 @@ def _summarize_conditional_appendix_table(coeff_path: str | Path) -> dict[str, o
                 coef_cells.append("")
                 se_cells.append("")
                 continue
-            coef, se, pvalue, nobs = lookup.get((model_id, term), (float("nan"), float("nan"), None, None))
+            coef, se, pvalue, nobs = lookup.get(
+                (model_id, term), (float("nan"), float("nan"), None, None)
+            )
             coef_cells.append(f"{coef:.3f}{sig_stars(pvalue)}" if not math.isnan(coef) else "")
             se_cells.append(f"({se:.3f})" if not math.isnan(se) else "")
             footer_n.append(f"{nobs:,}" if nobs is not None else "")
@@ -135,7 +140,15 @@ def _clear_cell(cell) -> None:
     paragraph.paragraph_format.space_before = Pt(0)
 
 
-def _write_cell(cell, text: str, *, align: WD_ALIGN_PARAGRAPH, size: float = 10.5, bold: bool = False, italic: bool = False) -> None:
+def _write_cell(
+    cell,
+    text: str,
+    *,
+    align: WD_ALIGN_PARAGRAPH,
+    size: float = 10.5,
+    bold: bool = False,
+    italic: bool = False,
+) -> None:
     _clear_cell(cell)
     paragraph = cell.paragraphs[0]
     paragraph.alignment = align
@@ -249,7 +262,9 @@ def _build_table_1_doc(panel_path: str | Path, output_path: str | Path) -> None:
     for row_idx, row_payload in enumerate(rows, start=1):
         for col_idx, header in enumerate(headers):
             align = WD_ALIGN_PARAGRAPH.LEFT if col_idx == 0 else WD_ALIGN_PARAGRAPH.CENTER
-            _write_cell(table.rows[row_idx].cells[col_idx], row_payload[header], align=align, size=10.5)
+            _write_cell(
+                table.rows[row_idx].cells[col_idx], row_payload[header], align=align, size=10.5
+            )
     _apply_row_rule(table.rows[-1], bottom=True)
 
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
@@ -279,18 +294,30 @@ def _build_panel_timing_doc(payload: dict[str, object], output_path: str | Path)
         for row in table.rows:
             row.cells[index].width = Inches(width)
 
-    _write_cell(table.rows[0].cells[0], "Variable", align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5, bold=True)
+    _write_cell(
+        table.rows[0].cells[0], "Variable", align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5, bold=True
+    )
     merged = table.rows[0].cells[1].merge(table.rows[0].cells[-1])
-    _write_cell(merged, str(payload["dependent_label"]), align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5, bold=True)
+    _write_cell(
+        merged,
+        str(payload["dependent_label"]),
+        align=WD_ALIGN_PARAGRAPH.CENTER,
+        size=10.5,
+        bold=True,
+    )
     _apply_row_rule(table.rows[0], top=True)
 
     _write_cell(table.rows[1].cells[0], "", align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5)
     for idx, model in enumerate(models, start=1):
-        _write_cell(table.rows[1].cells[idx], model["label"], align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5)
+        _write_cell(
+            table.rows[1].cells[idx], model["label"], align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5
+        )
 
     _write_cell(table.rows[2].cells[0], "", align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5)
     for idx, model in enumerate(models, start=1):
-        _write_cell(table.rows[2].cells[idx], model["number"], align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5)
+        _write_cell(
+            table.rows[2].cells[idx], model["number"], align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5
+        )
     _apply_row_rule(table.rows[2], bottom=True)
 
     cursor = 3
@@ -302,20 +329,48 @@ def _build_panel_timing_doc(payload: dict[str, object], output_path: str | Path)
             _apply_row_rule(table.rows[cursor], top=True)
             cursor += 1
 
-        _write_cell(table.rows[cursor].cells[0], str(panel["label"]), align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5)
+        _write_cell(
+            table.rows[cursor].cells[0],
+            str(panel["label"]),
+            align=WD_ALIGN_PARAGRAPH.LEFT,
+            size=10.5,
+        )
         for idx, value in enumerate(panel["coef_cells"], start=1):
-            _write_cell(table.rows[cursor].cells[idx], str(value), align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5)
+            _write_cell(
+                table.rows[cursor].cells[idx],
+                str(value),
+                align=WD_ALIGN_PARAGRAPH.CENTER,
+                size=10.5,
+            )
         cursor += 1
 
-        _write_cell(table.rows[cursor].cells[0], "", align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5, italic=True)
+        _write_cell(
+            table.rows[cursor].cells[0], "", align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5, italic=True
+        )
         for idx, value in enumerate(panel["se_cells"], start=1):
-            _write_cell(table.rows[cursor].cells[idx], str(value), align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5, italic=True)
+            _write_cell(
+                table.rows[cursor].cells[idx],
+                str(value),
+                align=WD_ALIGN_PARAGRAPH.CENTER,
+                size=10.5,
+                italic=True,
+            )
         cursor += 1
 
         for footer in panel["footer_rows"]:  # type: ignore[index]
-            _write_cell(table.rows[cursor].cells[0], str(footer["label"]), align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5)
+            _write_cell(
+                table.rows[cursor].cells[0],
+                str(footer["label"]),
+                align=WD_ALIGN_PARAGRAPH.LEFT,
+                size=10.5,
+            )
             for idx, value in enumerate(footer["cells"], start=1):
-                _write_cell(table.rows[cursor].cells[idx], str(value), align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5)
+                _write_cell(
+                    table.rows[cursor].cells[idx],
+                    str(value),
+                    align=WD_ALIGN_PARAGRAPH.CENTER,
+                    size=10.5,
+                )
             cursor += 1
 
         _apply_row_rule(table.rows[cursor - 1], bottom=True)
@@ -346,29 +401,61 @@ def _build_conditional_appendix_doc(coeff_path: str | Path, output_path: str | P
         for row in table.rows:
             row.cells[index].width = Inches(width)
 
-    _write_cell(table.rows[0].cells[0], "Variable", align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5, bold=True)
+    _write_cell(
+        table.rows[0].cells[0], "Variable", align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5, bold=True
+    )
     merged = table.rows[0].cells[1].merge(table.rows[0].cells[3])
-    _write_cell(merged, str(payload["dependent_label"]), align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5, bold=True)
+    _write_cell(
+        merged,
+        str(payload["dependent_label"]),
+        align=WD_ALIGN_PARAGRAPH.CENTER,
+        size=10.5,
+        bold=True,
+    )
     _apply_row_rule(table.rows[0], top=True)
 
     _write_cell(table.rows[1].cells[0], "", align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5)
     for idx, model in enumerate(models, start=1):
-        _write_cell(table.rows[1].cells[idx], model["number"], align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5)
+        _write_cell(
+            table.rows[1].cells[idx], model["number"], align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5
+        )
     _apply_row_rule(table.rows[1], bottom=True)
 
     cursor = 2
     for row_payload in body_rows:
         is_se = row_payload.get("kind") == "se"
-        _write_cell(table.rows[cursor].cells[0], str(row_payload["label"]), align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5, italic=is_se)
+        _write_cell(
+            table.rows[cursor].cells[0],
+            str(row_payload["label"]),
+            align=WD_ALIGN_PARAGRAPH.LEFT,
+            size=10.5,
+            italic=is_se,
+        )
         for idx, value in enumerate(row_payload["cells"], start=1):
-            _write_cell(table.rows[cursor].cells[idx], str(value), align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5, italic=is_se)
+            _write_cell(
+                table.rows[cursor].cells[idx],
+                str(value),
+                align=WD_ALIGN_PARAGRAPH.CENTER,
+                size=10.5,
+                italic=is_se,
+            )
         cursor += 1
     _apply_row_rule(table.rows[cursor - 1], bottom=True)
 
     for footer in footer_rows:
-        _write_cell(table.rows[cursor].cells[0], str(footer["label"]), align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5)
+        _write_cell(
+            table.rows[cursor].cells[0],
+            str(footer["label"]),
+            align=WD_ALIGN_PARAGRAPH.LEFT,
+            size=10.5,
+        )
         for idx, value in enumerate(footer["cells"], start=1):
-            _write_cell(table.rows[cursor].cells[idx], str(value), align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5)
+            _write_cell(
+                table.rows[cursor].cells[idx],
+                str(value),
+                align=WD_ALIGN_PARAGRAPH.CENTER,
+                size=10.5,
+            )
         cursor += 1
     _apply_row_rule(table.rows[cursor - 1], bottom=True)
 
@@ -397,18 +484,30 @@ def _build_row_matrix_doc(payload: dict[str, object], output_path: str | Path) -
         for row in table.rows:
             row.cells[index].width = Inches(width)
 
-    _write_cell(table.rows[0].cells[0], "Variable", align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5, bold=True)
+    _write_cell(
+        table.rows[0].cells[0], "Variable", align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5, bold=True
+    )
     merged = table.rows[0].cells[1].merge(table.rows[0].cells[-1])
-    _write_cell(merged, str(payload["dependent_label"]), align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5, bold=True)
+    _write_cell(
+        merged,
+        str(payload["dependent_label"]),
+        align=WD_ALIGN_PARAGRAPH.CENTER,
+        size=10.5,
+        bold=True,
+    )
     _apply_row_rule(table.rows[0], top=True)
 
     _write_cell(table.rows[1].cells[0], "", align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5)
     for idx, model in enumerate(models, start=1):
-        _write_cell(table.rows[1].cells[idx], model["label"], align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5)
+        _write_cell(
+            table.rows[1].cells[idx], model["label"], align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5
+        )
 
     _write_cell(table.rows[2].cells[0], "", align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5)
     for idx, model in enumerate(models, start=1):
-        _write_cell(table.rows[2].cells[idx], model["number"], align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5)
+        _write_cell(
+            table.rows[2].cells[idx], model["number"], align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5
+        )
     _apply_row_rule(table.rows[2], bottom=True)
 
     cursor = 3
@@ -433,9 +532,19 @@ def _build_row_matrix_doc(payload: dict[str, object], output_path: str | Path) -
     _apply_row_rule(table.rows[cursor - 1], bottom=True)
 
     for footer in footer_rows:
-        _write_cell(table.rows[cursor].cells[0], str(footer["label"]), align=WD_ALIGN_PARAGRAPH.LEFT, size=10.5)
+        _write_cell(
+            table.rows[cursor].cells[0],
+            str(footer["label"]),
+            align=WD_ALIGN_PARAGRAPH.LEFT,
+            size=10.5,
+        )
         for idx, value in enumerate(footer["cells"], start=1):
-            _write_cell(table.rows[cursor].cells[idx], str(value), align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5)
+            _write_cell(
+                table.rows[cursor].cells[idx],
+                str(value),
+                align=WD_ALIGN_PARAGRAPH.CENTER,
+                size=10.5,
+            )
         cursor += 1
     _apply_row_rule(table.rows[cursor - 1], bottom=True)
 
@@ -456,7 +565,8 @@ def parse_args() -> argparse.Namespace:
             "table2_timing_focus_count, table3_timing_composition, "
             "table3_timing_composition_count, table4_actionable_patent_timing, "
             "table4b_speculative_patent_timing, table5_credibility_metrics_tplus1, "
-            "table5b_credibility_metrics_tplus2, table2_conditional_appendix"
+            "table5b_credibility_metrics_tplus2, table6_as_patent_mismatch_tplus1, "
+            "table6b_as_patent_mismatch_tplus2, table2_conditional_appendix"
         ),
     )
     return parser.parse_args()
@@ -469,7 +579,9 @@ def main() -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     if "table1" in selected:
-        _build_table_1_doc(args.reg_ready_panel, output_dir / "table_1_summary_statistics_prelim_v1.docx")
+        _build_table_1_doc(
+            args.reg_ready_panel, output_dir / "table_1_summary_statistics_prelim_v1.docx"
+        )
 
     if "table2_timing_focus" in selected:
         _build_panel_timing_doc(
@@ -517,6 +629,18 @@ def main() -> None:
         _build_row_matrix_doc(
             summarize_table_5b_credibility_metrics_tplus2(args.reg_ready_panel),
             output_dir / "table_5b_credibility_metrics_tplus2_prelim_v1.docx",
+        )
+
+    if "table6_as_patent_mismatch_tplus1" in selected:
+        _build_row_matrix_doc(
+            summarize_table_6_as_patent_mismatch_tplus1(args.reg_ready_panel),
+            output_dir / "table_6_as_patent_mismatch_tplus1_prelim_v1.docx",
+        )
+
+    if "table6b_as_patent_mismatch_tplus2" in selected:
+        _build_row_matrix_doc(
+            summarize_table_6b_as_patent_mismatch_tplus2(args.reg_ready_panel),
+            output_dir / "table_6b_as_patent_mismatch_tplus2_prelim_v1.docx",
         )
 
     if "table2_conditional_appendix" in selected:

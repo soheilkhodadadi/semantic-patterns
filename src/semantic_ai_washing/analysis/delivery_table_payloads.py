@@ -69,6 +69,11 @@ CREDIBILITY_METRICS: list[tuple[str, str]] = [
     ("SpecShare - ActShare", "SpecMinusAct"),
 ]
 
+MISMATCH_METRICS: list[tuple[str, str]] = [
+    ("A/S ratio", "A_S"),
+    ("A/S ratio × PatentMismatch", "AS_x_PatentMismatch"),
+]
+
 
 def fmt_num(value: float | None, digits: int = 3) -> str:
     if value is None or math.isnan(value):
@@ -207,7 +212,9 @@ def _spec_variant_defs(df: pd.DataFrame) -> list[dict[str, object]]:
             "number": "(2)",
             "label": "Industry + year FE",
             "absorb_col": "sic2",
-            "mask": df["sic2"].notna() if "sic2" in df.columns else pd.Series(False, index=df.index),
+            "mask": df["sic2"].notna()
+            if "sic2" in df.columns
+            else pd.Series(False, index=df.index),
             "footer": {
                 "Controls": "Y",
                 "Firm FE": "N",
@@ -246,6 +253,159 @@ def _spec_variant_defs(df: pd.DataFrame) -> list[dict[str, object]]:
             },
         },
     ]
+
+
+def _add_patent_mismatch(df: pd.DataFrame) -> pd.DataFrame:
+    panel = df.copy()
+    if "any_ai_talk" not in panel.columns:
+        if "ai_total" in panel.columns:
+            panel["any_ai_talk"] = (
+                pd.to_numeric(panel["ai_total"], errors="coerce").fillna(0) > 0
+            ).astype(int)
+        else:
+            panel["any_ai_talk"] = 0
+
+    if "log_patents_ai_lead0" not in panel.columns:
+        if "patents_ai" in panel.columns:
+            panel["log_patents_ai_lead0"] = np.log1p(
+                pd.to_numeric(panel["patents_ai"], errors="coerce").fillna(0)
+            )
+        else:
+            panel["log_patents_ai_lead0"] = np.nan
+
+    sic2 = pd.to_numeric(panel.get("sic2"), errors="coerce")
+    year = pd.to_numeric(panel.get("year"), errors="coerce")
+    panel["industry_year"] = pd.Series(pd.NA, index=panel.index, dtype="object")
+    valid_industry = sic2.notna() & year.notna()
+    if valid_industry.any():
+        sic2_int = sic2.loc[valid_industry].astype(int).astype(str)
+        year_int = year.loc[valid_industry].astype(int).astype(str)
+        panel.loc[valid_industry, "industry_year"] = sic2_int.str.cat(year_int, sep="_")
+
+    talk_mask = panel["any_ai_talk"].fillna(0).astype(int).eq(1)
+    panel["LowCredibility"] = 0
+    if talk_mask.any():
+        talk_df = panel.loc[talk_mask, ["year", "A_S", "SpecShare"]].copy()
+        as_cut = talk_df.groupby("year")["A_S"].transform(lambda s: s.quantile(0.25))
+        spec_cut = talk_df.groupby("year")["SpecShare"].transform(lambda s: s.quantile(0.75))
+        low_cred = (talk_df["A_S"] <= as_cut) | (talk_df["SpecShare"] >= spec_cut)
+        panel.loc[talk_mask, "LowCredibility"] = low_cred.astype(int).to_numpy()
+
+    panel["industry_year_mean_log_patents_t"] = panel.groupby("industry_year")[
+        "log_patents_ai_lead0"
+    ].transform("mean")
+    panel["WeakPatentRelative"] = (
+        (panel["log_patents_ai_lead0"] < panel["industry_year_mean_log_patents_t"])
+        .fillna(False)
+        .astype(int)
+    )
+
+    panel["PatentMismatch"] = (
+        talk_mask & panel["LowCredibility"].astype(bool) & panel["WeakPatentRelative"].astype(bool)
+    ).astype(int)
+    panel["AS_x_PatentMismatch"] = panel["A_S"] * panel["PatentMismatch"]
+    return panel
+
+
+def _mismatch_spec_variant_defs(df: pd.DataFrame) -> list[dict[str, object]]:
+    has_industry_year = (
+        df["industry_year"].notna()
+        if "industry_year" in df.columns
+        else pd.Series(False, index=df.index)
+    )
+    return [
+        {
+            "number": "(1)",
+            "label": "Firm + year FE",
+            "absorb_col": "cik",
+            "include_year": True,
+            "mask": pd.Series(True, index=df.index),
+            "footer": {
+                "Controls": "Y",
+                "Firm FE": "Y",
+                "Industry×Year FE": "N",
+                "Year FE": "Y",
+                "Non-fin.": "N",
+                "No util.": "N",
+            },
+        },
+        {
+            "number": "(2)",
+            "label": "Industry×year FE",
+            "absorb_col": "industry_year",
+            "include_year": False,
+            "mask": has_industry_year,
+            "footer": {
+                "Controls": "Y",
+                "Firm FE": "N",
+                "Industry×Year FE": "Y",
+                "Year FE": "N",
+                "Non-fin.": "N",
+                "No util.": "N",
+            },
+        },
+        {
+            "number": "(3)",
+            "label": "Firm + year FE, non-fin.",
+            "absorb_col": "cik",
+            "include_year": True,
+            "mask": _non_financial_mask(df),
+            "footer": {
+                "Controls": "Y",
+                "Firm FE": "Y",
+                "Industry×Year FE": "N",
+                "Year FE": "Y",
+                "Non-fin.": "Y",
+                "No util.": "N",
+            },
+        },
+        {
+            "number": "(4)",
+            "label": "Firm + year FE, non-fin./non-util.",
+            "absorb_col": "cik",
+            "include_year": True,
+            "mask": _non_financial_mask(df) & _non_utility_mask(df),
+            "footer": {
+                "Controls": "Y",
+                "Firm FE": "Y",
+                "Industry×Year FE": "N",
+                "Year FE": "Y",
+                "Non-fin.": "Y",
+                "No util.": "Y",
+            },
+        },
+    ]
+
+
+def summarize_patent_mismatch_construct(panel_path: str | Path) -> dict[str, object]:
+    df = load_panel(panel_path)
+    df = _add_patent_mismatch(df)
+    talk_rows = int(df["any_ai_talk"].fillna(0).astype(int).eq(1).sum())
+    mismatch_rows = int(df["PatentMismatch"].fillna(0).astype(int).sum())
+    mismatch_share_all = mismatch_rows / len(df) if len(df) else float("nan")
+    mismatch_share_talk = mismatch_rows / talk_rows if talk_rows else float("nan")
+    rows = [
+        {"label": "Ever-speaker firm-year observations", "value": f"{len(df):,}"},
+        {"label": "AI-talking firm-year observations", "value": f"{talk_rows:,}"},
+        {"label": "PatentMismatch firm-year observations", "value": f"{mismatch_rows:,}"},
+        {"label": "Mismatch share of ever-speaker sample", "value": fmt_num(mismatch_share_all)},
+        {
+            "label": "Mismatch share of AI-talking firm-years",
+            "value": fmt_num(mismatch_share_talk),
+        },
+    ]
+    note = (
+        "PatentMismatch is constructed on the regression-ready ever-speaker annual panel. "
+        "A firm-year is flagged as low-credibility when it is an AI-talking year and either `A_S` falls in the bottom year-specific quartile "
+        "or `SpecShare` falls in the top year-specific quartile among AI-talking firm-years. "
+        "It is flagged as weak-patent-relative when contemporaneous `log(1 + AI patents)` is below the industry-year mean. "
+        "PatentMismatch equals one only when both conditions hold."
+    )
+    return {
+        "title": "PatentMismatch Construct Summary",
+        "note": note,
+        "rows": rows,
+    }
 
 
 def summarize_table_1(panel_path: str | Path) -> dict[str, object]:
@@ -340,10 +500,13 @@ def _fit_absorbed_ols(
     dependent: str,
     rhs_terms: list[str],
     absorb_col: str,
+    include_year: bool = True,
     controls: list[str] | None = None,
 ):
     controls = controls or CONTROL_CANDIDATES
-    needed = [dependent, *rhs_terms, *controls, absorb_col, "year", "cik"]
+    needed = [dependent, *rhs_terms, *controls, absorb_col, "cik"]
+    if include_year:
+        needed.append("year")
     missing = [column for column in needed if column not in df.columns]
     if missing:
         raise KeyError(f"Missing columns for absorbed model: {missing}")
@@ -354,8 +517,13 @@ def _fit_absorbed_ols(
     work_cols = [dependent, *rhs_terms, *controls]
     matrix = use[work_cols].astype(float).to_numpy()
     absorb_codes, _ = pd.factorize(use[absorb_col], sort=False)
-    time_codes, _ = pd.factorize(use["year"], sort=False)
-    demeaned = _two_way_demean(matrix, absorb_codes, time_codes)
+    if include_year:
+        time_codes, _ = pd.factorize(use["year"], sort=False)
+        demeaned = _two_way_demean(matrix, absorb_codes, time_codes)
+        n_periods = len(np.unique(time_codes))
+    else:
+        demeaned = _demean_by_codes(matrix, absorb_codes)
+        n_periods = 1
     y = demeaned[:, 0]
     x = pd.DataFrame(demeaned[:, 1:], columns=[*rhs_terms, *controls], index=use.index)
     result = OLS(y, x).fit(cov_type="cluster", cov_kwds={"groups": use["cik"]})
@@ -365,7 +533,7 @@ def _fit_absorbed_ols(
         nobs=len(use),
         n_slopes=x.shape[1],
         n_entities=len(np.unique(absorb_codes)),
-        n_periods=len(np.unique(time_codes)),
+        n_periods=n_periods,
     )
     return result, use, adj_r2
 
@@ -462,10 +630,16 @@ def _summarize_timing_composition(
     note: str,
 ) -> dict[str, object]:
     df = load_panel(panel_path)
-    models = [{"number": f"({idx})", "label": label} for idx, (label, _) in enumerate(outcomes, start=1)]
+    models = [
+        {"number": f"({idx})", "label": label} for idx, (label, _) in enumerate(outcomes, start=1)
+    ]
     panel_defs = [
         ("Panel A. Actionable disclosure", "Actionable disclosure (dummy)", "has_actionable"),
-        ("Panel B. Speculative-only disclosure", "Speculative-only disclosure (dummy)", "has_spec_only"),
+        (
+            "Panel B. Speculative-only disclosure",
+            "Speculative-only disclosure (dummy)",
+            "has_spec_only",
+        ),
     ]
 
     panels: list[dict[str, object]] = []
@@ -562,12 +736,25 @@ def _summarize_spec_ladder(
     panels: list[dict[str, object]] = []
     panel_defs = [
         ("Panel A. Actionable disclosure", "Actionable disclosure (dummy)", "has_actionable"),
-        ("Panel B. Speculative-only disclosure", "Speculative-only disclosure (dummy)", "has_spec_only"),
+        (
+            "Panel B. Speculative-only disclosure",
+            "Speculative-only disclosure (dummy)",
+            "has_spec_only",
+        ),
     ]
 
     models = [{"number": spec["number"], "label": spec["label"]} for spec in spec_defs]
 
-    footer_template = ["Controls", "Firm FE", "Industry FE", "Year FE", "Non-fin.", "No util.", "Adj. R²", "Observations"]
+    footer_template = [
+        "Controls",
+        "Firm FE",
+        "Industry FE",
+        "Year FE",
+        "Non-fin.",
+        "No util.",
+        "Adj. R²",
+        "Observations",
+    ]
 
     for panel_index, (heading, label, rhs) in enumerate(panel_defs):
         coef_cells: list[str] = []
@@ -681,7 +868,10 @@ def _summarize_patent_timing_matrix(
     results_by_spec: list[tuple[object, float | None]] = []
     nobs_cells: list[str] = []
     adj_r2_cells: list[str] = []
-    footer_flags = {key: [] for key in ["Controls", "Firm FE", "Industry FE", "Year FE", "Non-fin.", "No util."]}
+    footer_flags = {
+        key: []
+        for key in ["Controls", "Firm FE", "Industry FE", "Year FE", "Non-fin.", "No util."]
+    }
 
     rhs_terms = [term for _, term in outcomes]
     for spec in spec_defs:
@@ -708,7 +898,9 @@ def _summarize_patent_timing_matrix(
             pvalue = result.pvalues.get(term)
             coef_cells.append(f"{coef:.3f}{sig_stars(pvalue)}" if not math.isnan(coef) else "")
             se_cells.append(f"({se:.3f})" if not math.isnan(se) else "")
-        body_rows.append({"label": _timing_row_label(horizon_label), "cells": coef_cells, "kind": "coef"})
+        body_rows.append(
+            {"label": _timing_row_label(horizon_label), "cells": coef_cells, "kind": "coef"}
+        )
         body_rows.append({"label": "", "cells": se_cells, "kind": "se"})
 
     footer_rows = [
@@ -779,8 +971,13 @@ def _summarize_metric_matrix(
     spec_defs = _spec_variant_defs(df)
     models = [{"number": spec["number"], "label": spec["label"]} for spec in spec_defs]
 
-    footer_flags = {key: [] for key in ["Controls", "Firm FE", "Industry FE", "Year FE", "Non-fin.", "No util."]}
-    results_by_spec: list[tuple[dict[str, tuple[float, float, float | None]], float | None, int]] = []
+    footer_flags = {
+        key: []
+        for key in ["Controls", "Firm FE", "Industry FE", "Year FE", "Non-fin.", "No util."]
+    }
+    results_by_spec: list[
+        tuple[dict[str, tuple[float, float, float | None]], float | None, int]
+    ] = []
 
     for spec in spec_defs:
         spec_df = df.loc[spec["mask"]].copy()
@@ -822,8 +1019,14 @@ def _summarize_metric_matrix(
         {"label": "Year FE", "cells": footer_flags["Year FE"]},
         {"label": "Non-fin.", "cells": footer_flags["Non-fin."]},
         {"label": "No util.", "cells": footer_flags["No util."]},
-        {"label": "Adj. R²", "cells": [fmt_num(adj_r2) for _metric_results, adj_r2, _nobs in results_by_spec]},
-        {"label": "Observations", "cells": [f"{nobs:,}" for _metric_results, _adj_r2, nobs in results_by_spec]},
+        {
+            "label": "Adj. R²",
+            "cells": [fmt_num(adj_r2) for _metric_results, adj_r2, _nobs in results_by_spec],
+        },
+        {
+            "label": "Observations",
+            "cells": [f"{nobs:,}" for _metric_results, _adj_r2, nobs in results_by_spec],
+        },
     ]
 
     return {
@@ -864,6 +1067,120 @@ def summarize_table_5b_credibility_metrics_tplus2(panel_path: str | Path) -> dic
         panel_path,
         dependent="log_patents_ai_lead2",
         title="Table 5B. Credibility Metrics and Longer-Horizon AI Patenting",
+        dependent_label="Dependent variable: log(1 + AI patents at t+2)",
+        note=note,
+    )
+
+
+def _summarize_mismatch_matrix(
+    panel_path: str | Path,
+    *,
+    dependent: str,
+    title: str,
+    dependent_label: str,
+    note: str,
+    metrics: list[tuple[str, str]] = MISMATCH_METRICS,
+) -> dict[str, object]:
+    df = load_panel(panel_path)
+    df = _add_patent_mismatch(df)
+    spec_defs = _mismatch_spec_variant_defs(df)
+    models = [{"number": spec["number"], "label": spec["label"]} for spec in spec_defs]
+
+    footer_flags = {
+        key: []
+        for key in ["Controls", "Firm FE", "Industry×Year FE", "Year FE", "Non-fin.", "No util."]
+    }
+    results_by_spec: list[
+        tuple[dict[str, tuple[float, float, float | None]], float | None, int]
+    ] = []
+
+    for spec in spec_defs:
+        spec_df = df.loc[spec["mask"]].copy()
+        metric_results: dict[str, tuple[float, float, float | None]] = {}
+        result, _, adj_r2 = _fit_absorbed_ols(
+            spec_df,
+            dependent=dependent,
+            rhs_terms=[metric for _label, metric in metrics],
+            absorb_col=str(spec["absorb_col"]),
+            include_year=bool(spec.get("include_year", True)),
+        )
+        spec_nobs = int(result.nobs)
+        spec_adj_r2: float | None = adj_r2
+        for label, term in metrics:
+            coef = result.params.get(term, float("nan"))
+            se = result.bse.get(term, float("nan"))
+            pvalue = result.pvalues.get(term)
+            metric_results[label] = (coef, se, pvalue)
+        results_by_spec.append((metric_results, spec_adj_r2, spec_nobs))
+        for footer_key in footer_flags:
+            footer_flags[footer_key].append(str(spec["footer"][footer_key]))
+
+    body_rows: list[dict[str, object]] = []
+    for label, _term in metrics:
+        coef_cells: list[str] = []
+        se_cells: list[str] = []
+        for metric_results, _adj_r2, _nobs in results_by_spec:
+            coef, se, pvalue = metric_results[label]
+            coef_cells.append(f"{coef:.3f}{sig_stars(pvalue)}" if not math.isnan(coef) else "")
+            se_cells.append(f"({se:.3f})" if not math.isnan(se) else "")
+        body_rows.append({"label": label, "cells": coef_cells, "kind": "coef"})
+        body_rows.append({"label": "", "cells": se_cells, "kind": "se"})
+
+    footer_rows = [
+        {"label": "Controls", "cells": footer_flags["Controls"]},
+        {"label": "Firm FE", "cells": footer_flags["Firm FE"]},
+        {"label": "Industry×Year FE", "cells": footer_flags["Industry×Year FE"]},
+        {"label": "Year FE", "cells": footer_flags["Year FE"]},
+        {"label": "Non-fin.", "cells": footer_flags["Non-fin."]},
+        {"label": "No util.", "cells": footer_flags["No util."]},
+        {
+            "label": "Adj. R²",
+            "cells": [fmt_num(adj_r2) for _metric_results, adj_r2, _nobs in results_by_spec],
+        },
+        {
+            "label": "Observations",
+            "cells": [f"{nobs:,}" for _metric_results, _adj_r2, nobs in results_by_spec],
+        },
+    ]
+
+    return {
+        "title": title,
+        "note": note,
+        "dependent_label": dependent_label,
+        "models": models,
+        "body_rows": body_rows,
+        "footer_rows": footer_rows,
+    }
+
+
+def summarize_table_6_as_patent_mismatch_tplus1(panel_path: str | Path) -> dict[str, object]:
+    note = (
+        "This table presents the methodology-aligned AI-washing specification on the regression-ready ever-speaker annual panel. "
+        "The dependent variable is `log(1 + AI patents)` at `t+1`. Rows report the main `A_S` ratio and its interaction with `PatentMismatch`. "
+        "PatentMismatch flags AI-talking firm-years with low credibility (`low A_S / high SpecShare`) and weak contemporaneous AI patenting relative to the industry-year mean. "
+        "Columns vary the fixed-effects structure and sample trim while keeping the same baseline control set: size, leverage, cash/assets, R&D/assets, CAPX/assets, ROA, sales growth, and employees. "
+        "Standard errors clustered at the firm level are shown in parentheses. Constants are omitted. (* p<0.1, ** p<0.05, *** p<0.01)."
+    )
+    return _summarize_mismatch_matrix(
+        panel_path,
+        dependent="log_patents_ai_lead1",
+        title="Table 6. A/S Ratio, Patent Mismatch, and Future AI Patenting",
+        dependent_label="Dependent variable: log(1 + AI patents at t+1)",
+        note=note,
+    )
+
+
+def summarize_table_6b_as_patent_mismatch_tplus2(panel_path: str | Path) -> dict[str, object]:
+    note = (
+        "This companion table presents the same methodology-aligned AI-washing specification as Table 6 but uses the longer-horizon outcome `log(1 + AI patents)` at `t+2`. "
+        "Rows report the main `A_S` ratio and its interaction with `PatentMismatch`. PatentMismatch is constructed from year-`t` disclosure credibility and contemporaneous AI patenting relative to the industry-year. "
+        "Columns vary the fixed-effects structure and sample trim while keeping the same baseline control set: size, leverage, cash/assets, R&D/assets, CAPX/assets, ROA, sales growth, and employees. "
+        "Standard errors clustered at the firm level are shown in parentheses. Constants are omitted. (* p<0.1, ** p<0.05, *** p<0.01)."
+    )
+    return _summarize_mismatch_matrix(
+        panel_path,
+        dependent="log_patents_ai_lead2",
+        title="Table 6B. A/S Ratio, Patent Mismatch, and Longer-Horizon AI Patenting",
         dependent_label="Dependent variable: log(1 + AI patents at t+2)",
         note=note,
     )

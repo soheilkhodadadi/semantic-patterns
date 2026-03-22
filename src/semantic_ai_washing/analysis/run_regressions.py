@@ -168,25 +168,29 @@ def add_engineered_cols(df: pd.DataFrame) -> pd.DataFrame:
     if "patents_ai" in df.columns:
         df["log_patents_ai"] = np.log1p(df["patents_ai"].fillna(0))
 
-    # Build shares if we have counts
+    # Build shares if we have counts. Preserve canonical panel fields when they already exist.
     if all(c in df.columns for c in ["n_A", "n_S", "n_total"]):
         denom = df["n_total"].replace(0, np.nan)
-        df["ActShare"] = df["n_A"] / denom
-        df["SpecShare"] = df["n_S"] / denom
-        df["log_docs"] = np.log1p(df["n_total"].fillna(0))
+        if "ActShare" not in df.columns:
+            df["ActShare"] = df["n_A"] / denom
+        if "SpecShare" not in df.columns:
+            df["SpecShare"] = df["n_S"] / denom
+        if "log_docs" not in df.columns:
+            df["log_docs"] = np.log1p(df["n_total"].fillna(0))
         if "n_I" in df.columns:
-            df["share_I"] = df["n_I"] / denom
+            if "share_I" not in df.columns:
+                df["share_I"] = df["n_I"] / denom
     else:
         # Fall back to any provided share columns
-        if "share_A" in df.columns:
+        if "ActShare" not in df.columns and "share_A" in df.columns:
             df["ActShare"] = df["share_A"]
-        if "share_S" in df.columns:
+        if "SpecShare" not in df.columns and "share_S" in df.columns:
             df["SpecShare"] = df["share_S"]
         # log_docs only if n_total exists
-        if "n_total" in df.columns:
+        if "log_docs" not in df.columns and "n_total" in df.columns:
             df["log_docs"] = np.log1p(df["n_total"].fillna(0))
 
-    if "log_docs" in df.columns:
+    if "AI_Focus" not in df.columns and "log_docs" in df.columns:
         df["AI_Focus"] = df["log_docs"]
 
     # --- Log-counts (with +1) if counts exist
@@ -219,19 +223,23 @@ def add_engineered_cols(df: pd.DataFrame) -> pd.DataFrame:
     if all(c in df.columns for c in ["n_A", "n_S"]):
         act = df["n_A"].fillna(0).clip(lower=0)
         spec = df["n_S"].fillna(0).clip(lower=0)
-        df["A_S"] = np.log1p(act) - np.log1p(spec)
+        if "A_S" not in df.columns:
+            df["A_S"] = np.log1p(act / (1.0 + spec))
 
         act_std = act.std(ddof=0)
         spec_std = spec.std(ddof=0)
-        if pd.notna(act_std) and act_std > 0 and pd.notna(spec_std) and spec_std > 0:
-            act_z = (act - act.mean()) / act_std
-            spec_z = (spec - spec.mean()) / spec_std
-            df["CredAI"] = act_z - spec_z
-        else:
-            df["CredAI"] = np.nan
+        if "CredAI" not in df.columns:
+            if pd.notna(act_std) and act_std > 0 and pd.notna(spec_std) and spec_std > 0:
+                act_z = (act - act.mean()) / act_std
+                spec_z = (spec - spec.mean()) / spec_std
+                df["CredAI"] = act_z - spec_z
+            else:
+                df["CredAI"] = np.nan
     else:
-        df["A_S"] = np.nan
-        df["CredAI"] = np.nan
+        if "A_S" not in df.columns:
+            df["A_S"] = np.nan
+        if "CredAI" not in df.columns:
+            df["CredAI"] = np.nan
 
     return df
 
@@ -390,10 +398,7 @@ def run_all_models(df, outdir, mode="minimal"):
             and all(c in df.columns for c in ["log_n_A", "log_n_S"])
             and "log_patents_ai_lead1" in df.columns
         ):
-            rhs = (
-                ["log_n_A", "log_n_S"]
-                + controls
-            )
+            rhs = ["log_n_A", "log_n_S"] + controls
             f = f"log_patents_ai_lead1 ~ {' + '.join(rhs)} + C(cik) + C(year)"
             try:
                 results["OLS_k1_logcounts"] = fit_ols_fe(
@@ -407,10 +412,7 @@ def run_all_models(df, outdir, mode="minimal"):
             and all(c in df.columns for c in ["has_actionable", "has_spec_only"])
             and "log_patents_ai_lead1" in df.columns
         ):
-            rhs = (
-                ["has_actionable", "has_spec_only"]
-                + controls
-            )
+            rhs = ["has_actionable", "has_spec_only"] + controls
             f = f"log_patents_ai_lead1 ~ {' + '.join(rhs)} + C(cik) + C(year)"
             try:
                 results["OLS_k1_dummies"] = fit_ols_fe(
@@ -424,10 +426,7 @@ def run_all_models(df, outdir, mode="minimal"):
             and all(c in df.columns for c in ["log_n_A", "log_n_S"])
             and "log_patents_ai_lead0" in df.columns
         ):
-            rhs = (
-                ["log_n_A", "log_n_S"]
-                + controls
-            )
+            rhs = ["log_n_A", "log_n_S"] + controls
             f = f"log_patents_ai_lead0 ~ {' + '.join(rhs)} + C(cik) + C(year)"
             try:
                 results["OLS_k0_logcounts"] = fit_ols_fe(
@@ -441,10 +440,7 @@ def run_all_models(df, outdir, mode="minimal"):
             and all(c in df.columns for c in ["has_actionable", "has_spec_only"])
             and "any_pat_1" in df.columns
         ):
-            rhs = (
-                ["has_actionable", "has_spec_only"]
-                + controls
-            )
+            rhs = ["has_actionable", "has_spec_only"] + controls
             f = f"any_pat_1 ~ {' + '.join(rhs)} + C(cik) + C(year)"
             try:
                 results["LPM_anypat_k1_dummies"] = fit_ols_fe(
@@ -462,9 +458,7 @@ def run_all_models(df, outdir, mode="minimal"):
 
             # Levels (if counts available)
             if have_counts:
-                rhs_terms = (
-                    ["n_A", "n_S"] + controls
-                )
+                rhs_terms = ["n_A", "n_S"] + controls
                 f1 = f"{dep} ~ {' + '.join(rhs_terms)} {fe}"
                 try:
                     res1 = fit_ols_fe(f1, df, needed=[dep] + rhs_terms + ["cik", "year"])
@@ -474,10 +468,7 @@ def run_all_models(df, outdir, mode="minimal"):
 
             # Shares model if shares available
             if have_shares:
-                rhs_terms = (
-                    ["ActShare", "SpecShare"]
-                    + controls
-                )
+                rhs_terms = ["ActShare", "SpecShare"] + controls
                 f2 = f"{dep} ~ {' + '.join(rhs_terms)} {fe}"
                 try:
                     res2 = fit_ols_fe(f2, df, needed=[dep] + rhs_terms + ["cik", "year"])
@@ -487,10 +478,7 @@ def run_all_models(df, outdir, mode="minimal"):
 
             # Log-counts models (only if counts exist)
             if have_counts and all(c in df.columns for c in ["log_n_A", "log_n_S"]):
-                rhs_terms = (
-                    ["log_n_A", "log_n_S"]
-                    + controls
-                )
+                rhs_terms = ["log_n_A", "log_n_S"] + controls
                 f_log = f"{dep} ~ {' + '.join(rhs_terms)} {fe}"
                 try:
                     res_log = fit_ols_fe(f_log, df, needed=[dep] + rhs_terms + ["cik", "year"])
@@ -500,10 +488,7 @@ def run_all_models(df, outdir, mode="minimal"):
 
             # Dummies models (only if counts exist)
             if have_counts and all(c in df.columns for c in ["has_actionable", "has_spec_only"]):
-                rhs_terms = (
-                    ["has_actionable", "has_spec_only"]
-                    + controls
-                )
+                rhs_terms = ["has_actionable", "has_spec_only"] + controls
                 f_dum = f"{dep} ~ {' + '.join(rhs_terms)} {fe}"
                 try:
                     res_dum = fit_ols_fe(f_dum, df, needed=[dep] + rhs_terms + ["cik", "year"])
