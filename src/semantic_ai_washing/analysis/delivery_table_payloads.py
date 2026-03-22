@@ -53,6 +53,14 @@ TIMING_LOG_AI_OUTCOMES: list[tuple[str, str]] = [
     ("t+2", "log_patents_ai_lead2"),
 ]
 
+TIMING_COUNT_AI_OUTCOMES: list[tuple[str, str]] = [
+    ("t-2", "patents_ai_lag2"),
+    ("t-1", "patents_ai_lag1"),
+    ("t", "patents_ai_lead0"),
+    ("t+1", "patents_ai_lead1"),
+    ("t+2", "patents_ai_lead2"),
+]
+
 
 def fmt_num(value: float | None, digits: int = 3) -> str:
     if value is None or math.isnan(value):
@@ -213,15 +221,22 @@ def _fit_fe_ols(
     return result, use
 
 
-def summarize_table_2_timing_focus(panel_path: str | Path) -> dict[str, object]:
+def _summarize_timing_focus(
+    panel_path: str | Path,
+    *,
+    outcomes: list[tuple[str, str]],
+    title: str,
+    dependent_label: str,
+    note: str,
+) -> dict[str, object]:
     df = load_panel(panel_path)
     models = []
     coef_cells: list[str] = []
     se_cells: list[str] = []
     nobs_cells: list[str] = []
 
-    for idx, (horizon_label, dependent) in enumerate(TIMING_LOG_AI_OUTCOMES, start=1):
-        result, used = _fit_fe_ols(df, dependent=dependent, rhs_terms=["AI_Focus"])
+    for idx, (horizon_label, dependent) in enumerate(outcomes, start=1):
+        result, _ = _fit_fe_ols(df, dependent=dependent, rhs_terms=["AI_Focus"])
         coef = result.params.get("AI_Focus", float("nan"))
         se = result.bse.get("AI_Focus", float("nan"))
         pvalue = result.pvalues.get("AI_Focus")
@@ -230,17 +245,10 @@ def summarize_table_2_timing_focus(panel_path: str | Path) -> dict[str, object]:
         se_cells.append(f"({se:.3f})" if not math.isnan(se) else "")
         nobs_cells.append(f"{int(result.nobs):,}")
 
-    note = (
-        "This table presents firm-year panel regressions on the regression-ready ever-speaker annual panel. "
-        "The dependent variable is `log(1 + AI patents)` measured at different calendar-time horizons relative to the disclosure year. "
-        "The focal regressor is `AI_Focus`, defined as `log(1 + AI sentences)`. Control variables include size, leverage, cash/assets, "
-        "R&D/assets, CAPX/assets, ROA, sales growth, and employees. Firm and year fixed effects are included in all columns. "
-        "Standard errors clustered at the firm level are shown in parentheses. Constants are omitted. (* p<0.1, ** p<0.05, *** p<0.01)."
-    )
     return {
-        "title": "Table 2. AI Disclosure Intensity and AI Patent Timing",
+        "title": title,
         "note": note,
-        "dependent_label": "Dependent variable: log(1 + AI patents)",
+        "dependent_label": dependent_label,
         "models": models,
         "panels": [
             {
@@ -259,9 +267,50 @@ def summarize_table_2_timing_focus(panel_path: str | Path) -> dict[str, object]:
     }
 
 
-def summarize_table_3_timing_composition(panel_path: str | Path) -> dict[str, object]:
+def summarize_table_2_timing_focus(panel_path: str | Path) -> dict[str, object]:
+    note = (
+        "This table presents firm-year panel regressions on the regression-ready ever-speaker annual panel. "
+        "The dependent variable is `log(1 + AI patents)` measured at different calendar-time horizons relative to the disclosure year. "
+        "The focal regressor is `AI_Focus`, defined as `log(1 + AI sentences)`. Control variables include size, leverage, cash/assets, "
+        "R&D/assets, CAPX/assets, ROA, sales growth, and employees. Firm and year fixed effects are included in all columns. "
+        "Standard errors clustered at the firm level are shown in parentheses. Constants are omitted. (* p<0.1, ** p<0.05, *** p<0.01)."
+    )
+    return _summarize_timing_focus(
+        panel_path,
+        outcomes=TIMING_LOG_AI_OUTCOMES,
+        title="Table 2. AI Disclosure Intensity and AI Patent Timing",
+        dependent_label="Dependent variable: log(1 + AI patents)",
+        note=note,
+    )
+
+
+def summarize_table_2_timing_focus_counts(panel_path: str | Path) -> dict[str, object]:
+    note = (
+        "This companion table presents firm-year panel regressions on the regression-ready ever-speaker annual panel. "
+        "The dependent variable is the raw count of AI patents measured at different calendar-time horizons relative to the disclosure year. "
+        "The focal regressor is `AI_Focus`, defined as `log(1 + AI sentences)`. Control variables include size, leverage, cash/assets, "
+        "R&D/assets, CAPX/assets, ROA, sales growth, and employees. Firm and year fixed effects are included in all columns. "
+        "Standard errors clustered at the firm level are shown in parentheses. Constants are omitted. (* p<0.1, ** p<0.05, *** p<0.01)."
+    )
+    return _summarize_timing_focus(
+        panel_path,
+        outcomes=TIMING_COUNT_AI_OUTCOMES,
+        title="Table 2B. AI Disclosure Intensity and AI Patent Timing (Count Outcome)",
+        dependent_label="Dependent variable: AI patents",
+        note=note,
+    )
+
+
+def _summarize_timing_composition(
+    panel_path: str | Path,
+    *,
+    outcomes: list[tuple[str, str]],
+    title: str,
+    dependent_label: str,
+    note: str,
+) -> dict[str, object]:
     df = load_panel(panel_path)
-    models = [{"number": f"({idx})", "label": label} for idx, (label, _) in enumerate(TIMING_LOG_AI_OUTCOMES, start=1)]
+    models = [{"number": f"({idx})", "label": label} for idx, (label, _) in enumerate(outcomes, start=1)]
     panel_defs = [
         ("Panel A. Actionable disclosure", "Actionable disclosure (dummy)", "has_actionable"),
         ("Panel B. Speculative-only disclosure", "Speculative-only disclosure (dummy)", "has_spec_only"),
@@ -272,8 +321,8 @@ def summarize_table_3_timing_composition(panel_path: str | Path) -> dict[str, ob
         coef_cells: list[str] = []
         se_cells: list[str] = []
         nobs_cells: list[str] = []
-        for _, dependent in TIMING_LOG_AI_OUTCOMES:
-            result, used = _fit_fe_ols(df, dependent=dependent, rhs_terms=[rhs])
+        for _, dependent in outcomes:
+            result, _ = _fit_fe_ols(df, dependent=dependent, rhs_terms=[rhs])
             coef = result.params.get(rhs, float("nan"))
             se = result.bse.get(rhs, float("nan"))
             pvalue = result.pvalues.get(rhs)
@@ -299,6 +348,16 @@ def summarize_table_3_timing_composition(panel_path: str | Path) -> dict[str, ob
             }
         )
 
+    return {
+        "title": title,
+        "note": note,
+        "dependent_label": dependent_label,
+        "models": models,
+        "panels": panels,
+    }
+
+
+def summarize_table_3_timing_composition(panel_path: str | Path) -> dict[str, object]:
     note = (
         "This table presents firm-year panel regressions on the regression-ready ever-speaker annual panel. "
         "The dependent variable is `log(1 + AI patents)` measured at different calendar-time horizons relative to the disclosure year. "
@@ -307,10 +366,28 @@ def summarize_table_3_timing_composition(panel_path: str | Path) -> dict[str, ob
         "Firm and year fixed effects are included in all columns. Standard errors clustered at the firm level are shown in parentheses. "
         "Constants are omitted. (* p<0.1, ** p<0.05, *** p<0.01)."
     )
-    return {
-        "title": "Table 3. Disclosure Composition and AI Patent Timing",
-        "note": note,
-        "dependent_label": "Dependent variable: log(1 + AI patents)",
-        "models": models,
-        "panels": panels,
-    }
+    return _summarize_timing_composition(
+        panel_path,
+        outcomes=TIMING_LOG_AI_OUTCOMES,
+        title="Table 3. Disclosure Composition and AI Patent Timing",
+        dependent_label="Dependent variable: log(1 + AI patents)",
+        note=note,
+    )
+
+
+def summarize_table_3_timing_composition_counts(panel_path: str | Path) -> dict[str, object]:
+    note = (
+        "This companion table presents firm-year panel regressions on the regression-ready ever-speaker annual panel. "
+        "The dependent variable is the raw count of AI patents measured at different calendar-time horizons relative to the disclosure year. "
+        "Panel A uses the actionable-disclosure indicator and Panel B uses the speculative-only disclosure indicator. "
+        "Each panel reports one-variable regressions with the same baseline control set: size, leverage, cash/assets, R&D/assets, CAPX/assets, ROA, sales growth, and employees. "
+        "Firm and year fixed effects are included in all columns. Standard errors clustered at the firm level are shown in parentheses. "
+        "Constants are omitted. (* p<0.1, ** p<0.05, *** p<0.01)."
+    )
+    return _summarize_timing_composition(
+        panel_path,
+        outcomes=TIMING_COUNT_AI_OUTCOMES,
+        title="Table 3B. Disclosure Composition and AI Patent Timing (Count Outcome)",
+        dependent_label="Dependent variable: AI patents",
+        note=note,
+    )

@@ -19,7 +19,9 @@ from semantic_ai_washing.analysis.delivery_table_payloads import (
     sig_stars,
     summarize_table_1,
     summarize_table_2_timing_focus,
+    summarize_table_2_timing_focus_counts,
     summarize_table_3_timing_composition,
+    summarize_table_3_timing_composition_counts,
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -380,7 +382,8 @@ def parse_args() -> argparse.Namespace:
         default="table1,table2_timing_focus,table3_timing_composition",
         help=(
             "Comma-separated list of standalone tables to build: table1, table2_timing_focus, "
-            "table3_timing_composition, table2_conditional_appendix"
+            "table2_timing_focus_count, table3_timing_composition, "
+            "table3_timing_composition_count, table2_conditional_appendix"
         ),
     )
     return parser.parse_args()
@@ -401,10 +404,22 @@ def main() -> None:
             output_dir / "table_2_ai_focus_timing_prelim_v1.docx",
         )
 
+    if "table2_timing_focus_count" in selected:
+        _build_panel_timing_doc(
+            summarize_table_2_timing_focus_counts(args.reg_ready_panel),
+            output_dir / "table_2b_ai_focus_timing_counts_prelim_v1.docx",
+        )
+
     if "table3_timing_composition" in selected:
         _build_panel_timing_doc(
             summarize_table_3_timing_composition(args.reg_ready_panel),
             output_dir / "table_3_disclosure_composition_timing_prelim_v1.docx",
+        )
+
+    if "table3_timing_composition_count" in selected:
+        _build_panel_timing_doc(
+            summarize_table_3_timing_composition_counts(args.reg_ready_panel),
+            output_dir / "table_3b_disclosure_composition_timing_counts_prelim_v1.docx",
         )
 
     if "table2_conditional_appendix" in selected:

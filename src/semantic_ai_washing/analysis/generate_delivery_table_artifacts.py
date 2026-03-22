@@ -13,7 +13,9 @@ from semantic_ai_washing.analysis.delivery_table_payloads import (
     sig_stars,
     summarize_table_1,
     summarize_table_2_timing_focus,
+    summarize_table_2_timing_focus_counts,
     summarize_table_3_timing_composition,
+    summarize_table_3_timing_composition_counts,
     to_markdown_table,
 )
 
@@ -151,7 +153,8 @@ def parse_args() -> argparse.Namespace:
         default="table1,table2_timing_focus,table3_timing_composition",
         help=(
             "Comma-separated list of tables to generate: table1, table2_timing_focus, "
-            "table3_timing_composition, table2_conditional_appendix"
+            "table2_timing_focus_count, table3_timing_composition, "
+            "table3_timing_composition_count, table2_conditional_appendix"
         ),
     )
     return parser.parse_args()
@@ -174,10 +177,22 @@ def main() -> None:
             _render_timing_payload_markdown(summarize_table_2_timing_focus(args.panel)),
         )
 
+    if "table2_timing_focus_count" in selected:
+        _write_text(
+            output_dir / "table_2b_ai_focus_timing_counts_prelim_v1.md",
+            _render_timing_payload_markdown(summarize_table_2_timing_focus_counts(args.panel)),
+        )
+
     if "table3_timing_composition" in selected:
         _write_text(
             output_dir / "table_3_disclosure_composition_timing_prelim_v1.md",
             _render_timing_payload_markdown(summarize_table_3_timing_composition(args.panel)),
+        )
+
+    if "table3_timing_composition_count" in selected:
+        _write_text(
+            output_dir / "table_3b_disclosure_composition_timing_counts_prelim_v1.md",
+            _render_timing_payload_markdown(summarize_table_3_timing_composition_counts(args.panel)),
         )
 
     if "table2_conditional_appendix" in selected:
