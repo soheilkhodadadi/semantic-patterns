@@ -53,6 +53,31 @@ Current authoritative artifacts include:
 
 Current delivery status is tracked in [docs/preliminary_delivery_status_2026-03-20.md](docs/preliminary_delivery_status_2026-03-20.md).
 
+## Current Paper-Support Audit
+
+For the March 25, 2026 Pass C draft, the current technical audit and reproducibility note live here:
+
+- tracked report (markdown):
+  - `reports/analysis/pass_c_technical_audit_2026-03-25_v1.md`
+- local working copy (markdown):
+  - `output/paper/reports/2026-03/pass_c_technical_audit_2026-03-25_v1.md`
+- report (Word):
+  - `output/doc/reports/2026-03/pass_c_technical_audit_2026-03-25_v1.docx`
+
+This report consolidates the current answers to three paper-facing technical questions:
+- measurement-audit evidence for the sentence classifier and IRR workflow
+- the exact live `PatentMismatch` coding rule
+- sample-attrition mechanics across the main empirical tables
+
+Primary source-of-truth inputs for that report:
+- `reports/models/preliminary_results_readiness_v1.json`
+- `reports/labels/irr_report.json`
+- `reports/labels/irr_disagreement_diagnostic_v1.json`
+- `reports/evaluation/heldout_eval_prelim_v2.json`
+- `reports/evaluation/model_benchmark_matrix_prelim_v1.json`
+- `data/labels/v1/labels_master.parquet`
+- `data/processed/panel/panel_reg_ready_ever_speaker_2016_2024_v1.csv`
+
 ## Panels and Sample Definitions
 
 Two panel objects are relevant right now:

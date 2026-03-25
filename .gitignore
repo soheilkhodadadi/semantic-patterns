@@ -219,6 +219,7 @@ director/snapshots/iteration_state_compiled.json
 output/doc/*.docx
 output/doc/**/*.docx
 output/paper/*.md
+output/paper/**/*.md
 
 # Ignore all generated output bundles, but keep placeholder directories
 output/*
