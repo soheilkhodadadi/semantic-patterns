@@ -259,6 +259,9 @@ reports/controls_progress_*.json
 reports/controls_qc_active_annual_allyears_*.md
 reports/evaluation/legacy_two_stage_eval_default/
 
+# Local-private strategy and partner materials
+local_private/
+
 # Generated metadata indexes
 data/metadata/available_filings_index_*.csv
 data/metadata/source_windows_*.json
