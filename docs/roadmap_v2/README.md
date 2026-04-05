@@ -27,12 +27,15 @@ Suggested first tracked artifacts:
 - `lab_architecture_scenarios_v1.md`
 - `roadmap_v4_multi_program_v1.md`
 - `lab_mvp_1_0_blueprint_v1.md`
-- `roadmap_v3_concept_v1.md`
-- `lab_transition_architecture_v1.md`
 - `engine_boundary_memo_v1.md`
 - `source_of_truth_map_v1.md`
 - `artifact_policy_v1.md`
 - `project_registry_v1.md`
+- `target_repo_layout_v1.md`
+- `restructure_execution_plan_v1.md`
+- `migration_wave_1_v1.md`
+- `roadmap_v3_concept_v1.md`
+- `lab_transition_architecture_v1.md`
 - `roadmap_v2_review_v1.md`
 - `filinglens_thin_slice_spec_v1.md`
 
