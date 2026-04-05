@@ -1,0 +1,60 @@
+"""Default R1-R7 risk policy templates."""
+
+DEFAULT_RISK_REGISTER = [
+    {
+        "code": "R1",
+        "title": "Label ambiguity",
+        "signal": "Inter-rater reliability below threshold",
+        "mitigation": "Require rubric and IRR gate before retraining",
+        "backout": "Pause retraining and adjudicate labels",
+        "severity": 5,
+    },
+    {
+        "code": "R2",
+        "title": "Class imbalance / collapse",
+        "signal": "Class distribution skew and dominant predictions",
+        "mitigation": "Apply minimum-per-class checks and stratified sampling",
+        "backout": "Freeze centroids and rebalance labels",
+        "severity": 4,
+    },
+    {
+        "code": "R3",
+        "title": "Train/validation/test leakage",
+        "signal": "Held-out overlap or overfitted thresholding",
+        "mitigation": "Freeze held-out set and enforce overlap checks",
+        "backout": "Rollback to leakage-free artifacts",
+        "severity": 5,
+    },
+    {
+        "code": "R4",
+        "title": "Non-determinism",
+        "signal": "Different outputs across identical runs",
+        "mitigation": "Record seeds/versions and cache deterministic artifacts",
+        "backout": "Run with pinned environment and fixed seeds",
+        "severity": 4,
+    },
+    {
+        "code": "R5",
+        "title": "Silent partial outputs",
+        "signal": "Missing files despite completion logs",
+        "mitigation": "Coverage counters and explicit output manifests",
+        "backout": "Rerun with strict fail-fast",
+        "severity": 4,
+    },
+    {
+        "code": "R6",
+        "title": "Metadata mismatch",
+        "signal": "Wrong label mapping or centroid reference",
+        "mitigation": "Single source of truth with artifact fingerprints",
+        "backout": "Restore prior validated metadata",
+        "severity": 4,
+    },
+    {
+        "code": "R7",
+        "title": "Scope creep",
+        "signal": "Hardening work displaces science gates",
+        "mitigation": "Phase gates with explicit out-of-scope checks",
+        "backout": "Defer non-critical hardening",
+        "severity": 3,
+    },
+]

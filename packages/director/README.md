@@ -45,3 +45,10 @@ First extracted package slice:
 
 Migration trace:
 - `docs/roadmap_v2/migration_round_g_director_schema_extraction_v1.md`
+
+Second extracted package slice:
+- `packages/director/src/semantic_director/policies/risk_register.py`
+- `packages/director/src/semantic_director/policies/__init__.py`
+
+Migration trace:
+- `docs/roadmap_v2/migration_round_h_director_policies_extraction_v1.md`

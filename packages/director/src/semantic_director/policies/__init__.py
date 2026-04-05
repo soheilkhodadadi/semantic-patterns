@@ -1,4 +1,4 @@
-"""Compatibility shim for director risk policy templates."""
+"""Default policy templates for the director package."""
 
 from semantic_director.policies.risk_register import DEFAULT_RISK_REGISTER
 
