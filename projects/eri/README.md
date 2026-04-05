@@ -27,3 +27,4 @@ Promote tracked, public-safe member structure here only when:
 
 See also:
 - `docs/projects/eri/adapter_framing_v1.md`
+- `projects/eri/member_seed_decision_v1.md`

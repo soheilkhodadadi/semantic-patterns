@@ -17,6 +17,11 @@ Current intended members:
 - `projects/eri/`
 - `projects/allocationlab/`
 
+Current seed decisions:
+- `projects/ai_washing/member_seed_plan_v1.md`
+- `projects/eri/member_seed_decision_v1.md`
+- `projects/allocationlab/member_seed_decision_v1.md`
+
 ## Workspace member vs path dependency
 
 Use a workspace member when:

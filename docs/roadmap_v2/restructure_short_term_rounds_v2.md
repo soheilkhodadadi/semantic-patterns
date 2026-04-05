@@ -25,15 +25,17 @@ Completed already:
 - revised end-state architecture and target layout V2
 - Round A standards and contracts
 - Round B workspace skeleton
+- Round C package seeding
 
 This means the repo now has:
 - a real control-plane foundation
 - a small shared package seed
 - a clearer package-centric target
 - visible root landing zones for `packages/`, `projects/`, and `shared/`
+- first explicit seed plans for `labcore`, `director`, and `ai_washing`
 
-Remaining actionable rounds now start at Round C.
-Rounds A and B remain documented below as completed reference anchors.
+Remaining actionable rounds now start at Round D.
+Rounds A through C remain documented below as completed reference anchors.
 
 ## Remaining rounds
 
@@ -98,6 +100,9 @@ Acceptance gate:
   - package identity
   - dependency direction
   - migration guardrails
+
+Current anchor:
+- `docs/roadmap_v2/migration_round_c_package_seeding_v1.md`
 
 ### Round D. First bounded member-facing migrations
 

@@ -35,3 +35,4 @@ Use this member seed to guide:
 See also:
 - `docs/projects/ai_washing/adapter_framing_v1.md`
 - `docs/lab/migration/ai_washing_legacy_to_new_mapping_v1.md`
+- `projects/ai_washing/member_seed_plan_v1.md`

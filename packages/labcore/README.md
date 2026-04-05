@@ -36,3 +36,6 @@ Promote code here only when:
 - build metadata plan is ready
 - caller migration scope is bounded
 - compatibility with the active AI-washing lane is preserved
+
+See also:
+- `packages/labcore/pyproject_seed_plan_v1.md`

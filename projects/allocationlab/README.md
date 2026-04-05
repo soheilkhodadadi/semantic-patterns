@@ -28,3 +28,4 @@ Promote tracked member structure here only when:
 
 See also:
 - `docs/projects/allocationlab/adapter_framing_v1.md`
+- `projects/allocationlab/member_seed_decision_v1.md`

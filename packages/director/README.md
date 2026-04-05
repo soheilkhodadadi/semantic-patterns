@@ -33,3 +33,6 @@ Promote code here only when:
 - the director-owned scope is explicit
 - the package boundary is cleaner than the current mixed layout
 - the migration does not blur project ownership
+
+See also:
+- `packages/director/pyproject_seed_plan_v1.md`

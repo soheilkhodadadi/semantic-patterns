@@ -15,3 +15,7 @@ Rules:
 
 A package in this lane should eventually satisfy the workspace-member contract in:
 - `docs/lab/schemas/workspace_member_contract_v1.md`
+
+Current seed plans:
+- `packages/labcore/pyproject_seed_plan_v1.md`
+- `packages/director/pyproject_seed_plan_v1.md`
