@@ -36,6 +36,9 @@ Suggested first tracked artifacts:
 - `migration_wave_1_v1.md`
 - `migration_wave_2_v1.md`
 - `migration_wave_3_v1.md`
+- `lab_end_state_architecture_review_v1.md`
+- `restructure_parallel_protocol_v1.md`
+- `restructure_short_term_rounds_v1.md`
 - `roadmap_v3_concept_v1.md`
 - `lab_transition_architecture_v1.md`
 - `roadmap_v2_review_v1.md`
@@ -68,5 +71,8 @@ First registry anchor:
 Current active migration anchors:
 - `docs/lab/migration/ai_washing_legacy_to_new_mapping_v1.md`
 - `docs/roadmap_v2/migration_wave_3_v1.md`
+- `docs/roadmap_v2/lab_end_state_architecture_review_v1.md`
+- `docs/roadmap_v2/restructure_parallel_protocol_v1.md`
+- `docs/roadmap_v2/restructure_short_term_rounds_v1.md`
 
 The intent is to keep the repo useful for supervisor review and future collaborators without mixing public-safe planning with private partner-facing strategy.
