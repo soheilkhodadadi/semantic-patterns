@@ -23,7 +23,7 @@ from semantic_ai_washing.director.core.playbooks import list_playbooks, show_pla
 from semantic_ai_washing.director.core.executor import RunbookExecutor
 from semantic_ai_washing.director.core.planner import PlannerEngine, write_plan_manifest
 from semantic_ai_washing.director.core.review import ReviewEngine, load_approved_review_summaries
-from semantic_ai_washing.director.core.render import (
+from semantic_director.render import (
     is_rendered_roadmap_fresh,
     render_roadmap_markdown,
 )

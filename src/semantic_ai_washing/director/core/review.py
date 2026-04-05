@@ -22,7 +22,7 @@ from semantic_ai_washing.director.core.branching import (
 from semantic_ai_washing.director.core.config import DirectorPaths
 from semantic_ai_washing.director.core.playbooks import recommend_playbooks
 from semantic_ai_washing.director.core.readiness import ReadinessEvaluator
-from semantic_ai_washing.director.core.render import (
+from semantic_director.render import (
     render_branch_plan_markdown,
     render_review_markdown,
     render_starter_prompt_markdown,

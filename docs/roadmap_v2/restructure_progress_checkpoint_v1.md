@@ -32,6 +32,7 @@ Recent checkpoint commits:
 - schema/export surface
 - default policy templates
 - roadmap-model loading and query helpers
+- roadmap rendering helpers
 
 ### Project members
 
@@ -71,6 +72,7 @@ This is now proven for:
 - the first four-family `ai_washing` sentence-table migration
 - a fresh-authority `ai_washing` benchmark-utils seed round under Protocol V2
 - a fresh-authority `director` roadmap-model seed round under Protocol V2
+- a fresh-authority `director` render seed round under Protocol V2
 
 ## Current bottlenecks
 
@@ -122,3 +124,5 @@ Recent scan result:
   `docs/roadmap_v2/migration_round_s_ai_washing_benchmark_utils_seed_v1.md`
 - the next fresh-authority move has now also been taken through
   `docs/roadmap_v2/migration_round_t_director_roadmap_model_seed_v1.md`
+- the next follow-on fresh-authority move has now been taken through
+  `docs/roadmap_v2/migration_round_u_director_render_seed_v1.md`

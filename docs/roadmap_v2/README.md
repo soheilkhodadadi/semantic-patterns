@@ -111,8 +111,10 @@ Current active migration anchors:
 - `docs/roadmap_v2/next_candidate_surface_scan_v1.md`
 - `docs/roadmap_v2/fresh_authority_comparison_v1.md`
 - `docs/roadmap_v2/fresh_authority_comparison_v2.md`
+- `docs/roadmap_v2/fresh_authority_comparison_v3.md`
 - `docs/roadmap_v2/migration_round_s_ai_washing_benchmark_utils_seed_v1.md`
 - `docs/roadmap_v2/migration_round_t_director_roadmap_model_seed_v1.md`
+- `docs/roadmap_v2/migration_round_u_director_render_seed_v1.md`
 - `docs/roadmap_v2/restructure_progress_checkpoint_v1.md`
 - `docs/roadmap_v2/larger_batch_readiness_checkpoint_v1.md`
 - `docs/roadmap_v2/group3_readiness_checkpoint_v1.md`
