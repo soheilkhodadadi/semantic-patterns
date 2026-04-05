@@ -110,6 +110,7 @@ Current active migration anchors:
 - `docs/roadmap_v2/larger_batch_readiness_checkpoint_v1.md`
 - `docs/roadmap_v2/group3_readiness_checkpoint_v1.md`
 - `docs/roadmap_v2/fast_safe_migration_protocol_v1.md`
+- `docs/roadmap_v2/fast_safe_migration_protocol_v2.md`
 - `docs/lab/control_plane/labcore_extraction_protocol_v1.md`
 - `docs/roadmap_v2/migration_wave_3_v1.md`
 - `docs/roadmap_v2/lab_end_state_architecture_review_v1.md`
