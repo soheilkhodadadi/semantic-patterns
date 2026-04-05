@@ -9,7 +9,7 @@ from typing import Any
 import pandas as pd
 
 from semantic_ai_washing.director.core.utils import dump_json, git_info, now_utc_iso, sha256_file
-from semantic_ai_washing.labeling.common import normalize_sentence, row_sha256
+from ai_washing_member.labeling.common import normalize_sentence, row_sha256
 
 DEFAULT_HELD_OUT = "data/validation/held_out_sentences.csv"
 DEFAULT_COLLECTED = "data/validation/CollectedAiSentencesClassifiedCleaned.csv"

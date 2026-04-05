@@ -102,7 +102,9 @@ Current active migration anchors:
 - `docs/roadmap_v2/migration_round_j_ai_washing_group1_callers_v1.md`
 - `docs/roadmap_v2/migration_round_k_ai_washing_group2_callers_v1.md`
 - `docs/roadmap_v2/migration_round_l_ai_washing_group3_callers_v1.md`
+- `docs/roadmap_v2/migration_round_m_ai_washing_group4_validation_v1.md`
 - `docs/roadmap_v2/restructure_progress_checkpoint_v1.md`
+- `docs/roadmap_v2/larger_batch_readiness_checkpoint_v1.md`
 - `docs/roadmap_v2/group3_readiness_checkpoint_v1.md`
 - `docs/roadmap_v2/fast_safe_migration_protocol_v1.md`
 - `docs/lab/control_plane/labcore_extraction_protocol_v1.md`

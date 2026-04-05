@@ -39,7 +39,7 @@ It now has:
 - project-owned docs/report/output shell lanes
 - a grouped migration map for the first code seed
 - a real first member-owned code slice under `projects/ai_washing/src/`
-- a completed Group 1 labeling caller-family migration to the member-local path
+- a completed full `labeling/common.py` migration family to the member-local path
 
 ### Control plane
 
@@ -73,7 +73,7 @@ The remaining bottlenecks are not conceptual anymore. They are operational:
 - deciding which grouped caller family to move together
 - keeping migration notes and authority maps current as the repo changes
 - avoiding accidental broad edits outside the intended family
-- finishing the remaining non-Group-1 `ai_washing` callers without mixing scopes
+- choosing the next migration family now that the `labeling/common.py` family is complete
 
 ## What is now safe to speed up
 

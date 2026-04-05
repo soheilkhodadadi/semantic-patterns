@@ -154,4 +154,6 @@ Current status:
   `docs/roadmap_v2/migration_round_k_ai_washing_group2_callers_v1.md`
 - Group 3 aggregation, analysis, and data callers have now migrated through
   `docs/roadmap_v2/migration_round_l_ai_washing_group3_callers_v1.md`
-- only the director-adjacent validation round still remains
+- Group 4 director-adjacent validation has now migrated through
+  `docs/roadmap_v2/migration_round_m_ai_washing_group4_validation_v1.md`
+- the full grouped migration family is now complete
