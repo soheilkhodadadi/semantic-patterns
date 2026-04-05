@@ -1,10 +1,6 @@
-"""Autonomous project director package.
+"""Compatibility exports for the autonomous project director package."""
 
-This package turns roadmap/protocol/history snapshots into executable runbooks
-with gate checks, blocker escalation, and audit trails.
-"""
-
-from semantic_ai_washing.director.schemas import (
+from semantic_director import (
     BlockerEvent,
     CostUsageRecord,
     DecisionRecord,

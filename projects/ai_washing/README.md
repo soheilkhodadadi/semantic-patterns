@@ -53,6 +53,9 @@ Member shell readiness:
 First code-seed decision:
 - `projects/ai_washing/first_code_seed_decision_v1.md`
 
+Bounded impact map for the first code seed:
+- `projects/ai_washing/labeling_common_impact_map_v1.md`
+
 Structured member shell lanes now exist:
 - `projects/ai_washing/docs/`
 - `projects/ai_washing/reports/`

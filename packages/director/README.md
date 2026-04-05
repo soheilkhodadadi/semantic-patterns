@@ -38,3 +38,10 @@ Promote code here only when:
 See also:
 - `packages/director/pyproject_seed_plan_v1.md`
 - `packages/director/first_extraction_slice_v1.md`
+
+First extracted package slice:
+- `packages/director/src/semantic_director/schemas.py`
+- `packages/director/src/semantic_director/__init__.py`
+
+Migration trace:
+- `docs/roadmap_v2/migration_round_g_director_schema_extraction_v1.md`
