@@ -1,5 +1,10 @@
 """Shared registry helpers for project and lane resolution."""
 
+from semantic_ai_washing.labcore.registry.adapters import (
+    ProjectAdapterContract,
+    all_project_adapter_contracts,
+    project_adapter_contract,
+)
 from semantic_ai_washing.labcore.registry.lanes import (
     PROJECT_SLUGS,
     ProjectLanes,
@@ -10,8 +15,11 @@ from semantic_ai_washing.labcore.registry.lanes import (
 
 __all__ = [
     "PROJECT_SLUGS",
+    "ProjectAdapterContract",
     "ProjectLanes",
     "SharedLanes",
+    "all_project_adapter_contracts",
     "project_lanes",
+    "project_adapter_contract",
     "shared_lanes",
 ]

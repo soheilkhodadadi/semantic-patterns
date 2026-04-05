@@ -2,9 +2,12 @@
 
 from semantic_ai_washing.labcore.registry import (
     PROJECT_SLUGS,
+    ProjectAdapterContract,
     ProjectLanes,
     SharedLanes,
+    all_project_adapter_contracts,
     project_lanes,
+    project_adapter_contract,
     shared_lanes,
 )
 from semantic_ai_washing.labcore.audit import (
@@ -27,8 +30,10 @@ from semantic_ai_washing.labcore.runtime import (
 
 __all__ = [
     "PROJECT_SLUGS",
+    "ProjectAdapterContract",
     "ProjectLanes",
     "SharedLanes",
+    "all_project_adapter_contracts",
     "append_jsonl",
     "default_provenance",
     "dump_json",
@@ -38,6 +43,7 @@ __all__ = [
     "now_utc_iso",
     "payload_hash",
     "project_lanes",
+    "project_adapter_contract",
     "repository_root",
     "run_command",
     "sha256_file",

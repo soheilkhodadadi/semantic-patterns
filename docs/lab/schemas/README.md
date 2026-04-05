@@ -10,3 +10,15 @@ Expected artifacts:
 
 Rule:
 - only place a schema here when it is intended to serve at least two programs
+# Schema Docs
+
+This lane is for lightweight schema notes that stabilize shared contracts as the lab structure matures.
+
+Expected artifacts:
+- adapter contracts
+- manifest contracts
+- evidence payload notes
+- delivery payload notes
+
+Current anchor:
+- `project_adapter_contract_v1.md`

@@ -11,3 +11,6 @@ Expected artifacts:
 Current status:
 - the active working versions still live in `docs/roadmap_v2/`
 - promote here only after the structure and naming settle
+
+Current anchor:
+- `adapter_registry_v1.md`
