@@ -2,16 +2,16 @@ from __future__ import annotations
 
 import pytest
 
-from semantic_ai_washing.data.extract_sentence_table import _segment_text
+from ai_washing_member.data.extract_sentence_table import _segment_text
 
 
 def test_segment_text_dispatches_fast_mode(monkeypatch) -> None:
     monkeypatch.setattr(
-        "semantic_ai_washing.data.extract_sentence_table.segment_sentences_fast",
+        "ai_washing_member.data.extract_sentence_table.segment_sentences_fast",
         lambda text: ["fast"],
     )
     monkeypatch.setattr(
-        "semantic_ai_washing.data.extract_sentence_table.segment_sentences",
+        "ai_washing_member.data.extract_sentence_table.segment_sentences",
         lambda text: ["default"],
     )
     assert _segment_text("hello", "fast") == ["fast"]

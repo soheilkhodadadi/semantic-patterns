@@ -11,7 +11,7 @@ from typing import Any
 
 import pandas as pd
 
-from semantic_ai_washing.data.extract_sentence_table import extract_sentence_table
+from ai_washing_member.data.extract_sentence_table import extract_sentence_table
 
 
 def _load_sample_manifest(
@@ -26,7 +26,9 @@ def _load_sample_manifest(
         (frame["year"].astype(int) == int(year))
         & (frame["form"].fillna("").astype(str).str.upper() == str(form).upper())
     ].copy()
-    filtered = filtered.sort_values(["quarter", "cik", "filename"]).head(int(sample_filings)).copy()
+    filtered = (
+        filtered.sort_values(["quarter", "cik", "filename"]).head(int(sample_filings)).copy()
+    )
     if filtered.empty:
         raise ValueError(f"No filings found for year={year} form={form}")
     filtered["manifest_id"] = f"segmentation_benchmark_{year}_{str(form).lower()}"
@@ -38,7 +40,9 @@ def _load_sample_manifest(
 
 def _quality_summary(output_path: str | Path) -> dict[str, Any]:
     frame = pd.read_parquet(output_path)
-    token_series = frame["token_count"].astype(int) if not frame.empty else pd.Series([], dtype=int)
+    token_series = (
+        frame["token_count"].astype(int) if not frame.empty else pd.Series([], dtype=int)
+    )
     return {
         "rows_retained": int(len(frame)),
         "fragment_like_rows": int((frame["fragment_score"].astype(float) > 0).sum())

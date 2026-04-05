@@ -82,6 +82,10 @@ Second larger-batch member-owned data/index migration:
 - `docs/roadmap_v2/migration_round_o_ai_washing_index_sec_batch_v1.md`
 - `projects/ai_washing/index_sec_grouped_migration_sheet_v1.md`
 
+First four-family member-owned sentence-table migration:
+- `docs/roadmap_v2/migration_round_p_ai_washing_sentence_table_batch_v1.md`
+- `projects/ai_washing/extract_sentence_table_grouped_migration_sheet_v1.md`
+
 Structured member shell lanes now exist:
 - `projects/ai_washing/docs/`
 - `projects/ai_washing/reports/`

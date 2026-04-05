@@ -28,7 +28,7 @@ from semantic_ai_washing.data.build_filing_manifest import (
     normalize_cik,
     _prepare_candidates,
 )
-from semantic_ai_washing.data.extract_sentence_table import (
+from ai_washing_member.data.extract_sentence_table import (
     DEFAULT_KEYWORDS,
     EXTRACTOR_VERSION,
     OUTPUT_COLUMNS as SENTENCE_COLUMNS,

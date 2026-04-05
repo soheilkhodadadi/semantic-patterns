@@ -13,7 +13,7 @@ from semantic_ai_washing.core.sentence_filter import (
     normalize_sentence_text,
 )
 from semantic_ai_washing.data.build_filing_manifest import build_manifest
-from semantic_ai_washing.data.extract_sentence_table import extract_sentence_table
+from ai_washing_member.data.extract_sentence_table import extract_sentence_table
 from semantic_ai_washing.data.reextract_tranche_slice import reextract_tranche_slice
 
 

@@ -22,6 +22,18 @@ from ai_washing_member.data.index_sec_filings import (
     source_window_id_for_year,
     write_index_csv,
 )
+from ai_washing_member.data.extract_sentence_table import (
+    DEFAULT_KEYWORDS,
+    DEFAULT_MANIFEST,
+    DEFAULT_MAX_TOKENS,
+    DEFAULT_OUTPUT,
+    DEFAULT_REPORT,
+    DEFAULT_SAMPLE_OUTPUT,
+    DEFAULT_SEGMENTATION_MODE,
+    EXTRACTOR_VERSION,
+    OUTPUT_COLUMNS as SENTENCE_TABLE_OUTPUT_COLUMNS,
+    _segment_text,
+)
 
 __all__ = [
     "SEC_SOURCE_HINT_FILE",
@@ -44,4 +56,14 @@ __all__ = [
     "build_source_windows",
     "build_summary_report",
     "write_index_csv",
+    "DEFAULT_MANIFEST",
+    "DEFAULT_OUTPUT",
+    "DEFAULT_SAMPLE_OUTPUT",
+    "DEFAULT_REPORT",
+    "DEFAULT_KEYWORDS",
+    "DEFAULT_MAX_TOKENS",
+    "DEFAULT_SEGMENTATION_MODE",
+    "EXTRACTOR_VERSION",
+    "SENTENCE_TABLE_OUTPUT_COLUMNS",
+    "_segment_text",
 ]

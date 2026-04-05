@@ -38,14 +38,16 @@ It is a broader caller-family batch under an already-established authority.
 
 Safe larger-batch pattern:
 - one existing authority
-- up to two adjacent caller families
-- one shared regression gate that already spans both families
+- up to four tightly related families in one project lane
+- one shared regression gate that already spans the full batch
 - no package identity change
 - no shared-package extraction in the same commit
 
 Examples now likely safe:
 - two adjacent `ai_washing` caller families that depend on the same member-owned
   surface and already share a regression bundle
+- a four-family `ai_washing` batch when the fourth family is the direct
+  validation/import edge for the same authority surface
 - a `director` package slice plus its immediate direct callers only when no
   project-member migration is mixed into the same batch
 
@@ -117,3 +119,18 @@ Observed result:
 This reinforces that the upgraded protocol is not a one-off success. It is now
 repeatable for `ai_washing` project-member migrations when authority and the
 gate are both explicit.
+
+## Third experiment result
+
+The third larger-batch experiment has now passed through:
+- `docs/roadmap_v2/migration_round_p_ai_washing_sentence_table_batch_v1.md`
+
+Observed result:
+- one authority move
+- four tightly related caller families in one lane
+- one shared regression gate
+- clean pass on the declared validation bundle
+
+This is the first proof that we can safely move beyond two-family batches when
+the fourth family is the direct validation/import edge and the authority is
+already explicit.

@@ -67,6 +67,7 @@ This is now proven for:
 - the first `ai_washing` member-owned code seed
 - the first larger-batch `ai_washing` classification support migration
 - the second larger-batch `ai_washing` SEC index migration
+- the first four-family `ai_washing` sentence-table migration
 
 ## Current bottlenecks
 
@@ -100,5 +101,10 @@ The restructure is past the speculative phase.
 We now have enough real package/member moves to use a faster protocol without
 losing control, as long as the batch unit stays:
 - one bounded authority move
-- up to two adjacent caller families
-- one acceptance gate
+- up to four tightly related families in one lane
+- one shared acceptance gate
+
+The current upper bound is still conditional:
+- the larger batch must stay inside one existing authority
+- the validation/import edge can count as one family
+- the gate must already cover the full batch

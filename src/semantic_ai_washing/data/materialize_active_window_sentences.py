@@ -10,8 +10,8 @@ from typing import Any
 
 import pandas as pd
 
-from semantic_ai_washing.data.extract_sentence_table import extract_sentence_table
-from semantic_ai_washing.data.extract_sentence_table import DEFAULT_MAX_TOKENS
+from ai_washing_member.data.extract_sentence_table import DEFAULT_MAX_TOKENS
+from ai_washing_member.data.extract_sentence_table import extract_sentence_table
 from ai_washing_member.data.index_sec_filings import (
     OUTPUT_SOURCE_WINDOWS,
     OUTPUT_SUMMARY,
