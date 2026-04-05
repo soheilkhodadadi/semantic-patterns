@@ -43,3 +43,6 @@ See also:
 - `docs/lab/migration/ai_washing_legacy_to_new_mapping_v1.md`
 - `projects/ai_washing/member_seed_plan_v1.md`
 - `docs/roadmap_v2/migration_round_d_ai_washing_normalization_v1.md`
+
+First live member artifact:
+- `reports/projects/ai_washing/artifact_index_v1.md`

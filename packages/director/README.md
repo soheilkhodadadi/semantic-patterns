@@ -1,8 +1,9 @@
 # Director Package Seed
 
 ## Status
-- seeded target only
-- not yet a standalone package directory with real `pyproject.toml`
+- seeded package shell
+- real `pyproject.toml` present
+- authoritative implementation still lives in legacy paths
 
 ## Purpose
 

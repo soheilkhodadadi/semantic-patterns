@@ -19,3 +19,6 @@ A package in this lane should eventually satisfy the workspace-member contract i
 Current seed plans:
 - `packages/labcore/pyproject_seed_plan_v1.md`
 - `packages/director/pyproject_seed_plan_v1.md`
+
+Current package-shell anchor:
+- `docs/roadmap_v2/migration_round_d_package_shells_v1.md`

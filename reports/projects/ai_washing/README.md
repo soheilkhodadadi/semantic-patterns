@@ -15,3 +15,6 @@ Good fits include:
 
 Do not move existing authoritative notes here in bulk.
 Use this lane for new normalized reporting work and for curated promotions only.
+
+Current live anchor:
+- `reports/projects/ai_washing/artifact_index_v1.md`
