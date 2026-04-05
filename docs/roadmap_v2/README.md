@@ -23,6 +23,8 @@ Recommended split:
   - `local_private/roadmap_v2/`
 
 Suggested first tracked artifacts:
+- `roadmap_v4_multi_program_v1.md`
+- `lab_mvp_1_0_blueprint_v1.md`
 - `roadmap_v3_concept_v1.md`
 - `lab_transition_architecture_v1.md`
 - `engine_boundary_memo_v1.md`
