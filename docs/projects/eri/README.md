@@ -8,4 +8,8 @@ Near-term expected artifacts:
 - shared-core dependency notes
 - promoted pilot documentation cleared for tracking
 
+Current anchor:
+- adapter framing note:
+  - `docs/projects/eri/adapter_framing_v1.md`
+
 Keep organization-specific planning and interview materials under `local_private/projects/eri/`.

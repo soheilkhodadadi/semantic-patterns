@@ -15,3 +15,5 @@ Current migration anchors:
   - `docs/lab/migration/ai_washing_legacy_to_new_mapping_v1.md`
 - active Wave 3 note:
   - `docs/roadmap_v2/migration_wave_3_v1.md`
+- adapter framing note:
+  - `docs/projects/ai_washing/adapter_framing_v1.md`

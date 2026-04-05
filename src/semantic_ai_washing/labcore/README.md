@@ -11,3 +11,7 @@ Current Wave 3 rule:
 - keep this package small
 - add only structure-aware, project-agnostic helpers
 - do not move AI-washing analytical logic here just because it exists
+
+Current seed modules:
+- `registry/lanes.py` for shared/project lane resolution
+- `runtime.py` for low-level runtime helpers that are reusable across projects

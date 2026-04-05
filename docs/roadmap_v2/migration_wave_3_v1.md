@@ -34,6 +34,21 @@ Why it qualifies:
 Implementation lane:
 - `src/semantic_ai_washing/labcore/registry/lanes.py`
 
+### Candidate 1B. Low-level runtime helpers
+Status:
+- implement now
+
+Why it qualifies:
+- the helpers are leaf-level, project-agnostic, and already used across the director stack
+- the functions are generic runtime concerns rather than AI-washing semantics
+- extraction can preserve compatibility through a shim while proving reuse discipline
+
+Implementation lane:
+- `src/semantic_ai_washing/labcore/runtime.py`
+
+Compatibility guardrail:
+- `src/semantic_ai_washing/director/core/utils.py` remains as a staged-migration shim
+
 ### Candidate 2. Manifest contracts and manifest helpers
 Status:
 - candidate only, do not move yet
@@ -72,10 +87,9 @@ Why not move yet:
 
 ## Likely next extraction set after the first seed
 
-Once the lane-resolution seed proves useful, the next safest cross-project candidates are likely leaf utilities from `director/core/`, not analytical pipeline code.
+Once the lane-resolution seed and runtime extraction prove useful, the next safest cross-project candidates are likely other leaf utilities from `director/core/`, not analytical pipeline code.
 
 Most plausible follow-on candidates:
-- runtime and filesystem helpers now concentrated in `director/core/utils.py`
 - append-only audit payload helpers in `director/core/audit.py`
 - secret-redaction and tracked-file scanning helpers in `director/core/security.py`
 - lightweight OpenAI Responses transport helpers in `director/core/openai_responses.py`
@@ -106,6 +120,7 @@ These remain project-specific for now:
 Wave 3 is complete when:
 - `src/semantic_ai_washing/labcore/` exists as a real package skeleton
 - at least one small shared-core module exists with a defensible multi-project rationale
+- the first extracted runtime helper set is available through `labcore/` without breaking director imports
 - the repo still treats AI-washing semantics as project-specific rather than forcing them into shared core
 
 ## Bottom line

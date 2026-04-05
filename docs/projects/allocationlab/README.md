@@ -7,4 +7,8 @@ Near-term expected artifacts:
 - ontology summaries safe to share internally in the repo
 - project orientation and dependency maps
 
+Current anchor:
+- adapter framing note:
+  - `docs/projects/allocationlab/adapter_framing_v1.md`
+
 Keep partner-specific strategy and non-public implementation materials under `local_private/projects/allocationlab/`.

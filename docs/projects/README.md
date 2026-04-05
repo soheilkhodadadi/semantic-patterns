@@ -9,5 +9,10 @@ Each project subfolder should explain:
 - the current delivery surface
 - what remains local-private
 
+Current adapter-framing notes:
+- `ai_washing/adapter_framing_v1.md`
+- `eri/adapter_framing_v1.md`
+- `allocationlab/adapter_framing_v1.md`
+
 Do not place partner-confidential or NDA-bound material here.
 Those stay under `local_private/projects/`.
