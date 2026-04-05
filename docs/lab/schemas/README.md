@@ -1,24 +1,19 @@
 # Schemas
 
-This lane is for stable shared schemas and contracts.
+This lane is for stable shared schemas and contracts that should eventually serve at least two
+programs.
 
 Expected artifacts:
+- adapter contracts
+- workspace/member contracts
 - evidence-unit schemas
 - manifest field contracts
 - benchmark and evaluation schema notes
 - delivery/export contract notes
 
 Rule:
-- only place a schema here when it is intended to serve at least two programs
-# Schema Docs
+- only place a schema here when it is intended to stabilize a genuinely shared contract
 
-This lane is for lightweight schema notes that stabilize shared contracts as the lab structure matures.
-
-Expected artifacts:
-- adapter contracts
-- manifest contracts
-- evidence payload notes
-- delivery payload notes
-
-Current anchor:
+Current anchors:
 - `project_adapter_contract_v1.md`
+- `workspace_member_contract_v1.md`

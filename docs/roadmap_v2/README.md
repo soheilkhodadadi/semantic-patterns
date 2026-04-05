@@ -39,7 +39,9 @@ Suggested first tracked artifacts:
 - `lab_end_state_architecture_review_v1.md`
 - `lab_end_state_architecture_review_v2.md`
 - `restructure_parallel_protocol_v1.md`
+- `restructure_parallel_protocol_v2.md`
 - `restructure_short_term_rounds_v1.md`
+- `restructure_short_term_rounds_v2.md`
 - `roadmap_v3_concept_v1.md`
 - `lab_transition_architecture_v1.md`
 - `target_repo_layout_v2.md`
@@ -72,11 +74,14 @@ First registry anchor:
 
 Current active migration anchors:
 - `docs/lab/migration/ai_washing_legacy_to_new_mapping_v1.md`
+- `docs/lab/schemas/workspace_member_contract_v1.md`
 - `docs/roadmap_v2/migration_wave_3_v1.md`
 - `docs/roadmap_v2/lab_end_state_architecture_review_v1.md`
 - `docs/roadmap_v2/lab_end_state_architecture_review_v2.md`
 - `docs/roadmap_v2/restructure_parallel_protocol_v1.md`
+- `docs/roadmap_v2/restructure_parallel_protocol_v2.md`
 - `docs/roadmap_v2/restructure_short_term_rounds_v1.md`
+- `docs/roadmap_v2/restructure_short_term_rounds_v2.md`
 - `docs/roadmap_v2/target_repo_layout_v2.md`
 
 The intent is to keep the repo useful for supervisor review and future collaborators without mixing public-safe planning with private partner-facing strategy.
