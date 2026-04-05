@@ -14,3 +14,4 @@ Current status:
 
 Current anchor:
 - `adapter_registry_v1.md`
+- `package_member_acceptance_checklist_v1.md`

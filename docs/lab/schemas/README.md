@@ -16,4 +16,6 @@ Rule:
 
 Current anchors:
 - `project_adapter_contract_v1.md`
+- `manifest_contract_v1.md`
+- `evidence_unit_contract_v1.md`
 - `workspace_member_contract_v1.md`

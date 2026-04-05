@@ -42,6 +42,10 @@ Suggested first tracked artifacts:
 - `restructure_parallel_protocol_v2.md`
 - `restructure_short_term_rounds_v1.md`
 - `restructure_short_term_rounds_v2.md`
+- `manifest_contract_v1.md`
+- `evidence_unit_contract_v1.md`
+- `workspace_member_contract_v1.md`
+- `package_member_acceptance_checklist_v1.md`
 - `roadmap_v3_concept_v1.md`
 - `lab_transition_architecture_v1.md`
 - `target_repo_layout_v2.md`
@@ -74,6 +78,9 @@ First registry anchor:
 
 Current active migration anchors:
 - `docs/lab/migration/ai_washing_legacy_to_new_mapping_v1.md`
+- `docs/lab/control_plane/package_member_acceptance_checklist_v1.md`
+- `docs/lab/schemas/manifest_contract_v1.md`
+- `docs/lab/schemas/evidence_unit_contract_v1.md`
 - `docs/lab/schemas/workspace_member_contract_v1.md`
 - `docs/roadmap_v2/migration_wave_3_v1.md`
 - `docs/roadmap_v2/lab_end_state_architecture_review_v1.md`
