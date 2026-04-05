@@ -11,3 +11,6 @@ Expected artifacts:
 Current status:
 - planning documents remain in `docs/roadmap_v2/`
 - executed migration records can be promoted here once a wave lands
+
+Current anchor:
+- `ai_washing_legacy_to_new_mapping_v1.md`

@@ -1,0 +1,1 @@
+"""Shared evaluation contracts will live here once cross-project reuse is proven."""

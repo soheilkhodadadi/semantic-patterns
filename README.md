@@ -81,6 +81,11 @@ The first registry-style map for those lanes is:
 
 - `reports/registry/artifact_registry_v1.md`
 
+The current AI-washing replacement map and Wave 3 note are:
+
+- `docs/lab/migration/ai_washing_legacy_to_new_mapping_v1.md`
+- `docs/roadmap_v2/migration_wave_3_v1.md`
+
 Important transition rule:
 - existing authoritative AI-washing artifacts remain authoritative in their current legacy paths until later migration waves create explicit replacement maps
 
