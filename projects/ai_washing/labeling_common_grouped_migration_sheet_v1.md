@@ -8,6 +8,9 @@ grouped migration order.
 It still does not authorize a code move by itself. It defines the safest order
 for a future bounded move once the member-local import path is chosen.
 
+Current transitional member-local import path:
+- `ai_washing_member.labeling.common`
+
 ## Current source slice
 
 Current source:
@@ -141,3 +144,8 @@ This grouped sheet still looks clean.
 
 The move remains substantial, but the groups are coherent enough that it does
 not block a small next `director` extraction slice in parallel.
+
+Current status:
+- the authoritative implementation has now moved into the member shell through
+  `docs/roadmap_v2/migration_round_i_ai_washing_group1_code_seed_v1.md`
+- direct grouped caller migrations remain for later rounds

@@ -7,7 +7,7 @@ PYTHON_VERSION = 3.11
 VENV_DIR = .venv
 VENV_PYTHON = $(VENV_DIR)/bin/python
 VENV_PIP = $(VENV_PYTHON) -m pip
-REPO_PYTHONPATH = $(CURDIR)/src:$(CURDIR)/packages/labcore/src:$(CURDIR)/packages/director/src
+REPO_PYTHONPATH = $(CURDIR)/src:$(CURDIR)/packages/labcore/src:$(CURDIR)/packages/director/src:$(CURDIR)/projects/ai_washing/src
 REPO_PYTHON = PYTHONPATH="$(REPO_PYTHONPATH)" $(VENV_PYTHON)
 BOOTSTRAP_PYTHON ?= python3.11
 PYTHON_INTERPRETER = $(VENV_PYTHON)
@@ -105,6 +105,12 @@ doctor:
 		echo "[OK] semantic_director import works in $(VENV_DIR)"; \
 	else \
 		echo "[ERROR] cannot import semantic_director from $(VENV_DIR)"; \
+		exit 1; \
+	fi
+	@if $(REPO_PYTHON) -c "import ai_washing_member" >/dev/null 2>&1; then \
+		echo "[OK] ai_washing_member import works in $(VENV_DIR)"; \
+	else \
+		echo "[ERROR] cannot import ai_washing_member from $(VENV_DIR)"; \
 		exit 1; \
 	fi
 	@if $(VENV_PYTHON) -c "import pyarrow" >/dev/null 2>&1; then \

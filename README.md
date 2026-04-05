@@ -37,7 +37,7 @@ Until the workspace restructure is fully tool-managed, repo commands use a
 workspace path profile equivalent to:
 
 ```bash
-PYTHONPATH=src:packages/labcore/src:packages/director/src
+PYTHONPATH=src:packages/labcore/src:packages/director/src:projects/ai_washing/src
 ```
 
 The Makefile now applies that profile for repo-owned module commands and doctor

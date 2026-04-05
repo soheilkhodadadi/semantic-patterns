@@ -98,6 +98,7 @@ Current active migration anchors:
 - `docs/roadmap_v2/migration_round_f_workspace_bootstrap_and_labeling_callers_v1.md`
 - `docs/roadmap_v2/migration_round_g_director_schema_extraction_v1.md`
 - `docs/roadmap_v2/migration_round_h_director_policies_extraction_v1.md`
+- `docs/roadmap_v2/migration_round_i_ai_washing_group1_code_seed_v1.md`
 - `docs/lab/control_plane/labcore_extraction_protocol_v1.md`
 - `docs/roadmap_v2/migration_wave_3_v1.md`
 - `docs/roadmap_v2/lab_end_state_architecture_review_v1.md`

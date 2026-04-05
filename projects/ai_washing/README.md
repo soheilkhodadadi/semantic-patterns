@@ -59,6 +59,9 @@ Bounded impact map for the first code seed:
 Grouped caller migration order:
 - `projects/ai_washing/labeling_common_grouped_migration_sheet_v1.md`
 
+First real member-owned code move:
+- `docs/roadmap_v2/migration_round_i_ai_washing_group1_code_seed_v1.md`
+
 Structured member shell lanes now exist:
 - `projects/ai_washing/docs/`
 - `projects/ai_washing/reports/`
