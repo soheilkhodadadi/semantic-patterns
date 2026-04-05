@@ -12,7 +12,7 @@ import pandas as pd
 
 from semantic_ai_washing.classification.model_runtime import load_manifest
 from semantic_ai_washing.classification.preliminary_pipeline import sha256_file
-from semantic_ai_washing.labeling.common import load_table
+from ai_washing_member.labeling.common import load_table
 
 
 LABEL_TO_COUNT = {

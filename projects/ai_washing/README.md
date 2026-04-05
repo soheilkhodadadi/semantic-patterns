@@ -68,6 +68,9 @@ First grouped caller-family migration:
 Second grouped caller-family migration:
 - `docs/roadmap_v2/migration_round_k_ai_washing_group2_callers_v1.md`
 
+Third grouped caller-family migration:
+- `docs/roadmap_v2/migration_round_l_ai_washing_group3_callers_v1.md`
+
 Structured member shell lanes now exist:
 - `projects/ai_washing/docs/`
 - `projects/ai_washing/reports/`

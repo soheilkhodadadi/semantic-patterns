@@ -22,7 +22,7 @@ import os
 import re
 import pandas as pd
 
-from semantic_ai_washing.labeling.common import load_table
+from ai_washing_member.labeling.common import load_table
 
 
 def normalize_cik(x) -> str:
@@ -38,7 +38,9 @@ def main():
     p.add_argument(
         "--patents", default="data/processed/patents/ai_patent_counts_filtered_2019plus.csv"
     )
-    p.add_argument("--lookup", default="data/metadata/company_lookup_active_annual_allyears_2021_2024.csv")
+    p.add_argument(
+        "--lookup", default="data/metadata/company_lookup_active_annual_allyears_2021_2024.csv"
+    )
     p.add_argument("--out", default="data/final/ai_freq_patents_firm_year.csv")
     args = p.parse_args()
 

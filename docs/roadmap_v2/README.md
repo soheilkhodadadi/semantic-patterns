@@ -101,6 +101,7 @@ Current active migration anchors:
 - `docs/roadmap_v2/migration_round_i_ai_washing_group1_code_seed_v1.md`
 - `docs/roadmap_v2/migration_round_j_ai_washing_group1_callers_v1.md`
 - `docs/roadmap_v2/migration_round_k_ai_washing_group2_callers_v1.md`
+- `docs/roadmap_v2/migration_round_l_ai_washing_group3_callers_v1.md`
 - `docs/roadmap_v2/restructure_progress_checkpoint_v1.md`
 - `docs/roadmap_v2/group3_readiness_checkpoint_v1.md`
 - `docs/roadmap_v2/fast_safe_migration_protocol_v1.md`

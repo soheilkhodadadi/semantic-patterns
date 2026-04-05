@@ -22,7 +22,7 @@ from semantic_ai_washing.data.index_sec_filings import (
     resolve_sec_source,
     write_index_csv,
 )
-from semantic_ai_washing.labeling.common import row_sha256
+from ai_washing_member.labeling.common import row_sha256
 
 DEFAULT_YEARS = (2021, 2022, 2023, 2024)
 
