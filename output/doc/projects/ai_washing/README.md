@@ -1,10 +1,11 @@
-# AI-washing Document Outputs
+# AI-Washing Project Document Outputs
 
-This lane is the future destination for AI-washing-specific polished documents once delivery migration begins.
+This folder is the polished document-output lane for the `ai_washing` project member.
 
-Current delivery outputs still live in legacy lanes such as:
-- `output/doc/delivery_tables_v1/`
-- `output/doc/delivery_figures_v1/`
-- `output/doc/reports/`
+Use it for fresh AI-washing document outputs such as:
+- review packets
+- polished project memos
+- writing-support packets
+- delivery documents that are not part of the manuscript source lane
 
-Do not bulk-move those files without a migration note and replacement map.
+Current legacy delivery folders remain authoritative until a builder is explicitly switched.

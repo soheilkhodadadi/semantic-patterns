@@ -1,11 +1,17 @@
-# AI-washing Project Reports
+# AI-Washing Project Reports
 
-This lane is the future project-specific reporting home for AI-washing once reporting is migrated out of mixed legacy locations.
+This folder is the future tracked reporting lane for the `ai_washing` project member.
 
-Current reporting still exists across:
-- `reports/analysis/`
-- `reports/evaluation/`
-- `reports/validation/`
-- `reports/models/`
+Use it for fresh AI-washing project reports that are:
+- project-specific
+- tracked in git
+- not better classified as manuscript files or shared benchmark evidence
 
-Use this folder for new project-level reporting that is clearly AI-washing-specific and does not belong in a shared lane.
+Good fits include:
+- curated technical audit notes
+- project execution summaries
+- reporting indexes and manifests
+- stable project memos promoted out of `reports/analysis/`
+
+Do not move existing authoritative notes here in bulk.
+Use this lane for new normalized reporting work and for curated promotions only.

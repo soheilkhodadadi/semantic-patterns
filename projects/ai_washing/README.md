@@ -14,6 +14,12 @@ It should eventually own:
 - project reports and outputs
 - project-local packaging metadata when the member becomes buildable
 
+First normalized member-facing lanes now exist at:
+- `reports/projects/ai_washing/`
+- `output/doc/projects/ai_washing/`
+- `output/figures/projects/ai_washing/`
+- `data/processed/projects/ai_washing/`
+
 ## Current source pressure
 
 The live project still spans:
@@ -36,3 +42,4 @@ See also:
 - `docs/projects/ai_washing/adapter_framing_v1.md`
 - `docs/lab/migration/ai_washing_legacy_to_new_mapping_v1.md`
 - `projects/ai_washing/member_seed_plan_v1.md`
+- `docs/roadmap_v2/migration_round_d_ai_washing_normalization_v1.md`

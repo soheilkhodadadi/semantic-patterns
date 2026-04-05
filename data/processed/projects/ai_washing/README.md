@@ -1,7 +1,7 @@
-# AI-Washing Processed Data
+# AI-Washing Project Processed Data
 
-This lane is the future destination for AI-washing processed datasets that we want to treat as explicitly project-scoped in the new lab structure.
+This folder is the future curated processed-data lane for the `ai_washing` project member.
 
-Transition note:
-- current authoritative AI-washing processed datasets still live in legacy paths such as `data/processed/panel/`, `data/processed/patents/`, and `data/processed/aggregates/`
-- do not bulk-move them without a mapping sheet and a validation pass
+Use it only for validated, project-scoped derived datasets that are authoritative for AI-washing and do not belong in a shared lane.
+
+Current processed panel, patent, and aggregate datasets remain authoritative in their legacy locations until a curated dataset subset and validation map are promoted here.
