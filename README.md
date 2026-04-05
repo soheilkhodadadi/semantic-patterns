@@ -53,6 +53,37 @@ Current authoritative artifacts include:
 
 Current delivery status is tracked in [docs/preliminary_delivery_status_2026-03-20.md](docs/preliminary_delivery_status_2026-03-20.md).
 
+## Lab Restructure Transition
+
+The repo is now also being prepared to operate as a multi-program lab rather than a single-project workspace.
+
+Wave 2 of that restructure creates the first stable destination lanes for future shared and project-scoped artifacts:
+
+- lab-wide docs:
+  - `docs/lab/`
+- project docs:
+  - `docs/projects/`
+- shared registry and inventory reports:
+  - `reports/registry/`
+- project report lanes:
+  - `reports/projects/`
+- shared and project processed-data destination markers:
+  - `data/manifests/`
+  - `data/processed/shared/`
+  - `data/processed/projects/`
+- shared and project delivery destination markers:
+  - `output/doc/shared/`
+  - `output/doc/projects/`
+  - `output/figures/shared/`
+  - `output/figures/projects/`
+
+The first registry-style map for those lanes is:
+
+- `reports/registry/artifact_registry_v1.md`
+
+Important transition rule:
+- existing authoritative AI-washing artifacts remain authoritative in their current legacy paths until later migration waves create explicit replacement maps
+
 ## Current Paper-Support Audit
 
 For the March 25, 2026 Pass C draft, the current technical audit and reproducibility note live here:

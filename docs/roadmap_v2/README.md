@@ -34,6 +34,7 @@ Suggested first tracked artifacts:
 - `target_repo_layout_v1.md`
 - `restructure_execution_plan_v1.md`
 - `migration_wave_1_v1.md`
+- `migration_wave_2_v1.md`
 - `roadmap_v3_concept_v1.md`
 - `lab_transition_architecture_v1.md`
 - `roadmap_v2_review_v1.md`
@@ -46,5 +47,21 @@ Suggested first local-private artifacts:
 - `allocationlab_architecture_v1.md`
 - `allocationlab_gap_matrix_v1.md`
 - `allocationlab_synthetic_case_v1.md`
+
+Wave 2 destinations now scaffolded:
+- `docs/lab/`
+- `docs/projects/`
+- `reports/registry/`
+- `reports/projects/`
+- `data/manifests/`
+- `data/processed/shared/`
+- `data/processed/projects/`
+- `output/doc/shared/`
+- `output/doc/projects/`
+- `output/figures/shared/`
+- `output/figures/projects/`
+
+First registry anchor:
+- `reports/registry/artifact_registry_v1.md`
 
 The intent is to keep the repo useful for supervisor review and future collaborators without mixing public-safe planning with private partner-facing strategy.

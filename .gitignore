@@ -6,6 +6,22 @@ data/*
 !data/metadata/technical_terms/
 !data/metadata/technical_terms/concrete_terms.txt
 !data/metadata/technical_terms/vague_terms.txt
+!data/manifests/
+data/manifests/*
+!data/manifests/README.md
+!data/processed/
+data/processed/*
+!data/processed/shared/
+!data/processed/shared/README.md
+!data/processed/projects/
+data/processed/projects/*
+!data/processed/projects/README.md
+!data/processed/projects/ai_washing/
+!data/processed/projects/ai_washing/README.md
+!data/processed/projects/eri/
+!data/processed/projects/eri/README.md
+!data/processed/projects/allocationlab/
+!data/processed/projects/allocationlab/README.md
 
 # Mac OS-specific storage files
 .DS_Store
@@ -224,8 +240,31 @@ output/paper/**/*.md
 # Ignore all generated output bundles, but keep placeholder directories
 output/*
 !output/doc/
+!output/figures/
 !output/paper/
 !output/doc/.gitkeep
+!output/doc/shared/
+!output/doc/shared/README.md
+!output/doc/projects/
+!output/doc/projects/README.md
+!output/doc/projects/ai_washing/
+!output/doc/projects/ai_washing/README.md
+!output/doc/projects/eri/
+!output/doc/projects/eri/README.md
+!output/doc/projects/allocationlab/
+!output/doc/projects/allocationlab/README.md
+output/figures/*
+!output/figures/shared/
+!output/figures/shared/README.md
+!output/figures/projects/
+output/figures/projects/*
+!output/figures/projects/README.md
+!output/figures/projects/ai_washing/
+!output/figures/projects/ai_washing/README.md
+!output/figures/projects/eri/
+!output/figures/projects/eri/README.md
+!output/figures/projects/allocationlab/
+!output/figures/projects/allocationlab/README.md
 !output/paper/.gitkeep
 
 # Generated regression/result bundles
