@@ -106,7 +106,6 @@ Why not move yet:
 Once the lane-resolution seed and runtime extraction prove useful, the next safest cross-project candidates are likely other leaf utilities from `director/core/`, not analytical pipeline code.
 
 Most plausible follow-on candidates:
-- secret-redaction and tracked-file scanning helpers in `director/core/security.py`
 - lightweight OpenAI Responses transport helpers in `director/core/openai_responses.py`
 
 Why these are better follow-on candidates:
