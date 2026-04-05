@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from semantic_ai_washing.labeling.common import load_table
+from ai_washing_member.labeling.common import load_table
 
 
 def test_load_table_retries_parquet_timeout_with_direct_parquetfile(

@@ -157,3 +157,5 @@ Current status:
 - Group 4 director-adjacent validation has now migrated through
   `docs/roadmap_v2/migration_round_m_ai_washing_group4_validation_v1.md`
 - the full grouped migration family is now complete
+- the remaining direct root test callers have now migrated through
+  `docs/roadmap_v2/migration_round_q_ai_washing_labeling_common_test_tail_v1.md`

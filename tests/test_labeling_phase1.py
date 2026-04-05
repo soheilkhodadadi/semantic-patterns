@@ -8,7 +8,7 @@ from pathlib import Path
 import pandas as pd
 
 from semantic_ai_washing.labeling.build_labeling_sample import run_build
-from semantic_ai_washing.labeling.common import (
+from ai_washing_member.labeling.common import (
     compute_sample_id,
     compute_sentence_id,
     normalize_sentence,
