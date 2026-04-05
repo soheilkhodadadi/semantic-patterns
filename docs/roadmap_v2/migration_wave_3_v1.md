@@ -106,7 +106,7 @@ Why not move yet:
 Once the lane-resolution seed and runtime extraction prove useful, the next safest cross-project candidates are likely other leaf utilities from `director/core/`, not analytical pipeline code.
 
 Most plausible follow-on candidates:
-- lightweight OpenAI Responses transport helpers in `director/core/openai_responses.py`
+- manifest/evidence contracts once cross-project reuse is demonstrated
 
 Why these are better follow-on candidates:
 - they are low-level

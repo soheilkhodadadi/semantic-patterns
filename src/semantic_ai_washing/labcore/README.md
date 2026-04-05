@@ -17,3 +17,4 @@ Current seed modules:
 - `runtime.py` for low-level runtime helpers that are reusable across projects
 - `audit.py` for append-only audit records and generic provenance envelopes
 - `security.py` for secret redaction, repo scans, and generic API-key validation helpers
+- `openai_responses.py` for lightweight shared OpenAI Responses transport helpers
