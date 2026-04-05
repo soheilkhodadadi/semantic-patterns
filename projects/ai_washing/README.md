@@ -89,6 +89,13 @@ First four-family member-owned sentence-table migration:
 Protocol V2 follow-on cleanup under established `labeling.common` authority:
 - `docs/roadmap_v2/migration_round_q_ai_washing_labeling_common_test_tail_v1.md`
 
+Protocol V2 follow-on cleanup under established classification support authority:
+- `docs/roadmap_v2/migration_round_r_ai_washing_classification_support_test_tail_v1.md`
+- `projects/ai_washing/classification_support_grouped_migration_sheet_v1.md`
+
+Latest candidate scan:
+- `docs/roadmap_v2/next_candidate_surface_scan_v1.md`
+
 Structured member shell lanes now exist:
 - `projects/ai_washing/docs/`
 - `projects/ai_washing/reports/`

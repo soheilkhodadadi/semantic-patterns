@@ -46,3 +46,5 @@ Legacy compatibility remains in place at:
 
 This grouped migration batch has now completed successfully through:
 - `docs/roadmap_v2/migration_round_n_ai_washing_classification_support_v1.md`
+- the remaining direct root test callers have now migrated through
+  `docs/roadmap_v2/migration_round_r_ai_washing_classification_support_test_tail_v1.md`

@@ -108,3 +108,10 @@ The current upper bound is still conditional:
 - the larger batch must stay inside one existing authority
 - the validation/import edge can count as one family
 - the gate must already cover the full batch
+
+Recent scan result:
+- the remaining already-member-owned `ai_washing` surfaces now have only a
+  shallow direct legacy-root tail
+- after the classification support tail, the next meaningful acceleration will
+  likely require a fresh authority move rather than another established-surface
+  cleanup batch

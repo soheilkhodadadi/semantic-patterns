@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from semantic_ai_washing.classification.preliminary_pipeline import (
+from ai_washing_member.classification.preliminary_pipeline import (
     _resolve_sentence_transformer_source,
 )
 
