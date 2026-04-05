@@ -13,7 +13,7 @@ from semantic_ai_washing.classification.model_runtime import (
     build_legacy_two_stage_runtime,
     predict_sentences,
 )
-from semantic_ai_washing.labeling.common import load_table, normalize_sentence, write_excel
+from ai_washing_member.labeling.common import load_table, normalize_sentence, write_excel
 
 DEFAULT_YEARS = (2021, 2022, 2023, 2024)
 TARGET_PER_LABEL = 60
@@ -104,8 +104,7 @@ def select_candidate_review_rows(eligible: pd.DataFrame) -> pd.DataFrame:
     shortfall: dict[str, int] = {}
     for label in LABELS:
         bucket = eligible[
-            (eligible["candidate_label"] == label)
-            & (~eligible["source_cik_norm"].isin(used_ciks))
+            (eligible["candidate_label"] == label) & (~eligible["source_cik_norm"].isin(used_ciks))
         ].copy()
         bucket = bucket.sort_values(["source_year", "source_cik_norm", "sentence_id"])
         bucket = bucket.drop_duplicates(subset=["source_cik_norm"], keep="first")
@@ -246,7 +245,9 @@ def run_sampling(args: argparse.Namespace) -> dict:
         if str(value).strip()
     ]
     if include_forms:
-        pool = pool[pool["source_form"].fillna("").astype(str).str.upper().isin(include_forms)].copy()
+        pool = pool[
+            pool["source_form"].fillna("").astype(str).str.upper().isin(include_forms)
+        ].copy()
         if pool.empty:
             raise ValueError(f"No sentence rows remain after form filter: {include_forms}")
     exclusions = load_exclusions(args.labels_master, args.historical_held_out)

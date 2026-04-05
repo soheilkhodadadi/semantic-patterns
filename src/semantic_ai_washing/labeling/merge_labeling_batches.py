@@ -10,7 +10,7 @@ from typing import Any
 
 import pandas as pd
 
-from semantic_ai_washing.labeling.common import (
+from ai_washing_member.labeling.common import (
     ensure_allowed_label,
     normalize_sentence,
     parse_uncertain_flag,

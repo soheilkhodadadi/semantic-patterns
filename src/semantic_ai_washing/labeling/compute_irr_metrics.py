@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from semantic_ai_washing.labeling.common import ALLOWED_LABELS, ensure_allowed_label, load_table
+from ai_washing_member.labeling.common import ALLOWED_LABELS, ensure_allowed_label, load_table
 
 TRANSITIONS = ["A->S", "A->I", "S->A", "S->I", "I->A", "I->S"]
 SHORT = {"Actionable": "A", "Speculative": "S", "Irrelevant": "I"}

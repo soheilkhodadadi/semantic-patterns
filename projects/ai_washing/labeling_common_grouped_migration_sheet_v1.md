@@ -148,4 +148,7 @@ not block a small next `director` extraction slice in parallel.
 Current status:
 - the authoritative implementation has now moved into the member shell through
   `docs/roadmap_v2/migration_round_i_ai_washing_group1_code_seed_v1.md`
-- direct grouped caller migrations remain for later rounds
+- Group 1 direct callers have now migrated through
+  `docs/roadmap_v2/migration_round_j_ai_washing_group1_callers_v1.md`
+- later grouped rounds still remain for classification, aggregation/data, and
+  director-adjacent validation

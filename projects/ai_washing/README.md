@@ -62,6 +62,9 @@ Grouped caller migration order:
 First real member-owned code move:
 - `docs/roadmap_v2/migration_round_i_ai_washing_group1_code_seed_v1.md`
 
+First grouped caller-family migration:
+- `docs/roadmap_v2/migration_round_j_ai_washing_group1_callers_v1.md`
+
 Structured member shell lanes now exist:
 - `projects/ai_washing/docs/`
 - `projects/ai_washing/reports/`

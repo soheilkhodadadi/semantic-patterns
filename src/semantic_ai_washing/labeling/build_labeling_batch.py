@@ -13,7 +13,7 @@ from typing import Any
 
 import pandas as pd
 
-from semantic_ai_washing.labeling.common import length_bin_from_tokens, normalize_sentence
+from ai_washing_member.labeling.common import length_bin_from_tokens, normalize_sentence
 
 DEFAULT_SENTENCES = "data/processed/sentences/year=2024/ai_sentences.parquet"
 DEFAULT_MANIFEST = "data/manifests/filings/pilot_2024_10k_v1.csv"

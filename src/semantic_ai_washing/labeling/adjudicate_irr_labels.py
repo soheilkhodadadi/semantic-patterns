@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from semantic_ai_washing.labeling.common import (
+from ai_washing_member.labeling.common import (
     ALLOWED_LABELS,
     ensure_allowed_label,
     load_table,

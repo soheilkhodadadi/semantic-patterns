@@ -11,7 +11,7 @@ from typing import Any
 
 import pandas as pd
 
-from semantic_ai_washing.labeling.common import ensure_allowed_label, normalize_sentence, safe_int
+from ai_washing_member.labeling.common import ensure_allowed_label, normalize_sentence, safe_int
 
 
 def _git_commit() -> str:
