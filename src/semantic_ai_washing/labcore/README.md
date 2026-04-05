@@ -15,3 +15,4 @@ Current Wave 3 rule:
 Current seed modules:
 - `registry/lanes.py` for shared/project lane resolution
 - `runtime.py` for low-level runtime helpers that are reusable across projects
+- `audit.py` for append-only audit records and generic provenance envelopes

@@ -61,6 +61,22 @@ Why not move yet:
 - current manifest logic is still too entangled with AI-washing corpus semantics
 - ERI reuse is not proven yet
 
+### Candidate 2B. Append-only audit helpers
+Status:
+- implement now
+
+Why it qualifies:
+- hashing and JSONL append semantics are generic infrastructure, not project semantics
+- the helpers are already reused in the director stack and likely belong in any multi-project lab
+- provenance can be generic if the caller-specific tool identity stays configurable
+
+Implementation lane:
+- `src/semantic_ai_washing/labcore/audit.py`
+
+Compatibility guardrail:
+- `src/semantic_ai_washing/director/core/audit.py` remains as a staged-migration shim
+- director keeps its current default provenance identity
+
 ### Candidate 3. Evaluation payload envelopes
 Status:
 - candidate only, do not move yet
@@ -90,7 +106,6 @@ Why not move yet:
 Once the lane-resolution seed and runtime extraction prove useful, the next safest cross-project candidates are likely other leaf utilities from `director/core/`, not analytical pipeline code.
 
 Most plausible follow-on candidates:
-- append-only audit payload helpers in `director/core/audit.py`
 - secret-redaction and tracked-file scanning helpers in `director/core/security.py`
 - lightweight OpenAI Responses transport helpers in `director/core/openai_responses.py`
 
