@@ -8,7 +8,7 @@ from zipfile import ZipFile
 
 import xml.etree.ElementTree as ET
 
-from semantic_ai_washing.director.core.roadmap_model import (
+from semantic_director.roadmap_model import (
     load_roadmap_model,
     roadmap_summary_dict,
 )

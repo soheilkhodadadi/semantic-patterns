@@ -52,3 +52,10 @@ Second extracted package slice:
 
 Migration trace:
 - `docs/roadmap_v2/migration_round_h_director_policies_extraction_v1.md`
+
+Third extracted package slice:
+- `packages/director/src/semantic_director/roadmap_model.py`
+
+Migration trace:
+- `docs/roadmap_v2/migration_round_t_director_roadmap_model_seed_v1.md`
+- `packages/director/roadmap_model_grouped_migration_sheet_v1.md`

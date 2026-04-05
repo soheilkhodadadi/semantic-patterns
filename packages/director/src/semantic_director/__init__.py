@@ -1,5 +1,13 @@
 """Autonomous project director package."""
 
+from semantic_director.roadmap_model import (
+    find_iteration,
+    find_phase,
+    load_remediation_library,
+    load_roadmap_model,
+    resolve_model_path,
+    roadmap_summary_dict,
+)
 from semantic_director.schemas import (
     BlockerEvent,
     CostUsageRecord,
@@ -27,4 +35,10 @@ __all__ = [
     "RecoveryOption",
     "DecisionRecord",
     "CostUsageRecord",
+    "resolve_model_path",
+    "load_roadmap_model",
+    "load_remediation_library",
+    "find_iteration",
+    "find_phase",
+    "roadmap_summary_dict",
 ]

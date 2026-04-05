@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections import defaultdict, deque
 from typing import Any
 
-from semantic_ai_washing.director.core.roadmap_model import (
+from semantic_director.roadmap_model import (
     iteration_phase_map,
     iter_phase_tasks,
 )

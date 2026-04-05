@@ -9,7 +9,7 @@ import yaml
 
 from semantic_ai_washing.director.core.readiness import ReadinessEvaluator
 from semantic_ai_washing.director.core.render import render_optimization_markdown
-from semantic_ai_washing.director.core.roadmap_model import (
+from semantic_director.roadmap_model import (
     load_remediation_library,
     load_roadmap_model,
 )

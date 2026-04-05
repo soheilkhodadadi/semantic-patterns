@@ -27,7 +27,7 @@ from semantic_ai_washing.director.core.render import (
     is_rendered_roadmap_fresh,
     render_roadmap_markdown,
 )
-from semantic_ai_washing.director.core.roadmap_model import (
+from semantic_director.roadmap_model import (
     load_remediation_library,
     load_roadmap_model,
     resolve_model_path,
