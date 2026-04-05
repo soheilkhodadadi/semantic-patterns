@@ -37,3 +37,4 @@ Promote code here only when:
 
 See also:
 - `packages/director/pyproject_seed_plan_v1.md`
+- `packages/director/first_extraction_slice_v1.md`

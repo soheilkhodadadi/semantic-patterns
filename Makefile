@@ -7,6 +7,8 @@ PYTHON_VERSION = 3.11
 VENV_DIR = .venv
 VENV_PYTHON = $(VENV_DIR)/bin/python
 VENV_PIP = $(VENV_PYTHON) -m pip
+REPO_PYTHONPATH = $(CURDIR)/src:$(CURDIR)/packages/labcore/src:$(CURDIR)/packages/director/src
+REPO_PYTHON = PYTHONPATH="$(REPO_PYTHONPATH)" $(VENV_PYTHON)
 BOOTSTRAP_PYTHON ?= python3.11
 PYTHON_INTERPRETER = $(VENV_PYTHON)
 ITER ?= 1
@@ -36,6 +38,12 @@ bootstrap:
 	fi
 	$(VENV_PIP) install --upgrade pip setuptools wheel
 	$(VENV_PIP) install -e ".[dev]"
+	@if [ -f "packages/labcore/pyproject.toml" ]; then \
+		$(VENV_PIP) install -e "./packages/labcore"; \
+	fi
+	@if [ -f "packages/director/pyproject.toml" ]; then \
+		$(VENV_PIP) install -e "./packages/director"; \
+	fi
 	$(VENV_PIP) install --upgrade "pyarrow>=16.1.0" "wrds>=3.3.0" "psycopg2-binary>=2.9.0" "numexpr>=2.8.4" "bottleneck>=1.3.6"
 
 
@@ -81,10 +89,22 @@ doctor:
 		echo "[ERROR] incompatible venv interpreter version or architecture"; \
 		exit 1; \
 	fi
-	@if $(VENV_PYTHON) -c "import semantic_ai_washing" >/dev/null 2>&1; then \
+	@if $(REPO_PYTHON) -c "import semantic_ai_washing" >/dev/null 2>&1; then \
 		echo "[OK] semantic_ai_washing import works in $(VENV_DIR)"; \
 	else \
 		echo "[ERROR] cannot import semantic_ai_washing from $(VENV_DIR)"; \
+		exit 1; \
+	fi
+	@if $(REPO_PYTHON) -c "import semantic_labcore" >/dev/null 2>&1; then \
+		echo "[OK] semantic_labcore import works in $(VENV_DIR)"; \
+	else \
+		echo "[ERROR] cannot import semantic_labcore from $(VENV_DIR)"; \
+		exit 1; \
+	fi
+	@if $(REPO_PYTHON) -c "import semantic_director" >/dev/null 2>&1; then \
+		echo "[OK] semantic_director import works in $(VENV_DIR)"; \
+	else \
+		echo "[ERROR] cannot import semantic_director from $(VENV_DIR)"; \
 		exit 1; \
 	fi
 	@if $(VENV_PYTHON) -c "import pyarrow" >/dev/null 2>&1; then \
@@ -107,31 +127,31 @@ doctor:
 ## Run director health checks
 .PHONY: director-doctor
 director-doctor:
-	@$(VENV_PYTHON) -m semantic_ai_washing.director.cli doctor --strict-secrets --json
+	@$(REPO_PYTHON) -m semantic_ai_washing.director.cli doctor --strict-secrets --json
 
 
 ## Generate director plan artifacts for an iteration/phase
 .PHONY: director-plan
 director-plan:
-	@$(VENV_PYTHON) -m semantic_ai_washing.director.cli plan --iteration $(ITER) --phase $(PHASE)
+	@$(REPO_PYTHON) -m semantic_ai_washing.director.cli plan --iteration $(ITER) --phase $(PHASE)
 
 
 ## Show director status snapshot
 .PHONY: director-status
 director-status:
-	@$(VENV_PYTHON) -m semantic_ai_washing.director.cli status
+	@$(REPO_PYTHON) -m semantic_ai_washing.director.cli status
 	
 ## Refresh generated paper snippets/tables from current artifacts
 .PHONY: paper-refresh
 paper-refresh:
-	@python3 -m semantic_ai_washing.analysis.generate_paper_assets
+	@$(REPO_PYTHON) -m semantic_ai_washing.analysis.generate_paper_assets
 
 
 ## Build the repo-native paper draft into markdown and docx
 .PHONY: paper-build
 paper-build:
-	@python3 -m semantic_ai_washing.analysis.generate_paper_assets
-	@python3 scripts/build_paper.py
+	@$(REPO_PYTHON) -m semantic_ai_washing.analysis.generate_paper_assets
+	@$(REPO_PYTHON) scripts/build_paper.py
 
 
 
@@ -174,7 +194,7 @@ create_environment: bootstrap
 ## Make dataset
 .PHONY: data
 data: requirements
-	$(PYTHON_INTERPRETER) src/dataset.py
+	$(REPO_PYTHON) src/dataset.py
 
 
 #################################################################################

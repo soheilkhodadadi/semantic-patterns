@@ -50,6 +50,9 @@ First live member artifact:
 Member shell readiness:
 - `projects/ai_washing/member_shell_readiness_v1.md`
 
+First code-seed decision:
+- `projects/ai_washing/first_code_seed_decision_v1.md`
+
 Structured member shell lanes now exist:
 - `projects/ai_washing/docs/`
 - `projects/ai_washing/reports/`

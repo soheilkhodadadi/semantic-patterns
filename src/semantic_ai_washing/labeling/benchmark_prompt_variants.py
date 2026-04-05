@@ -10,7 +10,7 @@ from typing import Any
 import pandas as pd
 import yaml
 
-from semantic_ai_washing.labcore.runtime import dump_json, now_utc_iso
+from semantic_labcore.runtime import dump_json, now_utc_iso
 from semantic_ai_washing.labeling.assistive_prelabel_batch import (
     ASSISTIVE_COLUMNS,
     generate_assistive_prelabels,

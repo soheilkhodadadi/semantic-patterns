@@ -17,6 +17,9 @@ The repo still contains legacy-compatible extraction/classification entry points
 
 - Python baseline: `3.11+`
 - canonical local environment: repo-local `.venv`
+- workspace packages seeded during the lab restructure:
+  - `semantic_labcore`
+  - `semantic_director`
 - recommended setup:
 
 ```bash
@@ -29,6 +32,16 @@ pytest -q
 ```
 
 Detailed environment notes are in [docs/environment_setup.md](docs/environment_setup.md).
+
+Until the workspace restructure is fully tool-managed, repo commands use a
+workspace path profile equivalent to:
+
+```bash
+PYTHONPATH=src:packages/labcore/src:packages/director/src
+```
+
+The Makefile now applies that profile for repo-owned module commands and doctor
+checks.
 
 ## Current State
 
@@ -216,7 +229,8 @@ So the sentence pipeline is still the foundation, but the authoritative delivery
 
 ## How To Run the Current Pipeline
 
-All examples below assume the repo-local environment is active and `PYTHONPATH=src` is set where needed.
+All examples below assume the repo-local environment is active.
+Use `PYTHONPATH=src` only where a command still explicitly relies on legacy root-lane imports during the migration.
 
 ### 1. Extract AI-related sentences
 
