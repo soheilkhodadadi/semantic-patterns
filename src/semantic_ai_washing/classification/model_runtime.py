@@ -15,7 +15,7 @@ from semantic_ai_washing.classification.preliminary_pipeline import (
     _resolve_sentence_transformer_source,
     sha256_file,
 )
-from semantic_ai_washing.labeling.common import ALLOWED_LABELS
+from ai_washing_member.labeling.common import ALLOWED_LABELS
 
 
 _MODEL_CACHE: dict[tuple[str, str], Any] = {}

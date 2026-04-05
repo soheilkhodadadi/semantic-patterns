@@ -23,7 +23,7 @@ from semantic_ai_washing.classification.model_runtime import (
     predict_sentences,
 )
 from semantic_ai_washing.classification.preliminary_pipeline import sha256_file
-from semantic_ai_washing.labeling.common import row_sha256
+from ai_washing_member.labeling.common import row_sha256
 
 PRIMARY_BENCHMARK_NAME = "held_out_v2"
 SECONDARY_MAJOR_REGRESSION_TOLERANCE = 0.10

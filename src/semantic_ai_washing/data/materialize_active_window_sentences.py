@@ -11,6 +11,7 @@ from typing import Any
 import pandas as pd
 
 from semantic_ai_washing.data.extract_sentence_table import extract_sentence_table
+from semantic_ai_washing.data.extract_sentence_table import DEFAULT_MAX_TOKENS
 from semantic_ai_washing.data.index_sec_filings import (
     OUTPUT_SOURCE_WINDOWS,
     OUTPUT_SUMMARY,
@@ -168,7 +169,7 @@ def run_materialization(args: argparse.Namespace) -> dict[str, Any]:
                 source_root=args.source_root,
                 keywords_path=args.keywords_path,
                 min_tokens=int(args.min_tokens),
-                max_tokens=int(args.max_tokens),
+                max_tokens=int(getattr(args, "max_tokens", DEFAULT_MAX_TOKENS)),
                 segmentation_mode=str(getattr(args, "segmentation_mode", "default")),
                 sample_size=int(args.sample_size),
             )
@@ -212,7 +213,7 @@ def run_materialization(args: argparse.Namespace) -> dict[str, Any]:
             "index_csv": args.index_csv,
             "source_root_hint": args.source_root_hint,
             "keywords_path": args.keywords_path,
-            "max_tokens": int(args.max_tokens),
+            "max_tokens": int(getattr(args, "max_tokens", DEFAULT_MAX_TOKENS)),
             "segmentation_mode": str(getattr(args, "segmentation_mode", "default")),
         },
     }

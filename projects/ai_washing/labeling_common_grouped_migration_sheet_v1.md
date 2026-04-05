@@ -150,5 +150,7 @@ Current status:
   `docs/roadmap_v2/migration_round_i_ai_washing_group1_code_seed_v1.md`
 - Group 1 direct callers have now migrated through
   `docs/roadmap_v2/migration_round_j_ai_washing_group1_callers_v1.md`
-- later grouped rounds still remain for classification, aggregation/data, and
+- Group 2 classification callers have now migrated through
+  `docs/roadmap_v2/migration_round_k_ai_washing_group2_callers_v1.md`
+- later grouped rounds still remain for aggregation/data and
   director-adjacent validation

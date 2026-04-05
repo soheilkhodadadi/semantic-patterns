@@ -17,7 +17,7 @@ from semantic_ai_washing.classification.preliminary_pipeline import (
     embed_sentences,
     sha256_file,
 )
-from semantic_ai_washing.labeling.common import ALLOWED_LABELS, ensure_allowed_label, load_table
+from ai_washing_member.labeling.common import ALLOWED_LABELS, ensure_allowed_label, load_table
 
 
 def _load_training_frame(

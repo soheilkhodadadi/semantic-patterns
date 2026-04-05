@@ -10,7 +10,7 @@ from typing import Iterable
 
 import numpy as np
 
-from semantic_ai_washing.labeling.common import ALLOWED_LABELS, normalize_sentence
+from ai_washing_member.labeling.common import ALLOWED_LABELS, normalize_sentence
 
 DEFAULT_MODEL_NAME = "sentence-transformers/all-mpnet-base-v2"
 DEFAULT_EMBEDDING_BACKEND = "sentence_transformers"

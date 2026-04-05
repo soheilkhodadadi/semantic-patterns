@@ -13,7 +13,7 @@ from sklearn.metrics import (
     precision_recall_fscore_support,
 )
 
-from semantic_ai_washing.labeling.common import (
+from ai_washing_member.labeling.common import (
     ALLOWED_LABELS,
     ensure_allowed_label,
     normalize_sentence,

@@ -12,7 +12,7 @@ import pandas as pd
 from semantic_ai_washing.classification.classify_active_window_preliminary import _resolve_runtime
 from semantic_ai_washing.classification.model_runtime import predict_sentences, warm_runtime
 from semantic_ai_washing.classification.preliminary_pipeline import sha256_file
-from semantic_ai_washing.labeling.common import ALLOWED_LABELS, load_table
+from ai_washing_member.labeling.common import ALLOWED_LABELS, load_table
 
 
 def _now_utc() -> str:
@@ -113,20 +113,12 @@ def _write_warming_progress(
 
 def _classified_output_path(output_root: str | Path, *, year: int, model_id: str) -> Path:
     return (
-        Path(output_root)
-        / f"year={year}"
-        / f"model={model_id}"
-        / "classified_sentences.parquet"
+        Path(output_root) / f"year={year}" / f"model={model_id}" / "classified_sentences.parquet"
     )
 
 
 def _chunk_dir(output_root: str | Path, *, year: int, model_id: str) -> Path:
-    return (
-        Path(output_root)
-        / f"year={year}"
-        / f"model={model_id}"
-        / "_chunks"
-    )
+    return Path(output_root) / f"year={year}" / f"model={model_id}" / "_chunks"
 
 
 def _write_chunk(
@@ -148,9 +140,7 @@ def _write_chunk(
     classified["source_window_id"] = source_window_id
     classified["classified_at_utc"] = _now_utc()
     for label in ALLOWED_LABELS:
-        classified[f"score_{label.lower()}"] = [
-            float(row.get(label, 0.0)) for row in score_rows
-        ]
+        classified[f"score_{label.lower()}"] = [float(row.get(label, 0.0)) for row in score_rows]
 
     chunk_path.parent.mkdir(parents=True, exist_ok=True)
     classified.to_parquet(chunk_path, index=False)
@@ -221,9 +211,27 @@ def run_classification_restartable(args: argparse.Namespace) -> dict[str, Any]:
             chunk_size=chunk_size,
             stage="starting",
         )
-        warm_runtime(
-            runtime_manifest,
-            on_stage=lambda stage: _write_warming_progress(
+        runtime_payload = (
+            runtime_manifest.get("runtime", {})
+            if isinstance(runtime_manifest.get("runtime", {}), dict)
+            else {}
+        )
+        if runtime_payload:
+            warm_runtime(
+                runtime_manifest,
+                on_stage=lambda stage: _write_warming_progress(
+                    progress_path=progress_path,
+                    years_requested=years,
+                    years_completed=completed_years,
+                    year_state=year_state,
+                    output_root=output_root,
+                    output_report=report_path,
+                    chunk_size=chunk_size,
+                    stage=stage,
+                ),
+            )
+        else:
+            _write_warming_progress(
                 progress_path=progress_path,
                 years_requested=years,
                 years_completed=completed_years,
@@ -231,9 +239,8 @@ def run_classification_restartable(args: argparse.Namespace) -> dict[str, Any]:
                 output_root=output_root,
                 output_report=report_path,
                 chunk_size=chunk_size,
-                stage=stage,
-            ),
-        )
+                stage="skipped",
+            )
         _write_progress(
             progress_path=progress_path,
             years_requested=years,
@@ -352,7 +359,9 @@ def run_classification_restartable(args: argparse.Namespace) -> dict[str, Any]:
                     chunk_size=chunk_size,
                 )
 
-            finalized = _finalize_year(output_root=output_root, year=year, model_id=output_model_id)
+            finalized = _finalize_year(
+                output_root=output_root, year=year, model_id=output_model_id
+            )
             rows_by_year[str(year)] = int(finalized["rows"])
             completed_years.append(year)
             outputs[str(year)] = {
@@ -406,7 +415,9 @@ def run_classification_restartable(args: argparse.Namespace) -> dict[str, Any]:
                 "centroids": str(args.centroids),
                 "centroids_sha256": sha256_file(args.centroids),
             },
-            "selected_model": metadata_source if getattr(args, "selected_model_manifest", "") else {},
+            "selected_model": metadata_source
+            if getattr(args, "selected_model_manifest", "")
+            else {},
             "outputs": outputs,
             "progress_report": str(progress_path),
         }
@@ -424,7 +435,7 @@ def run_classification_restartable(args: argparse.Namespace) -> dict[str, Any]:
             chunk_size=chunk_size,
         )
         return report
-    except Exception as exc:
+    except Exception:
         _write_progress(
             progress_path=progress_path,
             years_requested=years,

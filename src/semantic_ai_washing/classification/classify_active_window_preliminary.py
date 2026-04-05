@@ -15,7 +15,7 @@ from semantic_ai_washing.classification.model_runtime import (
     predict_sentences,
 )
 from semantic_ai_washing.classification.preliminary_pipeline import sha256_file
-from semantic_ai_washing.labeling.common import ALLOWED_LABELS, load_table
+from ai_washing_member.labeling.common import ALLOWED_LABELS, load_table
 
 
 def _load_metadata(path: str | Path) -> dict[str, Any]:
