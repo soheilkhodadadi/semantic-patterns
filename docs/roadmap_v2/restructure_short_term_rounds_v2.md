@@ -34,7 +34,8 @@ This means the repo now has:
 - visible root landing zones for `packages/`, `projects/`, and `shared/`
 - first explicit seed plans for `labcore`, `director`, and `ai_washing`
 
-Remaining actionable rounds now start at Round D.
+Round D is now active through the first direct-caller migration slice documented in `docs/roadmap_v2/migration_round_d_labcore_callers_v1.md`.
+Round E remains the next unopened round.
 Rounds A through C remain documented below as completed reference anchors.
 
 ## Remaining rounds

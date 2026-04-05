@@ -86,6 +86,7 @@ Current active migration anchors:
 - `docs/lab/schemas/workspace_member_contract_v1.md`
 - `docs/roadmap_v2/migration_round_b_workspace_skeleton_v1.md`
 - `docs/roadmap_v2/migration_round_c_package_seeding_v1.md`
+- `docs/roadmap_v2/migration_round_d_labcore_callers_v1.md`
 - `docs/roadmap_v2/migration_wave_3_v1.md`
 - `docs/roadmap_v2/lab_end_state_architecture_review_v1.md`
 - `docs/roadmap_v2/lab_end_state_architecture_review_v2.md`

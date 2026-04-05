@@ -8,7 +8,7 @@ from typing import Any
 
 import pandas as pd
 
-from semantic_ai_washing.director.core.utils import dump_json, now_utc_iso
+from semantic_ai_washing.labcore.runtime import dump_json, now_utc_iso
 
 
 def _resolve(path: str | Path) -> Path:
