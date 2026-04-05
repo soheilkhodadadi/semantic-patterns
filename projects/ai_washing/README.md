@@ -1,8 +1,8 @@
 # AI-Washing Member Seed
 
 ## Status
-- seeded target only
-- active authority still remains in legacy lanes during migration
+- structured member shell started
+- active code and manuscript authority still remain in legacy lanes during migration
 
 ## Purpose
 
@@ -46,3 +46,14 @@ See also:
 
 First live member artifact:
 - `reports/projects/ai_washing/artifact_index_v1.md`
+
+Member shell readiness:
+- `projects/ai_washing/member_shell_readiness_v1.md`
+
+Structured member shell lanes now exist:
+- `projects/ai_washing/docs/`
+- `projects/ai_washing/reports/`
+- `projects/ai_washing/output/`
+- `projects/ai_washing/configs/`
+- `projects/ai_washing/src/`
+- `projects/ai_washing/tests/`
