@@ -192,9 +192,9 @@ Responsibilities:
 
 A smaller team can combine roles. The key point is the separation of core, domain, analytics, and delivery ownership.
 
-## What Atlas-like precedent suggests, abstractly
+## What external platform precedents suggest, abstractly
 
-Without adopting any proprietary specifics, the precedent is useful because it reinforces a few good architectural instincts:
+Without adopting any private or proprietary specifics, public platform examples reinforce a few good architectural instincts:
 - separate presentation from analytics from integration from data/storage
 - treat monitoring and QA as first-class, not afterthoughts
 - keep security/privacy rules explicit rather than implicit
