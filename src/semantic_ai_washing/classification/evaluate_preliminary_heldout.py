@@ -14,8 +14,8 @@ from semantic_ai_washing.classification.benchmark_utils import (
     heldout_overlap_count,
     load_benchmark_frame,
 )
-from semantic_ai_washing.classification.model_runtime import load_manifest, predict_sentences
-from semantic_ai_washing.classification.preliminary_pipeline import (
+from ai_washing_member.classification.model_runtime import load_manifest, predict_sentences
+from ai_washing_member.classification.preliminary_pipeline import (
     classify_embeddings,
     embed_sentences,
     load_centroids,

@@ -65,6 +65,7 @@ This is now proven for:
 - `labcore`
 - `director`
 - the first `ai_washing` member-owned code seed
+- the first larger-batch `ai_washing` classification support migration
 
 ## Current bottlenecks
 

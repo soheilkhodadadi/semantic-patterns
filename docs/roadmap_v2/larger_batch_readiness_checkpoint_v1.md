@@ -87,3 +87,18 @@ But the safe upgrade is:
 - larger caller-family batches under one authority
 not:
 - mixed authority moves in one batch
+
+
+## First experiment result
+
+The first larger-batch experiment has now passed through:
+- `docs/roadmap_v2/migration_round_n_ai_washing_classification_support_v1.md`
+
+Observed result:
+- one authority move
+- two adjacent caller families
+- one shared regression gate
+- clean pass on the declared validation bundle
+
+This confirms that the upgraded protocol is workable when it stays within one
+project lane and one authority surface.

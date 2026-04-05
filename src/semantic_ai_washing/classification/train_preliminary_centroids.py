@@ -9,7 +9,7 @@ from typing import Any
 
 import pandas as pd
 
-from semantic_ai_washing.classification.preliminary_pipeline import (
+from ai_washing_member.classification.preliminary_pipeline import (
     DEFAULT_EMBEDDING_BACKEND,
     DEFAULT_MODEL_NAME,
     compute_centroids,

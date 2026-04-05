@@ -9,12 +9,12 @@ from typing import Any
 
 import pandas as pd
 
-from semantic_ai_washing.classification.model_runtime import (
+from ai_washing_member.classification.model_runtime import (
     build_centroid_runtime,
     load_manifest,
     predict_sentences,
 )
-from semantic_ai_washing.classification.preliminary_pipeline import sha256_file
+from ai_washing_member.classification.preliminary_pipeline import sha256_file
 from ai_washing_member.labeling.common import ALLOWED_LABELS, load_table
 
 

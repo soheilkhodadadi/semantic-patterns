@@ -16,13 +16,13 @@ from semantic_ai_washing.classification.benchmark_utils import (
     heldout_overlap_count,
     load_benchmark_frame,
 )
-from semantic_ai_washing.classification.model_runtime import (
+from ai_washing_member.classification.model_runtime import (
     build_centroid_runtime,
     build_legacy_two_stage_runtime,
     build_pickle_runtime,
     predict_sentences,
 )
-from semantic_ai_washing.classification.preliminary_pipeline import sha256_file
+from ai_washing_member.classification.preliminary_pipeline import sha256_file
 from ai_washing_member.labeling.common import row_sha256
 
 PRIMARY_BENCHMARK_NAME = "held_out_v2"

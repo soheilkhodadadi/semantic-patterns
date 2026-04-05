@@ -11,7 +11,7 @@ import pandas as pd
 import pyarrow.parquet as pq
 
 from semantic_ai_washing.classification.classify_active_window_preliminary import _resolve_runtime
-from semantic_ai_washing.classification.preliminary_pipeline import sha256_file
+from ai_washing_member.classification.preliminary_pipeline import sha256_file
 
 
 def _now_utc() -> str:
@@ -27,12 +27,7 @@ def _row_count(path: str | Path) -> int:
 
 
 def _chunk_count(output_root: str | Path, *, year: int, model_id: str) -> int:
-    chunk_dir = (
-        Path(output_root)
-        / f"year={year}"
-        / f"model={model_id}"
-        / "_chunks"
-    )
+    chunk_dir = Path(output_root) / f"year={year}" / f"model={model_id}" / "_chunks"
     if not chunk_dir.exists():
         return 0
     return len(list(chunk_dir.glob("chunk_*.parquet")))

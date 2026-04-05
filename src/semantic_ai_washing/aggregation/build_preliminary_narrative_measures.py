@@ -10,8 +10,8 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from semantic_ai_washing.classification.model_runtime import load_manifest
-from semantic_ai_washing.classification.preliminary_pipeline import sha256_file
+from ai_washing_member.classification.model_runtime import load_manifest
+from ai_washing_member.classification.preliminary_pipeline import sha256_file
 from ai_washing_member.labeling.common import load_table
 
 

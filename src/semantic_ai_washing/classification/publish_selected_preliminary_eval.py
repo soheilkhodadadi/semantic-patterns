@@ -6,8 +6,8 @@ import argparse
 import json
 from pathlib import Path
 
-from semantic_ai_washing.classification.model_runtime import load_manifest
-from semantic_ai_washing.classification.preliminary_pipeline import sha256_file
+from ai_washing_member.classification.model_runtime import load_manifest
+from ai_washing_member.classification.preliminary_pipeline import sha256_file
 
 
 def run_publish(args: argparse.Namespace) -> dict:

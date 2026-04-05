@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from semantic_ai_washing.classification.model_runtime import (
+from ai_washing_member.classification.model_runtime import (
     build_legacy_two_stage_runtime,
     predict_sentences,
 )
