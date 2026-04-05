@@ -96,6 +96,11 @@ Protocol V2 follow-on cleanup under established classification support authority
 Latest candidate scan:
 - `docs/roadmap_v2/next_candidate_surface_scan_v1.md`
 
+Fresh-authority comparison and chosen next seed:
+- `docs/roadmap_v2/fresh_authority_comparison_v1.md`
+- `docs/roadmap_v2/migration_round_s_ai_washing_benchmark_utils_seed_v1.md`
+- `projects/ai_washing/benchmark_utils_grouped_migration_sheet_v1.md`
+
 Structured member shell lanes now exist:
 - `projects/ai_washing/docs/`
 - `projects/ai_washing/reports/`

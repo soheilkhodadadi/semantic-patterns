@@ -109,6 +109,8 @@ Current active migration anchors:
 - `docs/roadmap_v2/migration_round_q_ai_washing_labeling_common_test_tail_v1.md`
 - `docs/roadmap_v2/migration_round_r_ai_washing_classification_support_test_tail_v1.md`
 - `docs/roadmap_v2/next_candidate_surface_scan_v1.md`
+- `docs/roadmap_v2/fresh_authority_comparison_v1.md`
+- `docs/roadmap_v2/migration_round_s_ai_washing_benchmark_utils_seed_v1.md`
 - `docs/roadmap_v2/restructure_progress_checkpoint_v1.md`
 - `docs/roadmap_v2/larger_batch_readiness_checkpoint_v1.md`
 - `docs/roadmap_v2/group3_readiness_checkpoint_v1.md`

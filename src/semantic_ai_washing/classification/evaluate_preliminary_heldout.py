@@ -9,7 +9,7 @@ from typing import Any
 
 import pandas as pd
 
-from semantic_ai_washing.classification.benchmark_utils import (
+from ai_washing_member.classification.benchmark_utils import (
     compute_metrics,
     heldout_overlap_count,
     load_benchmark_frame,

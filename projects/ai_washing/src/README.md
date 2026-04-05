@@ -24,9 +24,11 @@ Current member-owned code:
 - `projects/ai_washing/src/ai_washing_member/labeling/common.py`
 - `projects/ai_washing/src/ai_washing_member/classification/preliminary_pipeline.py`
 - `projects/ai_washing/src/ai_washing_member/classification/model_runtime.py`
+- `projects/ai_washing/src/ai_washing_member/classification/benchmark_utils.py`
 - `projects/ai_washing/src/ai_washing_member/data/index_sec_filings.py`
 - `projects/ai_washing/src/ai_washing_member/data/extract_sentence_table.py`
 
 Legacy compatibility remains at:
 - `src/semantic_ai_washing/labeling/common.py`
+- `src/semantic_ai_washing/classification/benchmark_utils.py`
 - `src/semantic_ai_washing/data/extract_sentence_table.py`

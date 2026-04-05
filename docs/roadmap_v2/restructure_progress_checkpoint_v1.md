@@ -68,6 +68,7 @@ This is now proven for:
 - the first larger-batch `ai_washing` classification support migration
 - the second larger-batch `ai_washing` SEC index migration
 - the first four-family `ai_washing` sentence-table migration
+- a fresh-authority `ai_washing` benchmark-utils seed round under Protocol V2
 
 ## Current bottlenecks
 
@@ -115,3 +116,5 @@ Recent scan result:
 - after the classification support tail, the next meaningful acceleration will
   likely require a fresh authority move rather than another established-surface
   cleanup batch
+- that fresh authority move has now been taken through
+  `docs/roadmap_v2/migration_round_s_ai_washing_benchmark_utils_seed_v1.md`
