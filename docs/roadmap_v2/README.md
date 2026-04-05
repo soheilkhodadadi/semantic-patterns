@@ -36,6 +36,7 @@ Suggested first tracked artifacts:
 - `migration_wave_1_v1.md`
 - `migration_wave_2_v1.md`
 - `migration_wave_3_v1.md`
+- `migration_round_b_workspace_skeleton_v1.md`
 - `lab_end_state_architecture_review_v1.md`
 - `lab_end_state_architecture_review_v2.md`
 - `restructure_parallel_protocol_v1.md`
@@ -82,6 +83,7 @@ Current active migration anchors:
 - `docs/lab/schemas/manifest_contract_v1.md`
 - `docs/lab/schemas/evidence_unit_contract_v1.md`
 - `docs/lab/schemas/workspace_member_contract_v1.md`
+- `docs/roadmap_v2/migration_round_b_workspace_skeleton_v1.md`
 - `docs/roadmap_v2/migration_wave_3_v1.md`
 - `docs/roadmap_v2/lab_end_state_architecture_review_v1.md`
 - `docs/roadmap_v2/lab_end_state_architecture_review_v2.md`

@@ -1,0 +1,17 @@
+# Packages
+
+This lane is for shared infrastructure packages that are small, stable, and genuinely reusable across
+multiple projects.
+
+Near-term intended packages:
+- `packages/labcore/`
+- `packages/director/`
+- later `packages/labdelivery/` only if delivery reuse becomes real
+
+Rules:
+- keep shared packages thin
+- do not move project semantics here prematurely
+- only promote logic upward when reuse is durable and the contract is stable
+
+A package in this lane should eventually satisfy the workspace-member contract in:
+- `docs/lab/schemas/workspace_member_contract_v1.md`

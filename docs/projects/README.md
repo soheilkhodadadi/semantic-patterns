@@ -14,5 +14,10 @@ Current adapter-framing notes:
 - `eri/adapter_framing_v1.md`
 - `allocationlab/adapter_framing_v1.md`
 
+Current workspace-member landing zones:
+- `projects/ai_washing/`
+- `projects/eri/`
+- `projects/allocationlab/`
+
 Do not place partner-confidential or NDA-bound material here.
 Those stay under `local_private/projects/`.

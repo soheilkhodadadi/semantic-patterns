@@ -86,6 +86,15 @@ The current AI-washing replacement map and Wave 3 note are:
 - `docs/lab/migration/ai_washing_legacy_to_new_mapping_v1.md`
 - `docs/roadmap_v2/migration_wave_3_v1.md`
 
+Round A and Round B now add:
+- shared contracts and acceptance gates under `docs/lab/schemas/` and `docs/lab/control_plane/`
+- visible root landing zones:
+  - `packages/`
+  - `projects/`
+  - `shared/`
+- the Round B workspace-skeleton note:
+  - `docs/roadmap_v2/migration_round_b_workspace_skeleton_v1.md`
+
 Important transition rule:
 - existing authoritative AI-washing artifacts remain authoritative in their current legacy paths until later migration waves create explicit replacement maps
 

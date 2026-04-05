@@ -23,13 +23,19 @@ Completed already:
   - OpenAI Responses
 - adapter framing and adapter registry
 - revised end-state architecture and target layout V2
+- Round A standards and contracts
+- Round B workspace skeleton
 
 This means the repo now has:
 - a real control-plane foundation
 - a small shared package seed
 - a clearer package-centric target
+- visible root landing zones for `packages/`, `projects/`, and `shared/`
 
-## Next rounds
+Remaining actionable rounds now start at Round C.
+Rounds A and B remain documented below as completed reference anchors.
+
+## Remaining rounds
 
 ### Round A. Standards and contracts round
 
