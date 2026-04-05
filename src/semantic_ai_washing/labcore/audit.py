@@ -1,58 +1,32 @@
-"""Project-agnostic audit helpers for append-only records and provenance."""
+"""Compatibility re-exports for shared audit helpers.
+
+The canonical implementation now lives in ``semantic_labcore.audit``.
+This module remains as a transition shim so existing
+``semantic_ai_washing.labcore.audit`` imports keep working while the
+workspace package becomes authoritative.
+"""
 
 from __future__ import annotations
 
-import hashlib
-import json
+import sys
 from pathlib import Path
-from typing import Any
 
-from semantic_ai_washing.labcore.runtime import ensure_dir, git_info, now_utc_iso
+_PACKAGE_SRC = Path(__file__).resolve().parents[3] / "packages" / "labcore" / "src"
+if _PACKAGE_SRC.exists():
+    package_src = str(_PACKAGE_SRC)
+    if package_src not in sys.path:
+        sys.path.insert(0, package_src)
 
+from semantic_labcore.audit import (  # noqa: E402
+    append_jsonl,
+    default_provenance,
+    payload_hash,
+    write_audit_record,
+)
 
-def payload_hash(payload: dict[str, Any]) -> str:
-    """Return a stable SHA256 hash for a JSON-serializable payload."""
-
-    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    return hashlib.sha256(encoded).hexdigest()
-
-
-def append_jsonl(path: str | Path, payload: dict[str, Any]) -> None:
-    """Append a single JSON payload to a JSONL file, creating parents as needed."""
-
-    out = Path(path)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    with out.open("a", encoding="utf-8") as handle:
-        handle.write(json.dumps(payload, sort_keys=False) + "\n")
-
-
-def write_audit_record(base_dir: str | Path, record_type: str, payload: dict[str, Any]) -> Path:
-    """Append a normalized audit record under the given base directory."""
-
-    base = ensure_dir(base_dir)
-    record = {
-        "record_type": record_type,
-        "timestamp": now_utc_iso(),
-        "payload_hash": payload_hash(payload),
-        "payload": payload,
-    }
-    path = base / f"{record_type}.jsonl"
-    append_jsonl(path, record)
-    return path
-
-
-def default_provenance(
-    repo_root: str | Path = ".",
-    *,
-    tool: str = "semantic_ai_washing.labcore",
-    schema_version: str = "1.0.0",
-) -> dict[str, Any]:
-    """Build a small provenance envelope for generated outputs."""
-
-    git_meta = git_info(repo_root)
-    return {
-        "generated_at": now_utc_iso(),
-        "git": git_meta,
-        "tool": tool,
-        "schema_version": schema_version,
-    }
+__all__ = [
+    "append_jsonl",
+    "default_provenance",
+    "payload_hash",
+    "write_audit_record",
+]

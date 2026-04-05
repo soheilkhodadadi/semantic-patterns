@@ -3,8 +3,13 @@
 ## Status
 - seeded package shell
 - real `pyproject.toml` present
-- authoritative implementation still lives in legacy paths
-- runtime extraction is now active through the first canonical package module
+- canonical package modules now active for:
+  - `runtime.py`
+  - `audit.py`
+  - `security.py`
+  - `openai_responses.py`
+  - `registry/`
+- compatibility shims remain in legacy paths while caller migration continues
 
 ## Purpose
 
@@ -29,7 +34,11 @@ It should not own:
 The current live seed still exists in:
 - `src/semantic_ai_washing/labcore/`
 
-This placeholder directory marks the future package destination, not an immediate code move.
+Those legacy modules now increasingly act as compatibility shims.
+The package path under:
+- `packages/labcore/src/semantic_labcore/`
+
+is becoming the canonical implementation lane.
 
 ## Promotion rule
 
@@ -43,3 +52,5 @@ See also:
 - `packages/labcore/pyproject_seed_plan_v1.md`
 - `docs/lab/control_plane/labcore_extraction_protocol_v1.md`
 - `docs/roadmap_v2/migration_round_e_labcore_runtime_extraction_v1.md`
+- `docs/roadmap_v2/migration_round_e_labcore_support_modules_extraction_v1.md`
+- `docs/roadmap_v2/migration_round_e_labcore_registry_extraction_v1.md`

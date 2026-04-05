@@ -1,104 +1,70 @@
-"""Canonical project-adapter contracts for the lab's active program lanes."""
+"""Compatibility re-exports for shared adapter contracts.
+
+The canonical implementation now lives in ``semantic_labcore.registry.adapters``.
+This module remains as a transition shim so existing
+``semantic_ai_washing.labcore.registry.adapters`` imports keep working while the
+workspace package becomes authoritative.
+"""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import sys
 from pathlib import Path
-from typing import Final
 
-from semantic_ai_washing.labcore.registry.lanes import PROJECT_SLUGS, project_lanes
+_PACKAGE_SRC = Path(__file__).resolve().parents[4] / "packages" / "labcore" / "src"
+if _PACKAGE_SRC.exists():
+    package_src = str(_PACKAGE_SRC)
+    if package_src not in sys.path:
+        sys.path.insert(0, package_src)
 
-
-@dataclass(frozen=True)
-class ProjectAdapterContract:
-    """Small control-plane contract for a tracked project adapter."""
-
-    project: str
-    mode: str
-    purpose: str
-    framing_note: Path
-    docs: Path
-    reports: Path
-    processed_data: Path
-    doc_output: Path
-    figure_output: Path
-    local_private_root: Path
-    shared_dependencies: tuple[str, ...]
+from semantic_labcore.registry.adapters import (  # noqa: E402
+    ProjectAdapterContract,
+    all_project_adapter_contracts as _all_project_adapter_contracts,
+    project_adapter_contract as _project_adapter_contract,
+)
 
 
-_ADAPTER_METADATA: Final[dict[str, dict[str, object]]] = {
-    "ai_washing": {
-        "mode": "flagship_publication",
-        "purpose": (
-            "Reference research adapter for AI-disclosure credibility, patent mismatch, "
-            "and manuscript-facing empirical outputs."
-        ),
-        "shared_dependencies": (
-            "semantic_ai_washing.labcore.registry.lanes",
-            "semantic_ai_washing.labcore.runtime",
-            "semantic_ai_washing.labcore.audit",
-        ),
-    },
-    "eri": {
-        "mode": "incubation_reuse_test",
-        "purpose": (
-            "First serious reuse adapter for disclosure-reliability work outside the AI "
-            "domain, with lighter tracked outputs and local-private partner materials."
-        ),
-        "shared_dependencies": (
-            "semantic_ai_washing.labcore.registry.lanes",
-            "semantic_ai_washing.labcore.runtime",
-            "semantic_ai_washing.labcore.audit",
-        ),
-    },
-    "allocationlab": {
-        "mode": "architecture_first",
-        "purpose": (
-            "Architecture and synthetic-case adapter for a future decision-system program, "
-            "kept active without forcing early implementation."
-        ),
-        "shared_dependencies": (
-            "semantic_ai_washing.labcore.registry.lanes",
-            "semantic_ai_washing.labcore.runtime",
-            "semantic_ai_washing.labcore.audit",
-        ),
-    },
-}
+def _legacy_dependency_name(name: str) -> str:
+    if name.startswith("semantic_labcore."):
+        return name.replace("semantic_labcore.", "semantic_ai_washing.labcore.", 1)
+    return name
 
 
 def project_adapter_contract(
     repo_root: str | Path = ".",
     project: str = "ai_washing",
 ) -> ProjectAdapterContract:
-    """Return the canonical adapter contract for a supported project slug."""
+    """Preserve legacy dependency identities for root-repo callers."""
 
-    if project not in PROJECT_SLUGS:
-        supported = ", ".join(PROJECT_SLUGS)
-        raise ValueError(f"Unsupported project '{project}'. Expected one of: {supported}")
-
-    root = Path(repo_root).expanduser().resolve()
-    lanes = project_lanes(root, project=project)
-    meta = _ADAPTER_METADATA[project]
+    contract = _project_adapter_contract(repo_root, project=project)
     return ProjectAdapterContract(
-        project=project,
-        mode=str(meta["mode"]),
-        purpose=str(meta["purpose"]),
-        framing_note=lanes.docs / "adapter_framing_v1.md",
-        docs=lanes.docs,
-        reports=lanes.reports,
-        processed_data=lanes.processed_data,
-        doc_output=lanes.doc_output,
-        figure_output=lanes.figure_output,
-        local_private_root=root / "local_private" / "projects" / project,
-        shared_dependencies=tuple(str(item) for item in meta["shared_dependencies"]),
+        project=contract.project,
+        mode=contract.mode,
+        purpose=contract.purpose,
+        framing_note=contract.framing_note,
+        docs=contract.docs,
+        reports=contract.reports,
+        processed_data=contract.processed_data,
+        doc_output=contract.doc_output,
+        figure_output=contract.figure_output,
+        local_private_root=contract.local_private_root,
+        shared_dependencies=tuple(_legacy_dependency_name(item) for item in contract.shared_dependencies),
     )
 
 
 def all_project_adapter_contracts(
     repo_root: str | Path = ".",
 ) -> dict[str, ProjectAdapterContract]:
-    """Return the canonical adapter contracts for all tracked project slugs."""
+    """Preserve legacy dependency identities for root-repo callers."""
 
     return {
-        project: project_adapter_contract(repo_root, project=project) for project in PROJECT_SLUGS
+        project: project_adapter_contract(repo_root, project=project)
+        for project in _all_project_adapter_contracts(repo_root)
     }
+
+
+__all__ = [
+    "ProjectAdapterContract",
+    "all_project_adapter_contracts",
+    "project_adapter_contract",
+]

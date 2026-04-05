@@ -1,4 +1,10 @@
-"""Shared registry helpers for project and lane resolution."""
+"""Compatibility re-exports for shared registry helpers.
+
+The canonical implementation now lives in ``semantic_labcore.registry``.
+This module remains as a transition shim so existing
+``semantic_ai_washing.labcore.registry`` imports keep working while the
+workspace package becomes authoritative.
+"""
 
 from semantic_ai_washing.labcore.registry.adapters import (
     ProjectAdapterContract,
