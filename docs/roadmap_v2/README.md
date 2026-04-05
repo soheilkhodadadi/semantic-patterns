@@ -92,6 +92,7 @@ Current active migration anchors:
 - `docs/roadmap_v2/migration_round_d_package_shells_v1.md`
 - `docs/roadmap_v2/migration_round_d_ai_washing_member_shell_v1.md`
 - `docs/roadmap_v2/migration_round_d_director_runtime_callers_v1.md`
+- `docs/roadmap_v2/migration_round_e_labcore_runtime_extraction_v1.md`
 - `docs/lab/control_plane/labcore_extraction_protocol_v1.md`
 - `docs/roadmap_v2/migration_wave_3_v1.md`
 - `docs/roadmap_v2/lab_end_state_architecture_review_v1.md`

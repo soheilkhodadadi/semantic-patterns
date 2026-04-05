@@ -1,137 +1,42 @@
-"""Project-agnostic runtime helpers for the shared lab core."""
+"""Compatibility re-exports for shared runtime helpers.
+
+The canonical implementation now lives in ``semantic_labcore.runtime``.
+This module remains as a transition shim so existing
+``semantic_ai_washing.labcore.runtime`` imports keep working while the
+workspace package becomes authoritative.
+"""
 
 from __future__ import annotations
 
-import hashlib
-import json
-import os
-import subprocess
-from datetime import datetime, timezone
+import sys
 from pathlib import Path
-from typing import Any
 
+_PACKAGE_SRC = Path(__file__).resolve().parents[3] / "packages" / "labcore" / "src"
+if _PACKAGE_SRC.exists():
+    package_src = str(_PACKAGE_SRC)
+    if package_src not in sys.path:
+        sys.path.insert(0, package_src)
 
-def now_utc_iso() -> str:
-    """Return the current UTC timestamp in ISO 8601 format."""
+from semantic_labcore.runtime import (  # noqa: E402
+    dump_json,
+    ensure_dir,
+    git_info,
+    load_json,
+    now_utc_iso,
+    repository_root,
+    run_command,
+    sha256_file,
+    sha256_text,
+)
 
-    return datetime.now(timezone.utc).isoformat()
-
-
-def ensure_dir(path: str | Path) -> Path:
-    """Create a directory if needed and return the resolved Path object."""
-
-    resolved = Path(path)
-    resolved.mkdir(parents=True, exist_ok=True)
-    return resolved
-
-
-def sha256_text(text: str) -> str:
-    """Return a SHA256 digest for UTF-8 text."""
-
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
-
-
-def sha256_file(path: str | Path) -> str:
-    """Return a SHA256 digest for a file using chunked reads."""
-
-    hasher = hashlib.sha256()
-    with open(path, "rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            hasher.update(chunk)
-    return hasher.hexdigest()
-
-
-def run_command(
-    command: str,
-    cwd: str | Path = ".",
-    timeout_seconds: int = 1800,
-    env: dict[str, str] | None = None,
-) -> dict[str, Any]:
-    """Run a shell command and return normalized execution details."""
-
-    started_at = now_utc_iso()
-    resolved_cwd = str(Path(cwd).resolve())
-    merged_env = os.environ.copy()
-    if env:
-        merged_env.update(env)
-    try:
-        completed = subprocess.run(
-            command,
-            shell=True,
-            cwd=resolved_cwd,
-            capture_output=True,
-            text=True,
-            timeout=timeout_seconds,
-            check=False,
-            env=merged_env,
-        )
-        timed_out = False
-        exit_code = completed.returncode
-        stdout = completed.stdout
-        stderr = completed.stderr
-    except subprocess.TimeoutExpired as exc:
-        timed_out = True
-        exit_code = 124
-        stdout = exc.stdout or ""
-        stderr = (exc.stderr or "") + "\n[runtime] command timed out"
-
-    return {
-        "command": command,
-        "cwd": resolved_cwd,
-        "started_at": started_at,
-        "finished_at": now_utc_iso(),
-        "exit_code": exit_code,
-        "timed_out": timed_out,
-        "stdout": stdout,
-        "stderr": stderr,
-    }
-
-
-def load_json(path: str | Path, default: Any = None) -> Any:
-    """Load JSON if the file exists, otherwise return the supplied default."""
-
-    resolved = Path(path)
-    if not resolved.exists():
-        return default
-    with resolved.open("r", encoding="utf-8") as handle:
-        return json.load(handle)
-
-
-def dump_json(path: str | Path, payload: Any) -> None:
-    """Write JSON with stable indentation, creating parent directories if needed."""
-
-    resolved = Path(path)
-    resolved.parent.mkdir(parents=True, exist_ok=True)
-    with resolved.open("w", encoding="utf-8") as handle:
-        json.dump(payload, handle, indent=2, sort_keys=False)
-
-
-def git_info(repo_root: str | Path = ".") -> dict[str, Any]:
-    """Return branch/commit/dirty metadata for a git repo when available."""
-
-    def _run(args: list[str]) -> str:
-        try:
-            return subprocess.check_output(
-                args, cwd=repo_root, text=True, stderr=subprocess.DEVNULL
-            ).strip()
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            return ""
-
-    branch = _run(["git", "rev-parse", "--abbrev-ref", "HEAD"]) or "unknown"
-    commit = _run(["git", "rev-parse", "HEAD"]) or "unknown"
-    dirty_output = _run(["git", "status", "--porcelain"])
-    return {
-        "branch": branch,
-        "commit": commit,
-        "dirty": bool(dirty_output),
-    }
-
-
-def repository_root(start: str | Path = ".") -> str:
-    """Best-effort repository root detection starting from a path."""
-
-    current = Path(start).resolve()
-    for candidate in [current] + list(current.parents):
-        if (candidate / ".git").exists():
-            return str(candidate)
-    return os.getcwd()
+__all__ = [
+    "dump_json",
+    "ensure_dir",
+    "git_info",
+    "load_json",
+    "now_utc_iso",
+    "repository_root",
+    "run_command",
+    "sha256_file",
+    "sha256_text",
+]
