@@ -102,3 +102,18 @@ Observed result:
 
 This confirms that the upgraded protocol is workable when it stays within one
 project lane and one authority surface.
+
+## Second experiment result
+
+The second larger-batch experiment has now passed through:
+- `docs/roadmap_v2/migration_round_o_ai_washing_index_sec_batch_v1.md`
+
+Observed result:
+- one authority move
+- two adjacent caller families
+- one shared regression gate
+- clean pass on the declared validation bundle
+
+This reinforces that the upgraded protocol is not a one-off success. It is now
+repeatable for `ai_washing` project-member migrations when authority and the
+gate are both explicit.

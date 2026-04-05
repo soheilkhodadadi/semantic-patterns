@@ -66,6 +66,7 @@ This is now proven for:
 - `director`
 - the first `ai_washing` member-owned code seed
 - the first larger-batch `ai_washing` classification support migration
+- the second larger-batch `ai_washing` SEC index migration
 
 ## Current bottlenecks
 
@@ -99,5 +100,5 @@ The restructure is past the speculative phase.
 We now have enough real package/member moves to use a faster protocol without
 losing control, as long as the batch unit stays:
 - one bounded authority move
-- one caller family
+- up to two adjacent caller families
 - one acceptance gate

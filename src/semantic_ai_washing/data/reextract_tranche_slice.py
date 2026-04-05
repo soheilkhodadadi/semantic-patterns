@@ -20,7 +20,7 @@ from semantic_ai_washing.core.sentence_filter import (
     normalize_sentence_text,
     segment_sentences_fast,
 )
-from semantic_ai_washing.data.index_sec_filings import SEC_SOURCE_HINT_FILE, resolve_sec_source
+from ai_washing_member.data.index_sec_filings import SEC_SOURCE_HINT_FILE, resolve_sec_source
 
 DEFAULT_INPUT_SLICE = "data/labels/v1/labeling_batch_v1_filled_v2_1_slice40.csv"
 DEFAULT_OUTPUT = "data/labels/v1/labeling_batch_v1_reextracted_v2_2_slice40.csv"

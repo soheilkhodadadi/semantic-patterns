@@ -21,7 +21,7 @@ from semantic_ai_washing.core.sentence_filter import (
     segment_sentences,
     segment_sentences_fast,
 )
-from semantic_ai_washing.data.index_sec_filings import SEC_SOURCE_HINT_FILE, resolve_sec_source
+from ai_washing_member.data.index_sec_filings import SEC_SOURCE_HINT_FILE, resolve_sec_source
 
 DEFAULT_MANIFEST = "data/manifests/filings/pilot_2024_10k_v1.csv"
 DEFAULT_OUTPUT = "data/processed/sentences/year=2024/ai_sentences.parquet"
@@ -211,7 +211,9 @@ def extract_sentence_table(
             if float(row["fragment_score"]) > float(max_fragment_score):
                 dropped_fragment_rows += 1
                 continue
-            if int(row["token_count"]) < int(min_tokens) or int(row["token_count"]) > int(max_tokens):
+            if int(row["token_count"]) < int(min_tokens) or int(row["token_count"]) > int(
+                max_tokens
+            ):
                 dropped_token_rows += 1
                 continue
             rows.append(row)

@@ -11,7 +11,7 @@ from typing import Any
 
 import pandas as pd
 
-from semantic_ai_washing.data.index_sec_filings import (
+from ai_washing_member.data.index_sec_filings import (
     HISTORICAL_SOURCE_WINDOW_ID,
     QTR_DIR_RE,
     build_source_windows,
@@ -468,9 +468,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--progress-report", default="reports/data/source_index_progress_2016_2020.json"
     )
-    parser.add_argument(
-        "--cache-dir", default="reports/data/source_index_cache_2016_2020"
-    )
+    parser.add_argument("--cache-dir", default="reports/data/source_index_cache_2016_2020")
     parser.add_argument("--materialize-years", nargs="*", default=[])
     parser.add_argument("--output-root", default="data/processed/sentences")
     parser.add_argument("--keywords-path", default="data/metadata/ai_keywords.txt")

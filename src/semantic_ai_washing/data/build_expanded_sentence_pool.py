@@ -33,7 +33,7 @@ from semantic_ai_washing.data.extract_sentence_table import (
     EXTRACTOR_VERSION,
     OUTPUT_COLUMNS as SENTENCE_COLUMNS,
 )
-from semantic_ai_washing.data.index_sec_filings import SEC_SOURCE_HINT_FILE, resolve_sec_source
+from ai_washing_member.data.index_sec_filings import SEC_SOURCE_HINT_FILE, resolve_sec_source
 
 DEFAULT_INDEX = "data/metadata/available_filings_index.csv"
 DEFAULT_MANIFEST = "data/manifests/filings/expansion_2024_500_firms_v1.csv"

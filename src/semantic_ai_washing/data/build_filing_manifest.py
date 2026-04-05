@@ -10,7 +10,7 @@ from typing import Any
 
 import pandas as pd
 
-from semantic_ai_washing.data.index_sec_filings import ACTIVE_SOURCE_WINDOW_ID
+from ai_washing_member.data.index_sec_filings import ACTIVE_SOURCE_WINDOW_ID
 from semantic_ai_washing.labeling.ff12_mapping import FF12Bucket, map_sic_to_ff12
 
 DEFAULT_INDEX = "data/metadata/available_filings_index.csv"
