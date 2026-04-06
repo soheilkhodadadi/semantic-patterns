@@ -83,11 +83,11 @@ Default gate:
 - `git diff --check`
 
 Status:
-- planned
+- complete
 
 ## Queue status
 
-Queue V15 is in progress:
+Queue V15 is complete:
 
 1. Batch 1:
    - `ai_washing_member.classification.train_binary_relevance_then_as`
@@ -95,3 +95,7 @@ Queue V15 is in progress:
    - `ai_washing_member.classification.train_logreg_preliminary`
 3. Batch 3:
    - `ai_washing_member.classification.benchmark_preliminary_models`
+
+
+Recommended next move:
+- start Queue V16 with a fresh-authority comparison

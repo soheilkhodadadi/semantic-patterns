@@ -8,7 +8,7 @@ import pandas as pd
 import pytest
 
 from semantic_ai_washing.aggregation.build_preliminary_narrative_measures import run_measure_build
-from semantic_ai_washing.classification.benchmark_preliminary_models import run_benchmark
+from ai_washing_member.classification.benchmark_preliminary_models import run_benchmark
 from ai_washing_member.classification.classify_active_window_preliminary import (
     run_classification,
 )
@@ -225,7 +225,7 @@ def test_run_benchmark_pending_primary_when_heldout_v2_missing(tmp_path, monkeyp
         return preds, scores
 
     monkeypatch.setattr(
-        "semantic_ai_washing.classification.benchmark_preliminary_models.predict_sentences",
+        "ai_washing_member.classification.benchmark_preliminary_models.predict_sentences",
         fake_predict,
     )
 
@@ -296,7 +296,7 @@ def test_run_benchmark_selects_winner_and_selected_manifest_drives_classificatio
         return preds, scores
 
     monkeypatch.setattr(
-        "semantic_ai_washing.classification.benchmark_preliminary_models.predict_sentences",
+        "ai_washing_member.classification.benchmark_preliminary_models.predict_sentences",
         fake_predict,
     )
 
