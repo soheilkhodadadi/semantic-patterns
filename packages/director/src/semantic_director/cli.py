@@ -32,7 +32,7 @@ from semantic_director.roadmap_model import (
     load_roadmap_model,
     resolve_model_path,
 )
-from semantic_ai_washing.director.core.security import (
+from semantic_director.security import (
     ensure_openai_key_if_enabled,
     scan_repo_for_secrets,
 )
