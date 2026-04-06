@@ -104,3 +104,18 @@ Result:
 
 This means any later hygiene queue should focus on script-consumer cleanup or
 explicit deprecation mapping, not premature code removal.
+
+That script-consumer cleanup follow-on has now been executed as Queue V24 with
+three outputs:
+- `docs/roadmap_v2/migration_round_cl_hygiene_script_consumer_rules_v1.md`
+- `docs/roadmap_v2/migration_round_cm_hygiene_script_consumer_publish_v1.md`
+- `docs/roadmap_v2/migration_round_cn_hygiene_script_consumer_posture_refresh_v1.md`
+
+Result:
+- the flat `src/data/*` shims for the six historical utilities are now rendered
+  as legacy consumer surfaces rather than generic compatibility fronts
+- no shim was deleted
+- no code quarantine or retirement patch was opened
+
+This means the next hygiene-class move, if chosen, should be driven by real
+remaining leverage rather than by repeating the same script lane again.
