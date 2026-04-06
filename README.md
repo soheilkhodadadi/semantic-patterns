@@ -13,6 +13,25 @@ The current `2016-2024` delivery lane does four things:
 
 The repo still contains legacy-compatible extraction/classification entry points, but the authoritative preliminary-delivery artifacts now live in the broader `2016-2024` panel and reporting workflow described below.
 
+## Start Here
+
+If you are orienting to the repo today, read these first:
+
+1. current restructure/navigation state:
+   - `docs/roadmap_v2/current_state_navigation_v1.md`
+2. target lab structure:
+   - `docs/roadmap_v2/target_repo_layout_v2.md`
+3. active project-member front door:
+   - `projects/ai_washing/README.md`
+4. shared package fronts:
+   - `packages/director/README.md`
+   - `packages/labcore/README.md`
+5. public-safe project docs workspace:
+   - `docs/projects/README.md`
+
+Use `docs/roadmap_v2/history/` as the audit trail, not as the first place to
+start reading.
+
 ## Environment
 
 - Python baseline: `3.11+`
@@ -69,6 +88,12 @@ Current delivery status is tracked in [docs/preliminary_delivery_status_2026-03-
 ## Lab Restructure Transition
 
 The repo is now also being prepared to operate as a multi-program lab rather than a single-project workspace.
+
+Current restructure front door:
+- `docs/roadmap_v2/README.md`
+- `docs/roadmap_v2/current_state_navigation_v1.md`
+- latest checkpoint:
+  - `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v22.md`
 
 Wave 2 of that restructure creates the first stable destination lanes for future shared and project-scoped artifacts:
 
