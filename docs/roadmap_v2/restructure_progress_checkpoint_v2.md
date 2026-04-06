@@ -116,6 +116,7 @@ This is now proven for:
 - `ai_washing` build-labeling-batch authority
 - `ai_washing` held-out freeze authority
 - `ai_washing` held-out sampler authority
+- `ai_washing` audit sentence integrity authority
 
 ## Lane-by-lane state
 
@@ -325,6 +326,18 @@ Queue V6 Batch 2 has now completed cleanly:
 
 This moves the snapshot ingest authority into the package lane while keeping
 the Atlas-adjacent adapter boundary explicit and unchanged for now.
+
+## Queue V6 close note
+
+Queue V6 has now completed cleanly through its planned three-round cycle:
+
+1. `ai_washing_member.labeling.publish_rubric_freeze`
+2. `semantic_director.snapshot`
+3. `ai_washing_member.labeling.audit_sentence_integrity`
+
+This closes the cycle with a small IRR workflow move in the flagship lane while
+leaving the roadmap-model command surface on the compatibility path for a later
+control-plane round.
 
 ## Queue V4 progress note
 

@@ -110,7 +110,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- planned
+- complete via `docs/roadmap_v2/migration_round_al_ai_washing_audit_sentence_integrity_seed_v1.md`
 
 Fallback if pre-scan gets messy:
 - replace with a smaller `ai_washing` labeling/reporting round
@@ -124,5 +124,5 @@ Next in Queue V6:
    - `ai_washing_member.labeling.publish_rubric_freeze`
 2. Batch 2 complete:
    - `semantic_director.snapshot`
-3. Batch 3 planned:
+3. Batch 3 complete:
    - `ai_washing_member.labeling.audit_sentence_integrity`
