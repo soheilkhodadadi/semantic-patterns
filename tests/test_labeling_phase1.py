@@ -14,7 +14,7 @@ from ai_washing_member.labeling.common import (
     normalize_sentence,
 )
 from ai_washing_member.labeling.dedupe_labeled_sentences import OUTPUT_COLUMNS, run_dedupe
-from semantic_ai_washing.labeling.qa_labeled_dataset import run_qa
+from ai_washing_member.labeling.qa_labeled_dataset import run_qa
 
 
 def _write_csv(path: Path, rows: list[dict], columns: list[str]) -> None:

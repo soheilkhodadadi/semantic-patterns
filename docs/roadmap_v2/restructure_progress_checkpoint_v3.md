@@ -106,3 +106,23 @@ Queue V11 has now opened cleanly with:
 
 This starts a coherent Phase 1 dataset-prep workflow queue in the flagship
 lane, with the downstream dedupe and QA steps still lined up behind it.
+
+## Queue V11 second-batch note
+
+Queue V11 Batch 2 has now completed cleanly:
+
+2. `ai_washing_member.labeling.dedupe_labeled_sentences`
+
+This keeps the Phase 1 dataset-prep workflow in the member-owned lane and
+strengthens the case that the whole workflow can move as one bounded queue.
+
+## Queue V11 close note
+
+Queue V11 has now completed cleanly through its planned three-round cycle:
+
+1. `ai_washing_member.labeling.build_labeling_sample`
+2. `ai_washing_member.labeling.dedupe_labeled_sentences`
+3. `ai_washing_member.labeling.qa_labeled_dataset`
+
+This closes an end-to-end current-stage labeling dataset workflow entirely
+inside the `ai_washing` member lane.

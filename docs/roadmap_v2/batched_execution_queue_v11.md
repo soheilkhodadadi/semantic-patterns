@@ -60,7 +60,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- planned
+- complete
 
 ### Batch 3
 
@@ -83,7 +83,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- planned
+- complete
 
 ## Current recommendation
 
@@ -91,7 +91,7 @@ Next in Queue V11:
 
 1. Batch 1 complete:
    - `ai_washing_member.labeling.build_labeling_sample`
-2. Batch 2 planned:
+2. Batch 2 complete:
    - `ai_washing_member.labeling.dedupe_labeled_sentences`
-3. Batch 3 planned:
+3. Batch 3 complete:
    - `ai_washing_member.labeling.qa_labeled_dataset`

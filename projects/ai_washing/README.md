@@ -165,6 +165,14 @@ Queue V11 Phase 1 sample-builder opener:
 - `docs/roadmap_v2/migration_round_ay_ai_washing_build_labeling_sample_seed_v1.md`
 - `projects/ai_washing/build_labeling_sample_grouped_migration_sheet_v1.md`
 
+Queue V11 Phase 1 dedupe follow-on:
+- `docs/roadmap_v2/migration_round_az_ai_washing_dedupe_labeled_sentences_seed_v1.md`
+- `projects/ai_washing/dedupe_labeled_sentences_grouped_migration_sheet_v1.md`
+
+Queue V11 Phase 1 QA close:
+- `docs/roadmap_v2/migration_round_ba_ai_washing_qa_labeled_dataset_seed_v1.md`
+- `projects/ai_washing/qa_labeled_dataset_grouped_migration_sheet_v1.md`
+
 Structured member shell lanes now exist:
 - `projects/ai_washing/docs/`
 - `projects/ai_washing/reports/`
