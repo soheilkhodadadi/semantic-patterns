@@ -55,7 +55,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- pending
+- complete
 
 ### Batch 3
 

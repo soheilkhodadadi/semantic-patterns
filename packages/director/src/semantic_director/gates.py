@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from semantic_ai_washing.director.core.utils import run_command
+from semantic_director.runtime import run_command
 from semantic_director.schemas import PhaseGate
 
 
