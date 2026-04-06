@@ -16,7 +16,7 @@ from semantic_ai_washing.director.core.api_assistive import (
 from semantic_ai_washing.director.core.cost import CostController
 from semantic_ai_washing.labeling.assistive_prelabel_batch import generate_assistive_prelabels
 from semantic_ai_washing.labeling.benchmark_prompt_variants import benchmark_prompt_variants
-from semantic_ai_washing.labeling.build_labeling_batch import build_labeling_batch
+from ai_washing_member.labeling.build_labeling_batch import build_labeling_batch
 from semantic_ai_washing.labeling.initialize_review_sheet import initialize_review_sheet
 from semantic_ai_washing.labeling.merge_labeling_batches import merge_labeling_batches
 from semantic_ai_washing.labeling.score_prelabel_sheet import score_prelabel_sheet

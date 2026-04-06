@@ -123,6 +123,8 @@ Current active migration anchors:
 - `docs/roadmap_v2/migration_round_y_director_readiness_seed_v1.md`
 - `docs/roadmap_v2/migration_round_z_ai_washing_ff12_mapping_seed_v1.md`
 - `docs/roadmap_v2/migration_round_aa_director_branching_seed_v1.md`
+- `docs/roadmap_v2/migration_round_ab_director_state_seed_v1.md`
+- `docs/roadmap_v2/migration_round_ac_ai_washing_build_labeling_batch_seed_v1.md`
 - `docs/roadmap_v2/migration_round_w_ai_washing_build_filing_manifest_seed_v1.md`
 - `docs/roadmap_v2/restructure_progress_checkpoint_v1.md`
 - `docs/roadmap_v2/restructure_progress_checkpoint_v2.md`

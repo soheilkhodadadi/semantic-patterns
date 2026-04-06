@@ -25,6 +25,7 @@ Recent commits that matter for the current shape:
 - `c9b7664` `refactor: seed ai-washing filing manifest authority`
 - `010e24d` `refactor: seed ai-washing ff12 mapping authority`
 - `6cfb7fe` `refactor: seed director branching authority`
+- `205f010` `refactor: seed director state authority`
 
 ## What is materially real now
 
@@ -104,6 +105,7 @@ This is now proven for:
 - `ai_washing` benchmark-utils authority
 - `ai_washing` build-filing-manifest authority
 - `ai_washing` FF12 mapping authority
+- `ai_washing` build-labeling-batch authority
 
 ## Lane-by-lane state
 
@@ -223,8 +225,19 @@ Queue V2 has now started cleanly with:
 
 1. `semantic_director.branching`
 2. `semantic_director.state`
+3. `ai_washing_member.labeling.build_labeling_batch`
 
 That confirms the next cycle reset is working as intended.
+
+## Queue V2 close note
+
+Queue V2 has now completed cleanly through its planned three-round cycle:
+
+1. `semantic_director.branching`
+2. `semantic_director.state`
+3. `ai_washing_member.labeling.build_labeling_batch`
+
+That puts the repo back at a real checkpoint before choosing Queue V3.
 
 ## Bottom line
 

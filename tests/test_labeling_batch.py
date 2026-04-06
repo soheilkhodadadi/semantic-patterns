@@ -7,8 +7,8 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from semantic_ai_washing.labeling.build_labeling_batch import build_labeling_batch
 from ai_washing_member.labeling.common import normalize_sentence
+from ai_washing_member.labeling.build_labeling_batch import build_labeling_batch
 
 
 def _sha1_short(payload: str) -> str:

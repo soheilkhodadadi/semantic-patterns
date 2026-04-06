@@ -112,6 +112,9 @@ Default gate:
 - `tests/test_iteration2_parallel.py`
 - `git diff --check`
 
+Status:
+- complete via `docs/roadmap_v2/migration_round_ac_ai_washing_build_labeling_batch_seed_v1.md`
+
 Fallback if pre-scan gets messy:
 - replace with an established-authority `ai_washing` cleanup batch
 
@@ -119,9 +122,9 @@ Fallback if pre-scan gets messy:
 
 Start here:
 
-1. Batches 1-2 complete:
+1. Batches 1-3 complete:
    - `semantic_director.branching`
    - `semantic_director.state`
-2. next planned pre-scan: `ai_washing_member.labeling.build_labeling_batch`
-3. next planned lane rotation remains Batch 3:
-   `ai_washing_member.labeling.build_labeling_batch`
+   - `ai_washing_member.labeling.build_labeling_batch`
+2. Queue V2 exhausted
+3. next step is a fresh queue reset, not an automatic Batch 4 carryover
