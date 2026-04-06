@@ -155,6 +155,7 @@ Current active migration anchors:
 - `docs/roadmap_v2/migration_round_w_ai_washing_build_filing_manifest_seed_v1.md`
 - `docs/roadmap_v2/restructure_progress_checkpoint_v1.md`
 - `docs/roadmap_v2/restructure_progress_checkpoint_v2.md`
+- `docs/roadmap_v2/restructure_progress_checkpoint_v3.md`
 - `docs/roadmap_v2/migrated_surface_relevance_audit_v1.md`
 - `docs/roadmap_v2/legacy_template_hygiene_queue_v1.md`
 - `docs/roadmap_v2/batched_execution_queue_v1.md`
