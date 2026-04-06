@@ -68,6 +68,7 @@ from semantic_director.schemas import (
     RoadmapItem,
     Runbook,
 )
+from semantic_director.script_inventory import build_script_inventory, render_script_registry
 from semantic_director.validation_assets import (
     build_validation_asset_registry,
     classify_dataset_relationship,
@@ -130,7 +131,9 @@ __all__ = [
     "evaluate_condition",
     "SnapshotIngestor",
     "build_validation_asset_registry",
+    "build_script_inventory",
     "classify_dataset_relationship",
+    "render_script_registry",
     "StateCompiler",
     "resolve_model_path",
     "load_roadmap_model",
