@@ -68,6 +68,10 @@ from semantic_director.schemas import (
     RoadmapItem,
     Runbook,
 )
+from semantic_director.validation_assets import (
+    build_validation_asset_registry,
+    classify_dataset_relationship,
+)
 
 __version__ = "0.1.0"
 
@@ -125,6 +129,8 @@ __all__ = [
     "load_approved_review_summaries",
     "evaluate_condition",
     "SnapshotIngestor",
+    "build_validation_asset_registry",
+    "classify_dataset_relationship",
     "StateCompiler",
     "resolve_model_path",
     "load_roadmap_model",
