@@ -65,8 +65,10 @@ Why next:
 - keeps the cycle efficient before a lane rotation
 
 Expected batch shape:
-- requires a fresh pre-scan before execution
-- do not auto-start without that pre-scan
+- seed canonical member implementation
+- retain legacy shim
+- migrate:
+  - `tests/test_heldout_v2_workflow.py`
 
 Default gate:
 - `make doctor`
@@ -75,7 +77,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- planned
+- complete via `docs/roadmap_v2/migration_round_ae_ai_washing_heldout_freeze_seed_v1.md`
 
 Fallback if pre-scan gets messy:
 - rotate early to Batch 3
@@ -118,7 +120,7 @@ Start here:
 
 1. Batch 1 complete:
    - `ai_washing_member.labeling.sample_heldout_v2_candidates`
-2. Batch 2 planned:
+2. Batch 2 complete:
    - `ai_washing_member.labeling.freeze_heldout_v2`
 3. Batch 3 planned:
    - `semantic_director.decision`

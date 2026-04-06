@@ -143,6 +143,48 @@ That does **not** justify:
 - package extraction plus project-member migration in the same code batch
 - broad cleanup/deletion while import rewrites are active
 
+## Legacy and template hygiene rule
+
+Not every old surface should be migrated forward.
+
+Before promoting a root-owned file into a package or member authority, classify
+it as one of:
+
+- `active`
+- `dormant but still relevant`
+- `legacy`
+- `template/placeholder`
+
+Only `active` and `dormant but still relevant` surfaces are eligible for normal
+authority moves.
+
+Treat `legacy` and `template/placeholder` surfaces differently:
+- do not auto-migrate them just because they exist
+- do not keep broadening the new structure by carrying them forward
+- record them for later retirement, isolation, or archival
+
+This keeps the new lab shape understandable instead of rebuilding old clutter
+inside a cleaner namespace.
+
+## Legacy cleanup safety rule
+
+Cleanup work is allowed, but only as its own bounded class of batch.
+
+Do not combine:
+- authority seeding
+- caller rewrites
+- legacy deletion or relocation
+
+inside the same code batch.
+
+Instead, use a separate legacy-hygiene batch with:
+- an explicit dependency scan
+- a documented keep/archive/delete decision
+- a narrow validation gate for the affected lane
+
+That means we can move fast on real functionality now without losing the option
+to retire dead surfaces cleanly later.
+
 ## Recommended cadence
 
 1. lock the authority and lane

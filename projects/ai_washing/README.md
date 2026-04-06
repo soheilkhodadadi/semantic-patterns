@@ -117,6 +117,10 @@ Queue V4 held-out workflow seed:
 - `docs/roadmap_v2/migration_round_ad_ai_washing_heldout_sampler_seed_v1.md`
 - `projects/ai_washing/sample_heldout_v2_candidates_grouped_migration_sheet_v1.md`
 
+Queue V4 held-out workflow freeze follow-on:
+- `docs/roadmap_v2/migration_round_ae_ai_washing_heldout_freeze_seed_v1.md`
+- `projects/ai_washing/freeze_heldout_v2_grouped_migration_sheet_v1.md`
+
 Structured member shell lanes now exist:
 - `projects/ai_washing/docs/`
 - `projects/ai_washing/reports/`

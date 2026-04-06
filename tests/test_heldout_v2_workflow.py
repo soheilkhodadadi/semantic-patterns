@@ -6,8 +6,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from ai_washing_member.labeling import sample_heldout_v2_candidates
-from semantic_ai_washing.labeling import freeze_heldout_v2
+from ai_washing_member.labeling import freeze_heldout_v2, sample_heldout_v2_candidates
 
 
 REQUIRED_COLUMNS = [
