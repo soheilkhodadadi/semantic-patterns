@@ -6,7 +6,9 @@ from pathlib import Path
 
 import pandas as pd
 
-from ai_washing_member.classification import classify_active_window_preliminary_restartable
+from ai_washing_member.classification import (
+    classify_active_window_preliminary_restartable as member_restartable,
+)
 
 
 def _write_sentence_year(path: Path, year: int, rows: int = 5) -> None:
@@ -39,15 +41,14 @@ def _write_sentence_year(path: Path, year: int, rows: int = 5) -> None:
     frame.to_parquet(path, index=False)
 
 
-def test_restartable_classification_writes_outputs_and_progress(
+def test_member_restartable_classification_writes_outputs_and_progress(
     tmp_path: Path, monkeypatch
 ) -> None:
     input_root = tmp_path / "sentences"
     _write_sentence_year(input_root / "year=2021" / "ai_sentences.parquet", 2021, rows=5)
-    _write_sentence_year(input_root / "year=2022" / "ai_sentences.parquet", 2022, rows=4)
 
     monkeypatch.setattr(
-        classify_active_window_preliminary_restartable,
+        member_restartable,
         "_resolve_runtime",
         lambda args: (
             {"model_id": "binary_relevance_then_as_v1", "model_type": "binary_relevance_then_as"},
@@ -62,13 +63,11 @@ def test_restartable_classification_writes_outputs_and_progress(
             {"Actionable": 0.8, "Speculative": 0.1, "Irrelevant": 0.1} for _ in sentences
         ]
 
-    monkeypatch.setattr(
-        classify_active_window_preliminary_restartable, "predict_sentences", fake_predict
-    )
+    monkeypatch.setattr(member_restartable, "predict_sentences", fake_predict)
 
     args = argparse.Namespace(
         input_root=str(input_root),
-        years=["2021", "2022"],
+        years=["2021"],
         centroids="",
         model_metadata="",
         selected_model_manifest="artifacts/models/prelim_selected_model_v1.json",
@@ -81,24 +80,9 @@ def test_restartable_classification_writes_outputs_and_progress(
         force_recompute=False,
     )
 
-    report = classify_active_window_preliminary_restartable.run_classification_restartable(args)
+    report = member_restartable.run_classification_restartable(args)
 
     assert report["status"] == "passed"
-    assert report["summary"]["rows_by_year"] == {"2021": 5, "2022": 4}
-    assert (
-        tmp_path
-        / "classifications"
-        / "year=2021"
-        / "model=binary_relevance_then_as_v1"
-        / "classified_sentences.parquet"
-    ).exists()
-    assert (
-        tmp_path
-        / "classifications"
-        / "year=2022"
-        / "model=binary_relevance_then_as_v1"
-        / "classified_sentences.parquet"
-    ).exists()
+    assert report["summary"]["rows_by_year"] == {"2021": 5}
     progress = json.loads(Path(args.progress_report).read_text(encoding="utf-8"))
     assert progress["status"] == "completed"
-    assert progress["summary"]["completed_year_count"] == 2

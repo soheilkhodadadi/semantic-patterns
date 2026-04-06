@@ -82,11 +82,11 @@ Default gate:
 - `git diff --check`
 
 Status:
-- planned
+- complete
 
 ## Queue status
 
-Queue V16 is in progress:
+Queue V16 is complete:
 
 1. Batch 1:
    - `ai_washing_member.classification.publish_selected_preliminary_eval`
@@ -94,3 +94,7 @@ Queue V16 is in progress:
    - `ai_washing_member.classification.reconcile_preliminary_classification_report`
 3. Batch 3:
    - `ai_washing_member.classification.classify_active_window_preliminary_restartable`
+
+
+Recommended next move:
+- start Queue V17 with a fresh-authority comparison
