@@ -62,4 +62,4 @@ Default gate:
 - `git diff --check`
 
 Status:
-- pending
+- complete

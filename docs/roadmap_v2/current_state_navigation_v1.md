@@ -11,7 +11,7 @@ If you want the current picture, read these first:
 - `docs/roadmap_v2/lab_end_state_architecture_review_v2.md`
 - `docs/roadmap_v2/target_repo_layout_v2.md`
 - `docs/roadmap_v2/fast_safe_migration_protocol_v2.md`
-- `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v23.md`
+- `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v24.md`
 - `docs/roadmap_v2/legacy_template_hygiene_queue_v1.md`
 
 ## Canonical code layers
@@ -34,7 +34,7 @@ Ballpark progress:
 - `labcore`: ~95-100%
 - `director`: ~98-100%
 - `ai_washing` active member migration: ~85-93%
-- full clean final lab structure: ~92-98%
+- full clean final lab structure: ~93-98%
 
 ### Labcore
 
@@ -73,8 +73,8 @@ See:
 ## What still matters operationally
 
 Latest queue closed cleanly:
-- `docs/roadmap_v2/history/queues/batched_execution_queue_v30.md`
-- `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v23.md`
+- `docs/roadmap_v2/history/queues/batched_execution_queue_v31.md`
+- `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v24.md`
 
 Operational history is still kept in the repo, but it is now secondary.
 Use this index for the categories and retention logic:
