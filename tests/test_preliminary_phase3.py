@@ -14,7 +14,7 @@ from ai_washing_member.classification.classify_active_window_preliminary import 
 from ai_washing_member.classification.evaluate_preliminary_heldout import run_evaluation
 from ai_washing_member.classification.train_preliminary_centroids import run_training
 from semantic_ai_washing.core import sentence_filter
-from semantic_ai_washing.data.materialize_active_window_sentences import run_materialization
+from ai_washing_member.data.materialize_active_window_sentences import run_materialization
 
 pytest.importorskip("pyarrow", reason="pyarrow is required for parquet-backed preliminary tests")
 
