@@ -6,7 +6,7 @@ import json
 import os
 from typing import Any
 
-from semantic_ai_washing.director.core.cost import CostController
+from semantic_director.cost import CostController
 from semantic_ai_washing.director.core.openai_responses import (
     OpenAIResponsesError,
     OpenAIResponsesHTTPError,

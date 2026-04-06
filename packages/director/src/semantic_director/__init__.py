@@ -10,6 +10,7 @@ from semantic_director.branching import (
     review_artifact_paths,
     validate_iteration_boundaries,
 )
+from semantic_director.cost import CostController
 from semantic_director.config import (
     DEFAULT_CONFIG,
     DirectorPaths,
@@ -62,6 +63,7 @@ __all__ = [
     "RecoveryOption",
     "DecisionRecord",
     "CostUsageRecord",
+    "CostController",
     "DEFAULT_CONFIG",
     "DirectorPaths",
     "format_branch_name",

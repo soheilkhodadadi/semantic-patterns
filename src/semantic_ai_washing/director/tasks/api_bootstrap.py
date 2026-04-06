@@ -22,7 +22,7 @@ from semantic_ai_washing.director.core.api_assistive import (
     validate_assistive_response_payload,
     write_smoke_report,
 )
-from semantic_ai_washing.director.core.cost import CostController
+from semantic_director.cost import CostController
 from semantic_ai_washing.director.core.openai_responses import (
     OpenAIResponsesError,
     OpenAIResponsesHTTPError,

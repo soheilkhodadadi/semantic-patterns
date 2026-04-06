@@ -84,7 +84,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- planned
+- complete
 
 Fallback if pre-scan gets messy:
 - replace with a smaller `director` runtime round
@@ -127,7 +127,7 @@ Next in Queue V9:
 
 1. Batch 1 complete:
    - `ai_washing_member.labeling.publish_preliminary_results_readiness`
-2. Batch 2 planned:
+2. Batch 2 complete:
    - `semantic_director.cost`
 3. Batch 3 planned:
    - `semantic_director.llm`

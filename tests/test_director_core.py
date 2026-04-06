@@ -11,7 +11,7 @@ from semantic_director.config import (
     get_director_paths,
     load_configs,
 )
-from semantic_ai_washing.director.core.cost import CostController
+from semantic_director.cost import CostController
 from semantic_director.decision import DecisionEngine
 from semantic_director.executor import RunbookExecutor
 from semantic_ai_washing.director.core.planner import PlannerEngine

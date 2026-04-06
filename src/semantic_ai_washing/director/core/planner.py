@@ -10,7 +10,7 @@ from typing import Any
 import yaml
 
 from semantic_ai_washing.director.core.audit import default_provenance, write_audit_record
-from semantic_ai_washing.director.core.cost import CostController
+from semantic_director.cost import CostController
 from semantic_ai_washing.director.core.llm import refine_plan_markdown
 from semantic_director.roadmap_model import (
     find_phase,

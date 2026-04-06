@@ -434,6 +434,16 @@ This moves the preliminary-results publisher into the member-owned lane and
 keeps the direct regression pressure concentrated in the IRR/preliminary
 workflow bundle before the `director` rotation.
 
+## Queue V9 second-batch note
+
+Queue V9 Batch 2 has now completed cleanly:
+
+2. `semantic_director.cost`
+
+This rotates into the `director` lane with a compact control-runtime budget
+surface while deliberately leaving the ai-washing assistive callers on the
+compatibility path for a later separate round.
+
 ## Queue V4 progress note
 
 Queue V4 has now completed its first two `ai_washing` rounds cleanly:

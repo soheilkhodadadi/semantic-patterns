@@ -145,6 +145,7 @@ Current active migration anchors:
 - `docs/roadmap_v2/migration_round_ap_ai_washing_compute_irr_metrics_seed_v1.md`
 - `docs/roadmap_v2/migration_round_aq_ai_washing_diagnose_irr_disagreements_seed_v1.md`
 - `docs/roadmap_v2/migration_round_ar_director_executor_seed_v1.md`
+- `docs/roadmap_v2/migration_round_at_director_cost_seed_v1.md`
 - `docs/roadmap_v2/migration_round_as_ai_washing_publish_preliminary_results_seed_v1.md`
 - `docs/roadmap_v2/migration_round_w_ai_washing_build_filing_manifest_seed_v1.md`
 - `docs/roadmap_v2/restructure_progress_checkpoint_v1.md`
