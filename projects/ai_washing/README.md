@@ -125,6 +125,10 @@ Queue V5 split-registry follow-on:
 - `docs/roadmap_v2/migration_round_ah_ai_washing_freeze_split_registry_seed_v1.md`
 - `projects/ai_washing/freeze_split_registry_grouped_migration_sheet_v1.md`
 
+Queue V6 rubric-freeze follow-on:
+- `docs/roadmap_v2/migration_round_aj_ai_washing_publish_rubric_freeze_seed_v1.md`
+- `projects/ai_washing/publish_rubric_freeze_grouped_migration_sheet_v1.md`
+
 Structured member shell lanes now exist:
 - `projects/ai_washing/docs/`
 - `projects/ai_washing/reports/`

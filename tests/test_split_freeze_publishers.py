@@ -8,7 +8,7 @@ import pandas as pd
 import pytest
 
 from ai_washing_member.labeling.freeze_split_registry import run_freeze
-from semantic_ai_washing.labeling.publish_rubric_freeze import run_publish
+from ai_washing_member.labeling.publish_rubric_freeze import run_publish
 
 
 def _write_json(path: Path, payload: dict) -> None:

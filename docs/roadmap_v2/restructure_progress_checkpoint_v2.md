@@ -63,6 +63,7 @@ The active `ai_washing` member-owned authorities now include:
 - `ai_washing_member.labeling.ff12_mapping`
 - `ai_washing_member.labeling.freeze_heldout_v2`
 - `ai_washing_member.labeling.freeze_split_registry`
+- `ai_washing_member.labeling.publish_rubric_freeze`
 - `ai_washing_member.labeling.sample_heldout_v2_candidates`
 - `ai_washing_member.classification.preliminary_pipeline`
 - `ai_washing_member.classification.model_runtime`
@@ -295,6 +296,25 @@ Queue V5 has now completed cleanly through its planned three-round cycle:
 3. `semantic_director.playbooks`
 
 That closes the queue at a real checkpoint before choosing the next cycle.
+
+## Queue V6 note
+
+Queue V6 has now opened with the next clean `ai_washing` follow-on authority:
+
+1. `ai_washing_member.labeling.publish_rubric_freeze`
+
+A separate legacy/template hygiene queue is now tracked independently so cleanup
+does not get mixed into active authority moves.
+
+## Queue V6 progress note
+
+Queue V6 Batch 1 has now completed cleanly:
+
+1. `ai_washing_member.labeling.publish_rubric_freeze`
+
+This extends the member-owned split-freeze workflow while deliberately leaving
+the stable root command assertion in `tests/test_director_roadmap_model.py` on
+the compatibility path for now.
 
 ## Queue V4 progress note
 
