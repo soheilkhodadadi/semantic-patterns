@@ -37,7 +37,7 @@ from semantic_ai_washing.director.core.security import (
     scan_repo_for_secrets,
 )
 from semantic_ai_washing.director.core.snapshot import SnapshotIngestor
-from semantic_ai_washing.director.core.state import StateCompiler
+from semantic_director.state import StateCompiler
 from semantic_ai_washing.director.core.utils import (
     dump_json,
     git_info,

@@ -81,6 +81,9 @@ Default gate:
 - package build smoke
 - `git diff --check`
 
+Status:
+- complete via `docs/roadmap_v2/migration_round_ab_director_state_seed_v1.md`
+
 Fallback if pre-scan gets messy:
 - rotate early to Batch 3
 
@@ -116,7 +119,9 @@ Fallback if pre-scan gets messy:
 
 Start here:
 
-1. Batch 1 complete: `semantic_director.branching`
-2. next planned pre-scan: `semantic_director.state`
+1. Batches 1-2 complete:
+   - `semantic_director.branching`
+   - `semantic_director.state`
+2. next planned pre-scan: `ai_washing_member.labeling.build_labeling_batch`
 3. next planned lane rotation remains Batch 3:
    `ai_washing_member.labeling.build_labeling_batch`

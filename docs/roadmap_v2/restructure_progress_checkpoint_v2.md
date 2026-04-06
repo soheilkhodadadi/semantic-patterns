@@ -24,6 +24,7 @@ Recent commits that matter for the current shape:
 - `816f367` `refactor: seed director readiness authority`
 - `c9b7664` `refactor: seed ai-washing filing manifest authority`
 - `010e24d` `refactor: seed ai-washing ff12 mapping authority`
+- `6cfb7fe` `refactor: seed director branching authority`
 
 ## What is materially real now
 
@@ -46,6 +47,7 @@ has canonical package code for:
 - config/path loading helpers
 - readiness evaluation helpers
 - branching helpers
+- state compilation helpers
 
 ### Project-member layer
 
@@ -94,6 +96,7 @@ This is now proven for:
 - `director.config`
 - `director.readiness`
 - `director.branching`
+- `director.state`
 - `ai_washing` labeling common family
 - `ai_washing` classification support family
 - `ai_washing` SEC index family
@@ -116,7 +119,6 @@ What is now strongest:
 
 What remains clearly root-owned:
 - `snapshot`
-- `state`
 - `decision`
 - `executor`
 - `playbooks`
@@ -220,6 +222,7 @@ the next execution board.
 Queue V2 has now started cleanly with:
 
 1. `semantic_director.branching`
+2. `semantic_director.state`
 
 That confirms the next cycle reset is working as intended.
 

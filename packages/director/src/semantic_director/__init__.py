@@ -28,6 +28,7 @@ from semantic_director.roadmap_model import (
     resolve_model_path,
     roadmap_summary_dict,
 )
+from semantic_director.state import StateCompiler
 from semantic_director.schemas import (
     BlockerEvent,
     CostUsageRecord,
@@ -71,6 +72,7 @@ __all__ = [
     "load_configs",
     "required_file_paths",
     "ReadinessEvaluator",
+    "StateCompiler",
     "resolve_model_path",
     "load_roadmap_model",
     "load_remediation_library",

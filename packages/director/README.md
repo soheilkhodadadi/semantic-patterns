@@ -95,3 +95,10 @@ Eighth extracted package slice:
 Migration trace:
 - `docs/roadmap_v2/migration_round_aa_director_branching_seed_v1.md`
 - `packages/director/branching_grouped_migration_sheet_v1.md`
+
+Ninth extracted package slice:
+- `packages/director/src/semantic_director/state.py`
+
+Migration trace:
+- `docs/roadmap_v2/migration_round_ab_director_state_seed_v1.md`
+- `packages/director/state_grouped_migration_sheet_v1.md`
