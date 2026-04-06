@@ -6,7 +6,7 @@ from pathlib import Path
 import pandas as pd
 
 from ai_washing_member.data.build_expanded_sentence_pool import build_expanded_sentence_pool
-from semantic_ai_washing.data.combine_expanded_sentence_pool_batches import (
+from ai_washing_member.data.combine_expanded_sentence_pool_batches import (
     combine_expanded_sentence_pool_batches,
 )
 from semantic_ai_washing.director.core.api_assistive import (
