@@ -61,6 +61,7 @@ clusters:
 The active `ai_washing` member-owned authorities now include:
 - `ai_washing_member.labeling.common`
 - `ai_washing_member.labeling.ff12_mapping`
+- `ai_washing_member.labeling.sample_heldout_v2_candidates`
 - `ai_washing_member.classification.preliminary_pipeline`
 - `ai_washing_member.classification.model_runtime`
 - `ai_washing_member.classification.benchmark_utils`
@@ -106,6 +107,7 @@ This is now proven for:
 - `ai_washing` build-filing-manifest authority
 - `ai_washing` FF12 mapping authority
 - `ai_washing` build-labeling-batch authority
+- `ai_washing` held-out sampler authority
 
 ## Lane-by-lane state
 
@@ -237,7 +239,16 @@ Queue V3 has now completed cleanly through its planned three-round cycle:
 2. `semantic_director.state`
 3. `ai_washing_member.labeling.build_labeling_batch`
 
-That puts the repo back at a real checkpoint before choosing Queue V4.
+That put the repo back at a real checkpoint before choosing Queue V4.
+
+## Queue V4 note
+
+Queue V4 has now started cleanly with:
+
+1. `ai_washing_member.labeling.sample_heldout_v2_candidates`
+
+This restores lane balance at the start of the next cycle and sets up a clean
+held-out workflow follow-on round.
 
 ## Bottom line
 

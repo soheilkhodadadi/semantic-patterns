@@ -22,6 +22,7 @@ too early while still giving the member shell a real code owner.
 
 Current member-owned code:
 - `projects/ai_washing/src/ai_washing_member/labeling/common.py`
+- `projects/ai_washing/src/ai_washing_member/labeling/sample_heldout_v2_candidates.py`
 - `projects/ai_washing/src/ai_washing_member/classification/preliminary_pipeline.py`
 - `projects/ai_washing/src/ai_washing_member/classification/model_runtime.py`
 - `projects/ai_washing/src/ai_washing_member/classification/benchmark_utils.py`
@@ -30,5 +31,6 @@ Current member-owned code:
 
 Legacy compatibility remains at:
 - `src/semantic_ai_washing/labeling/common.py`
+- `src/semantic_ai_washing/labeling/sample_heldout_v2_candidates.py`
 - `src/semantic_ai_washing/classification/benchmark_utils.py`
 - `src/semantic_ai_washing/data/extract_sentence_table.py`

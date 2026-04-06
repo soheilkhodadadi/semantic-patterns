@@ -10,7 +10,7 @@ from typing import Any
 
 import pandas as pd
 
-from semantic_ai_washing.labeling.sample_heldout_v2_candidates import (
+from ai_washing_member.labeling.sample_heldout_v2_candidates import (
     DEFAULT_YEARS,
     LABELS,
     load_exclusions,
@@ -265,9 +265,7 @@ def run_sampling_restartable(args: argparse.Namespace) -> dict[str, Any]:
                 cached_frames.append(cached)
                 years_completed.append(year)
                 counts = (
-                    cached["candidate_label"].value_counts().to_dict()
-                    if not cached.empty
-                    else {}
+                    cached["candidate_label"].value_counts().to_dict() if not cached.empty else {}
                 )
                 year_state[str(year)] = {
                     "status": "reused",

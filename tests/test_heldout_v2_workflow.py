@@ -6,7 +6,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from semantic_ai_washing.labeling import freeze_heldout_v2, sample_heldout_v2_candidates
+from ai_washing_member.labeling import sample_heldout_v2_candidates
+from semantic_ai_washing.labeling import freeze_heldout_v2
 
 
 REQUIRED_COLUMNS = [
@@ -107,8 +108,7 @@ def test_sample_heldout_v2_candidates_supports_heuristic_prelabeler(tmp_path: Pa
                 {
                     "sentence_id": f"{year}-A-{idx}",
                     "sentence": (
-                        "We deployed AI systems into production workflows "
-                        f"in {year} case {idx}."
+                        f"We deployed AI systems into production workflows in {year} case {idx}."
                     ),
                     "source_cik": f"{year}A{idx:04d}",
                     "source_year": year,
@@ -207,7 +207,9 @@ def test_freeze_heldout_v2_requires_complete_balanced_labels(tmp_path: Path) -> 
     assert "candidate_label" not in frozen.columns
 
 
-def test_freeze_heldout_v2_allows_reviewed_unbalanced_asset_with_exclusions(tmp_path: Path) -> None:
+def test_freeze_heldout_v2_allows_reviewed_unbalanced_asset_with_exclusions(
+    tmp_path: Path,
+) -> None:
     reviewed = tmp_path / "reviewed.csv"
     pd.DataFrame.from_records(
         [
