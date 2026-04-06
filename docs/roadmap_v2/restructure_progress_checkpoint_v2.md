@@ -444,6 +444,18 @@ This rotates into the `director` lane with a compact control-runtime budget
 surface while deliberately leaving the ai-washing assistive callers on the
 compatibility path for a later separate round.
 
+## Queue V9 close note
+
+Queue V9 has now completed cleanly through its planned three-round cycle:
+
+1. `ai_washing_member.labeling.publish_preliminary_results_readiness`
+2. `semantic_director.cost`
+3. `semantic_director.llm`
+
+This closes the cycle with one current-stage preliminary-results move in the
+flagship lane and a compact two-step `director` runtime chain that now has a
+cleaner package-owned budget and LLM refinement boundary.
+
 ## Queue V4 progress note
 
 Queue V4 has now completed its first two `ai_washing` rounds cleanly:
