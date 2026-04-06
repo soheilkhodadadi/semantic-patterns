@@ -11,7 +11,7 @@ If you want the current picture, read these first:
 - `docs/roadmap_v2/lab_end_state_architecture_review_v2.md`
 - `docs/roadmap_v2/target_repo_layout_v2.md`
 - `docs/roadmap_v2/fast_safe_migration_protocol_v2.md`
-- `docs/roadmap_v2/restructure_progress_checkpoint_v19.md`
+- `docs/roadmap_v2/restructure_progress_checkpoint_v20.md`
 - `docs/roadmap_v2/legacy_template_hygiene_queue_v1.md`
 
 ## Canonical code layers
@@ -34,7 +34,7 @@ Ballpark progress:
 - `labcore`: ~95-100%
 - `director`: ~98-100%
 - `ai_washing` active member migration: ~84-92%
-- full clean final lab structure: ~88-94%
+- full clean final lab structure: ~89-95%
 
 ### Labcore
 
@@ -53,6 +53,7 @@ Current posture:
 - the remaining wrapper normalization pressure is now closed
 - remaining work is now optional package polish and separate hygiene, not
   foundational seeding, runtime moves, or real package-boundary cleanup
+- repo-visible package navigation is now also substantially cleaner
 
 ### AI-washing
 
@@ -71,8 +72,8 @@ See:
 ## What still matters operationally
 
 Latest queue closed cleanly:
-- `docs/roadmap_v2/batched_execution_queue_v26.md`
-- `docs/roadmap_v2/restructure_progress_checkpoint_v19.md`
+- `docs/roadmap_v2/batched_execution_queue_v27.md`
+- `docs/roadmap_v2/restructure_progress_checkpoint_v20.md`
 
 Operational history is still kept in the repo, but it is now secondary.
 Use this index for the categories and retention logic:
