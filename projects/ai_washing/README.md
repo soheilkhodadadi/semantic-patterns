@@ -88,8 +88,8 @@ Legacy compatibility still exists in:
 
 1. `projects/ai_washing/root_surface_triage_registry_v2.md`
 2. `projects/ai_washing/migration_sheets/README.md`
-3. `docs/roadmap_v2/restructure_progress_checkpoint_v15.md`
-4. `docs/roadmap_v2/batched_execution_queue_v22.md`
+3. `docs/roadmap_v2/restructure_progress_checkpoint_v16.md`
+4. `docs/roadmap_v2/batched_execution_queue_v23.md`
 
 ## Planning documents that still matter
 
@@ -107,4 +107,6 @@ These are now background/reference notes, not the front door.
 - the remaining root-owned `ai_washing` surfaces are mostly wrappers or
   dormant-but-relevant historical/project utilities
 - there are no strong active `ai_washing` migration openers left right now
+- the six historical data cleanup/acquisition utilities are now explicitly
+  treated as script-deprecation candidates in the generated registry layer
 - use the triage registry before assuming a new `ai_washing` queue should open

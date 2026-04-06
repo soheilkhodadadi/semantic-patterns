@@ -90,3 +90,17 @@ Result:
 This means the next hygiene-class follow-on, if scheduled, should be a
 script-deprecation and registry/inventory cleanup queue rather than an
 immediate code-removal queue.
+
+That follow-on has now been executed as Queue V23 with three outputs:
+- `docs/roadmap_v2/migration_round_ci_hygiene_script_inventory_deprecation_rules_v1.md`
+- `docs/roadmap_v2/migration_round_cj_hygiene_script_registry_publish_v1.md`
+- `docs/roadmap_v2/migration_round_ck_hygiene_script_deprecation_posture_refresh_v1.md`
+
+Result:
+- the six historical data utilities are no longer advertised as current
+  canonical front-door entrypoints
+- they now appear as transitional script-deprecation surfaces
+- they still are not retire-ready for deletion or quarantine
+
+This means any later hygiene queue should focus on script-consumer cleanup or
+explicit deprecation mapping, not premature code removal.

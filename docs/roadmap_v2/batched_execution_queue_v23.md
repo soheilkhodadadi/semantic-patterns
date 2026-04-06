@@ -36,7 +36,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- pending
+- complete
 
 ### Batch 2
 
@@ -53,7 +53,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- pending
+- complete
 
 ### Batch 3
 
@@ -69,4 +69,4 @@ Default gate:
 - `git diff --check`
 
 Status:
-- pending
+- complete
