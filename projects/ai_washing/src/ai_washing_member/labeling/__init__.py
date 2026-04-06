@@ -14,6 +14,7 @@ from ai_washing_member.labeling.common import (
     token_count,
     write_excel,
 )
+from ai_washing_member.labeling.ff12_mapping import FF12Bucket, FF12_NAMES, map_sic_to_ff12
 
 __all__ = [
     "ALLOWED_LABELS",
@@ -28,4 +29,7 @@ __all__ = [
     "row_sha256",
     "load_table",
     "write_excel",
+    "FF12Bucket",
+    "FF12_NAMES",
+    "map_sic_to_ff12",
 ]

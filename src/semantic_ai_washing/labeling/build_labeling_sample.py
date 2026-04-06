@@ -23,7 +23,7 @@ from ai_washing_member.labeling.common import (
     normalize_sentence,
     token_count,
 )
-from semantic_ai_washing.labeling.ff12_mapping import map_sic_to_ff12
+from ai_washing_member.labeling.ff12_mapping import map_sic_to_ff12
 
 _FORM_RE = re.compile(r"^\d{8}_(?P<form>[^_]+)_")
 _CIK_RE = re.compile(r"edgar_data_(\d+)_")

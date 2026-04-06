@@ -164,6 +164,9 @@ Default gate:
   - `tests/test_labeling_phase1.py`
 - `git diff --check`
 
+Status:
+- complete via `docs/roadmap_v2/migration_round_z_ai_washing_ff12_mapping_seed_v1.md`
+
 Fallback if pre-scan gets messy:
 - replace with an established-authority `ai_washing` cleanup batch under the
   newly-seeded `build_filing_manifest` authority
@@ -204,12 +207,12 @@ If a pre-scan shows that the next batch is messier than expected:
 
 Current queue state:
 
-1. Batches 1-3 complete
-2. checkpoint reached before Batch 4
-3. next planned fresh-authority pre-scan:
-   - `ai_washing` industry mapping surface
-   - provisional candidate: `semantic_ai_washing.labeling.ff12_mapping`
+1. Batches 1-4 complete
+2. current queue exhausted
+3. next step is a fresh queue reset, not an automatic Batch 5 carryover
+
 Next execution move:
 
-1. pre-scan Batch 4
-2. execute it only if the authority boundary is still clean under Protocol V2
+1. run a fresh authority comparison for the next cycle
+2. build `batched_execution_queue_v2.md`
+3. auto-run the next batch only after that queue reset stays clean

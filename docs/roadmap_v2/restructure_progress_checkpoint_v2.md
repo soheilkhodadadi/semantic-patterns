@@ -54,6 +54,7 @@ clusters:
 
 The active `ai_washing` member-owned authorities now include:
 - `ai_washing_member.labeling.common`
+- `ai_washing_member.labeling.ff12_mapping`
 - `ai_washing_member.classification.preliminary_pipeline`
 - `ai_washing_member.classification.model_runtime`
 - `ai_washing_member.classification.benchmark_utils`
@@ -95,6 +96,7 @@ This is now proven for:
 - `ai_washing` sentence-table family
 - `ai_washing` benchmark-utils authority
 - `ai_washing` build-filing-manifest authority
+- `ai_washing` FF12 mapping authority
 
 ## Lane-by-lane state
 
@@ -134,11 +136,13 @@ Current condition:
 What is now strongest:
 - the next meaningful acceleration is a fresh authority move, not more cleanup
 
-What remains the clearest fresh authority candidate:
+What just closed cleanly:
 - `build_filing_manifest`
+- `ff12_mapping`
 
-What likely follows it:
-- industry/FF12 mapping support, if the dependency scan stays clean
+What likely follows next:
+- the next fresh authority should be re-scanned after this queue reset rather
+  than assumed in advance
 
 Interpretation:
 - `ai_washing` is ready for another member-owned authority round
@@ -196,7 +200,17 @@ The current three-round cycle has now completed cleanly:
 2. `semantic_director.config`
 3. `semantic_director.readiness`
 
-That means the queue is back at a planned checkpoint before Batch 4.
+That means the original queue checkpoint was reached before Batch 4, and the
+provisional Batch 4 round has now also completed cleanly.
+
+## Queue-close note
+
+The provisional Batch 4 authority also completed cleanly:
+
+4. `ai_washing_member.labeling.ff12_mapping`
+
+That closes the current queued cycle and puts us at a new selection point for
+the next execution board.
 
 ## Bottom line
 
