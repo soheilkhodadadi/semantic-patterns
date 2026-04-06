@@ -96,8 +96,12 @@ Why next:
 - prepares a future `executor`-oriented round
 
 Expected batch shape:
-- requires a fresh pre-scan before execution
-- do not auto-start without that pre-scan
+- seed canonical package implementation
+- retain legacy shim
+- migrate:
+  - `src/semantic_ai_washing/director/cli.py`
+  - `src/semantic_ai_washing/director/core/executor.py`
+  - `tests/test_director_core.py`
 
 Default gate:
 - `make doctor`
@@ -109,7 +113,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- planned
+- complete via `docs/roadmap_v2/migration_round_af_director_decision_seed_v1.md`
 
 Fallback if pre-scan gets messy:
 - replace with a smaller `director` policy/runtime cleanup round
@@ -122,5 +126,7 @@ Start here:
    - `ai_washing_member.labeling.sample_heldout_v2_candidates`
 2. Batch 2 complete:
    - `ai_washing_member.labeling.freeze_heldout_v2`
-3. Batch 3 planned:
+3. Batch 3 complete:
    - `semantic_director.decision`
+
+Queue V4 is now complete.

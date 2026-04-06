@@ -100,6 +100,7 @@ This is now proven for:
 - `director.readiness`
 - `director.branching`
 - `director.state`
+- `director.decision`
 - `ai_washing` labeling common family
 - `ai_washing` classification support family
 - `ai_washing` SEC index family
@@ -262,6 +263,16 @@ Queue V4 has now completed its first two `ai_washing` rounds cleanly:
 That leaves one planned lane-rotation round before the next checkpoint:
 
 3. `semantic_director.decision`
+
+## Queue V4 close note
+
+Queue V4 has now completed cleanly through its planned three-round cycle:
+
+1. `ai_washing_member.labeling.sample_heldout_v2_candidates`
+2. `ai_washing_member.labeling.freeze_heldout_v2`
+3. `semantic_director.decision`
+
+That puts the repo back at a real checkpoint before choosing Queue V5.
 
 ## Bottom line
 

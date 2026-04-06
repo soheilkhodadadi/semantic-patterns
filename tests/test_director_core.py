@@ -12,7 +12,7 @@ from semantic_director.config import (
     load_configs,
 )
 from semantic_ai_washing.director.core.cost import CostController
-from semantic_ai_washing.director.core.decision import DecisionEngine
+from semantic_director.decision import DecisionEngine
 from semantic_ai_washing.director.core.executor import RunbookExecutor
 from semantic_ai_washing.director.core.planner import PlannerEngine
 from semantic_ai_washing.director.core.security import redact_secrets
