@@ -31,6 +31,7 @@ from semantic_director.planner import (
     write_plan_manifest,
 )
 from semantic_director.llm import refine_plan_markdown
+from semantic_director.optimizer import DirectorOptimizer
 from semantic_director.readiness import ReadinessEvaluator
 from semantic_director.review import ReviewEngine, load_approved_review_summaries
 from semantic_director.roadmap_model import (
@@ -88,6 +89,7 @@ __all__ = [
     "load_configs",
     "required_file_paths",
     "DecisionEngine",
+    "DirectorOptimizer",
     "RunbookExecutor",
     "PlannerEngine",
     "plan_output_manifest",

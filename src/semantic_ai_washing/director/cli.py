@@ -18,7 +18,7 @@ from semantic_director.config import (
 from semantic_director.branching import validate_iteration_boundaries
 from semantic_director.cost import CostController
 from semantic_director.decision import DecisionEngine
-from semantic_ai_washing.director.core.optimizer import DirectorOptimizer
+from semantic_director.optimizer import DirectorOptimizer
 from semantic_director.playbooks import list_playbooks, show_playbook
 from semantic_director.executor import RunbookExecutor
 from semantic_director.planner import PlannerEngine, write_plan_manifest
