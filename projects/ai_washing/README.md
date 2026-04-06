@@ -161,6 +161,10 @@ Queue V10 review-sheet workflow merge follow-on:
 - `docs/roadmap_v2/migration_round_aw_ai_washing_merge_labeling_batches_seed_v1.md`
 - `projects/ai_washing/merge_labeling_batches_grouped_migration_sheet_v1.md`
 
+Queue V11 Phase 1 sample-builder opener:
+- `docs/roadmap_v2/migration_round_ay_ai_washing_build_labeling_sample_seed_v1.md`
+- `projects/ai_washing/build_labeling_sample_grouped_migration_sheet_v1.md`
+
 Structured member shell lanes now exist:
 - `projects/ai_washing/docs/`
 - `projects/ai_washing/reports/`

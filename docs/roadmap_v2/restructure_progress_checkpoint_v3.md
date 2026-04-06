@@ -97,3 +97,12 @@ The current system is now doing what we wanted:
 - disciplined enough not to drag legacy/template clutter into the new structure by accident
 
 That means we can keep going from here without a strategic reset.
+
+## Queue V11 note
+
+Queue V11 has now opened cleanly with:
+
+1. `ai_washing_member.labeling.build_labeling_sample`
+
+This starts a coherent Phase 1 dataset-prep workflow queue in the flagship
+lane, with the downstream dedupe and QA steps still lined up behind it.
