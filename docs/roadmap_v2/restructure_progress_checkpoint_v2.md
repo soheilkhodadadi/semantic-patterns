@@ -415,6 +415,25 @@ the flagship lane and one compact `director` control-runtime move that keeps
 the package boundary moving downstream without touching Atlas-adjacent adapter
 surfaces.
 
+## Queue V9 note
+
+Queue V9 has now opened cleanly with:
+
+1. `ai_washing_member.labeling.publish_preliminary_results_readiness`
+
+This continues the current-stage preliminary-results workflow in the
+member-owned lane before rotating into a compact `director` cost/LLM cleanup.
+
+## Queue V9 progress note
+
+Queue V9 Batch 1 has now completed cleanly:
+
+1. `ai_washing_member.labeling.publish_preliminary_results_readiness`
+
+This moves the preliminary-results publisher into the member-owned lane and
+keeps the direct regression pressure concentrated in the IRR/preliminary
+workflow bundle before the `director` rotation.
+
 ## Queue V4 progress note
 
 Queue V4 has now completed its first two `ai_washing` rounds cleanly:
