@@ -372,6 +372,26 @@ This closes the cycle with two current-stage IRR workflow moves in the flagship
 lane and one compact downstream `director` package cleanup that sets up a
 future `executor` round.
 
+## Queue V8 note
+
+Queue V8 has now opened cleanly with:
+
+1. `ai_washing_member.labeling.compute_irr_metrics`
+
+This continues the current-stage IRR reporting workflow in the member-owned
+lane while keeping the roadmap-model command surface on the compatibility path
+for now.
+
+## Queue V8 progress note
+
+Queue V8 Batch 1 has now completed cleanly:
+
+1. `ai_washing_member.labeling.compute_irr_metrics`
+
+This moves the IRR metrics authority into the member-owned lane and keeps the
+direct regression pressure concentrated in the IRR workflow bundle before the
+next `diagnose_irr_disagreements` follow-on round.
+
 ## Queue V4 progress note
 
 Queue V4 has now completed its first two `ai_washing` rounds cleanly:
