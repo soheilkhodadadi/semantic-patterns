@@ -1,19 +1,19 @@
-# AI-Washing Member Seed
+# AI-Washing Project Member
 
 ## Status
-- member shell is real
 - member-owned code is real
-- active workflow migration is now in the late phase, not the shell-planning phase
+- the active workflow migration is in the late stage
+- remaining work is now wrapper/history/hygiene oriented, not shell seeding
 
 ## Purpose
 
 `ai_washing` is the flagship project member in the lab structure.
 
-It is gradually becoming the canonical home for:
+It is the canonical home for:
 - project-specific code
 - project-specific tests
 - project-specific reports and outputs
-- project-specific migration decisions
+- project-specific migration and triage decisions
 
 ## Canonical locations
 
@@ -23,11 +23,14 @@ Member-owned code:
 Member-owned tests:
 - `projects/ai_washing/tests/`
 
-Member-facing artifact lanes:
-- `projects/ai_washing/reports/`
-- `projects/ai_washing/output/`
-- `projects/ai_washing/docs/`
-- `projects/ai_washing/configs/`
+Migration sheets:
+- `projects/ai_washing/migration_sheets/README.md`
+
+Planning notes:
+- `projects/ai_washing/planning_notes/README.md`
+
+Current root-surface triage:
+- `projects/ai_washing/root_surface_triage_registry_v2.md`
 
 Legacy compatibility still exists in:
 - `src/semantic_ai_washing/`
@@ -88,17 +91,9 @@ Legacy compatibility still exists in:
 
 1. `projects/ai_washing/root_surface_triage_registry_v2.md`
 2. `projects/ai_washing/migration_sheets/README.md`
-3. `docs/roadmap_v2/restructure_progress_checkpoint_v17.md`
-4. `docs/roadmap_v2/batched_execution_queue_v24.md`
-
-## Planning documents that still matter
-
-- `projects/ai_washing/planning_notes/member_seed_plan_v1.md`
-- `projects/ai_washing/planning_notes/member_shell_readiness_v1.md`
-- `projects/ai_washing/planning_notes/first_code_seed_decision_v1.md`
-- `projects/ai_washing/planning_notes/labeling_common_impact_map_v1.md`
-
-These are now background/reference notes, not the front door.
+3. `projects/ai_washing/planning_notes/README.md`
+4. `docs/roadmap_v2/restructure_progress_checkpoint_v20.md`
+5. `docs/roadmap_v2/current_state_navigation_v1.md`
 
 ## Current posture
 
@@ -106,9 +101,8 @@ These are now background/reference notes, not the front door.
   under `ai_washing_member`
 - the remaining root-owned `ai_washing` surfaces are mostly wrappers or
   dormant-but-relevant historical/project utilities
-- there are no strong active `ai_washing` migration openers left right now
-- the six historical data cleanup/acquisition utilities are now explicitly
-  treated as script-deprecation candidates in the generated registry layer
-- their flat `src/data/*` shims are now explicitly treated as legacy consumer
-  surfaces rather than generic compatibility front doors
-- use the triage registry before assuming a new `ai_washing` queue should open
+- there are no strong active `ai_washing` migration openers right now
+- the six historical data cleanup/acquisition utilities remain explicit
+  script-deprecation candidates rather than migration targets
+- any future queue in this lane should be chosen for real leverage, not for
+  momentum alone
