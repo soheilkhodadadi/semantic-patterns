@@ -1,60 +1,64 @@
 <!-- generated_file: true -->
 <!-- source_inventory: director/snapshots/script_inventory.json -->
-<!-- source_sha256: 9cf7a335691293707960b4f41e739eb54d5113b4496bad8276650005bfe6b260 -->
-<!-- rendered_at: 2026-03-06T18:11:13.507905+00:00 -->
+<!-- source_sha256: f5030aedaf5d21d464823c9c50763a2c90eddf7abc728c9e63281a3af3ca85a9 -->
+<!-- rendered_at: 2026-04-06T18:00:48.574724+00:00 -->
 
 # Script Registry
 
 This document is generated from the repo script inventory snapshot.
 
 ## Summary
-- Python modules inventoried: `137`
-- Canonical modules: `82`
-- Transitional modules: `53`
+- Python modules inventoried: `199`
+- Canonical modules: `138`
+- Transitional modules: `59`
 - Legacy modules: `2`
-- Entrypoints: `91`
-- Hygiene findings: `37`
+- Entrypoints: `101`
+- Hygiene findings: `44`
 
 ## Canonical Entrypoints
 
 | Module | Invocation | Notes |
 | --- | --- | --- |
 | `semantic_ai_washing.aggregation.aggregate_classification_counts` | `python -m semantic_ai_washing.aggregation.aggregate_classification_counts` | Aggregate per-file classification outputs into firm-year features. |
+| `semantic_ai_washing.aggregation.build_ever_speaker_annual_panel` | `python -m semantic_ai_washing.aggregation.build_ever_speaker_annual_panel` | Build an annual ever-speaker panel with calendar-year patent timing. |
 | `semantic_ai_washing.aggregation.build_panel` | `python -m semantic_ai_washing.aggregation.build_panel` | primary implementation namespace under semantic_ai_washing |
+| `semantic_ai_washing.aggregation.build_preliminary_narrative_measures` | `python -m semantic_ai_washing.aggregation.build_preliminary_narrative_measures` | Build preliminary firm-year AI metrics and proposal-defined narrative measures. |
+| `semantic_ai_washing.aggregation.export_preliminary_ai_frequencies` | `python -m semantic_ai_washing.aggregation.export_preliminary_ai_frequencies` | Export clean preliminary firm-year AI metrics into the legacy CSV merge shape. |
 | `semantic_ai_washing.aggregation.merge_ai_with_patents` | `python -m semantic_ai_washing.aggregation.merge_ai_with_patents` | Merge AI sentence frequencies (firm-year) with patents (firm-year). |
+| `semantic_ai_washing.analysis.audit_preliminary_panel_inputs` | `python -m semantic_ai_washing.analysis.audit_preliminary_panel_inputs` | Audit patents and controls coverage before preliminary panel assembly. |
+| `semantic_ai_washing.analysis.build_delivery_figures` | `python -m semantic_ai_washing.analysis.build_delivery_figures` | Build standalone delivery-phase figures and review DOCX wrappers. |
+| `semantic_ai_washing.analysis.build_delivery_table_docs` | `python -m semantic_ai_washing.analysis.build_delivery_table_docs` | Build standalone journal-style DOCX tables for preliminary delivery. |
+| `semantic_ai_washing.analysis.generate_delivery_table_artifacts` | `python -m semantic_ai_washing.analysis.generate_delivery_table_artifacts` | Generate standalone delivery-phase table artifacts. |
+| `semantic_ai_washing.analysis.generate_paper_assets` | `python -m semantic_ai_washing.analysis.generate_paper_assets` | Generate paper-facing snippets and tables from current project artifacts. |
+| `semantic_ai_washing.analysis.generate_preliminary_regression_spec` | `python -m semantic_ai_washing.analysis.generate_preliminary_regression_spec` | Generate a preliminary regression specification scaffold for the paper lane. |
 | `semantic_ai_washing.analysis.prepare_panel_for_regression` | `python -m semantic_ai_washing.analysis.prepare_panel_for_regression` | primary implementation namespace under semantic_ai_washing |
+| `semantic_ai_washing.analysis.run_modular_regression_portfolio` | `python -m semantic_ai_washing.analysis.run_modular_regression_portfolio` | Run a filtered regression portfolio as a separate artifact bundle. |
+| `semantic_ai_washing.analysis.run_regression_portfolio` | `python -m semantic_ai_washing.analysis.run_regression_portfolio` | Run a spec-driven regression portfolio on the prepared panel. |
 | `semantic_ai_washing.analysis.run_regressions` | `python -m semantic_ai_washing.analysis.run_regressions` | primary implementation namespace under semantic_ai_washing |
 | `semantic_ai_washing.classification.classify_all_ai_sentences` | `python -m semantic_ai_washing.classification.classify_all_ai_sentences` | Batch classifier for AI-related sentences using SentenceBERT and cosine similarity. |
 | `semantic_ai_washing.core.features` | `python -m semantic_ai_washing.core.features` | primary implementation namespace under semantic_ai_washing |
 | `semantic_ai_washing.core.plots` | `python -m semantic_ai_washing.core.plots` | primary implementation namespace under semantic_ai_washing |
 | `semantic_ai_washing.core.score_sentences` | `python -m semantic_ai_washing.core.score_sentences` | primary implementation namespace under semantic_ai_washing |
+| `semantic_ai_washing.data.build_active_filing_company_universe` | `python -m semantic_ai_washing.data.build_active_filing_company_universe` | Build a broader firm-universe CSV from the indexed active filing window. |
 | `semantic_ai_washing.data.build_company_list` | `python -m semantic_ai_washing.data.build_company_list` | Build a reproducible firm list (~50 CIKs) that **have a 10‑K in each year 2021–2024** |
-| `semantic_ai_washing.data.build_filing_manifest` | `python -m semantic_ai_washing.data.build_filing_manifest` | Build a deterministic filing manifest for the bounded 2024 sentence-table pilot. |
-| `semantic_ai_washing.data.clean_compustat` | `python -m semantic_ai_washing.data.clean_compustat` | primary implementation namespace under semantic_ai_washing |
-| `semantic_ai_washing.data.clean_crsp` | `python -m semantic_ai_washing.data.clean_crsp` | primary implementation namespace under semantic_ai_washing |
-| `semantic_ai_washing.data.clean_sec` | `python -m semantic_ai_washing.data.clean_sec` | primary implementation namespace under semantic_ai_washing |
-| `semantic_ai_washing.data.download_compustat` | `python -m semantic_ai_washing.data.download_compustat` | primary implementation namespace under semantic_ai_washing |
-| `semantic_ai_washing.data.download_crsp` | `python -m semantic_ai_washing.data.download_crsp` | primary implementation namespace under semantic_ai_washing |
-| `semantic_ai_washing.data.download_sec` | `python -m semantic_ai_washing.data.download_sec` | primary implementation namespace under semantic_ai_washing |
-| `semantic_ai_washing.data.extract_sentence_table` | `python -m semantic_ai_washing.data.extract_sentence_table` | Extract a canonical sentence table from a bounded filing manifest. |
-| `semantic_ai_washing.data.index_sec_filings` | `python -m semantic_ai_washing.data.index_sec_filings` | Index the external SEC corpus and emit source-window metadata. |
+| `semantic_ai_washing.data.clean_sentence_tables` | `python -m semantic_ai_washing.data.clean_sentence_tables` | Post-extraction cleanup for canonical AI sentence parquet tables. |
 | `semantic_ai_washing.data.pull_compustat_controls` | `python -m semantic_ai_washing.data.pull_compustat_controls` | Pull Compustat controls from WRDS, build a CIK↔GVKEY crosswalk for your 50 firms, |
+| `semantic_ai_washing.diagnostics.environment_audit` | `python -m semantic_ai_washing.diagnostics.environment_audit` | Audit local Python environments against the repo's canonical runtime target. |
 | `semantic_ai_washing.diagnostics.phase0_baseline` | `python -m semantic_ai_washing.diagnostics.phase0_baseline` | Phase 0 diagnostics baseline runner for Iteration 1. |
-| `semantic_ai_washing.director.__main__` | `python -m semantic_ai_washing.director.__main__` | primary implementation namespace under semantic_ai_washing |
-| `semantic_ai_washing.director.cli` | `python -m semantic_ai_washing.director.cli` | CLI entrypoint for the autonomous director package. |
-| `semantic_ai_washing.director.tasks.api_bootstrap` | `python -m semantic_ai_washing.director.tasks.api_bootstrap` | Run a bounded assistive-only OpenAI API smoke test. |
-| `semantic_ai_washing.director.tasks.script_inventory` | `python -m semantic_ai_washing.director.tasks.script_inventory` | Generate a repo script inventory and a human-readable script registry. |
-| `semantic_ai_washing.director.tasks.validation_assets` | `python -m semantic_ai_washing.director.tasks.validation_assets` | Generate a canonical registry for current validation assets. |
-| `semantic_ai_washing.labeling.adjudicate_irr_labels` | `python -m semantic_ai_washing.labeling.adjudicate_irr_labels` | Create adjudication artifacts and optionally merge final IRR labels. |
-| `semantic_ai_washing.labeling.build_labeling_batch` | `python -m semantic_ai_washing.labeling.build_labeling_batch` | Build the canonical labeling batch for Iteration 1 label ops bootstrap. |
-| `semantic_ai_washing.labeling.build_labeling_sample` | `python -m semantic_ai_washing.labeling.build_labeling_sample` | Build Phase 1 labeling sample with leakage controls and stable IDs. |
-| `semantic_ai_washing.labeling.compute_irr_metrics` | `python -m semantic_ai_washing.labeling.compute_irr_metrics` | Compute IRR metrics (Cohen's kappa + disagreement taxonomy). |
-| `semantic_ai_washing.labeling.dedupe_labeled_sentences` | `python -m semantic_ai_washing.labeling.dedupe_labeled_sentences` | Deduplicate and merge labeled datasets for Phase 1. |
-| `semantic_ai_washing.labeling.prepare_irr_subset` | `python -m semantic_ai_washing.labeling.prepare_irr_subset` | Prepare a stratified IRR subset and blinded rater templates. |
-| `semantic_ai_washing.labeling.qa_labeled_dataset` | `python -m semantic_ai_washing.labeling.qa_labeled_dataset` | QA checks for Phase 1 expanded labeled dataset. |
+| `semantic_ai_washing.diagnostics.wrds_smoke` | `python -m semantic_ai_washing.diagnostics.wrds_smoke` | Run a live WRDS connectivity smoke test from the canonical repo environment. |
+| `semantic_ai_washing.director.__main__` | `python -m semantic_ai_washing.director.__main__` | Compatibility shim for the package-owned director module entrypoint. |
+| `semantic_ai_washing.labeling.assistive_prelabel_batch` | `python -m semantic_ai_washing.labeling.assistive_prelabel_batch` | Compatibility shim for the member-owned assistive prelabel helpers. |
+| `semantic_ai_washing.labeling.benchmark_prompt_variants` | `python -m semantic_ai_washing.labeling.benchmark_prompt_variants` | Compatibility shim for the member-owned prompt benchmark helpers. |
+| `semantic_ai_washing.labeling.freeze_split_registry` | `python -m semantic_ai_washing.labeling.freeze_split_registry` | Compatibility shim for grouped split-registry freezing. |
+| `semantic_ai_washing.labeling.publish_rubric_freeze` | `python -m semantic_ai_washing.labeling.publish_rubric_freeze` | Compatibility shim for provisional rubric-freeze publishing. |
+| `semantic_ai_washing.labeling.run_assistive_prelabel_restartable` | `python -m semantic_ai_washing.labeling.run_assistive_prelabel_restartable` | Restartable assistive-only prelabel runner for bounded review sheets. |
+| `semantic_ai_washing.labeling.sample_heldout_v2_restartable` | `python -m semantic_ai_washing.labeling.sample_heldout_v2_restartable` | Restartable held_out_v2 candidate sampling with progress logging. |
 | `semantic_ai_washing.modeling.predict` | `python -m semantic_ai_washing.modeling.predict` | primary implementation namespace under semantic_ai_washing |
 | `semantic_ai_washing.modeling.train` | `python -m semantic_ai_washing.modeling.train` | primary implementation namespace under semantic_ai_washing |
-| `semantic_ai_washing.patents.build_company_lookup` | `python -m semantic_ai_washing.patents.build_company_lookup` | Builds a normalized company lookup table for patents work. |
+| `semantic_ai_washing.patents.benchmark_keyword_sets` | `python -m semantic_ai_washing.patents.benchmark_keyword_sets` | Benchmark multiple patent keyword sets on the same matched patent candidate pool. |
+| `semantic_ai_washing.patents.benchmark_keyword_sets_lightweight` | `python -m semantic_ai_washing.patents.benchmark_keyword_sets_lightweight` | Lightweight patent keyword benchmark using only the Python standard library. |
+| `semantic_ai_washing.patents.build_company_lookup` | `python -m semantic_ai_washing.patents.build_company_lookup` | Build a normalized company lookup table for patent matching. |
+| `semantic_ai_washing.patents.extract_filtered_patents_lightweight` | `python -m semantic_ai_washing.patents.extract_filtered_patents_lightweight` | Lightweight PatentsView extractor using only the Python standard library. |
 | `semantic_ai_washing.tests.evaluate_classifier_on_held_out` | `python -m semantic_ai_washing.tests.evaluate_classifier_on_held_out` | primary implementation namespace under semantic_ai_washing |
 
 ## Transitional Surfaces
@@ -106,6 +110,12 @@ This document is generated from the repo script inventory snapshot.
 | `src/scripts/index_sec_filings.py` | `semantic_ai_washing.data.index_sec_filings` | python -m semantic_ai_washing.data.index_sec_filings | Iteration 3 |
 | `src/scripts/run_pipeline.py` | `semantic_ai_washing.scripts.run_pipeline` | python -m semantic_ai_washing.scripts.run_pipeline | Iteration 3 |
 | `src/scripts/score_sentences.py` | `semantic_ai_washing.core.score_sentences` | python -m semantic_ai_washing.core.score_sentences | Iteration 3 |
+| `src/semantic_ai_washing/data/clean_compustat.py` | `semantic_ai_washing.data.clean_compustat` | pending script-deprecation decision; keep operational but do not extend | queue-v23/script-deprecation-hygiene |
+| `src/semantic_ai_washing/data/clean_crsp.py` | `semantic_ai_washing.data.clean_crsp` | pending script-deprecation decision; keep operational but do not extend | queue-v23/script-deprecation-hygiene |
+| `src/semantic_ai_washing/data/clean_sec.py` | `semantic_ai_washing.data.clean_sec` | pending script-deprecation decision; keep operational but do not extend | queue-v23/script-deprecation-hygiene |
+| `src/semantic_ai_washing/data/download_compustat.py` | `semantic_ai_washing.data.download_compustat` | pending script-deprecation decision; keep operational but do not extend | queue-v23/script-deprecation-hygiene |
+| `src/semantic_ai_washing/data/download_crsp.py` | `semantic_ai_washing.data.download_crsp` | pending script-deprecation decision; keep operational but do not extend | queue-v23/script-deprecation-hygiene |
+| `src/semantic_ai_washing/data/download_sec.py` | `semantic_ai_washing.data.download_sec` | pending script-deprecation decision; keep operational but do not extend | queue-v23/script-deprecation-hygiene |
 | `src/semantic_ai_washing/data/extract_ai_sentences.py` | `semantic_ai_washing.data.extract_ai_sentences` | semantic_ai_washing.data.extract_sentence_table | iteration1/sentence-table-pilot-2024 |
 | `src/semantic_ai_washing/data/extract_sample_filings.py` | `semantic_ai_washing.data.extract_sample_filings` | semantic_ai_washing.data.build_filing_manifest + semantic_ai_washing.data.extract_sentence_table | iteration1/source-index-contract |
 | `src/semantic_ai_washing/scripts/run_pipeline.py` | `semantic_ai_washing.scripts.run_pipeline` | director runbooks or a future explicit pipeline CLI | iteration5/release-packaging |
@@ -153,6 +163,12 @@ Current canonical raw-source contract is `SEC_SOURCE_DIR` plus the source index.
 - `python_cache_dir`: `src/semantic_ai_washing/director/core/__pycache__`
 - `python_cache_dir`: `src/semantic_ai_washing/director/policies/__pycache__`
 - `python_cache_dir`: `src/semantic_ai_washing/director/tasks/__pycache__`
+- `python_cache_dir`: `src/semantic_ai_washing/labcore/__pycache__`
+- `python_cache_dir`: `src/semantic_ai_washing/labcore/delivery/__pycache__`
+- `python_cache_dir`: `src/semantic_ai_washing/labcore/evaluation/__pycache__`
+- `python_cache_dir`: `src/semantic_ai_washing/labcore/evidence/__pycache__`
+- `python_cache_dir`: `src/semantic_ai_washing/labcore/manifests/__pycache__`
+- `python_cache_dir`: `src/semantic_ai_washing/labcore/registry/__pycache__`
 - `python_cache_dir`: `src/semantic_ai_washing/labeling/__pycache__`
 - `python_cache_dir`: `src/semantic_ai_washing/legacy/__pycache__`
 - `python_cache_dir`: `src/semantic_ai_washing/modeling/__pycache__`
@@ -167,3 +183,4 @@ Current canonical raw-source contract is `SEC_SOURCE_DIR` plus the source index.
 - `macos_metadata`: `src/semantic_ai_washing/data/.DS_Store`
 - `python_cache_dir`: `tests/__pycache__`
 - `macos_metadata`: `docs/.DS_Store`
+- `macos_metadata`: `director/.DS_Store`
