@@ -2,7 +2,7 @@
 
 ## Scope
 
-Batch 2 from Queue V2.
+Batch 2 from Queue V3.
 
 Authority:
 
@@ -18,7 +18,7 @@ Batch:
 
 ## Pre-Scan Result
 
-The `state` boundary stayed clean enough to auto-run under Queue V2.
+The `state` boundary stayed clean enough to auto-run under Queue V3.
 
 What made it clean:
 

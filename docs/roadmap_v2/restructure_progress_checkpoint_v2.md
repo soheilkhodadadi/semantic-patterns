@@ -219,9 +219,9 @@ The provisional Batch 4 authority also completed cleanly:
 That closes the current queued cycle and puts us at a new selection point for
 the next execution board.
 
-## Queue V2 note
+## Queue V3 note
 
-Queue V2 has now started cleanly with:
+Queue V3 has now started cleanly with:
 
 1. `semantic_director.branching`
 2. `semantic_director.state`
@@ -229,15 +229,15 @@ Queue V2 has now started cleanly with:
 
 That confirms the next cycle reset is working as intended.
 
-## Queue V2 close note
+## Queue V3 close note
 
-Queue V2 has now completed cleanly through its planned three-round cycle:
+Queue V3 has now completed cleanly through its planned three-round cycle:
 
 1. `semantic_director.branching`
 2. `semantic_director.state`
 3. `ai_washing_member.labeling.build_labeling_batch`
 
-That puts the repo back at a real checkpoint before choosing Queue V3.
+That puts the repo back at a real checkpoint before choosing Queue V4.
 
 ## Bottom line
 

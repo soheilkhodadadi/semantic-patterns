@@ -4,7 +4,7 @@
 
 Reset the queue after the first four-batch cycle completed cleanly.
 
-This comparison chooses the first authority for Queue V2 by comparing one
+This comparison chooses the first authority for Queue V3 by comparing one
 strong `director` candidate and one strong `ai_washing` candidate.
 
 ## Candidates
@@ -98,7 +98,7 @@ Do not choose first:
 
 - `ai_washing_member.labeling.build_labeling_batch`
 
-## Queue V2 Guidance
+## Queue V3 Guidance
 
 The next three-round cycle should be:
 

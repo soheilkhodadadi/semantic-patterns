@@ -129,7 +129,8 @@ Current active migration anchors:
 - `docs/roadmap_v2/restructure_progress_checkpoint_v1.md`
 - `docs/roadmap_v2/restructure_progress_checkpoint_v2.md`
 - `docs/roadmap_v2/batched_execution_queue_v1.md`
-- `docs/roadmap_v2/batched_execution_queue_v2.md`
+- `docs/roadmap_v2/batched_execution_queue_v2.md` (superseded working draft)
+- `docs/roadmap_v2/batched_execution_queue_v3.md`
 - `docs/roadmap_v2/larger_batch_readiness_checkpoint_v1.md`
 - `docs/roadmap_v2/group3_readiness_checkpoint_v1.md`
 - `docs/roadmap_v2/fast_safe_migration_protocol_v1.md`

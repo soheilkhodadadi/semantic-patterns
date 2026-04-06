@@ -1,12 +1,13 @@
-# Batched Execution Queue V2
+# Batched Execution Queue V3
 
-## Superseded note
+## Naming note
 
-This file was used as a temporary working draft while the Queue V3 cycle was
-being executed.
+This file is the canonical Queue V3 record for the three-round cycle executed
+in commits `6cfb7fe`, `205f010`, and `c6791cf`.
 
-Use [batched_execution_queue_v3.md](batched_execution_queue_v3.md)
-as the canonical reference for that cycle.
+An earlier working draft was temporarily tracked as
+`batched_execution_queue_v2.md` during execution. Keep this file as the
+authoritative reference for that cycle.
 
 ## Purpose
 
@@ -134,5 +135,5 @@ Start here:
    - `semantic_director.branching`
    - `semantic_director.state`
    - `ai_washing_member.labeling.build_labeling_batch`
-2. Queue V2 exhausted
+2. Queue V3 exhausted
 3. next step is a fresh queue reset, not an automatic Batch 4 carryover

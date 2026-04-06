@@ -2,7 +2,7 @@
 
 ## Scope
 
-Batch 3 from Queue V2.
+Batch 3 from Queue V3.
 
 Authority:
 
