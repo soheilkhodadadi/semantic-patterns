@@ -116,6 +116,7 @@ Current active migration anchors:
 - `docs/roadmap_v2/fresh_authority_comparison_v5.md`
 - `docs/roadmap_v2/fresh_authority_comparison_v6.md`
 - `docs/roadmap_v2/fresh_authority_comparison_v7.md`
+- `docs/roadmap_v2/fresh_authority_comparison_v8.md`
 - `docs/roadmap_v2/migration_round_s_ai_washing_benchmark_utils_seed_v1.md`
 - `docs/roadmap_v2/migration_round_t_director_roadmap_model_seed_v1.md`
 - `docs/roadmap_v2/migration_round_u_director_render_seed_v1.md`
@@ -129,13 +130,16 @@ Current active migration anchors:
 - `docs/roadmap_v2/migration_round_ad_ai_washing_heldout_sampler_seed_v1.md`
 - `docs/roadmap_v2/migration_round_ae_ai_washing_heldout_freeze_seed_v1.md`
 - `docs/roadmap_v2/migration_round_af_director_decision_seed_v1.md`
+- `docs/roadmap_v2/migration_round_ag_director_sensors_seed_v1.md`
 - `docs/roadmap_v2/migration_round_w_ai_washing_build_filing_manifest_seed_v1.md`
 - `docs/roadmap_v2/restructure_progress_checkpoint_v1.md`
 - `docs/roadmap_v2/restructure_progress_checkpoint_v2.md`
+- `docs/roadmap_v2/migrated_surface_relevance_audit_v1.md`
 - `docs/roadmap_v2/batched_execution_queue_v1.md`
 - `docs/roadmap_v2/batched_execution_queue_v2.md` (superseded working draft)
 - `docs/roadmap_v2/batched_execution_queue_v3.md`
 - `docs/roadmap_v2/batched_execution_queue_v4.md`
+- `docs/roadmap_v2/batched_execution_queue_v5.md`
 - `docs/roadmap_v2/larger_batch_readiness_checkpoint_v1.md`
 - `docs/roadmap_v2/group3_readiness_checkpoint_v1.md`
 - `docs/roadmap_v2/fast_safe_migration_protocol_v1.md`

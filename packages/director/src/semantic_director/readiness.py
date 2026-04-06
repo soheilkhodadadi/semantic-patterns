@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from semantic_ai_washing.director.core.sensors import evaluate_condition
+from semantic_director.sensors import evaluate_condition
 from semantic_director.task_graph import TaskGraph
 from semantic_director.schemas import (
     ConditionSpec,

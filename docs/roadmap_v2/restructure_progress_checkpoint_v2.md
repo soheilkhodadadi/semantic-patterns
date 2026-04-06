@@ -101,6 +101,7 @@ This is now proven for:
 - `director.branching`
 - `director.state`
 - `director.decision`
+- `director.sensors`
 - `ai_washing` labeling common family
 - `ai_washing` classification support family
 - `ai_washing` SEC index family
@@ -129,7 +130,6 @@ What remains clearly root-owned:
 - `decision`
 - `executor`
 - `playbooks`
-- `sensors`
 - `gates`
 - `llm`
 - `cost`
@@ -252,6 +252,27 @@ Queue V4 has now started cleanly with:
 
 This restores lane balance at the start of the next cycle and sets up a clean
 held-out workflow follow-on round.
+
+## Queue V5 note
+
+Queue V5 has now opened cleanly with:
+
+1. `semantic_director.sensors`
+
+This starts the next cycle with a high-leverage package-boundary cleanup in
+`director` after the migrated-surface relevance audit confirmed that the
+already-promoted authorities are active and worth keeping.
+
+## Queue V5 progress note
+
+Queue V5 Batch 1 has now completed cleanly:
+
+1. `semantic_director.sensors`
+
+This tightened the `director` package boundary further by removing a root
+`director.core.sensors` dependency from `semantic_director.readiness` while
+leaving the cross-lane `ai_washing` edge on the compatibility shim for a later
+separate round.
 
 ## Queue V4 progress note
 

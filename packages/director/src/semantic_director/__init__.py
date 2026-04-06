@@ -30,6 +30,7 @@ from semantic_director.roadmap_model import (
     roadmap_summary_dict,
 )
 from semantic_director.state import StateCompiler
+from semantic_director.sensors import evaluate_condition
 from semantic_director.schemas import (
     BlockerEvent,
     CostUsageRecord,
@@ -74,6 +75,7 @@ __all__ = [
     "required_file_paths",
     "DecisionEngine",
     "ReadinessEvaluator",
+    "evaluate_condition",
     "StateCompiler",
     "resolve_model_path",
     "load_roadmap_model",

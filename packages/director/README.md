@@ -109,3 +109,10 @@ Tenth extracted package slice:
 Migration trace:
 - `docs/roadmap_v2/migration_round_af_director_decision_seed_v1.md`
 - `packages/director/decision_grouped_migration_sheet_v1.md`
+
+Eleventh extracted package slice:
+- `packages/director/src/semantic_director/sensors.py`
+
+Migration trace:
+- `docs/roadmap_v2/migration_round_ag_director_sensors_seed_v1.md`
+- `packages/director/sensors_grouped_migration_sheet_v1.md`
