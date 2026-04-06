@@ -103,6 +103,7 @@ This is now proven for:
 - `director.state`
 - `director.decision`
 - `director.sensors`
+- `director.playbooks`
 - `ai_washing` labeling common family
 - `ai_washing` classification support family
 - `ai_washing` SEC index family
@@ -284,6 +285,16 @@ Queue V5 Batch 2 has now completed cleanly:
 This kept the split-freeze workflow current in the member-owned lane while
 leaving the stable root command surface in `tests/test_director_roadmap_model.py`
 unchanged on purpose.
+
+## Queue V5 close note
+
+Queue V5 has now completed cleanly through its planned three-round cycle:
+
+1. `semantic_director.sensors`
+2. `ai_washing_member.labeling.freeze_split_registry`
+3. `semantic_director.playbooks`
+
+That closes the queue at a real checkpoint before choosing the next cycle.
 
 ## Queue V4 progress note
 

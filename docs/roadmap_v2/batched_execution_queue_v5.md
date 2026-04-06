@@ -114,7 +114,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- planned
+- complete via `docs/roadmap_v2/migration_round_ai_director_playbooks_seed_v1.md`
 
 Fallback if pre-scan gets messy:
 - replace with a smaller `director` review/runtime round
@@ -128,5 +128,8 @@ Next in Queue V5:
    - `semantic_director.sensors`
 2. Batch 2 complete:
    - `ai_washing_member.labeling.freeze_split_registry`
-3. Batch 3 planned:
+3. Batch 3 complete:
    - `semantic_director.playbooks`
+
+
+Queue V5 is now complete.

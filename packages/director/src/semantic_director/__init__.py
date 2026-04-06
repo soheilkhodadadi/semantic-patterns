@@ -20,6 +20,7 @@ from semantic_director.config import (
     required_file_paths,
 )
 from semantic_director.decision import DecisionEngine
+from semantic_director.playbooks import list_playbooks, recommend_playbooks, show_playbook
 from semantic_director.readiness import ReadinessEvaluator
 from semantic_director.roadmap_model import (
     find_iteration,
@@ -74,6 +75,9 @@ __all__ = [
     "load_configs",
     "required_file_paths",
     "DecisionEngine",
+    "recommend_playbooks",
+    "show_playbook",
+    "list_playbooks",
     "ReadinessEvaluator",
     "evaluate_condition",
     "StateCompiler",

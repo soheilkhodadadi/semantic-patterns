@@ -19,7 +19,7 @@ from semantic_director.branching import validate_iteration_boundaries
 from semantic_ai_washing.director.core.cost import CostController
 from semantic_director.decision import DecisionEngine
 from semantic_ai_washing.director.core.optimizer import DirectorOptimizer
-from semantic_ai_washing.director.core.playbooks import list_playbooks, show_playbook
+from semantic_director.playbooks import list_playbooks, show_playbook
 from semantic_ai_washing.director.core.executor import RunbookExecutor
 from semantic_ai_washing.director.core.planner import PlannerEngine, write_plan_manifest
 from semantic_ai_washing.director.core.review import ReviewEngine, load_approved_review_summaries

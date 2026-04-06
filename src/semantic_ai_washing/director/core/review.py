@@ -20,7 +20,7 @@ from semantic_director.branching import (
     review_artifact_paths,
 )
 from semantic_director.config import DirectorPaths
-from semantic_ai_washing.director.core.playbooks import recommend_playbooks
+from semantic_director.playbooks import recommend_playbooks
 from semantic_director.readiness import ReadinessEvaluator
 from semantic_director.render import (
     render_branch_plan_markdown,
