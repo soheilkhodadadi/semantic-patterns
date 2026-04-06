@@ -496,6 +496,16 @@ Queue V10 Batch 1 has now completed cleanly:
 This moves the review-sheet initializer into the member-owned lane and keeps
 the direct regression pressure inside the active labeling workflow bundle.
 
+## Queue V10 second-batch note
+
+Queue V10 Batch 2 has now completed cleanly:
+
+2. `ai_washing_member.labeling.merge_labeling_batches`
+
+This keeps the labeling review workflow inside the member-owned lane and closes
+the ai-washing half of Queue V10 before the planned `director` planner
+rotation.
+
 ## Bottom line
 
 The restructure is now in a stronger position than the earlier checkpoint

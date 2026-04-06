@@ -18,7 +18,7 @@ from semantic_ai_washing.labeling.assistive_prelabel_batch import generate_assis
 from semantic_ai_washing.labeling.benchmark_prompt_variants import benchmark_prompt_variants
 from ai_washing_member.labeling.build_labeling_batch import build_labeling_batch
 from ai_washing_member.labeling.initialize_review_sheet import initialize_review_sheet
-from semantic_ai_washing.labeling.merge_labeling_batches import merge_labeling_batches
+from ai_washing_member.labeling.merge_labeling_batches import merge_labeling_batches
 from semantic_ai_washing.labeling.score_prelabel_sheet import score_prelabel_sheet
 
 

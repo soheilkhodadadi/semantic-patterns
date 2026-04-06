@@ -157,6 +157,10 @@ Queue V10 review-sheet workflow opener:
 - `docs/roadmap_v2/migration_round_av_ai_washing_initialize_review_sheet_seed_v1.md`
 - `projects/ai_washing/initialize_review_sheet_grouped_migration_sheet_v1.md`
 
+Queue V10 review-sheet workflow merge follow-on:
+- `docs/roadmap_v2/migration_round_aw_ai_washing_merge_labeling_batches_seed_v1.md`
+- `projects/ai_washing/merge_labeling_batches_grouped_migration_sheet_v1.md`
+
 Structured member shell lanes now exist:
 - `projects/ai_washing/docs/`
 - `projects/ai_washing/reports/`
