@@ -1,182 +1,85 @@
 # AI-Washing Member Seed
 
 ## Status
-- structured member shell started
-- active code and manuscript authority still remain in legacy lanes during migration
+- member shell is real
+- member-owned code is real
+- the migration is now in the mid-to-late phase, not the shell-planning phase
 
 ## Purpose
 
-`ai_washing` is the flagship publication-oriented project member.
+`ai_washing` is the flagship project member in the lab structure.
 
-It should eventually own:
-- project-specific source code
-- project docs and configs
-- project reports and outputs
-- project-local packaging metadata when the member becomes buildable
+It is gradually becoming the canonical home for:
+- project-specific code
+- project-specific tests
+- project-specific reports and outputs
+- project-specific migration decisions
 
-First normalized member-facing lanes now exist at:
-- `reports/projects/ai_washing/`
-- `output/doc/projects/ai_washing/`
-- `output/figures/projects/ai_washing/`
-- `data/processed/projects/ai_washing/`
+## Canonical locations
 
-## Current source pressure
+Member-owned code:
+- `projects/ai_washing/src/ai_washing_member/`
 
-The live project still spans:
-- `src/semantic_ai_washing/`
-- `paper/`
-- `reports/analysis/`
-- `data/processed/panel/` and related legacy lanes
+Member-owned tests:
+- `projects/ai_washing/tests/`
 
-This placeholder directory marks the future member destination without disturbing the live paper lane.
-
-## Immediate rule
-
-Do not bulk-move the active AI-washing stack yet.
-Use this member seed to guide:
-- new project-local docs
-- new project-local reports
-- future bounded migrations once mapping notes and contracts permit them
-
-See also:
-- `docs/projects/ai_washing/adapter_framing_v1.md`
-- `docs/lab/migration/ai_washing_legacy_to_new_mapping_v1.md`
-- `projects/ai_washing/member_seed_plan_v1.md`
-- `docs/roadmap_v2/migration_round_d_ai_washing_normalization_v1.md`
-
-First live member artifact:
-- `reports/projects/ai_washing/artifact_index_v1.md`
-
-Member shell readiness:
-- `projects/ai_washing/member_shell_readiness_v1.md`
-
-First code-seed decision:
-- `projects/ai_washing/first_code_seed_decision_v1.md`
-
-Bounded impact map for the first code seed:
-- `projects/ai_washing/labeling_common_impact_map_v1.md`
-
-Grouped caller migration order:
-- `projects/ai_washing/labeling_common_grouped_migration_sheet_v1.md`
-
-First real member-owned code move:
-- `docs/roadmap_v2/migration_round_i_ai_washing_group1_code_seed_v1.md`
-
-First grouped caller-family migration:
-- `docs/roadmap_v2/migration_round_j_ai_washing_group1_callers_v1.md`
-
-Second grouped caller-family migration:
-- `docs/roadmap_v2/migration_round_k_ai_washing_group2_callers_v1.md`
-
-Third grouped caller-family migration:
-- `docs/roadmap_v2/migration_round_l_ai_washing_group3_callers_v1.md`
-
-Final grouped caller-family migration:
-- `docs/roadmap_v2/migration_round_m_ai_washing_group4_validation_v1.md`
-
-Next member-owned classification support batch:
-- `docs/roadmap_v2/migration_round_n_ai_washing_classification_support_v1.md`
-- `projects/ai_washing/classification_support_grouped_migration_sheet_v1.md`
-
-Second larger-batch member-owned data/index migration:
-- `docs/roadmap_v2/migration_round_o_ai_washing_index_sec_batch_v1.md`
-- `projects/ai_washing/index_sec_grouped_migration_sheet_v1.md`
-
-First four-family member-owned sentence-table migration:
-- `docs/roadmap_v2/migration_round_p_ai_washing_sentence_table_batch_v1.md`
-- `projects/ai_washing/extract_sentence_table_grouped_migration_sheet_v1.md`
-
-Protocol V2 follow-on cleanup under established `labeling.common` authority:
-- `docs/roadmap_v2/migration_round_q_ai_washing_labeling_common_test_tail_v1.md`
-
-Protocol V2 follow-on cleanup under established classification support authority:
-- `docs/roadmap_v2/migration_round_r_ai_washing_classification_support_test_tail_v1.md`
-- `projects/ai_washing/classification_support_grouped_migration_sheet_v1.md`
-
-Latest candidate scan:
-- `docs/roadmap_v2/next_candidate_surface_scan_v1.md`
-
-Fresh-authority comparison and chosen next seed:
-- `docs/roadmap_v2/fresh_authority_comparison_v1.md`
-- `docs/roadmap_v2/migration_round_s_ai_washing_benchmark_utils_seed_v1.md`
-- `projects/ai_washing/benchmark_utils_grouped_migration_sheet_v1.md`
-
-Next fresh-authority member-owned data seed:
-- `docs/roadmap_v2/migration_round_w_ai_washing_build_filing_manifest_seed_v1.md`
-- `projects/ai_washing/build_filing_manifest_grouped_migration_sheet_v1.md`
-
-Next fresh-authority member-owned labeling seed:
-- `docs/roadmap_v2/migration_round_z_ai_washing_ff12_mapping_seed_v1.md`
-- `projects/ai_washing/ff12_mapping_grouped_migration_sheet_v1.md`
-
-Next member-owned labeling batch seed:
-- `docs/roadmap_v2/migration_round_ac_ai_washing_build_labeling_batch_seed_v1.md`
-- `projects/ai_washing/build_labeling_batch_grouped_migration_sheet_v1.md`
-
-Queue V4 held-out workflow seed:
-- `docs/roadmap_v2/migration_round_ad_ai_washing_heldout_sampler_seed_v1.md`
-- `projects/ai_washing/sample_heldout_v2_candidates_grouped_migration_sheet_v1.md`
-
-Queue V4 held-out workflow freeze follow-on:
-- `docs/roadmap_v2/migration_round_ae_ai_washing_heldout_freeze_seed_v1.md`
-- `projects/ai_washing/freeze_heldout_v2_grouped_migration_sheet_v1.md`
-
-Queue V5 split-registry follow-on:
-- `docs/roadmap_v2/migration_round_ah_ai_washing_freeze_split_registry_seed_v1.md`
-- `projects/ai_washing/freeze_split_registry_grouped_migration_sheet_v1.md`
-
-Queue V6 rubric-freeze follow-on:
-- `docs/roadmap_v2/migration_round_aj_ai_washing_publish_rubric_freeze_seed_v1.md`
-- `projects/ai_washing/publish_rubric_freeze_grouped_migration_sheet_v1.md`
-
-Queue V6 IRR-audit follow-on:
-- `docs/roadmap_v2/migration_round_al_ai_washing_audit_sentence_integrity_seed_v1.md`
-- `projects/ai_washing/audit_sentence_integrity_grouped_migration_sheet_v1.md`
-
-Queue V7 IRR subset follow-on:
-- `docs/roadmap_v2/migration_round_am_ai_washing_prepare_irr_subset_seed_v1.md`
-- `projects/ai_washing/prepare_irr_subset_grouped_migration_sheet_v1.md`
-
-Queue V7 adjudication follow-on:
-- `docs/roadmap_v2/migration_round_an_ai_washing_adjudication_seed_v1.md`
-- `projects/ai_washing/adjudicate_irr_labels_grouped_migration_sheet_v1.md`
-
-Queue V8 IRR metrics follow-on:
-- `docs/roadmap_v2/migration_round_ap_ai_washing_compute_irr_metrics_seed_v1.md`
-- `projects/ai_washing/compute_irr_metrics_grouped_migration_sheet_v1.md`
-
-Queue V8 IRR disagreement diagnostic follow-on:
-- `docs/roadmap_v2/migration_round_aq_ai_washing_diagnose_irr_disagreements_seed_v1.md`
-- `projects/ai_washing/diagnose_irr_disagreements_grouped_migration_sheet_v1.md`
-
-Queue V9 preliminary-results readiness follow-on:
-- `docs/roadmap_v2/migration_round_as_ai_washing_publish_preliminary_results_seed_v1.md`
-- `projects/ai_washing/publish_preliminary_results_readiness_grouped_migration_sheet_v1.md`
-
-Queue V10 review-sheet workflow opener:
-- `docs/roadmap_v2/migration_round_av_ai_washing_initialize_review_sheet_seed_v1.md`
-- `projects/ai_washing/initialize_review_sheet_grouped_migration_sheet_v1.md`
-
-Queue V10 review-sheet workflow merge follow-on:
-- `docs/roadmap_v2/migration_round_aw_ai_washing_merge_labeling_batches_seed_v1.md`
-- `projects/ai_washing/merge_labeling_batches_grouped_migration_sheet_v1.md`
-
-Queue V11 Phase 1 sample-builder opener:
-- `docs/roadmap_v2/migration_round_ay_ai_washing_build_labeling_sample_seed_v1.md`
-- `projects/ai_washing/build_labeling_sample_grouped_migration_sheet_v1.md`
-
-Queue V11 Phase 1 dedupe follow-on:
-- `docs/roadmap_v2/migration_round_az_ai_washing_dedupe_labeled_sentences_seed_v1.md`
-- `projects/ai_washing/dedupe_labeled_sentences_grouped_migration_sheet_v1.md`
-
-Queue V11 Phase 1 QA close:
-- `docs/roadmap_v2/migration_round_ba_ai_washing_qa_labeled_dataset_seed_v1.md`
-- `projects/ai_washing/qa_labeled_dataset_grouped_migration_sheet_v1.md`
-
-Structured member shell lanes now exist:
-- `projects/ai_washing/docs/`
+Member-facing artifact lanes:
 - `projects/ai_washing/reports/`
 - `projects/ai_washing/output/`
+- `projects/ai_washing/docs/`
 - `projects/ai_washing/configs/`
-- `projects/ai_washing/src/`
-- `projects/ai_washing/tests/`
+
+Legacy compatibility still exists in:
+- `src/semantic_ai_washing/`
+
+## Current canonical workflow families
+
+### Labeling and calibration
+- `labeling/common.py`
+- `labeling/assistive_prelabel_batch.py`
+- `labeling/benchmark_prompt_variants.py`
+- `labeling/score_prelabel_sheet.py`
+- `labeling/build_labeling_batch.py`
+- `labeling/build_labeling_sample.py`
+- `labeling/initialize_review_sheet.py`
+- `labeling/merge_labeling_batches.py`
+- `labeling/dedupe_labeled_sentences.py`
+- `labeling/qa_labeled_dataset.py`
+
+### Heldout and IRR
+- `labeling/sample_heldout_v2_candidates.py`
+- `labeling/freeze_heldout_v2.py`
+- `labeling/freeze_split_registry.py`
+- `labeling/publish_rubric_freeze.py`
+- `labeling/audit_sentence_integrity.py`
+- `labeling/prepare_irr_subset.py`
+- `labeling/adjudicate_irr_labels.py`
+- `labeling/compute_irr_metrics.py`
+- `labeling/diagnose_irr_disagreements.py`
+- `labeling/publish_preliminary_results_readiness.py`
+
+### Classification support
+- `classification/benchmark_utils.py`
+- `classification/model_runtime.py`
+- `classification/preliminary_pipeline.py`
+
+### Data support
+- `data/index_sec_filings.py`
+- `data/extract_sentence_table.py`
+- `data/build_filing_manifest.py`
+
+## Read this folder in this order
+
+1. `projects/ai_washing/root_surface_triage_registry_v1.md`
+2. `projects/ai_washing/migration_sheets/README.md`
+3. `docs/roadmap_v2/restructure_progress_checkpoint_v6.md`
+4. `docs/roadmap_v2/batched_execution_queue_v13.md`
+
+## Planning documents that still matter
+
+- `projects/ai_washing/member_seed_plan_v1.md`
+- `projects/ai_washing/member_shell_readiness_v1.md`
+- `projects/ai_washing/first_code_seed_decision_v1.md`
+- `projects/ai_washing/labeling_common_impact_map_v1.md`
+
+These are now background/reference notes, not the front door.
