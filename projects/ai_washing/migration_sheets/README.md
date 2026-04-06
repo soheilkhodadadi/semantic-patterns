@@ -44,6 +44,7 @@ they are not the front-door explanation of the member.
 - `freeze_heldout_v2_grouped_migration_sheet_v1.md`
 - `freeze_split_registry_grouped_migration_sheet_v1.md`
 - `publish_rubric_freeze_grouped_migration_sheet_v1.md`
+- `build_irr_boundary_benchmark_grouped_migration_sheet_v1.md`
 - `audit_sentence_integrity_grouped_migration_sheet_v1.md`
 - `prepare_irr_subset_grouped_migration_sheet_v1.md`
 - `adjudicate_irr_labels_grouped_migration_sheet_v1.md`
