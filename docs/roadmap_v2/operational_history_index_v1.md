@@ -69,10 +69,10 @@ For day-to-day navigation, prefer:
 ## Current state
 
 Latest completed queue:
-- `docs/roadmap_v2/history/queues/batched_execution_queue_v31.md`
+- `docs/roadmap_v2/history/queues/batched_execution_queue_v32.md`
 
 Latest queue checkpoint:
-- `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v24.md`
+- `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v25.md`
 
 Latest protocol anchor:
 - `docs/roadmap_v2/fast_safe_migration_protocol_v2.md`
