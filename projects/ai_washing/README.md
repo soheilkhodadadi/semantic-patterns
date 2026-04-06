@@ -93,10 +93,10 @@ Legacy compatibility still exists in:
 
 ## Planning documents that still matter
 
-- `projects/ai_washing/member_seed_plan_v1.md`
-- `projects/ai_washing/member_shell_readiness_v1.md`
-- `projects/ai_washing/first_code_seed_decision_v1.md`
-- `projects/ai_washing/labeling_common_impact_map_v1.md`
+- `projects/ai_washing/planning_notes/member_seed_plan_v1.md`
+- `projects/ai_washing/planning_notes/member_shell_readiness_v1.md`
+- `projects/ai_washing/planning_notes/first_code_seed_decision_v1.md`
+- `projects/ai_washing/planning_notes/labeling_common_impact_map_v1.md`
 
 These are now background/reference notes, not the front door.
 

@@ -69,7 +69,7 @@ they are not the front-door explanation of the member.
 
 If you are trying to understand the project member quickly, start here instead:
 - `projects/ai_washing/README.md`
-- `projects/ai_washing/root_surface_triage_registry_v1.md`
+- `projects/ai_washing/root_surface_triage_registry_v2.md`
 
 Use the grouped migration sheets only when you need authority-by-authority
 migration detail.

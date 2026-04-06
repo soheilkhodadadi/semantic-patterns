@@ -18,7 +18,7 @@ The member now has explicit local shell directories for:
 
 The member is ready for a real shell, but not yet for a buildable local package.
 That decision is documented in:
-- `projects/ai_washing/member_shell_readiness_v1.md`
+- `projects/ai_washing/planning_notes/member_shell_readiness_v1.md`
 
 ## Why this is the right move now
 

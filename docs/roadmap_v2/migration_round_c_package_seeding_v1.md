@@ -54,7 +54,7 @@ Intended dependency shape:
 
 - `packages/labcore/pyproject_seed_plan_v1.md`
 - `packages/director/pyproject_seed_plan_v1.md`
-- `projects/ai_washing/member_seed_plan_v1.md`
+- `projects/ai_washing/planning_notes/member_seed_plan_v1.md`
 - `projects/eri/member_seed_decision_v1.md`
 - `projects/allocationlab/member_seed_decision_v1.md`
 
