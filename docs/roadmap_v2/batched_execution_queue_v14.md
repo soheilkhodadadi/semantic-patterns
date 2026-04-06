@@ -84,11 +84,11 @@ Default gate:
 - `git diff --check`
 
 Status:
-- planned
+- complete
 
 ## Queue status
 
-Queue V14 is in progress:
+Queue V14 is complete:
 
 1. Batch 1:
    - `ai_washing_member.classification.train_preliminary_centroids`
@@ -96,3 +96,6 @@ Queue V14 is in progress:
    - `ai_washing_member.classification.classify_active_window_preliminary`
 3. Batch 3:
    - `ai_washing_member.classification.evaluate_preliminary_heldout`
+
+Recommended next move:
+- start Queue V15 with a fresh-authority comparison

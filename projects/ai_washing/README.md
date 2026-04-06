@@ -64,6 +64,7 @@ Legacy compatibility still exists in:
 - `classification/preliminary_pipeline.py`
 - `classification/train_preliminary_centroids.py`
 - `classification/classify_active_window_preliminary.py`
+- `classification/evaluate_preliminary_heldout.py`
 
 ### Data support
 - `data/index_sec_filings.py`

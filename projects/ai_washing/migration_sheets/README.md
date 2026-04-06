@@ -21,6 +21,7 @@ they are not the front-door explanation of the member.
 - `benchmark_utils_grouped_migration_sheet_v1.md`
 - `train_preliminary_centroids_grouped_migration_sheet_v1.md`
 - `classify_active_window_preliminary_grouped_migration_sheet_v1.md`
+- `evaluate_preliminary_heldout_grouped_migration_sheet_v1.md`
 - `index_sec_grouped_migration_sheet_v1.md`
 - `extract_sentence_table_grouped_migration_sheet_v1.md`
 - `build_filing_manifest_grouped_migration_sheet_v1.md`

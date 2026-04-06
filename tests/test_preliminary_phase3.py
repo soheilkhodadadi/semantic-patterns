@@ -11,7 +11,7 @@ from semantic_ai_washing.analysis.audit_preliminary_panel_inputs import run_audi
 from ai_washing_member.classification.classify_active_window_preliminary import (
     run_classification,
 )
-from semantic_ai_washing.classification.evaluate_preliminary_heldout import run_evaluation
+from ai_washing_member.classification.evaluate_preliminary_heldout import run_evaluation
 from ai_washing_member.classification.train_preliminary_centroids import run_training
 from semantic_ai_washing.core import sentence_filter
 from semantic_ai_washing.data.materialize_active_window_sentences import run_materialization
