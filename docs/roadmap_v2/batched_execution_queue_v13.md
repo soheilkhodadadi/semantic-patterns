@@ -86,9 +86,9 @@ Default gate:
 Status:
 - complete
 
-## Current recommendation
+## Queue status
 
-Next in Queue V13:
+Queue V13 is complete:
 
 1. Batch 1:
    - `ai_washing_member.labeling.assistive_prelabel_batch`
@@ -96,3 +96,6 @@ Next in Queue V13:
    - `ai_washing_member.labeling.benchmark_prompt_variants`
 3. Batch 3:
    - `ai_washing_member.labeling.score_prelabel_sheet`
+
+Recommended next move:
+- start Queue V14 with a fresh-authority comparison

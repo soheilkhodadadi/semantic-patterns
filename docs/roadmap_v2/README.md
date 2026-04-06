@@ -124,6 +124,7 @@ Current active migration anchors:
 - `docs/roadmap_v2/fresh_authority_comparison_v13.md`
 - `docs/roadmap_v2/fresh_authority_comparison_v14.md`
 - `docs/roadmap_v2/fresh_authority_comparison_v15.md`
+- `docs/roadmap_v2/fresh_authority_comparison_v16.md`
 - `docs/roadmap_v2/migration_round_s_ai_washing_benchmark_utils_seed_v1.md`
 - `docs/roadmap_v2/migration_round_t_director_roadmap_model_seed_v1.md`
 - `docs/roadmap_v2/migration_round_u_director_render_seed_v1.md`
@@ -159,6 +160,9 @@ Current active migration anchors:
 - `docs/roadmap_v2/migration_round_bb_director_review_seed_v1.md`
 - `docs/roadmap_v2/migration_round_bc_director_optimizer_seed_v1.md`
 - `docs/roadmap_v2/migration_round_bd_director_api_assistive_seed_v1.md`
+- `docs/roadmap_v2/migration_round_be_ai_washing_assistive_prelabel_seed_v1.md`
+- `docs/roadmap_v2/migration_round_bf_ai_washing_benchmark_prompt_variants_seed_v1.md`
+- `docs/roadmap_v2/migration_round_bg_ai_washing_score_prelabel_sheet_seed_v1.md`
 - `docs/roadmap_v2/migration_round_as_ai_washing_publish_preliminary_results_seed_v1.md`
 - `docs/roadmap_v2/migration_round_w_ai_washing_build_filing_manifest_seed_v1.md`
 - `docs/roadmap_v2/restructure_progress_checkpoint_v1.md`
@@ -166,6 +170,7 @@ Current active migration anchors:
 - `docs/roadmap_v2/restructure_progress_checkpoint_v3.md`
 - `docs/roadmap_v2/restructure_progress_checkpoint_v4.md`
 - `docs/roadmap_v2/restructure_progress_checkpoint_v5.md`
+- `docs/roadmap_v2/restructure_progress_checkpoint_v6.md`
 - `docs/roadmap_v2/migrated_surface_relevance_audit_v1.md`
 - `docs/roadmap_v2/legacy_template_hygiene_queue_v1.md`
 - `docs/roadmap_v2/batched_execution_queue_v1.md`
@@ -180,6 +185,7 @@ Current active migration anchors:
 - `docs/roadmap_v2/batched_execution_queue_v10.md`
 - `docs/roadmap_v2/batched_execution_queue_v11.md`
 - `docs/roadmap_v2/batched_execution_queue_v12.md`
+- `docs/roadmap_v2/batched_execution_queue_v13.md`
 - `docs/roadmap_v2/larger_batch_readiness_checkpoint_v1.md`
 - `docs/roadmap_v2/group3_readiness_checkpoint_v1.md`
 - `docs/roadmap_v2/fast_safe_migration_protocol_v1.md`
