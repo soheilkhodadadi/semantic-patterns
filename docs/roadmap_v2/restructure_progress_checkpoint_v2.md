@@ -477,6 +477,25 @@ Queue V4 has now completed cleanly through its planned three-round cycle:
 
 That puts the repo back at a real checkpoint before choosing Queue V5.
 
+## Queue V10 note
+
+Queue V10 has now opened cleanly with:
+
+1. `ai_washing_member.labeling.initialize_review_sheet`
+
+This starts the queue with a compact review-sheet workflow move in the flagship
+lane before the adjacent merge-batch follow-on and the planned `director`
+planner rotation.
+
+## Queue V10 progress note
+
+Queue V10 Batch 1 has now completed cleanly:
+
+1. `ai_washing_member.labeling.initialize_review_sheet`
+
+This moves the review-sheet initializer into the member-owned lane and keeps
+the direct regression pressure inside the active labeling workflow bundle.
+
 ## Bottom line
 
 The restructure is now in a stronger position than the earlier checkpoint

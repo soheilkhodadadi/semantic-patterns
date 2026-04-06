@@ -15,7 +15,7 @@ from semantic_ai_washing.labeling.assistive_prelabel_batch import (
     ASSISTIVE_COLUMNS,
     generate_assistive_prelabels,
 )
-from semantic_ai_washing.labeling.initialize_review_sheet import initialize_review_sheet
+from ai_washing_member.labeling.initialize_review_sheet import initialize_review_sheet
 
 DEFAULT_INPUT = "data/labels/v1/labeling_batch_v1_reextracted_v2_2_slice40.csv"
 DEFAULT_BENCHMARK = "data/labels/v1/labeling_batch_v1_filled_v2_1_slice40.csv"
