@@ -22,7 +22,7 @@ It exists to keep future queues grounded.
 ## Current counts
 
 - labeling still root-owned: 3
-- classification still root-owned: 13
+- classification still root-owned: 10
 - data still root-owned: 18
 
 ## Labeling surfaces still root-owned
@@ -40,11 +40,8 @@ It exists to keep future queues grounded.
 ## Classification surfaces still root-owned
 
 ### Active migration candidate
-- `src/semantic_ai_washing/classification/benchmark_preliminary_models.py`
 - `src/semantic_ai_washing/classification/publish_selected_preliminary_eval.py`
 - `src/semantic_ai_washing/classification/reconcile_preliminary_classification_report.py`
-- `src/semantic_ai_washing/classification/train_binary_relevance_then_as.py`
-- `src/semantic_ai_washing/classification/train_logreg_preliminary.py`
 
 Reason:
 - these still sit on the active preliminary classification path and are covered
@@ -116,7 +113,7 @@ It does not duplicate:
 - `director` surfaces already externalized to `semantic_director`
 - compatibility shims whose canonical authority already exists elsewhere
 
-## Recommended use before Queue V14
+## Recommended use before the next `ai_washing` queue
 
 Choose the next `ai_washing` queue opener from:
 - `active_migration_candidate`
