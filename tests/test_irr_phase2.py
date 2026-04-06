@@ -10,7 +10,7 @@ from semantic_ai_washing.labeling.adjudicate_irr_labels import run_adjudication
 from ai_washing_member.labeling.audit_sentence_integrity import run_audit
 from semantic_ai_washing.labeling.compute_irr_metrics import run_metrics
 from semantic_ai_washing.labeling.diagnose_irr_disagreements import run_diagnostic
-from semantic_ai_washing.labeling.prepare_irr_subset import run_prepare
+from ai_washing_member.labeling.prepare_irr_subset import run_prepare
 from semantic_ai_washing.labeling.publish_preliminary_results_readiness import run_publish
 
 

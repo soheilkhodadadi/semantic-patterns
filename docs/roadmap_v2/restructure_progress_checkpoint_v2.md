@@ -117,6 +117,7 @@ This is now proven for:
 - `ai_washing` held-out freeze authority
 - `ai_washing` held-out sampler authority
 - `ai_washing` audit sentence integrity authority
+- `ai_washing` prepare IRR subset authority
 
 ## Lane-by-lane state
 
@@ -338,6 +339,15 @@ Queue V6 has now completed cleanly through its planned three-round cycle:
 This closes the cycle with a small IRR workflow move in the flagship lane while
 leaving the roadmap-model command surface on the compatibility path for a later
 control-plane round.
+
+## Queue V7 note
+
+Queue V7 has now opened cleanly with:
+
+1. `ai_washing_member.labeling.prepare_irr_subset`
+
+This starts the next cycle inside the current-stage IRR workflow cluster while
+leaving the roadmap-model command strings on the compatibility path for now.
 
 ## Queue V4 progress note
 
