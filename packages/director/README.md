@@ -221,3 +221,8 @@ Twenty-sixth extracted package slice:
 Migration trace:
 - `docs/roadmap_v2/migration_round_ce_director_main_module_seed_v1.md`
 - `packages/director/main_module_grouped_migration_sheet_v1.md`
+
+Late-stage boundary cleanup:
+- `docs/roadmap_v2/migration_round_co_director_runtime_schema_boundary_cleanup_v1.md`
+- `docs/roadmap_v2/migration_round_cp_director_responses_transport_boundary_cleanup_v1.md`
+- `docs/roadmap_v2/director_utility_boundary_posture_refresh_v1.md`
