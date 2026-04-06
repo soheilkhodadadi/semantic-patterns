@@ -78,9 +78,9 @@ tracked deliverable.
 ## Current status
 
 The first hygiene cycle has now been executed as Queue V22 with three outputs:
-- `docs/roadmap_v2/migration_round_cf_hygiene_ai_washing_inventory_v1.md`
-- `docs/roadmap_v2/migration_round_cg_hygiene_repo_visible_scaffolds_v1.md`
-- `docs/roadmap_v2/migration_round_ch_hygiene_quarantine_readiness_v1.md`
+- `docs/roadmap_v2/history/rounds/migration_round_cf_hygiene_ai_washing_inventory_v1.md`
+- `docs/roadmap_v2/history/rounds/migration_round_cg_hygiene_repo_visible_scaffolds_v1.md`
+- `docs/roadmap_v2/history/rounds/migration_round_ch_hygiene_quarantine_readiness_v1.md`
 
 Result:
 - the inventory and scaffold review are now explicit
@@ -92,9 +92,9 @@ script-deprecation and registry/inventory cleanup queue rather than an
 immediate code-removal queue.
 
 That follow-on has now been executed as Queue V23 with three outputs:
-- `docs/roadmap_v2/migration_round_ci_hygiene_script_inventory_deprecation_rules_v1.md`
-- `docs/roadmap_v2/migration_round_cj_hygiene_script_registry_publish_v1.md`
-- `docs/roadmap_v2/migration_round_ck_hygiene_script_deprecation_posture_refresh_v1.md`
+- `docs/roadmap_v2/history/rounds/migration_round_ci_hygiene_script_inventory_deprecation_rules_v1.md`
+- `docs/roadmap_v2/history/rounds/migration_round_cj_hygiene_script_registry_publish_v1.md`
+- `docs/roadmap_v2/history/rounds/migration_round_ck_hygiene_script_deprecation_posture_refresh_v1.md`
 
 Result:
 - the six historical data utilities are no longer advertised as current
@@ -107,9 +107,9 @@ explicit deprecation mapping, not premature code removal.
 
 That script-consumer cleanup follow-on has now been executed as Queue V24 with
 three outputs:
-- `docs/roadmap_v2/migration_round_cl_hygiene_script_consumer_rules_v1.md`
-- `docs/roadmap_v2/migration_round_cm_hygiene_script_consumer_publish_v1.md`
-- `docs/roadmap_v2/migration_round_cn_hygiene_script_consumer_posture_refresh_v1.md`
+- `docs/roadmap_v2/history/rounds/migration_round_cl_hygiene_script_consumer_rules_v1.md`
+- `docs/roadmap_v2/history/rounds/migration_round_cm_hygiene_script_consumer_publish_v1.md`
+- `docs/roadmap_v2/history/rounds/migration_round_cn_hygiene_script_consumer_posture_refresh_v1.md`
 
 Result:
 - the flat `src/data/*` shims for the six historical utilities are now rendered

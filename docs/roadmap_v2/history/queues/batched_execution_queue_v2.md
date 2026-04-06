@@ -58,7 +58,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- complete via `docs/roadmap_v2/migration_round_aa_director_branching_seed_v1.md`
+- complete via `docs/roadmap_v2/history/rounds/migration_round_aa_director_branching_seed_v1.md`
 
 Fallback if pre-scan gets messy:
 - defer to `semantic_director.state`
@@ -90,7 +90,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- complete via `docs/roadmap_v2/migration_round_ab_director_state_seed_v1.md`
+- complete via `docs/roadmap_v2/history/rounds/migration_round_ab_director_state_seed_v1.md`
 
 Fallback if pre-scan gets messy:
 - rotate early to Batch 3
@@ -121,7 +121,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- complete via `docs/roadmap_v2/migration_round_ac_ai_washing_build_labeling_batch_seed_v1.md`
+- complete via `docs/roadmap_v2/history/rounds/migration_round_ac_ai_washing_build_labeling_batch_seed_v1.md`
 
 Fallback if pre-scan gets messy:
 - replace with an established-authority `ai_washing` cleanup batch

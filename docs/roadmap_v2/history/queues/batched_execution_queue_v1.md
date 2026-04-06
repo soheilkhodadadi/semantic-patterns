@@ -55,7 +55,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- complete via `docs/roadmap_v2/migration_round_w_ai_washing_build_filing_manifest_seed_v1.md`
+- complete via `docs/roadmap_v2/history/rounds/migration_round_w_ai_washing_build_filing_manifest_seed_v1.md`
 
 Fallback if pre-scan gets messy:
 - defer authority seed
@@ -94,7 +94,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- complete via `docs/roadmap_v2/migration_round_x_director_config_seed_v1.md`
+- complete via `docs/roadmap_v2/history/rounds/migration_round_x_director_config_seed_v1.md`
 
 Fallback if pre-scan gets messy:
 - take `readiness` only if its caller map remains cleaner
@@ -131,7 +131,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- complete via `docs/roadmap_v2/migration_round_y_director_readiness_seed_v1.md`
+- complete via `docs/roadmap_v2/history/rounds/migration_round_y_director_readiness_seed_v1.md`
 
 Fallback if pre-scan gets messy:
 - defer and move to `ai_washing` Batch 4 sooner
@@ -165,7 +165,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- complete via `docs/roadmap_v2/migration_round_z_ai_washing_ff12_mapping_seed_v1.md`
+- complete via `docs/roadmap_v2/history/rounds/migration_round_z_ai_washing_ff12_mapping_seed_v1.md`
 
 Fallback if pre-scan gets messy:
 - replace with an established-authority `ai_washing` cleanup batch under the

@@ -33,6 +33,5 @@ Completed:
 - updated direct markdown references to the new round-history paths
 
 Validation:
-- direct-reference scan found no remaining `docs/roadmap_v2/migration_round_*`
-  links
+- direct-reference scan found no remaining top-level `migration_round_*` links
 - `git diff --check` passed

@@ -23,7 +23,7 @@ Current front-door docs:
 - `docs/roadmap_v2/lab_end_state_architecture_review_v2.md`
 - `docs/roadmap_v2/target_repo_layout_v2.md`
 - `docs/roadmap_v2/fast_safe_migration_protocol_v2.md`
-- `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v21.md`
+- `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v22.md`
 - `docs/roadmap_v2/legacy_template_hygiene_queue_v1.md`
 
 ## Durable docs
@@ -47,13 +47,14 @@ Contracts:
 ## Current operational state
 
 Latest completed queue:
-- `docs/roadmap_v2/history/queues/batched_execution_queue_v28.md`
+- `docs/roadmap_v2/history/queues/batched_execution_queue_v29.md`
 
 Latest queue checkpoint:
-- `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v21.md`
+- `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v22.md`
 
 Operational history index:
 - `docs/roadmap_v2/operational_history_index_v1.md`
+- `docs/roadmap_v2/history/README.md`
 
 ## Project/member entry points
 
@@ -72,7 +73,7 @@ Migrated-surface relevance audit:
 ## Retention posture
 
 The queue docs, migration rounds, fresh-authority comparisons, and progress
-checkpoints remain in this folder as operational history.
+checkpoints now live under `docs/roadmap_v2/history/` as operational history.
 
 They are still useful, but they are no longer the front door.
 Use the navigation docs above first.

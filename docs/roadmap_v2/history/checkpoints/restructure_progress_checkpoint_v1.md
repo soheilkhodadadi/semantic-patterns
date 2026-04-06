@@ -123,10 +123,10 @@ Recent scan result:
   likely require a fresh authority move rather than another established-surface
   cleanup batch
 - that fresh authority move has now been taken through
-  `docs/roadmap_v2/migration_round_s_ai_washing_benchmark_utils_seed_v1.md`
+  `docs/roadmap_v2/history/rounds/migration_round_s_ai_washing_benchmark_utils_seed_v1.md`
 - the next fresh-authority move has now also been taken through
-  `docs/roadmap_v2/migration_round_t_director_roadmap_model_seed_v1.md`
+  `docs/roadmap_v2/history/rounds/migration_round_t_director_roadmap_model_seed_v1.md`
 - the next follow-on fresh-authority move has now been taken through
-  `docs/roadmap_v2/migration_round_u_director_render_seed_v1.md`
+  `docs/roadmap_v2/history/rounds/migration_round_u_director_render_seed_v1.md`
 - the next follow-on fresh-authority move has now been taken through
-  `docs/roadmap_v2/migration_round_v_director_task_graph_seed_v1.md`
+  `docs/roadmap_v2/history/rounds/migration_round_v_director_task_graph_seed_v1.md`

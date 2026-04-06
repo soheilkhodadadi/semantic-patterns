@@ -11,7 +11,7 @@ If you want the current picture, read these first:
 - `docs/roadmap_v2/lab_end_state_architecture_review_v2.md`
 - `docs/roadmap_v2/target_repo_layout_v2.md`
 - `docs/roadmap_v2/fast_safe_migration_protocol_v2.md`
-- `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v21.md`
+- `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v22.md`
 - `docs/roadmap_v2/legacy_template_hygiene_queue_v1.md`
 
 ## Canonical code layers
@@ -34,7 +34,7 @@ Ballpark progress:
 - `labcore`: ~95-100%
 - `director`: ~98-100%
 - `ai_washing` active member migration: ~85-93%
-- full clean final lab structure: ~90-96%
+- full clean final lab structure: ~91-97%
 
 ### Labcore
 
@@ -73,12 +73,13 @@ See:
 ## What still matters operationally
 
 Latest queue closed cleanly:
-- `docs/roadmap_v2/history/queues/batched_execution_queue_v28.md`
-- `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v21.md`
+- `docs/roadmap_v2/history/queues/batched_execution_queue_v29.md`
+- `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v22.md`
 
 Operational history is still kept in the repo, but it is now secondary.
 Use this index for the categories and retention logic:
 - `docs/roadmap_v2/operational_history_index_v1.md`
+- `docs/roadmap_v2/history/README.md`
 
 ## Recommended posture before next queue
 
@@ -92,3 +93,4 @@ Use this index for the categories and retention logic:
   `director` work should be chosen as polish or hygiene on purpose
 - prefer late-stage leverage over queue momentum for its own sake
 - prefer intuitive navigation over adding more top-level tracker files
+- treat `docs/roadmap_v2/history/` as the audit layer, not the front door

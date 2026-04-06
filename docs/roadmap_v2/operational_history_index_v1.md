@@ -69,16 +69,17 @@ For day-to-day navigation, prefer:
 ## Current state
 
 Latest completed queue:
-- `docs/roadmap_v2/history/queues/batched_execution_queue_v28.md`
+- `docs/roadmap_v2/history/queues/batched_execution_queue_v29.md`
 
 Latest queue checkpoint:
-- `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v21.md`
+- `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v22.md`
 
 Latest protocol anchor:
 - `docs/roadmap_v2/fast_safe_migration_protocol_v2.md`
 
 ## Future cleanup
 
-These history files should eventually be archived or bucketed more formally,
-but that should happen as its own bounded documentation-hygiene class.
-They should not be mixed into active authority migrations.
+These history files are now bucketed formally under `docs/roadmap_v2/history/`.
+Any later archive/export pass should still happen as its own bounded
+documentation-hygiene class rather than being mixed into active authority
+migrations.

@@ -46,7 +46,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- complete via `docs/roadmap_v2/migration_round_ad_ai_washing_heldout_sampler_seed_v1.md`
+- complete via `docs/roadmap_v2/history/rounds/migration_round_ad_ai_washing_heldout_sampler_seed_v1.md`
 
 Fallback if pre-scan gets messy:
 - rotate early to `semantic_director.decision`
@@ -77,7 +77,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- complete via `docs/roadmap_v2/migration_round_ae_ai_washing_heldout_freeze_seed_v1.md`
+- complete via `docs/roadmap_v2/history/rounds/migration_round_ae_ai_washing_heldout_freeze_seed_v1.md`
 
 Fallback if pre-scan gets messy:
 - rotate early to Batch 3
@@ -113,7 +113,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- complete via `docs/roadmap_v2/migration_round_af_director_decision_seed_v1.md`
+- complete via `docs/roadmap_v2/history/rounds/migration_round_af_director_decision_seed_v1.md`
 
 Fallback if pre-scan gets messy:
 - replace with a smaller `director` policy/runtime cleanup round

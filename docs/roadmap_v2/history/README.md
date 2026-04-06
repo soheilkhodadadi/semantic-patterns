@@ -20,3 +20,4 @@ If you want the current picture, start with:
 - `docs/roadmap_v2/current_state_navigation_v1.md`
 - `docs/roadmap_v2/README.md`
 - `docs/roadmap_v2/operational_history_index_v1.md`
+- `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v22.md`

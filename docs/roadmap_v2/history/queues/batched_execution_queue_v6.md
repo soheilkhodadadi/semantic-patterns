@@ -45,7 +45,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- complete via `docs/roadmap_v2/migration_round_aj_ai_washing_publish_rubric_freeze_seed_v1.md`
+- complete via `docs/roadmap_v2/history/rounds/migration_round_aj_ai_washing_publish_rubric_freeze_seed_v1.md`
 
 Fallback if pre-scan gets messy:
 - rotate early to Batch 2
@@ -78,7 +78,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- complete via `docs/roadmap_v2/migration_round_ak_director_snapshot_seed_v1.md`
+- complete via `docs/roadmap_v2/history/rounds/migration_round_ak_director_snapshot_seed_v1.md`
 
 Fallback if pre-scan gets messy:
 - replace with a smaller `director` cost/runtime round
@@ -110,7 +110,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- complete via `docs/roadmap_v2/migration_round_al_ai_washing_audit_sentence_integrity_seed_v1.md`
+- complete via `docs/roadmap_v2/history/rounds/migration_round_al_ai_washing_audit_sentence_integrity_seed_v1.md`
 
 Fallback if pre-scan gets messy:
 - replace with a smaller `ai_washing` labeling/reporting round

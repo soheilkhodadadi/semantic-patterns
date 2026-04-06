@@ -48,7 +48,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- complete via `docs/roadmap_v2/migration_round_am_ai_washing_prepare_irr_subset_seed_v1.md`
+- complete via `docs/roadmap_v2/history/rounds/migration_round_am_ai_washing_prepare_irr_subset_seed_v1.md`
 
 Fallback if pre-scan gets messy:
 - rotate early to Batch 3
@@ -80,7 +80,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- complete via `docs/roadmap_v2/migration_round_an_ai_washing_adjudication_seed_v1.md`
+- complete via `docs/roadmap_v2/history/rounds/migration_round_an_ai_washing_adjudication_seed_v1.md`
 
 Fallback if pre-scan gets messy:
 - rotate early to Batch 3
@@ -112,7 +112,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- complete via `docs/roadmap_v2/migration_round_ao_director_gates_seed_v1.md`
+- complete via `docs/roadmap_v2/history/rounds/migration_round_ao_director_gates_seed_v1.md`
 
 Fallback if pre-scan gets messy:
 - replace with a smaller `director` runtime/control round
