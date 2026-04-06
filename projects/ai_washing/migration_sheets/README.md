@@ -23,8 +23,11 @@ they are not the front-door explanation of the member.
 - `train_binary_relevance_then_as_grouped_migration_sheet_v1.md`
 - `train_logreg_preliminary_grouped_migration_sheet_v1.md`
 - `classify_active_window_preliminary_grouped_migration_sheet_v1.md`
+- `classify_active_window_preliminary_restartable_grouped_migration_sheet_v1.md`
 - `evaluate_preliminary_heldout_grouped_migration_sheet_v1.md`
 - `benchmark_preliminary_models_grouped_migration_sheet_v1.md`
+- `publish_selected_preliminary_eval_grouped_migration_sheet_v1.md`
+- `reconcile_preliminary_classification_report_grouped_migration_sheet_v1.md`
 - `index_sec_grouped_migration_sheet_v1.md`
 - `extract_sentence_table_grouped_migration_sheet_v1.md`
 - `build_filing_manifest_grouped_migration_sheet_v1.md`

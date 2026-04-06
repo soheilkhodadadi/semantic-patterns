@@ -66,8 +66,11 @@ Legacy compatibility still exists in:
 - `classification/train_binary_relevance_then_as.py`
 - `classification/train_logreg_preliminary.py`
 - `classification/classify_active_window_preliminary.py`
+- `classification/classify_active_window_preliminary_restartable.py`
 - `classification/evaluate_preliminary_heldout.py`
 - `classification/benchmark_preliminary_models.py`
+- `classification/publish_selected_preliminary_eval.py`
+- `classification/reconcile_preliminary_classification_report.py`
 
 ### Data support
 - `data/index_sec_filings.py`
@@ -78,8 +81,8 @@ Legacy compatibility still exists in:
 
 1. `projects/ai_washing/root_surface_triage_registry_v1.md`
 2. `projects/ai_washing/migration_sheets/README.md`
-3. `docs/roadmap_v2/restructure_progress_checkpoint_v8.md`
-4. `docs/roadmap_v2/batched_execution_queue_v15.md`
+3. `docs/roadmap_v2/restructure_progress_checkpoint_v9.md`
+4. `docs/roadmap_v2/batched_execution_queue_v16.md`
 
 ## Planning documents that still matter
 
