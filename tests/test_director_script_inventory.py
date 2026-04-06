@@ -55,6 +55,19 @@ if __name__ == "__main__":
 ''',
     )
     _write(
+        repo_root / "src" / "data" / "clean_compustat.py",
+        '''"""Legacy compatibility shim.
+
+TODO: remove after Iteration 1 deprecation window.
+"""
+
+from semantic_ai_washing.data.clean_compustat import *  # noqa: F401,F403
+
+if __name__ == "__main__":
+    main()
+''',
+    )
+    _write(
         repo_root / "src" / "scripts" / "extract_ai_sentences.py",
         '''"""Legacy compatibility shim.
 
@@ -83,7 +96,7 @@ def main() -> None:
 
     assert output.exists()
     assert payload["summary"]["canonical_count"] == 1
-    assert payload["summary"]["transitional_count"] == 3
+    assert payload["summary"]["transitional_count"] == 4
     assert payload["summary"]["legacy_count"] == 1
     assert payload["summary"]["hygiene_finding_count"] == 2
 
@@ -110,6 +123,11 @@ def main() -> None:
     assert (
         modules["semantic_ai_washing.data.clean_compustat"]["replacement_phase"]
         == "queue-v23/script-deprecation-hygiene"
+    )
+    assert modules["data.clean_compustat"]["classification"] == "transitional"
+    assert modules["data.clean_compustat"]["status_detail"] == "script_deprecation_shim"
+    assert (
+        modules["data.clean_compustat"]["replacement_phase"] == "queue-v24/script-consumer-cleanup"
     )
 
 

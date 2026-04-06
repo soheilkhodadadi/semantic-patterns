@@ -119,6 +119,45 @@ SCRIPT_DEPRECATION_CANDIDATES: dict[str, dict[str, str]] = {
     },
 }
 
+SCRIPT_DEPRECATION_SHIMS: dict[str, dict[str, str]] = {
+    "data.clean_compustat": {
+        "replacement_path": "python -m semantic_ai_washing.data.clean_compustat",
+        "replacement_phase": "queue-v24/script-consumer-cleanup",
+        "notes": "Legacy flat shim for a script-deprecation candidate; keep only for external callers.",
+        "status_detail": "script_deprecation_shim",
+    },
+    "data.clean_crsp": {
+        "replacement_path": "python -m semantic_ai_washing.data.clean_crsp",
+        "replacement_phase": "queue-v24/script-consumer-cleanup",
+        "notes": "Legacy flat shim for a script-deprecation candidate; keep only for external callers.",
+        "status_detail": "script_deprecation_shim",
+    },
+    "data.clean_sec": {
+        "replacement_path": "python -m semantic_ai_washing.data.clean_sec",
+        "replacement_phase": "queue-v24/script-consumer-cleanup",
+        "notes": "Legacy flat shim for a script-deprecation candidate; keep only for external callers.",
+        "status_detail": "script_deprecation_shim",
+    },
+    "data.download_compustat": {
+        "replacement_path": "python -m semantic_ai_washing.data.download_compustat",
+        "replacement_phase": "queue-v24/script-consumer-cleanup",
+        "notes": "Legacy flat shim for a script-deprecation candidate; keep only for external callers.",
+        "status_detail": "script_deprecation_shim",
+    },
+    "data.download_crsp": {
+        "replacement_path": "python -m semantic_ai_washing.data.download_crsp",
+        "replacement_phase": "queue-v24/script-consumer-cleanup",
+        "notes": "Legacy flat shim for a script-deprecation candidate; keep only for external callers.",
+        "status_detail": "script_deprecation_shim",
+    },
+    "data.download_sec": {
+        "replacement_path": "python -m semantic_ai_washing.data.download_sec",
+        "replacement_phase": "queue-v24/script-consumer-cleanup",
+        "notes": "Legacy flat shim for a script-deprecation candidate; keep only for external callers.",
+        "status_detail": "script_deprecation_shim",
+    },
+}
+
 
 def _module_name(src_root: Path, file_path: Path) -> str:
     return ".".join(file_path.relative_to(src_root).with_suffix("").parts)
@@ -202,6 +241,14 @@ def _classify_module(
         return (
             "transitional",
             "historical data utility kept operational pending script-deprecation cleanup",
+            meta,
+        )
+
+    if module_name in SCRIPT_DEPRECATION_SHIMS:
+        meta = SCRIPT_DEPRECATION_SHIMS[module_name]
+        return (
+            "transitional",
+            "legacy flat shim retained for a script-deprecation candidate",
             meta,
         )
 
