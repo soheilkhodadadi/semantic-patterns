@@ -20,7 +20,7 @@ from semantic_ai_washing.core.sentence_filter import (
     normalize_sentence_text,
     segment_sentences,
 )
-from semantic_ai_washing.data.build_filing_manifest import (
+from ai_washing_member.data.build_filing_manifest import (
     OUTPUT_COLUMNS as MANIFEST_COLUMNS,
     DEFAULT_CONTROLS,
     DEFAULT_CROSSWALK,

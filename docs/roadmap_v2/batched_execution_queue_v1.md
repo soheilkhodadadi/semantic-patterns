@@ -54,6 +54,9 @@ Default gate:
 - `tests/test_iteration2_parallel.py`
 - `git diff --check`
 
+Status:
+- complete via `docs/roadmap_v2/migration_round_w_ai_washing_build_filing_manifest_seed_v1.md`
+
 Fallback if pre-scan gets messy:
 - defer authority seed
 - take one established-authority `ai_washing` cleanup batch instead
@@ -70,6 +73,7 @@ Why next:
 - strong direct caller pressure
 - smaller and safer than `readiness`
 - good follow-on after the recent `director` package wins
+- next active batch after Batch 1
 
 Expected batch shape:
 - seed canonical package implementation
@@ -193,8 +197,8 @@ If a pre-scan shows that the next batch is messier than expected:
 
 Start here:
 
-1. `ai_washing_member.data.build_filing_manifest`
-2. `semantic_director.config`
-3. `semantic_director.readiness`
+1. `semantic_director.config`
+2. `semantic_director.readiness`
+3. checkpoint before committing to Batch 4
 
 Then checkpoint before committing to Batch 4.

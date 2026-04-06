@@ -12,7 +12,7 @@ from semantic_ai_washing.core.sentence_filter import (
     get_sentence_integrity_flags,
     normalize_sentence_text,
 )
-from semantic_ai_washing.data.build_filing_manifest import build_manifest
+from ai_washing_member.data.build_filing_manifest import build_manifest
 from ai_washing_member.data.extract_sentence_table import extract_sentence_table
 from semantic_ai_washing.data.reextract_tranche_slice import reextract_tranche_slice
 

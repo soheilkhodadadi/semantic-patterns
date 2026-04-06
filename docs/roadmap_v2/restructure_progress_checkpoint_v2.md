@@ -53,6 +53,7 @@ The active `ai_washing` member-owned authorities now include:
 - `ai_washing_member.classification.preliminary_pipeline`
 - `ai_washing_member.classification.model_runtime`
 - `ai_washing_member.classification.benchmark_utils`
+- `ai_washing_member.data.build_filing_manifest`
 - `ai_washing_member.data.index_sec_filings`
 - `ai_washing_member.data.extract_sentence_table`
 
@@ -87,6 +88,7 @@ This is now proven for:
 - `ai_washing` SEC index family
 - `ai_washing` sentence-table family
 - `ai_washing` benchmark-utils authority
+- `ai_washing` build-filing-manifest authority
 
 ## Lane-by-lane state
 

@@ -101,6 +101,10 @@ Fresh-authority comparison and chosen next seed:
 - `docs/roadmap_v2/migration_round_s_ai_washing_benchmark_utils_seed_v1.md`
 - `projects/ai_washing/benchmark_utils_grouped_migration_sheet_v1.md`
 
+Next fresh-authority member-owned data seed:
+- `docs/roadmap_v2/migration_round_w_ai_washing_build_filing_manifest_seed_v1.md`
+- `projects/ai_washing/build_filing_manifest_grouped_migration_sheet_v1.md`
+
 Structured member shell lanes now exist:
 - `projects/ai_washing/docs/`
 - `projects/ai_washing/reports/`
