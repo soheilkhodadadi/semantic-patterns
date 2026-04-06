@@ -62,6 +62,7 @@ The active `ai_washing` member-owned authorities now include:
 - `ai_washing_member.labeling.common`
 - `ai_washing_member.labeling.ff12_mapping`
 - `ai_washing_member.labeling.freeze_heldout_v2`
+- `ai_washing_member.labeling.freeze_split_registry`
 - `ai_washing_member.labeling.sample_heldout_v2_candidates`
 - `ai_washing_member.classification.preliminary_pipeline`
 - `ai_washing_member.classification.model_runtime`
@@ -273,6 +274,16 @@ This tightened the `director` package boundary further by removing a root
 `director.core.sensors` dependency from `semantic_director.readiness` while
 leaving the cross-lane `ai_washing` edge on the compatibility shim for a later
 separate round.
+
+## Queue V5 second-batch note
+
+Queue V5 Batch 2 has now completed cleanly:
+
+2. `ai_washing_member.labeling.freeze_split_registry`
+
+This kept the split-freeze workflow current in the member-owned lane while
+leaving the stable root command surface in `tests/test_director_roadmap_model.py`
+unchanged on purpose.
 
 ## Queue V4 progress note
 

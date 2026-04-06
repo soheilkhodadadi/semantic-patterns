@@ -7,7 +7,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from semantic_ai_washing.labeling.freeze_split_registry import run_freeze
+from ai_washing_member.labeling.freeze_split_registry import run_freeze
 from semantic_ai_washing.labeling.publish_rubric_freeze import run_publish
 
 
