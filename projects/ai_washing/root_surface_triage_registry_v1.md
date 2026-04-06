@@ -23,7 +23,7 @@ It exists to keep future queues grounded.
 
 - labeling still root-owned: 3
 - classification still root-owned: 7
-- data still root-owned: 18
+- data still root-owned: 15
 
 ## Labeling surfaces still root-owned
 
@@ -66,15 +66,14 @@ Reason:
 ## Data surfaces still root-owned
 
 ### Active migration candidate
-- `src/semantic_ai_washing/data/build_expanded_sentence_pool.py`
 - `src/semantic_ai_washing/data/materialize_active_window_sentences.py`
 - `src/semantic_ai_washing/data/reextract_tranche_slice.py`
 - `src/semantic_ai_washing/data/run_historical_backfill.py`
-- `src/semantic_ai_washing/data/benchmark_segmentation_modes.py`
-- `src/semantic_ai_washing/data/combine_expanded_sentence_pool_batches.py`
 
 Reason:
-- these remain on active sentence-table, segmentation, and backfill workflows
+- these remain on active sentence-table materialization and backfill workflows
+- the sentence-pool expansion and segmentation QA lane is now canonical under
+  `ai_washing_member.data`
 
 ### Dormant but relevant
 - `src/semantic_ai_washing/data/build_active_filing_company_universe.py`

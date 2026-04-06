@@ -37,7 +37,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- planned
+- complete
 
 ### Batch 2
 
@@ -60,7 +60,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- planned
+- complete
 
 ### Batch 3
 
@@ -82,11 +82,11 @@ Default gate:
 - `git diff --check`
 
 Status:
-- planned
+- complete
 
 ## Queue status
 
-Queue V17 is in progress:
+Queue V17 is complete:
 
 1. Batch 1:
    - `ai_washing_member.data.build_expanded_sentence_pool`
@@ -94,3 +94,8 @@ Queue V17 is in progress:
    - `ai_washing_member.data.combine_expanded_sentence_pool_batches`
 3. Batch 3:
    - `ai_washing_member.data.benchmark_segmentation_modes`
+
+Latest Queue V17 commits:
+- `65aa13c` `refactor: seed ai-washing sentence-pool expansion authority`
+- `fee71bb` `refactor: seed ai-washing sentence-pool combine authority`
+- `f2e85aa` `refactor: seed ai-washing segmentation benchmark authority`

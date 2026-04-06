@@ -11,7 +11,7 @@ If you want the current picture, read these first:
 - `docs/roadmap_v2/lab_end_state_architecture_review_v2.md`
 - `docs/roadmap_v2/target_repo_layout_v2.md`
 - `docs/roadmap_v2/fast_safe_migration_protocol_v2.md`
-- `docs/roadmap_v2/restructure_progress_checkpoint_v9.md`
+- `docs/roadmap_v2/restructure_progress_checkpoint_v10.md`
 - `docs/roadmap_v2/legacy_template_hygiene_queue_v1.md`
 
 ## Canonical code layers
@@ -33,8 +33,8 @@ Project member:
 Ballpark progress:
 - `labcore`: ~95-100%
 - `director`: ~90-95%
-- `ai_washing` active member migration: ~75-85%
-- full clean final lab structure: ~72-78%
+- `ai_washing` active member migration: ~78-86%
+- full clean final lab structure: ~74-80%
 
 ### Labcore
 
@@ -56,9 +56,9 @@ Current posture:
 - mid-to-late member migration
 - labeling is heavily migrated
 - the active preliminary classification lane is now largely canonical
-- data now contains the largest remaining active root-owned surfaces
-- the next decision pressure is queue rotation into the data lane, not more
-  classification cleanup
+- the active sentence-pool data lane is now canonical
+- the remaining active pressure is now concentrated in active-window
+  materialization and backfill
 
 See:
 - `projects/ai_washing/root_surface_triage_registry_v1.md`
@@ -67,8 +67,8 @@ See:
 ## What still matters operationally
 
 Latest queue closed cleanly:
-- `docs/roadmap_v2/batched_execution_queue_v16.md`
-- `docs/roadmap_v2/restructure_progress_checkpoint_v9.md`
+- `docs/roadmap_v2/batched_execution_queue_v17.md`
+- `docs/roadmap_v2/restructure_progress_checkpoint_v10.md`
 
 Operational history is still kept in the repo, but it is now secondary.
 Use this index for the categories and retention logic:
