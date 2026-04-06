@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from semantic_ai_washing.director.core.utils import now_utc_iso, sha256_file
+from semantic_labcore.runtime import now_utc_iso, sha256_file
 
 _ITERATION_HEADER_RE = re.compile(r"^##\s+Iteration\s+(?P<id>\d+).*$")
 _PHASE_HEADER_RE = re.compile(

@@ -15,7 +15,7 @@ from typing import Any
 
 import yaml
 
-from semantic_ai_washing.director.core.utils import now_utc_iso
+from semantic_labcore.runtime import now_utc_iso
 
 
 def _parse_json_blob(raw: str) -> Any | None:

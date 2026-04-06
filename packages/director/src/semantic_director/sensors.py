@@ -9,8 +9,8 @@ from typing import Any
 
 import pandas as pd
 
-from semantic_ai_washing.director.core.utils import sha256_file
 from semantic_director.schemas import ConditionSpec
+from semantic_labcore.runtime import sha256_file
 
 _JSON_TARGET_RE = re.compile(r"^(?P<path>.+?)::(?P<field>[\w\.\-]+)$")
 

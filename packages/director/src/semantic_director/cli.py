@@ -38,7 +38,7 @@ from semantic_ai_washing.director.core.security import (
 )
 from semantic_director.snapshot import SnapshotIngestor
 from semantic_director.state import StateCompiler
-from semantic_ai_washing.director.core.utils import (
+from semantic_labcore.runtime import (
     dump_json,
     git_info,
     load_json,

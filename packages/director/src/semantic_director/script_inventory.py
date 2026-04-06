@@ -9,7 +9,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
-from semantic_ai_washing.director.core.utils import dump_json, git_info, now_utc_iso, sha256_file
+from semantic_labcore.runtime import dump_json, git_info, now_utc_iso, sha256_file
 
 DEFAULT_INVENTORY_OUTPUT = "director/snapshots/script_inventory.json"
 DEFAULT_REGISTRY_OUTPUT = "docs/director/script_registry.md"

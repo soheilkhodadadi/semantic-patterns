@@ -7,8 +7,8 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from zipfile import ZipFile
 
-from semantic_ai_washing.director.core.utils import now_utc_iso, sha256_file
 from semantic_director.roadmap_model import load_roadmap_model, roadmap_summary_dict
+from semantic_labcore.runtime import now_utc_iso, sha256_file
 
 _WORD_NAMESPACE = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
 _ITERATION_HEADER_RE = re.compile(
