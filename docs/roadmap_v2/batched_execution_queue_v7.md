@@ -112,7 +112,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- planned
+- complete via `docs/roadmap_v2/migration_round_ao_director_gates_seed_v1.md`
 
 Fallback if pre-scan gets messy:
 - replace with a smaller `director` runtime/control round
@@ -125,5 +125,8 @@ Next in Queue V7:
    - `ai_washing_member.labeling.prepare_irr_subset`
 2. Batch 2 complete:
    - `ai_washing_member.labeling.adjudicate_irr_labels`
-3. Batch 3 planned:
+3. Batch 3 complete:
    - `semantic_director.gates`
+
+
+Queue V7 is now complete.

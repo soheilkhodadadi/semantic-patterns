@@ -106,6 +106,7 @@ This is now proven for:
 - `director.sensors`
 - `director.playbooks`
 - `director.snapshot`
+- `director.gates`
 - `ai_washing` labeling common family
 - `ai_washing` classification support family
 - `ai_washing` SEC index family
@@ -358,6 +359,18 @@ Queue V7 Batch 2 has now completed cleanly:
 
 This keeps the IRR workflow moving inside the member-owned lane while still
 leaving roadmap-model command strings on the compatibility path for now.
+
+## Queue V7 close note
+
+Queue V7 has now completed cleanly through its planned three-round cycle:
+
+1. `ai_washing_member.labeling.prepare_irr_subset`
+2. `ai_washing_member.labeling.adjudicate_irr_labels`
+3. `semantic_director.gates`
+
+This closes the cycle with two current-stage IRR workflow moves in the flagship
+lane and one compact downstream `director` package cleanup that sets up a
+future `executor` round.
 
 ## Queue V4 progress note
 

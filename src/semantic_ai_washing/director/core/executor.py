@@ -10,7 +10,7 @@ import yaml
 
 from semantic_ai_washing.director.core.audit import write_audit_record
 from semantic_director.decision import DecisionEngine
-from semantic_ai_washing.director.core.gates import GateEvaluator
+from semantic_director.gates import GateEvaluator
 from semantic_director.sensors import evaluate_condition
 from semantic_ai_washing.director.core.utils import dump_json, git_info, now_utc_iso, run_command
 from semantic_ai_washing.director.schemas import BlockerEvent, Runbook
