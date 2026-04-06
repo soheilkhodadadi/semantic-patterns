@@ -1,6 +1,9 @@
 # AI-washing Project Docs
 
-This folder is the future public-safe home for curated AI-washing project documentation.
+This folder is the public-safe documentation lane for AI-washing.
+
+For the live project-member code and migration posture, start here instead:
+- `projects/ai_washing/README.md`
 
 Current authoritative working materials still live mainly in:
 - `reports/analysis/`
@@ -9,6 +12,14 @@ Current authoritative working materials still live mainly in:
 - `output/figures/`
 
 Use this folder for stable project orientation, public-safe design notes, and promoted operating docs.
+
+Current navigation anchors:
+- project-member front door:
+  - `projects/ai_washing/README.md`
+- repo/project posture:
+  - `docs/roadmap_v2/current_state_navigation_v1.md`
+- project-docs workspace:
+  - `docs/projects/README.md`
 
 Current migration anchors:
 - legacy-to-new artifact map:
