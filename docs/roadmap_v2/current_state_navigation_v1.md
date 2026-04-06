@@ -11,7 +11,7 @@ If you want the current picture, read these first:
 - `docs/roadmap_v2/lab_end_state_architecture_review_v2.md`
 - `docs/roadmap_v2/target_repo_layout_v2.md`
 - `docs/roadmap_v2/fast_safe_migration_protocol_v2.md`
-- `docs/roadmap_v2/restructure_progress_checkpoint_v18.md`
+- `docs/roadmap_v2/restructure_progress_checkpoint_v19.md`
 - `docs/roadmap_v2/legacy_template_hygiene_queue_v1.md`
 
 ## Canonical code layers
@@ -32,9 +32,9 @@ Project member:
 
 Ballpark progress:
 - `labcore`: ~95-100%
-- `director`: ~97-99%
+- `director`: ~98-100%
 - `ai_washing` active member migration: ~84-92%
-- full clean final lab structure: ~87-93%
+- full clean final lab structure: ~88-94%
 
 ### Labcore
 
@@ -50,8 +50,9 @@ Current posture:
   `semantic_director`
 - the snapshot-adapter lane is now canonical under package-owned authorities
 - the runtime-entrypoint lane is now canonical under package-owned authorities
-- remaining work is selective utility follow-ons and eventual hygiene, not
-  foundational seeding or large runtime moves
+- the remaining wrapper normalization pressure is now closed
+- remaining work is now optional package polish and separate hygiene, not
+  foundational seeding, runtime moves, or real package-boundary cleanup
 
 ### AI-washing
 
@@ -70,8 +71,8 @@ See:
 ## What still matters operationally
 
 Latest queue closed cleanly:
-- `docs/roadmap_v2/batched_execution_queue_v25.md`
-- `docs/roadmap_v2/restructure_progress_checkpoint_v18.md`
+- `docs/roadmap_v2/batched_execution_queue_v26.md`
+- `docs/roadmap_v2/restructure_progress_checkpoint_v19.md`
 
 Operational history is still kept in the repo, but it is now secondary.
 Use this index for the categories and retention logic:
@@ -85,7 +86,7 @@ Use this index for the categories and retention logic:
 - do not reopen already-canonical `director` runtime-entrypoint surfaces
 - do not treat visual legacy candidates as retire-ready until registry and
   inventory dependencies are cleared
-- do not auto-open another tiny `director` cleanup queue unless we deliberately
-  choose wrapper normalization as its own bounded class
+- do not auto-open another tiny `director` cleanup queue; the remaining
+  `director` work should be chosen as polish or hygiene on purpose
 - prefer late-stage leverage over queue momentum for its own sake
 - prefer intuitive navigation over adding more top-level tracker files

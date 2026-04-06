@@ -226,3 +226,10 @@ Late-stage boundary cleanup:
 - `docs/roadmap_v2/migration_round_co_director_runtime_schema_boundary_cleanup_v1.md`
 - `docs/roadmap_v2/migration_round_cp_director_responses_transport_boundary_cleanup_v1.md`
 - `docs/roadmap_v2/director_utility_boundary_posture_refresh_v1.md`
+
+Late-stage wrapper normalization:
+- `packages/director/src/semantic_director/security.py`
+- `packages/director/src/semantic_director/runtime.py`
+- `docs/roadmap_v2/migration_round_cr_director_security_wrapper_normalization_v1.md`
+- `docs/roadmap_v2/migration_round_cs_director_runtime_wrapper_normalization_v1.md`
+- `docs/roadmap_v2/director_wrapper_normalization_posture_refresh_v1.md`
