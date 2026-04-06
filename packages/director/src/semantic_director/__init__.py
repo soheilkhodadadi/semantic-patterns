@@ -32,6 +32,11 @@ from semantic_director.config import (
     required_file_paths,
 )
 from semantic_director.decision import DecisionEngine
+from semantic_director.documents import (
+    read_text_document,
+    summarize_document,
+    summarize_roadmap_model,
+)
 from semantic_director.executor import RunbookExecutor
 from semantic_director.gates import GateEvaluator
 from semantic_director.iteration_log import parse_iteration_log
@@ -115,6 +120,9 @@ __all__ = [
     "load_configs",
     "required_file_paths",
     "DecisionEngine",
+    "read_text_document",
+    "summarize_document",
+    "summarize_roadmap_model",
     "DirectorOptimizer",
     "RunbookExecutor",
     "PlannerEngine",
