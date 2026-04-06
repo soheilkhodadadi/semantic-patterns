@@ -39,6 +39,7 @@ has canonical package code for:
 - roadmap-model loading/query helpers
 - roadmap rendering helpers
 - task-graph helpers
+- config/path loading helpers
 
 ### Project-member layer
 
@@ -83,6 +84,7 @@ This is now proven for:
 - `director.roadmap_model`
 - `director.render`
 - `director.task_graph`
+- `director.config`
 - `ai_washing` labeling common family
 - `ai_washing` classification support family
 - `ai_washing` SEC index family

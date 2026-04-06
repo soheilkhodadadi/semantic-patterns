@@ -19,7 +19,7 @@ from semantic_ai_washing.director.core.branching import (
     normalize_branching_policy,
     review_artifact_paths,
 )
-from semantic_ai_washing.director.core.config import DirectorPaths
+from semantic_director.config import DirectorPaths
 from semantic_ai_washing.director.core.playbooks import recommend_playbooks
 from semantic_ai_washing.director.core.readiness import ReadinessEvaluator
 from semantic_director.render import (

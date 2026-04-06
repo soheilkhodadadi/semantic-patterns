@@ -73,3 +73,10 @@ Fifth extracted package slice:
 Migration trace:
 - `docs/roadmap_v2/migration_round_v_director_task_graph_seed_v1.md`
 - `packages/director/task_graph_grouped_migration_sheet_v1.md`
+
+Sixth extracted package slice:
+- `packages/director/src/semantic_director/config.py`
+
+Migration trace:
+- `docs/roadmap_v2/migration_round_x_director_config_seed_v1.md`
+- `packages/director/config_grouped_migration_sheet_v1.md`

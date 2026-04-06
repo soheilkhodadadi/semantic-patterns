@@ -93,6 +93,9 @@ Default gate:
 - package build smoke
 - `git diff --check`
 
+Status:
+- complete via `docs/roadmap_v2/migration_round_x_director_config_seed_v1.md`
+
 Fallback if pre-scan gets messy:
 - take `readiness` only if its caller map remains cleaner
 
@@ -108,6 +111,7 @@ Why next:
 - high leverage
 - now naturally downstream of canonical `task_graph`
 - keeps the `director` package shape coherent
+- next active batch after Batch 2
 
 Expected batch shape:
 - seed canonical package implementation

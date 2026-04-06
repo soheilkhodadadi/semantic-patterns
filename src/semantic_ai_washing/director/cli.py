@@ -8,7 +8,7 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-from semantic_ai_washing.director.core.config import (
+from semantic_director.config import (
     ensure_default_configs,
     ensure_director_dirs,
     get_director_paths,

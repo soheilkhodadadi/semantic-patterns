@@ -1,5 +1,14 @@
 """Autonomous project director package."""
 
+from semantic_director.config import (
+    DEFAULT_CONFIG,
+    DirectorPaths,
+    ensure_default_configs,
+    ensure_director_dirs,
+    get_director_paths,
+    load_configs,
+    required_file_paths,
+)
 from semantic_director.roadmap_model import (
     find_iteration,
     find_phase,
@@ -35,6 +44,13 @@ __all__ = [
     "RecoveryOption",
     "DecisionRecord",
     "CostUsageRecord",
+    "DEFAULT_CONFIG",
+    "DirectorPaths",
+    "ensure_default_configs",
+    "ensure_director_dirs",
+    "get_director_paths",
+    "load_configs",
+    "required_file_paths",
     "resolve_model_path",
     "load_roadmap_model",
     "load_remediation_library",
