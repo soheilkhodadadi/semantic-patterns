@@ -200,3 +200,24 @@ Twenty-third extracted package slice:
 Migration trace:
 - `docs/roadmap_v2/migration_round_cb_director_atlas_seed_v1.md`
 - `packages/director/atlas_grouped_migration_sheet_v1.md`
+
+Twenty-fourth extracted package slice:
+- `packages/director/src/semantic_director/api_bootstrap.py`
+
+Migration trace:
+- `docs/roadmap_v2/migration_round_cc_director_api_bootstrap_seed_v1.md`
+- `packages/director/api_bootstrap_grouped_migration_sheet_v1.md`
+
+Twenty-fifth extracted package slice:
+- `packages/director/src/semantic_director/cli.py`
+
+Migration trace:
+- `docs/roadmap_v2/migration_round_cd_director_cli_seed_v1.md`
+- `packages/director/cli_grouped_migration_sheet_v1.md`
+
+Twenty-sixth extracted package slice:
+- `packages/director/src/semantic_director/__main__.py`
+
+Migration trace:
+- `docs/roadmap_v2/migration_round_ce_director_main_module_seed_v1.md`
+- `packages/director/main_module_grouped_migration_sheet_v1.md`

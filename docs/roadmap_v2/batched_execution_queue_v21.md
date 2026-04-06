@@ -44,6 +44,22 @@ Default gate:
 Status:
 - complete
 
+## Queue status
+
+Queue V21 is complete:
+
+1. Batch 1:
+   - `semantic_director.api_bootstrap`
+2. Batch 2:
+   - `semantic_director.cli`
+3. Batch 3:
+   - `semantic_director.__main__`
+
+Latest Queue V21 commits:
+- `928963f` `refactor: seed director api-bootstrap authority`
+- `88a87b3` `refactor: seed director cli authority`
+- `5d4092d` `refactor: seed director main-module authority`
+
 ### Batch 2
 
 Authority:
