@@ -402,6 +402,19 @@ This keeps the IRR reporting workflow inside the member-owned lane while
 deliberately leaving roadmap-model command strings on the compatibility path
 for now.
 
+## Queue V8 close note
+
+Queue V8 has now completed cleanly through its planned three-round cycle:
+
+1. `ai_washing_member.labeling.compute_irr_metrics`
+2. `ai_washing_member.labeling.diagnose_irr_disagreements`
+3. `semantic_director.executor`
+
+This closes the cycle with two current-stage IRR reporting workflow moves in
+the flagship lane and one compact `director` control-runtime move that keeps
+the package boundary moving downstream without touching Atlas-adjacent adapter
+surfaces.
+
 ## Queue V4 progress note
 
 Queue V4 has now completed its first two `ai_washing` rounds cleanly:

@@ -20,6 +20,7 @@ from semantic_director.config import (
     required_file_paths,
 )
 from semantic_director.decision import DecisionEngine
+from semantic_director.executor import RunbookExecutor
 from semantic_director.gates import GateEvaluator
 from semantic_director.playbooks import list_playbooks, recommend_playbooks, show_playbook
 from semantic_director.readiness import ReadinessEvaluator
@@ -77,6 +78,7 @@ __all__ = [
     "load_configs",
     "required_file_paths",
     "DecisionEngine",
+    "RunbookExecutor",
     "GateEvaluator",
     "recommend_playbooks",
     "show_playbook",
