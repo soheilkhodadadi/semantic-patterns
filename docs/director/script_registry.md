@@ -1,7 +1,7 @@
 <!-- generated_file: true -->
 <!-- source_inventory: director/snapshots/script_inventory.json -->
-<!-- source_sha256: f5030aedaf5d21d464823c9c50763a2c90eddf7abc728c9e63281a3af3ca85a9 -->
-<!-- rendered_at: 2026-04-06T18:00:48.574724+00:00 -->
+<!-- source_sha256: 12be9f7877837dfbf57b2aaa8859308e30adaf6bcb6bae0dc252b1505198d726 -->
+<!-- rendered_at: 2026-04-06T20:50:40.650716+00:00 -->
 
 # Script Registry
 
@@ -86,12 +86,12 @@ This document is generated from the repo script inventory snapshot.
 | `src/core/sentence_filter.py` | `semantic_ai_washing.core.sentence_filter` | python -m semantic_ai_washing.core.sentence_filter | Iteration 1 deprecation window |
 | `src/core/sentence_scorer.py` | `semantic_ai_washing.core.sentence_scorer` | python -m semantic_ai_washing.core.sentence_scorer | Iteration 1 deprecation window |
 | `src/data/build_company_list.py` | `semantic_ai_washing.data.build_company_list` | python -m semantic_ai_washing.data.build_company_list | Iteration 1 deprecation window |
-| `src/data/clean_compustat.py` | `semantic_ai_washing.data.clean_compustat` | python -m semantic_ai_washing.data.clean_compustat | Iteration 1 deprecation window |
-| `src/data/clean_crsp.py` | `semantic_ai_washing.data.clean_crsp` | python -m semantic_ai_washing.data.clean_crsp | Iteration 1 deprecation window |
-| `src/data/clean_sec.py` | `semantic_ai_washing.data.clean_sec` | python -m semantic_ai_washing.data.clean_sec | Iteration 1 deprecation window |
-| `src/data/download_compustat.py` | `semantic_ai_washing.data.download_compustat` | python -m semantic_ai_washing.data.download_compustat | Iteration 1 deprecation window |
-| `src/data/download_crsp.py` | `semantic_ai_washing.data.download_crsp` | python -m semantic_ai_washing.data.download_crsp | Iteration 1 deprecation window |
-| `src/data/download_sec.py` | `semantic_ai_washing.data.download_sec` | python -m semantic_ai_washing.data.download_sec | Iteration 1 deprecation window |
+| `src/data/clean_compustat.py` | `semantic_ai_washing.data.clean_compustat` | legacy flat shim; prefer python -m semantic_ai_washing.data.clean_compustat | Iteration 1 deprecation window |
+| `src/data/clean_crsp.py` | `semantic_ai_washing.data.clean_crsp` | legacy flat shim; prefer python -m semantic_ai_washing.data.clean_crsp | Iteration 1 deprecation window |
+| `src/data/clean_sec.py` | `semantic_ai_washing.data.clean_sec` | legacy flat shim; prefer python -m semantic_ai_washing.data.clean_sec | Iteration 1 deprecation window |
+| `src/data/download_compustat.py` | `semantic_ai_washing.data.download_compustat` | legacy flat shim; prefer python -m semantic_ai_washing.data.download_compustat | Iteration 1 deprecation window |
+| `src/data/download_crsp.py` | `semantic_ai_washing.data.download_crsp` | legacy flat shim; prefer python -m semantic_ai_washing.data.download_crsp | Iteration 1 deprecation window |
+| `src/data/download_sec.py` | `semantic_ai_washing.data.download_sec` | legacy flat shim; prefer python -m semantic_ai_washing.data.download_sec | Iteration 1 deprecation window |
 | `src/data/extract_ai_sentences.py` | `semantic_ai_washing.data.extract_ai_sentences` | python -m semantic_ai_washing.data.extract_ai_sentences | Iteration 1 deprecation window |
 | `src/data/extract_sample_filings.py` | `semantic_ai_washing.data.extract_sample_filings` | python -m semantic_ai_washing.data.extract_sample_filings | Iteration 1 deprecation window |
 | `src/data/index_sec_filings.py` | `semantic_ai_washing.data.index_sec_filings` | python -m semantic_ai_washing.data.index_sec_filings | Iteration 1 deprecation window |

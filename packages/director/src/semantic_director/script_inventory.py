@@ -121,37 +121,49 @@ SCRIPT_DEPRECATION_CANDIDATES: dict[str, dict[str, str]] = {
 
 SCRIPT_DEPRECATION_SHIMS: dict[str, dict[str, str]] = {
     "data.clean_compustat": {
-        "replacement_path": "python -m semantic_ai_washing.data.clean_compustat",
+        "replacement_path": (
+            "legacy flat shim; prefer python -m semantic_ai_washing.data.clean_compustat"
+        ),
         "replacement_phase": "queue-v24/script-consumer-cleanup",
         "notes": "Legacy flat shim for a script-deprecation candidate; keep only for external callers.",
         "status_detail": "script_deprecation_shim",
     },
     "data.clean_crsp": {
-        "replacement_path": "python -m semantic_ai_washing.data.clean_crsp",
+        "replacement_path": (
+            "legacy flat shim; prefer python -m semantic_ai_washing.data.clean_crsp"
+        ),
         "replacement_phase": "queue-v24/script-consumer-cleanup",
         "notes": "Legacy flat shim for a script-deprecation candidate; keep only for external callers.",
         "status_detail": "script_deprecation_shim",
     },
     "data.clean_sec": {
-        "replacement_path": "python -m semantic_ai_washing.data.clean_sec",
+        "replacement_path": (
+            "legacy flat shim; prefer python -m semantic_ai_washing.data.clean_sec"
+        ),
         "replacement_phase": "queue-v24/script-consumer-cleanup",
         "notes": "Legacy flat shim for a script-deprecation candidate; keep only for external callers.",
         "status_detail": "script_deprecation_shim",
     },
     "data.download_compustat": {
-        "replacement_path": "python -m semantic_ai_washing.data.download_compustat",
+        "replacement_path": (
+            "legacy flat shim; prefer python -m semantic_ai_washing.data.download_compustat"
+        ),
         "replacement_phase": "queue-v24/script-consumer-cleanup",
         "notes": "Legacy flat shim for a script-deprecation candidate; keep only for external callers.",
         "status_detail": "script_deprecation_shim",
     },
     "data.download_crsp": {
-        "replacement_path": "python -m semantic_ai_washing.data.download_crsp",
+        "replacement_path": (
+            "legacy flat shim; prefer python -m semantic_ai_washing.data.download_crsp"
+        ),
         "replacement_phase": "queue-v24/script-consumer-cleanup",
         "notes": "Legacy flat shim for a script-deprecation candidate; keep only for external callers.",
         "status_detail": "script_deprecation_shim",
     },
     "data.download_sec": {
-        "replacement_path": "python -m semantic_ai_washing.data.download_sec",
+        "replacement_path": (
+            "legacy flat shim; prefer python -m semantic_ai_washing.data.download_sec"
+        ),
         "replacement_phase": "queue-v24/script-consumer-cleanup",
         "notes": "Legacy flat shim for a script-deprecation candidate; keep only for external callers.",
         "status_detail": "script_deprecation_shim",
