@@ -13,7 +13,7 @@ from ai_washing_member.classification.classify_active_window_preliminary import 
     run_classification,
 )
 from ai_washing_member.classification.model_runtime import build_centroid_runtime
-from semantic_ai_washing.classification.publish_selected_preliminary_eval import run_publish
+from ai_washing_member.classification.publish_selected_preliminary_eval import run_publish
 from ai_washing_member.classification.train_binary_relevance_then_as import (
     run_training as run_binary_training,
 )
