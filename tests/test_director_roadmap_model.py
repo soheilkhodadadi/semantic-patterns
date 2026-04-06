@@ -813,9 +813,7 @@ def test_optimizer_does_not_surface_review_task_when_review_phase_waits_on_phase
                     ],
                     "preconditions": [],
                     "quality_checks": [],
-                    "commands": [
-                        ".venv/bin/python -m semantic_ai_washing.director.cli review --iteration 1"
-                    ],
+                    "commands": [".venv/bin/python -m semantic_director.cli review --iteration 1"],
                     "manual_handoff": False,
                     "risks": ["R4"],
                     "estimated_effort": 1,
@@ -1294,7 +1292,7 @@ def test_actual_iteration2_tranche_workflow_is_wired():
         if task.task_id == "iteration3.prelim.verify_kickoff_context"
     )
     assert prelim_kickoff_task.commands == [
-        ".venv/bin/python -m semantic_ai_washing.director.cli kickoff --iteration 3 --track preliminary"
+        ".venv/bin/python -m semantic_director.cli kickoff --iteration 3 --track preliminary"
     ]
 
     prelim_sentence_phase = find_phase(

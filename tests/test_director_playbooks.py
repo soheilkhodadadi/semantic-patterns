@@ -8,7 +8,7 @@ from pathlib import Path
 
 import yaml
 
-from semantic_ai_washing.director.cli import main
+from semantic_director.cli import main
 from semantic_director.playbooks import (
     list_playbooks,
     recommend_playbooks,

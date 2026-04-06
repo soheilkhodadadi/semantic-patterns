@@ -1447,7 +1447,7 @@ iterations:
         reroute_to: []
       quality_checks: []
       commands:
-      - .venv/bin/python -m semantic_ai_washing.director.cli review --iteration 1
+      - .venv/bin/python -m semantic_director.cli review --iteration 1
       manual_handoff: false
       risks:
       - R4
@@ -1611,7 +1611,7 @@ iterations:
         message: Iteration 2 kickoff is not ready.
         reroute_to: []
       commands:
-      - .venv/bin/python -m semantic_ai_washing.director.cli kickoff --iteration 2
+      - .venv/bin/python -m semantic_director.cli kickoff --iteration 2
       manual_handoff: false
       risks:
       - R4
@@ -4280,7 +4280,7 @@ iterations:
         message: Iteration 2 review must record the blocked canonical IRR gate.
         reroute_to: []
       commands:
-      - .venv/bin/python -m semantic_ai_washing.director.cli review --iteration 2
+      - .venv/bin/python -m semantic_director.cli review --iteration 2
       manual_handoff: false
       risks:
       - R4
@@ -4437,7 +4437,7 @@ iterations:
         message: Preliminary kickoff must record the preliminary track explicitly.
         reroute_to: []
       commands:
-      - .venv/bin/python -m semantic_ai_washing.director.cli kickoff --iteration 3 --track preliminary
+      - .venv/bin/python -m semantic_director.cli kickoff --iteration 3 --track preliminary
       manual_handoff: false
       risks:
       - R3
@@ -5346,7 +5346,7 @@ iterations:
         message: Iteration 3 kickoff is not ready.
         reroute_to: []
       commands:
-      - .venv/bin/python -m semantic_ai_washing.director.cli kickoff --iteration 3
+      - .venv/bin/python -m semantic_director.cli kickoff --iteration 3
       manual_handoff: false
       risks:
       - R4
@@ -5719,7 +5719,7 @@ iterations:
         reroute_to: []
       quality_checks: []
       commands:
-      - .venv/bin/python -m semantic_ai_washing.director.cli review --iteration 3
+      - .venv/bin/python -m semantic_director.cli review --iteration 3
       manual_handoff: false
       risks:
       - R4
@@ -5999,7 +5999,7 @@ iterations:
         message: Iteration 4 kickoff is not ready.
         reroute_to: []
       commands:
-      - .venv/bin/python -m semantic_ai_washing.director.cli kickoff --iteration 4
+      - .venv/bin/python -m semantic_director.cli kickoff --iteration 4
       manual_handoff: false
       risks:
       - R4
@@ -6203,7 +6203,7 @@ iterations:
         reroute_to: []
       quality_checks: []
       commands:
-      - .venv/bin/python -m semantic_ai_washing.director.cli review --iteration 4
+      - .venv/bin/python -m semantic_director.cli review --iteration 4
       manual_handoff: false
       risks:
       - R4
@@ -6425,7 +6425,7 @@ iterations:
         message: Iteration 5 kickoff is not ready.
         reroute_to: []
       commands:
-      - .venv/bin/python -m semantic_ai_washing.director.cli kickoff --iteration 5
+      - .venv/bin/python -m semantic_director.cli kickoff --iteration 5
       manual_handoff: false
       risks:
       - R4
@@ -6612,7 +6612,7 @@ iterations:
         reroute_to: []
       quality_checks: []
       commands:
-      - .venv/bin/python -m semantic_ai_washing.director.cli review --iteration 5
+      - .venv/bin/python -m semantic_director.cli review --iteration 5
       manual_handoff: false
       risks:
       - R4

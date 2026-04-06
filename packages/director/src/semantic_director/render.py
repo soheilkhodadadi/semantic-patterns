@@ -555,7 +555,7 @@ def render_starter_prompt_markdown(starter: StarterPromptArtifact) -> str:
                 "- `git switch main`",
                 "- `git pull --ff-only`",
                 f"- `git switch -c iteration{next_iteration_id}/integration`",
-                f"- `.venv/bin/python -m semantic_ai_washing.director.cli kickoff --iteration {next_iteration_id}`",
+                f"- `.venv/bin/python -m semantic_director.cli kickoff --iteration {next_iteration_id}`",
             ]
         )
     else:

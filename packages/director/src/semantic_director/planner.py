@@ -268,7 +268,7 @@ class PlannerEngine:
                 step_id="step-001",
                 title="Validate snapshots",
                 description="Ensure protocol/roadmap/iteration snapshots are available",
-                command=f"{sys.executable} -m semantic_ai_washing.director.cli status",
+                command=f"{sys.executable} -m semantic_director.cli status",
                 timeout_seconds=snapshot_timeout,
                 required_outputs=[
                     "director/snapshots/protocol_summary.json",
