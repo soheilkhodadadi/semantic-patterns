@@ -10,7 +10,7 @@ from typing import Any
 
 import pandas as pd
 
-from semantic_ai_washing.labeling.assistive_prelabel_batch import (
+from ai_washing_member.labeling.assistive_prelabel_batch import (
     ASSISTIVE_COLUMNS,
     generate_assistive_prelabels,
 )
@@ -198,7 +198,9 @@ def run_restartable_prelabel(args: argparse.Namespace) -> tuple[dict[str, Any], 
         last_error = (report.get("errors") or [None])[-1]
         counts = _summarize_frame(args.input_csv, args.output_csv)
 
-        if args.max_total_cost_usd > 0 and total_estimated_cost_usd > float(args.max_total_cost_usd):
+        if args.max_total_cost_usd > 0 and total_estimated_cost_usd > float(
+            args.max_total_cost_usd
+        ):
             _write_progress(
                 path=args.progress_report,
                 status="paused_budget_reached",

@@ -11,7 +11,7 @@ import pandas as pd
 import yaml
 
 from semantic_labcore.runtime import dump_json, now_utc_iso
-from semantic_ai_washing.labeling.assistive_prelabel_batch import (
+from ai_washing_member.labeling.assistive_prelabel_batch import (
     ASSISTIVE_COLUMNS,
     generate_assistive_prelabels,
 )
