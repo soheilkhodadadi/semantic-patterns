@@ -9,8 +9,7 @@ Record the intended posture after Queue V31's root-clutter review.
 - the repo root is mostly in a good late-stage state
 - most tracked root files still serve a real setup, packaging, or contributor
   function
-- the only strong tracked retire candidate identified in the review is
-  `old_requirements.txt`
+- the reviewed root-level retire candidate has now been retired
 
 ## What should not drive cleanup decisions
 
@@ -24,11 +23,11 @@ cleanup wins.
 
 ## Safe follow-on scope
 
-A safe V32 follow-on may do only this:
-- remove `old_requirements.txt`
-- refresh the related posture/checkpoint docs
+The safe narrow follow-on has now been executed:
+- `old_requirements.txt` was removed
+- related posture/checkpoint docs were refreshed
 
-A safe V32 follow-on should not do these:
+Any later root cleanup should still not do these:
 - delete `semantic-patterns.code-workspace`
 - change `setup.py` / `setup.cfg` packaging posture opportunistically
 - mix in local ignored-file cleanup

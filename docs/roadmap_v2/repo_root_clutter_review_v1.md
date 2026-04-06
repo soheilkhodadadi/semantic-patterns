@@ -23,9 +23,9 @@ Why:
 - they define project setup, packaging, contributor guidance, or the visible
   repo front door
 
-## Tracked root files that are low-signal or legacy-looking
+## Tracked root files that were low-signal or legacy-looking
 
-### `old_requirements.txt`
+### `old_requirements.txt` (retired in Queue V32)
 
 Current posture:
 - legacy-looking root artifact
@@ -34,7 +34,8 @@ Current posture:
   or `.venv` workflow
 
 Assessment:
-- this is the strongest current root-level retire candidate
+- this was the strongest root-level retire candidate
+- it has now been removed in Queue V32
 
 ## Local-only or ignored root noise
 
@@ -54,7 +55,7 @@ Assessment:
 Keep:
 - repo contract files listed above
 
-Retire candidate:
+Retired:
 - `old_requirements.txt`
 
 Local-only noise:
@@ -64,7 +65,7 @@ Local-only noise:
 
 ## Recommendation
 
-A bounded V32 cleanup queue is justified if it stays narrow:
-- retire `old_requirements.txt`
-- refresh the root clutter posture/checkpoint docs
-- do not mix in local ignored-file cleanup or broader packaging changes
+Queue V32 has now executed the justified narrow cleanup:
+- retired `old_requirements.txt`
+- refreshed the root clutter posture/checkpoint docs
+- did not mix in local ignored-file cleanup or broader packaging changes

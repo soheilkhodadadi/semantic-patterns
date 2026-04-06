@@ -133,3 +133,12 @@ This means any V32 hygiene follow-on should stay very narrow:
 - retire `old_requirements.txt`
 - refresh posture/checkpoint docs
 - do not mix in broader root packaging or local-noise cleanup
+
+That narrow follow-on has now been executed as Queue V32 with:
+- `docs/roadmap_v2/history/rounds/migration_round_dk_hygiene_root_old_requirements_cleanup_v1.md`
+- `docs/roadmap_v2/history/rounds/migration_round_dl_hygiene_root_cleanup_posture_refresh_v1.md`
+
+Result:
+- `old_requirements.txt` has been retired from the repo root
+- the root-clutter posture docs now reflect that retirement
+- no broader packaging or local-noise cleanup was mixed into the queue
