@@ -21,7 +21,9 @@ Recent commits that matter for the current shape:
 - `c537a88` `refactor: seed director render authority`
 - `2b854d5` `refactor: seed director task graph authority`
 - `05c87b4` `refactor: seed director config authority`
+- `816f367` `refactor: seed director readiness authority`
 - `c9b7664` `refactor: seed ai-washing filing manifest authority`
+- `010e24d` `refactor: seed ai-washing ff12 mapping authority`
 
 ## What is materially real now
 
@@ -43,6 +45,7 @@ has canonical package code for:
 - task-graph helpers
 - config/path loading helpers
 - readiness evaluation helpers
+- branching helpers
 
 ### Project-member layer
 
@@ -90,6 +93,7 @@ This is now proven for:
 - `director.task_graph`
 - `director.config`
 - `director.readiness`
+- `director.branching`
 - `ai_washing` labeling common family
 - `ai_washing` classification support family
 - `ai_washing` SEC index family
@@ -111,7 +115,6 @@ What is now strongest:
 - downstream orchestration helpers are clustering naturally around the package
 
 What remains clearly root-owned:
-- `branching`
 - `snapshot`
 - `state`
 - `decision`
@@ -211,6 +214,14 @@ The provisional Batch 4 authority also completed cleanly:
 
 That closes the current queued cycle and puts us at a new selection point for
 the next execution board.
+
+## Queue V2 note
+
+Queue V2 has now started cleanly with:
+
+1. `semantic_director.branching`
+
+That confirms the next cycle reset is working as intended.
 
 ## Bottom line
 

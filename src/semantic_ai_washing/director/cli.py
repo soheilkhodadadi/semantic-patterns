@@ -15,7 +15,7 @@ from semantic_director.config import (
     load_configs,
     required_file_paths,
 )
-from semantic_ai_washing.director.core.branching import validate_iteration_boundaries
+from semantic_director.branching import validate_iteration_boundaries
 from semantic_ai_washing.director.core.cost import CostController
 from semantic_ai_washing.director.core.decision import DecisionEngine
 from semantic_ai_washing.director.core.optimizer import DirectorOptimizer

@@ -11,7 +11,7 @@ from typing import Any, Literal
 
 import yaml
 
-from semantic_ai_washing.director.core.branching import (
+from semantic_director.branching import (
     boundary_phase_id,
     closeout_branch_plan,
     current_branch,

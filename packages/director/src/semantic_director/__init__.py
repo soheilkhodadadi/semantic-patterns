@@ -1,5 +1,15 @@
 """Autonomous project director package."""
 
+from semantic_director.branching import (
+    boundary_phase_id,
+    closeout_branch_plan,
+    current_branch,
+    format_branch_name,
+    kickoff_checks,
+    normalize_branching_policy,
+    review_artifact_paths,
+    validate_iteration_boundaries,
+)
 from semantic_director.config import (
     DEFAULT_CONFIG,
     DirectorPaths,
@@ -47,6 +57,14 @@ __all__ = [
     "CostUsageRecord",
     "DEFAULT_CONFIG",
     "DirectorPaths",
+    "format_branch_name",
+    "boundary_phase_id",
+    "validate_iteration_boundaries",
+    "current_branch",
+    "closeout_branch_plan",
+    "kickoff_checks",
+    "normalize_branching_policy",
+    "review_artifact_paths",
     "ensure_default_configs",
     "ensure_director_dirs",
     "get_director_paths",
