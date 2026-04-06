@@ -13,7 +13,7 @@ from ai_washing_member.labeling.common import (
     compute_sentence_id,
     normalize_sentence,
 )
-from semantic_ai_washing.labeling.dedupe_labeled_sentences import OUTPUT_COLUMNS, run_dedupe
+from ai_washing_member.labeling.dedupe_labeled_sentences import OUTPUT_COLUMNS, run_dedupe
 from semantic_ai_washing.labeling.qa_labeled_dataset import run_qa
 
 
