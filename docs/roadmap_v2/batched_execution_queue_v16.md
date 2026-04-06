@@ -59,7 +59,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- planned
+- complete
 
 ### Batch 3
 
