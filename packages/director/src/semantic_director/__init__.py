@@ -11,6 +11,7 @@ from semantic_director.api_assistive import (
     validate_assistive_response_payload,
     write_smoke_report,
 )
+from semantic_director.atlas import fetch_atlas_metadata
 from semantic_director.branching import (
     boundary_phase_id,
     closeout_branch_plan,
@@ -95,6 +96,7 @@ __all__ = [
     "DecisionRecord",
     "CostUsageRecord",
     "CostController",
+    "fetch_atlas_metadata",
     "build_prompt_messages",
     "load_api_assistive_policy",
     "parse_assistive_response_text",

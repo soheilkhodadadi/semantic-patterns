@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from semantic_ai_washing.director.adapters.atlas import fetch_atlas_metadata
+from semantic_director.atlas import fetch_atlas_metadata
 from semantic_director.documents import (
     summarize_document,
     summarize_roadmap_model,
