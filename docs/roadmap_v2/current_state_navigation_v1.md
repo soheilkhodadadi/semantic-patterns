@@ -95,3 +95,5 @@ Use this index for the categories and retention logic:
 - prefer intuitive navigation over adding more top-level tracker files
 - treat `docs/roadmap_v2/history/` as the audit layer, not the front door
 - use the repo root and workspace lane docs as the default start points
+- if a root cleanup queue is opened, keep it limited to the explicit retire
+  candidate identified in `docs/roadmap_v2/repo_root_clutter_review_v1.md`

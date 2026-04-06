@@ -119,3 +119,17 @@ Result:
 
 This means the next hygiene-class move, if chosen, should be driven by real
 remaining leverage rather than by repeating the same script lane again.
+
+That bounded repo-root clutter review has now been executed as Queue V31 with:
+- `docs/roadmap_v2/history/rounds/migration_round_dh_hygiene_repo_root_clutter_review_v1.md`
+- `docs/roadmap_v2/history/rounds/migration_round_di_hygiene_repo_root_clutter_posture_refresh_v1.md`
+
+Result:
+- the repo root is mostly in a good late-stage state
+- `old_requirements.txt` is now the only strong tracked retire candidate
+- local ignored files are explicitly not part of the tracked cleanup target
+
+This means any V32 hygiene follow-on should stay very narrow:
+- retire `old_requirements.txt`
+- refresh posture/checkpoint docs
+- do not mix in broader root packaging or local-noise cleanup
