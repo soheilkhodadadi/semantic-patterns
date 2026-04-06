@@ -1,5 +1,16 @@
 """Autonomous project director package."""
 
+from semantic_director.api_assistive import (
+    build_prompt_messages,
+    load_api_assistive_policy,
+    parse_assistive_response_text,
+    prompt_hash,
+    resolve_repo_path,
+    select_smoke_sentence,
+    smoke_report_base,
+    validate_assistive_response_payload,
+    write_smoke_report,
+)
 from semantic_director.branching import (
     boundary_phase_id,
     closeout_branch_plan,
@@ -73,6 +84,15 @@ __all__ = [
     "DecisionRecord",
     "CostUsageRecord",
     "CostController",
+    "build_prompt_messages",
+    "load_api_assistive_policy",
+    "parse_assistive_response_text",
+    "prompt_hash",
+    "resolve_repo_path",
+    "select_smoke_sentence",
+    "smoke_report_base",
+    "validate_assistive_response_payload",
+    "write_smoke_report",
     "DEFAULT_CONFIG",
     "DirectorPaths",
     "format_branch_name",

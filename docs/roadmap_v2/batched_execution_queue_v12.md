@@ -90,7 +90,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- planned
+- complete
 
 ## Current recommendation
 
@@ -100,5 +100,5 @@ Next in Queue V12:
    - `semantic_director.review`
 2. Batch 2:
    - `semantic_director.optimizer`
-3. Batch 3 if the pre-scan stays clean:
+3. Batch 3 complete:
    - `semantic_director.api_assistive`

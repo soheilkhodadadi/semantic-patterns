@@ -11,7 +11,7 @@ from typing import Any
 
 import yaml
 
-from semantic_ai_washing.director.core.api_assistive import (
+from semantic_director.api_assistive import (
     build_prompt_messages,
     load_api_assistive_policy,
     parse_assistive_response_text,

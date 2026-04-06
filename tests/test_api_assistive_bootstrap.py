@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 import yaml
 
-from semantic_ai_washing.director.core.api_assistive import (
+from semantic_director.api_assistive import (
     load_api_assistive_policy,
     select_smoke_sentence,
 )
