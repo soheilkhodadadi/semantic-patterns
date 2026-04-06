@@ -12,7 +12,7 @@ from semantic_ai_washing.classification.classify_active_window_preliminary impor
     run_classification,
 )
 from semantic_ai_washing.classification.evaluate_preliminary_heldout import run_evaluation
-from semantic_ai_washing.classification.train_preliminary_centroids import run_training
+from ai_washing_member.classification.train_preliminary_centroids import run_training
 from semantic_ai_washing.core import sentence_filter
 from semantic_ai_washing.data.materialize_active_window_sentences import run_materialization
 

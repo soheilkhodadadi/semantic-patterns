@@ -20,7 +20,7 @@ from semantic_ai_washing.classification.train_binary_relevance_then_as import (
 from semantic_ai_washing.classification.train_logreg_preliminary import (
     run_training as run_logreg_training,
 )
-from semantic_ai_washing.classification.train_preliminary_centroids import (
+from ai_washing_member.classification.train_preliminary_centroids import (
     run_training as run_centroid_training,
 )
 
