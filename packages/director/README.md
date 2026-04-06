@@ -165,3 +165,17 @@ Eighteenth extracted package slice:
 Migration trace:
 - `docs/roadmap_v2/migration_round_ax_director_planner_seed_v1.md`
 - `packages/director/planner_grouped_migration_sheet_v1.md`
+
+Nineteenth extracted package slice:
+- `packages/director/src/semantic_director/validation_assets.py`
+
+Migration trace:
+- `docs/roadmap_v2/migration_round_bx_director_validation_assets_seed_v1.md`
+- `packages/director/validation_assets_grouped_migration_sheet_v1.md`
+
+Twentieth extracted package slice:
+- `packages/director/src/semantic_director/script_inventory.py`
+
+Migration trace:
+- `docs/roadmap_v2/migration_round_by_director_script_inventory_seed_v1.md`
+- `packages/director/script_inventory_grouped_migration_sheet_v1.md`

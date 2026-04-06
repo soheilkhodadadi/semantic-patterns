@@ -21,15 +21,20 @@ It exists to keep future queues grounded.
 
 ## Current counts
 
-- labeling still root-owned: 3
+- labeling still root-owned: 2
 - classification still root-owned: 7
 - data still root-owned: 12
 
 ## Labeling surfaces still root-owned
 
 ### Active migration candidate
-- `src/semantic_ai_washing/labeling/build_irr_boundary_benchmark.py`
-  - active benchmark edge tied to the current labeling/IRR workflow
+- none
+
+Reason:
+- the active labeling benchmark edge is now canonical under
+  `ai_washing_member.labeling.build_irr_boundary_benchmark`
+- the remaining root-owned labeling surfaces are wrappers rather than the next
+  strong authority moves
 
 ### Wrapper or runner
 - `src/semantic_ai_washing/labeling/run_assistive_prelabel_restartable.py`
@@ -111,7 +116,8 @@ It does not duplicate:
 ## Recommended use before the next `ai_washing` queue
 
 Choose the next `ai_washing` queue opener from:
-- `active_migration_candidate`
+- `active_migration_candidate` only if this list is non-empty again after a
+  deliberate re-triage
 
 Do not migrate `legacy_template_candidate` surfaces forward until they have been
 reviewed by the separate hygiene queue.

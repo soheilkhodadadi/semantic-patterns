@@ -11,7 +11,7 @@ If you want the current picture, read these first:
 - `docs/roadmap_v2/lab_end_state_architecture_review_v2.md`
 - `docs/roadmap_v2/target_repo_layout_v2.md`
 - `docs/roadmap_v2/fast_safe_migration_protocol_v2.md`
-- `docs/roadmap_v2/restructure_progress_checkpoint_v11.md`
+- `docs/roadmap_v2/restructure_progress_checkpoint_v12.md`
 - `docs/roadmap_v2/legacy_template_hygiene_queue_v1.md`
 
 ## Canonical code layers
@@ -32,9 +32,9 @@ Project member:
 
 Ballpark progress:
 - `labcore`: ~95-100%
-- `director`: ~90-95%
-- `ai_washing` active member migration: ~82-90%
-- full clean final lab structure: ~76-82%
+- `director`: ~92-97%
+- `ai_washing` active member migration: ~84-92%
+- full clean final lab structure: ~78-84%
 
 ### Labcore
 
@@ -48,16 +48,18 @@ Current posture:
 - late-stage package migration
 - most active control-plane authorities are now canonical under
   `semantic_director`
-- remaining work is smaller follow-on selection, not foundational seeding
+- remaining work is follow-on selection and eventual hygiene, not foundational
+  seeding
 
 ### AI-washing
 
 Current posture:
-- mid-to-late member migration
+- late-stage migration for active workflows
 - labeling is heavily migrated
 - the active preliminary classification lane is now largely canonical
 - the active data lane is now largely canonical
-- the remaining active pressure is now outside the main data lane
+- the remaining root-owned `ai_washing` surfaces are now mostly wrappers or
+  dormant-but-relevant historical/project utilities
 
 See:
 - `projects/ai_washing/root_surface_triage_registry_v1.md`
@@ -66,8 +68,8 @@ See:
 ## What still matters operationally
 
 Latest queue closed cleanly:
-- `docs/roadmap_v2/batched_execution_queue_v18.md`
-- `docs/roadmap_v2/restructure_progress_checkpoint_v11.md`
+- `docs/roadmap_v2/batched_execution_queue_v19.md`
+- `docs/roadmap_v2/restructure_progress_checkpoint_v12.md`
 
 Operational history is still kept in the repo, but it is now secondary.
 Use this index for the categories and retention logic:
@@ -78,4 +80,6 @@ Use this index for the categories and retention logic:
 - keep Protocol V2
 - keep the hygiene queue separate from active authority moves
 - use the root-surface triage registry before choosing the next fresh authority
+- do not assume another `ai_washing` active queue exists just because earlier
+  queues did
 - prefer intuitive navigation over adding more top-level tracker files

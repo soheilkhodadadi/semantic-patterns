@@ -3,7 +3,7 @@
 ## Status
 - member shell is real
 - member-owned code is real
-- the migration is now in the mid-to-late phase, not the shell-planning phase
+- active workflow migration is now in the late phase, not the shell-planning phase
 
 ## Purpose
 
@@ -51,6 +51,7 @@ Legacy compatibility still exists in:
 - `labeling/freeze_heldout_v2.py`
 - `labeling/freeze_split_registry.py`
 - `labeling/publish_rubric_freeze.py`
+- `labeling/build_irr_boundary_benchmark.py`
 - `labeling/audit_sentence_integrity.py`
 - `labeling/prepare_irr_subset.py`
 - `labeling/adjudicate_irr_labels.py`
@@ -87,8 +88,8 @@ Legacy compatibility still exists in:
 
 1. `projects/ai_washing/root_surface_triage_registry_v1.md`
 2. `projects/ai_washing/migration_sheets/README.md`
-3. `docs/roadmap_v2/restructure_progress_checkpoint_v11.md`
-4. `docs/roadmap_v2/batched_execution_queue_v18.md`
+3. `docs/roadmap_v2/restructure_progress_checkpoint_v12.md`
+4. `docs/roadmap_v2/batched_execution_queue_v19.md`
 
 ## Planning documents that still matter
 
@@ -98,3 +99,11 @@ Legacy compatibility still exists in:
 - `projects/ai_washing/labeling_common_impact_map_v1.md`
 
 These are now background/reference notes, not the front door.
+
+## Current posture
+
+- the live labeling, classification, and data lanes are now mostly canonical
+  under `ai_washing_member`
+- the remaining root-owned `ai_washing` surfaces are mostly wrappers or
+  dormant-but-relevant historical/project utilities
+- use the triage registry before assuming a new `ai_washing` queue should open
