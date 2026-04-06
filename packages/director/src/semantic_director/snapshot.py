@@ -10,7 +10,7 @@ from semantic_ai_washing.director.adapters.documents import (
     summarize_document,
     summarize_roadmap_model,
 )
-from semantic_ai_washing.director.adapters.iteration_log import parse_iteration_log
+from semantic_director.iteration_log import parse_iteration_log
 from semantic_labcore.runtime import dump_json, now_utc_iso
 
 

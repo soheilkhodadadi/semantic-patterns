@@ -5,7 +5,7 @@ from pathlib import Path
 
 import yaml
 
-from semantic_ai_washing.director.adapters.iteration_log import parse_iteration_log
+from semantic_director.iteration_log import parse_iteration_log
 from semantic_director.config import (
     ensure_default_configs,
     get_director_paths,

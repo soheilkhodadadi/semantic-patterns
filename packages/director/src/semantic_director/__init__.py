@@ -34,6 +34,7 @@ from semantic_director.config import (
 from semantic_director.decision import DecisionEngine
 from semantic_director.executor import RunbookExecutor
 from semantic_director.gates import GateEvaluator
+from semantic_director.iteration_log import parse_iteration_log
 from semantic_director.playbooks import list_playbooks, recommend_playbooks, show_playbook
 from semantic_director.planner import (
     PlannerEngine,
@@ -121,6 +122,7 @@ __all__ = [
     "runbook_to_json",
     "write_plan_manifest",
     "GateEvaluator",
+    "parse_iteration_log",
     "recommend_playbooks",
     "show_playbook",
     "refine_plan_markdown",
