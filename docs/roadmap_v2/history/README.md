@@ -20,4 +20,15 @@ If you want the current picture, start with:
 - `docs/roadmap_v2/current_state_navigation_v1.md`
 - `docs/roadmap_v2/README.md`
 - `docs/roadmap_v2/operational_history_index_v1.md`
-- `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v22.md`
+- `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v25.md`
+
+## Archive/export posture
+
+The history layer is now organized enough to function as an in-repo audit
+archive.
+
+Current posture:
+- keep it in repo
+- do not open a separate export move unless history volume becomes a real repo
+  use problem
+- preserve the latest checkpoints and front-door history pointers in place

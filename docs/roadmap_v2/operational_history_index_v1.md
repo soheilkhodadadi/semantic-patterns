@@ -83,3 +83,9 @@ These history files are now bucketed formally under `docs/roadmap_v2/history/`.
 Any later archive/export pass should still happen as its own bounded
 documentation-hygiene class rather than being mixed into active authority
 migrations.
+
+Current archive/export posture:
+- no immediate export move is needed
+- the history layer should stay in repo as the stable audit archive for now
+- only older history classes should become export candidates in a later
+  dedicated pass

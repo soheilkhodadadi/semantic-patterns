@@ -81,6 +81,11 @@ Use this index for the categories and retention logic:
 - `docs/roadmap_v2/operational_history_index_v1.md`
 - `docs/roadmap_v2/history/README.md`
 
+Current archive/export stance:
+- keep the history layer in repo for now
+- do not open a separate export pass unless history volume becomes a real
+  repo-use problem
+
 ## Recommended posture before next queue
 
 - keep Protocol V2
