@@ -392,6 +392,16 @@ This moves the IRR metrics authority into the member-owned lane and keeps the
 direct regression pressure concentrated in the IRR workflow bundle before the
 next `diagnose_irr_disagreements` follow-on round.
 
+## Queue V8 second-batch note
+
+Queue V8 Batch 2 has now completed cleanly:
+
+2. `ai_washing_member.labeling.diagnose_irr_disagreements`
+
+This keeps the IRR reporting workflow inside the member-owned lane while
+deliberately leaving roadmap-model command strings on the compatibility path
+for now.
+
 ## Queue V4 progress note
 
 Queue V4 has now completed its first two `ai_washing` rounds cleanly:

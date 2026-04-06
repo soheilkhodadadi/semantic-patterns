@@ -79,7 +79,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- planned
+- complete
 
 Fallback if pre-scan gets messy:
 - rotate early to Batch 3
@@ -123,7 +123,7 @@ Next in Queue V8:
 
 1. Batch 1 complete:
    - `ai_washing_member.labeling.compute_irr_metrics`
-2. Batch 2 planned:
+2. Batch 2 complete:
    - `ai_washing_member.labeling.diagnose_irr_disagreements`
 3. Batch 3 planned:
    - `semantic_director.executor`

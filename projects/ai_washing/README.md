@@ -145,6 +145,10 @@ Queue V8 IRR metrics follow-on:
 - `docs/roadmap_v2/migration_round_ap_ai_washing_compute_irr_metrics_seed_v1.md`
 - `projects/ai_washing/compute_irr_metrics_grouped_migration_sheet_v1.md`
 
+Queue V8 IRR disagreement diagnostic follow-on:
+- `docs/roadmap_v2/migration_round_aq_ai_washing_diagnose_irr_disagreements_seed_v1.md`
+- `projects/ai_washing/diagnose_irr_disagreements_grouped_migration_sheet_v1.md`
+
 Structured member shell lanes now exist:
 - `projects/ai_washing/docs/`
 - `projects/ai_washing/reports/`
