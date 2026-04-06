@@ -94,7 +94,7 @@ When a new AI-washing artifact is created and it is not clearly manuscript-bound
 ## Related migration anchors
 - member seed: `projects/ai_washing/README.md`
 - legacy-to-new map: `docs/lab/migration/ai_washing_legacy_to_new_mapping_v1.md`
-- Round D normalization note: `docs/roadmap_v2/migration_round_d_ai_washing_normalization_v1.md`
+- Round D normalization note: `docs/roadmap_v2/history/rounds/migration_round_d_ai_washing_normalization_v1.md`
 
 ## Bottom line
 

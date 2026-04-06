@@ -106,7 +106,7 @@ Round A and Round B now add:
   - `projects/`
   - `shared/`
 - the Round B workspace-skeleton note:
-  - `docs/roadmap_v2/migration_round_b_workspace_skeleton_v1.md`
+  - `docs/roadmap_v2/history/rounds/migration_round_b_workspace_skeleton_v1.md`
 
 Round C now adds:
 - package/member seed plans for:
@@ -117,7 +117,7 @@ Round C now adds:
   - `projects/eri/`
   - `projects/allocationlab/`
 - the Round C package-seeding note:
-  - `docs/roadmap_v2/migration_round_c_package_seeding_v1.md`
+  - `docs/roadmap_v2/history/rounds/migration_round_c_package_seeding_v1.md`
 
 Important transition rule:
 - existing authoritative AI-washing artifacts remain authoritative in their current legacy paths until later migration waves create explicit replacement maps

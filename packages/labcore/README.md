@@ -51,6 +51,6 @@ Promote code here only when:
 See also:
 - `packages/labcore/pyproject_seed_plan_v1.md`
 - `docs/lab/control_plane/labcore_extraction_protocol_v1.md`
-- `docs/roadmap_v2/migration_round_e_labcore_runtime_extraction_v1.md`
-- `docs/roadmap_v2/migration_round_e_labcore_support_modules_extraction_v1.md`
-- `docs/roadmap_v2/migration_round_e_labcore_registry_extraction_v1.md`
+- `docs/roadmap_v2/history/rounds/migration_round_e_labcore_runtime_extraction_v1.md`
+- `docs/roadmap_v2/history/rounds/migration_round_e_labcore_support_modules_extraction_v1.md`
+- `docs/roadmap_v2/history/rounds/migration_round_e_labcore_registry_extraction_v1.md`

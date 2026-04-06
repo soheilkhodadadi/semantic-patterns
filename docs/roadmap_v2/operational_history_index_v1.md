@@ -34,7 +34,7 @@ Use when:
 ### Migration rounds
 
 Pattern:
-- `docs/roadmap_v2/migration_round_*.md`
+- `docs/roadmap_v2/history/rounds/migration_round_*.md`
 
 Role:
 - per-batch execution trace

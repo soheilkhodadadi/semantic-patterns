@@ -18,4 +18,4 @@ Current migration anchors:
 - adapter framing note:
   - `docs/projects/ai_washing/adapter_framing_v1.md`
 - member lane normalization note:
-  - `docs/roadmap_v2/migration_round_d_ai_washing_normalization_v1.md`
+  - `docs/roadmap_v2/history/rounds/migration_round_d_ai_washing_normalization_v1.md`

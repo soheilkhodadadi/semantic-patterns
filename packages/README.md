@@ -21,4 +21,4 @@ Current seed plans:
 - `packages/director/pyproject_seed_plan_v1.md`
 
 Current package-shell anchor:
-- `docs/roadmap_v2/migration_round_d_package_shells_v1.md`
+- `docs/roadmap_v2/history/rounds/migration_round_d_package_shells_v1.md`

@@ -38,4 +38,4 @@ Legacy compatibility remains in place at:
 ## Status
 
 This grouped migration batch has now completed successfully through:
-- `docs/roadmap_v2/migration_round_o_ai_washing_index_sec_batch_v1.md`
+- `docs/roadmap_v2/history/rounds/migration_round_o_ai_washing_index_sec_batch_v1.md`
