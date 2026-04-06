@@ -105,6 +105,7 @@ This is now proven for:
 - `director.decision`
 - `director.sensors`
 - `director.playbooks`
+- `director.snapshot`
 - `ai_washing` labeling common family
 - `ai_washing` classification support family
 - `ai_washing` SEC index family
@@ -315,6 +316,15 @@ Queue V6 Batch 1 has now completed cleanly:
 This extends the member-owned split-freeze workflow while deliberately leaving
 the stable root command assertion in `tests/test_director_roadmap_model.py` on
 the compatibility path for now.
+
+## Queue V6 second-batch note
+
+Queue V6 Batch 2 has now completed cleanly:
+
+2. `semantic_director.snapshot`
+
+This moves the snapshot ingest authority into the package lane while keeping
+the Atlas-adjacent adapter boundary explicit and unchanged for now.
 
 ## Queue V4 progress note
 

@@ -36,7 +36,7 @@ from semantic_ai_washing.director.core.security import (
     ensure_openai_key_if_enabled,
     scan_repo_for_secrets,
 )
-from semantic_ai_washing.director.core.snapshot import SnapshotIngestor
+from semantic_director.snapshot import SnapshotIngestor
 from semantic_director.state import StateCompiler
 from semantic_ai_washing.director.core.utils import (
     dump_json,

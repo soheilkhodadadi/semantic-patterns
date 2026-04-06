@@ -78,7 +78,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- planned
+- complete via `docs/roadmap_v2/migration_round_ak_director_snapshot_seed_v1.md`
 
 Fallback if pre-scan gets messy:
 - replace with a smaller `director` cost/runtime round
@@ -122,7 +122,7 @@ Next in Queue V6:
 
 1. Batch 1 complete:
    - `ai_washing_member.labeling.publish_rubric_freeze`
-2. Batch 2 planned:
+2. Batch 2 complete:
    - `semantic_director.snapshot`
 3. Batch 3 planned:
    - `ai_washing_member.labeling.audit_sentence_integrity`

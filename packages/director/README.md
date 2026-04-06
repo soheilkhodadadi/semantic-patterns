@@ -123,3 +123,10 @@ Twelfth extracted package slice:
 Migration trace:
 - `docs/roadmap_v2/migration_round_ai_director_playbooks_seed_v1.md`
 - `packages/director/playbooks_grouped_migration_sheet_v1.md`
+
+Thirteenth extracted package slice:
+- `packages/director/src/semantic_director/snapshot.py`
+
+Migration trace:
+- `docs/roadmap_v2/migration_round_ak_director_snapshot_seed_v1.md`
+- `packages/director/snapshot_grouped_migration_sheet_v1.md`
