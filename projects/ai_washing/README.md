@@ -62,6 +62,8 @@ Legacy compatibility still exists in:
 - `classification/benchmark_utils.py`
 - `classification/model_runtime.py`
 - `classification/preliminary_pipeline.py`
+- `classification/train_preliminary_centroids.py`
+- `classification/classify_active_window_preliminary.py`
 
 ### Data support
 - `data/index_sec_filings.py`

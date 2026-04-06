@@ -9,7 +9,7 @@ import pytest
 
 from semantic_ai_washing.aggregation.build_preliminary_narrative_measures import run_measure_build
 from semantic_ai_washing.classification.benchmark_preliminary_models import run_benchmark
-from semantic_ai_washing.classification.classify_active_window_preliminary import (
+from ai_washing_member.classification.classify_active_window_preliminary import (
     run_classification,
 )
 from ai_washing_member.classification.model_runtime import build_centroid_runtime

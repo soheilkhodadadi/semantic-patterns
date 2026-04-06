@@ -10,7 +10,7 @@ from typing import Any
 import pandas as pd
 import pyarrow.parquet as pq
 
-from semantic_ai_washing.classification.classify_active_window_preliminary import _resolve_runtime
+from ai_washing_member.classification.classify_active_window_preliminary import _resolve_runtime
 from ai_washing_member.classification.preliminary_pipeline import sha256_file
 
 

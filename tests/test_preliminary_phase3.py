@@ -8,7 +8,7 @@ import pytest
 
 from semantic_ai_washing.aggregation.build_preliminary_narrative_measures import run_measure_build
 from semantic_ai_washing.analysis.audit_preliminary_panel_inputs import run_audit
-from semantic_ai_washing.classification.classify_active_window_preliminary import (
+from ai_washing_member.classification.classify_active_window_preliminary import (
     run_classification,
 )
 from semantic_ai_washing.classification.evaluate_preliminary_heldout import run_evaluation
