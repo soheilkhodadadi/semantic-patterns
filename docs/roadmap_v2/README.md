@@ -23,6 +23,7 @@ Current front-door docs:
 - `docs/roadmap_v2/lab_end_state_architecture_review_v2.md`
 - `docs/roadmap_v2/target_repo_layout_v2.md`
 - `docs/roadmap_v2/fast_safe_migration_protocol_v2.md`
+- `docs/roadmap_v2/end_state_acceptance_review_v1.md`
 - `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v26.md`
 - `docs/roadmap_v2/legacy_template_hygiene_queue_v1.md`
 
@@ -77,3 +78,7 @@ checkpoints now live under `docs/roadmap_v2/history/` as operational history.
 
 They are still useful, but they are no longer the front door.
 Use the navigation docs above first.
+
+Current late-stage posture:
+- the clean final lab structure goal is now effectively satisfied
+- future queues are optional and should open only for a specific new problem

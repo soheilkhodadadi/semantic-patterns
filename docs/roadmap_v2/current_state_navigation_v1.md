@@ -11,6 +11,7 @@ If you want the current picture, read these first:
 - `docs/roadmap_v2/lab_end_state_architecture_review_v2.md`
 - `docs/roadmap_v2/target_repo_layout_v2.md`
 - `docs/roadmap_v2/fast_safe_migration_protocol_v2.md`
+- `docs/roadmap_v2/end_state_acceptance_review_v1.md`
 - `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v26.md`
 - `docs/roadmap_v2/legacy_template_hygiene_queue_v1.md`
 
@@ -34,7 +35,7 @@ Ballpark progress:
 - `labcore`: ~95-100%
 - `director`: ~98-100%
 - `ai_washing` active member migration: ~85-93%
-- full clean final lab structure: ~95-99%
+- full clean final lab structure: ~96-100%
 
 ### Labcore
 
@@ -102,3 +103,4 @@ Current archive/export stance:
 - use the repo root and workspace lane docs as the default start points
 - if a root cleanup queue is opened, keep it limited to the explicit retire
   candidate identified in `docs/roadmap_v2/repo_root_clutter_review_v1.md`
+- treat future queues as optional polish unless a specific new problem appears
