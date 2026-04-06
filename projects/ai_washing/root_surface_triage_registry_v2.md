@@ -106,6 +106,13 @@ Why these are candidates:
 - they are better handled by a future retire/quarantine pass than by migration
   promotion
 
+Queue V23 posture:
+- the generated script inventory and script registry now treat these six
+  utilities as script-deprecation candidates instead of current canonical
+  front-door entrypoints
+- they still are not retire-ready because registry, inventory, and flat-shim
+  dependencies remain live
+
 ## What is intentionally not in this registry
 
 This registry focuses on root-owned `ai_washing` member surfaces.
