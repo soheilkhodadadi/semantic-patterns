@@ -32,6 +32,7 @@ from semantic_director.planner import (
 )
 from semantic_director.llm import refine_plan_markdown
 from semantic_director.readiness import ReadinessEvaluator
+from semantic_director.review import ReviewEngine, load_approved_review_summaries
 from semantic_director.roadmap_model import (
     find_iteration,
     find_phase,
@@ -98,6 +99,8 @@ __all__ = [
     "refine_plan_markdown",
     "list_playbooks",
     "ReadinessEvaluator",
+    "ReviewEngine",
+    "load_approved_review_summaries",
     "evaluate_condition",
     "SnapshotIngestor",
     "StateCompiler",
