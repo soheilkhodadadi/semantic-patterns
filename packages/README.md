@@ -13,7 +13,7 @@ Current package fronts:
 
 Current package posture:
 - `docs/roadmap_v2/current_state_navigation_v1.md`
-- `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v22.md`
+- `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v23.md`
 
 ## Current packages
 

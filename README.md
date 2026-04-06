@@ -93,7 +93,7 @@ Current restructure front door:
 - `docs/roadmap_v2/README.md`
 - `docs/roadmap_v2/current_state_navigation_v1.md`
 - latest checkpoint:
-  - `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v22.md`
+  - `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v23.md`
 
 Wave 2 of that restructure creates the first stable destination lanes for future shared and project-scoped artifacts:
 
