@@ -24,7 +24,7 @@ Current front-door docs:
 - `docs/roadmap_v2/target_repo_layout_v2.md`
 - `docs/roadmap_v2/fast_safe_migration_protocol_v2.md`
 - `docs/roadmap_v2/end_state_acceptance_review_v1.md`
-- `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v26.md`
+- `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v27.md`
 - `docs/roadmap_v2/legacy_template_hygiene_queue_v1.md`
 
 ## Durable docs
@@ -48,10 +48,10 @@ Contracts:
 ## Current operational state
 
 Latest completed queue:
-- `docs/roadmap_v2/history/queues/batched_execution_queue_v33.md`
+- `docs/roadmap_v2/history/queues/batched_execution_queue_v34.md`
 
 Latest queue checkpoint:
-- `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v26.md`
+- `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v27.md`
 
 Operational history index:
 - `docs/roadmap_v2/operational_history_index_v1.md`
