@@ -45,6 +45,22 @@ Default gate:
 Status:
 - complete
 
+## Queue status
+
+Queue V20 is complete:
+
+1. Batch 1:
+   - `semantic_director.iteration_log`
+2. Batch 2:
+   - `semantic_director.documents`
+3. Batch 3:
+   - `semantic_director.atlas`
+
+Latest Queue V20 commits:
+- `9b8bf79` `refactor: seed director iteration-log authority`
+- `9f03676` `refactor: seed director documents authority`
+- `97a1d04` `refactor: seed director atlas authority`
+
 ### Batch 2
 
 Authority:
