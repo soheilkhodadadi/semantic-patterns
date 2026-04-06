@@ -24,6 +24,12 @@ from semantic_director.decision import DecisionEngine
 from semantic_director.executor import RunbookExecutor
 from semantic_director.gates import GateEvaluator
 from semantic_director.playbooks import list_playbooks, recommend_playbooks, show_playbook
+from semantic_director.planner import (
+    PlannerEngine,
+    plan_output_manifest,
+    runbook_to_json,
+    write_plan_manifest,
+)
 from semantic_director.llm import refine_plan_markdown
 from semantic_director.readiness import ReadinessEvaluator
 from semantic_director.roadmap_model import (
@@ -82,6 +88,10 @@ __all__ = [
     "required_file_paths",
     "DecisionEngine",
     "RunbookExecutor",
+    "PlannerEngine",
+    "plan_output_manifest",
+    "runbook_to_json",
+    "write_plan_manifest",
     "GateEvaluator",
     "recommend_playbooks",
     "show_playbook",

@@ -11,7 +11,7 @@ from semantic_director.config import (
     load_configs,
 )
 from semantic_ai_washing.director.core.optimizer import DirectorOptimizer
-from semantic_ai_washing.director.core.planner import PlannerEngine
+from semantic_director.planner import PlannerEngine
 from semantic_director.readiness import ReadinessEvaluator
 from semantic_director.render import (
     is_rendered_roadmap_fresh,

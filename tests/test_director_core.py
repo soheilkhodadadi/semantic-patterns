@@ -14,7 +14,7 @@ from semantic_director.config import (
 from semantic_director.cost import CostController
 from semantic_director.decision import DecisionEngine
 from semantic_director.executor import RunbookExecutor
-from semantic_ai_washing.director.core.planner import PlannerEngine
+from semantic_director.planner import PlannerEngine
 from semantic_ai_washing.director.core.security import redact_secrets
 from semantic_director.snapshot import SnapshotIngestor
 from semantic_director.state import StateCompiler

@@ -21,7 +21,7 @@ from semantic_director.decision import DecisionEngine
 from semantic_ai_washing.director.core.optimizer import DirectorOptimizer
 from semantic_director.playbooks import list_playbooks, show_playbook
 from semantic_director.executor import RunbookExecutor
-from semantic_ai_washing.director.core.planner import PlannerEngine, write_plan_manifest
+from semantic_director.planner import PlannerEngine, write_plan_manifest
 from semantic_ai_washing.director.core.review import ReviewEngine, load_approved_review_summaries
 from semantic_director.render import (
     is_rendered_roadmap_fresh,

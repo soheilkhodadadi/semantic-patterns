@@ -506,6 +506,17 @@ This keeps the labeling review workflow inside the member-owned lane and closes
 the ai-washing half of Queue V10 before the planned `director` planner
 rotation.
 
+## Queue V10 close note
+
+Queue V10 has now completed cleanly through its planned three-round cycle:
+
+1. `ai_washing_member.labeling.initialize_review_sheet`
+2. `ai_washing_member.labeling.merge_labeling_batches`
+3. `semantic_director.planner`
+
+This closes the cycle with a coherent two-step review workflow move in the
+flagship lane and one meaningful `director` planning-boundary rotation.
+
 ## Bottom line
 
 The restructure is now in a stronger position than the earlier checkpoint

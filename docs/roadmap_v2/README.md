@@ -150,6 +150,7 @@ Current active migration anchors:
 - `docs/roadmap_v2/migration_round_au_director_llm_seed_v1.md`
 - `docs/roadmap_v2/migration_round_av_ai_washing_initialize_review_sheet_seed_v1.md`
 - `docs/roadmap_v2/migration_round_aw_ai_washing_merge_labeling_batches_seed_v1.md`
+- `docs/roadmap_v2/migration_round_ax_director_planner_seed_v1.md`
 - `docs/roadmap_v2/migration_round_as_ai_washing_publish_preliminary_results_seed_v1.md`
 - `docs/roadmap_v2/migration_round_w_ai_washing_build_filing_manifest_seed_v1.md`
 - `docs/roadmap_v2/restructure_progress_checkpoint_v1.md`
