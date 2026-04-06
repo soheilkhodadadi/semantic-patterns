@@ -37,7 +37,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- planned
+- complete
 
 ### Batch 2
 
@@ -60,7 +60,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- planned
+- complete
 
 ### Batch 3
 
@@ -83,11 +83,11 @@ Default gate:
 - `git diff --check`
 
 Status:
-- planned
+- complete
 
 ## Queue status
 
-Queue V18 is in progress:
+Queue V18 is complete:
 
 1. Batch 1:
    - `ai_washing_member.data.materialize_active_window_sentences`
@@ -95,3 +95,8 @@ Queue V18 is in progress:
    - `ai_washing_member.data.run_historical_backfill`
 3. Batch 3:
    - `ai_washing_member.data.reextract_tranche_slice`
+
+Latest Queue V18 commits:
+- `0b82794` `refactor: seed ai-washing active-window materialization authority`
+- `c466859` `refactor: seed ai-washing historical backfill authority`
+- `820c993` `refactor: seed ai-washing tranche reextraction authority`

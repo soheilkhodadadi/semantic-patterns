@@ -79,13 +79,16 @@ Legacy compatibility still exists in:
 - `data/build_expanded_sentence_pool.py`
 - `data/combine_expanded_sentence_pool_batches.py`
 - `data/benchmark_segmentation_modes.py`
+- `data/materialize_active_window_sentences.py`
+- `data/run_historical_backfill.py`
+- `data/reextract_tranche_slice.py`
 
 ## Read this folder in this order
 
 1. `projects/ai_washing/root_surface_triage_registry_v1.md`
 2. `projects/ai_washing/migration_sheets/README.md`
-3. `docs/roadmap_v2/restructure_progress_checkpoint_v10.md`
-4. `docs/roadmap_v2/batched_execution_queue_v17.md`
+3. `docs/roadmap_v2/restructure_progress_checkpoint_v11.md`
+4. `docs/roadmap_v2/batched_execution_queue_v18.md`
 
 ## Planning documents that still matter
 

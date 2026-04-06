@@ -34,6 +34,9 @@ they are not the front-door explanation of the member.
 - `build_expanded_sentence_pool_grouped_migration_sheet_v1.md`
 - `combine_expanded_sentence_pool_batches_grouped_migration_sheet_v1.md`
 - `benchmark_segmentation_modes_grouped_migration_sheet_v1.md`
+- `materialize_active_window_sentences_grouped_migration_sheet_v1.md`
+- `run_historical_backfill_grouped_migration_sheet_v1.md`
+- `reextract_tranche_slice_grouped_migration_sheet_v1.md`
 - `ff12_mapping_grouped_migration_sheet_v1.md`
 
 ### Heldout and IRR workflow
