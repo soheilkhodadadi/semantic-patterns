@@ -1,6 +1,6 @@
 """Compatibility exports for the autonomous project director package."""
 
-from semantic_director import (
+from semantic_director.schemas import (
     BlockerEvent,
     CostUsageRecord,
     DecisionRecord,

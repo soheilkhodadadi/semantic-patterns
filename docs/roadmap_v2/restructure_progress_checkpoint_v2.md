@@ -20,6 +20,8 @@ Recent commits that matter for the current shape:
 - `829fbeb` `refactor: seed director roadmap model authority`
 - `c537a88` `refactor: seed director render authority`
 - `2b854d5` `refactor: seed director task graph authority`
+- `05c87b4` `refactor: seed director config authority`
+- `c9b7664` `refactor: seed ai-washing filing manifest authority`
 
 ## What is materially real now
 
@@ -40,6 +42,7 @@ has canonical package code for:
 - roadmap rendering helpers
 - task-graph helpers
 - config/path loading helpers
+- readiness evaluation helpers
 
 ### Project-member layer
 
@@ -85,6 +88,7 @@ This is now proven for:
 - `director.render`
 - `director.task_graph`
 - `director.config`
+- `director.readiness`
 - `ai_washing` labeling common family
 - `ai_washing` classification support family
 - `ai_washing` SEC index family
@@ -105,8 +109,6 @@ What is now strongest:
 - downstream orchestration helpers are clustering naturally around the package
 
 What remains clearly root-owned:
-- `config`
-- `readiness`
 - `branching`
 - `snapshot`
 - `state`
@@ -185,6 +187,16 @@ Keep the existing Protocol V2 per round, but add a cycle-close gate:
 
 Use a broader repo-wide suite only when its baseline is known clean for the
 affected lanes.
+
+## Current cycle result
+
+The current three-round cycle has now completed cleanly:
+
+1. `ai_washing_member.data.build_filing_manifest`
+2. `semantic_director.config`
+3. `semantic_director.readiness`
+
+That means the queue is back at a planned checkpoint before Batch 4.
 
 ## Bottom line
 

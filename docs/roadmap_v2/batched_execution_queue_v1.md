@@ -130,6 +130,9 @@ Default gate:
 - package build smoke
 - `git diff --check`
 
+Status:
+- complete via `docs/roadmap_v2/migration_round_y_director_readiness_seed_v1.md`
+
 Fallback if pre-scan gets messy:
 - defer and move to `ai_washing` Batch 4 sooner
 
@@ -199,10 +202,14 @@ If a pre-scan shows that the next batch is messier than expected:
 
 ## Current recommendation
 
-Start here:
+Current queue state:
 
-1. `semantic_director.config`
-2. `semantic_director.readiness`
-3. checkpoint before committing to Batch 4
+1. Batches 1-3 complete
+2. checkpoint reached before Batch 4
+3. next planned fresh-authority pre-scan:
+   - `ai_washing` industry mapping surface
+   - provisional candidate: `semantic_ai_washing.labeling.ff12_mapping`
+Next execution move:
 
-Then checkpoint before committing to Batch 4.
+1. pre-scan Batch 4
+2. execute it only if the authority boundary is still clean under Protocol V2

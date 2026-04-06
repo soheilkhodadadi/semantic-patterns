@@ -9,6 +9,7 @@ from semantic_director.config import (
     load_configs,
     required_file_paths,
 )
+from semantic_director.readiness import ReadinessEvaluator
 from semantic_director.roadmap_model import (
     find_iteration,
     find_phase,
@@ -51,6 +52,7 @@ __all__ = [
     "get_director_paths",
     "load_configs",
     "required_file_paths",
+    "ReadinessEvaluator",
     "resolve_model_path",
     "load_roadmap_model",
     "load_remediation_library",

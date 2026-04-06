@@ -12,7 +12,7 @@ from semantic_director.config import (
 )
 from semantic_ai_washing.director.core.optimizer import DirectorOptimizer
 from semantic_ai_washing.director.core.planner import PlannerEngine
-from semantic_ai_washing.director.core.readiness import ReadinessEvaluator
+from semantic_director.readiness import ReadinessEvaluator
 from semantic_director.render import (
     is_rendered_roadmap_fresh,
     render_roadmap_markdown,

@@ -7,7 +7,7 @@ from typing import Any
 
 import yaml
 
-from semantic_ai_washing.director.core.readiness import ReadinessEvaluator
+from semantic_director.readiness import ReadinessEvaluator
 from semantic_director.render import render_optimization_markdown
 from semantic_director.roadmap_model import (
     load_remediation_library,

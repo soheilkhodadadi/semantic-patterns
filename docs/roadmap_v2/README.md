@@ -119,6 +119,7 @@ Current active migration anchors:
 - `docs/roadmap_v2/migration_round_u_director_render_seed_v1.md`
 - `docs/roadmap_v2/migration_round_v_director_task_graph_seed_v1.md`
 - `docs/roadmap_v2/migration_round_x_director_config_seed_v1.md`
+- `docs/roadmap_v2/migration_round_y_director_readiness_seed_v1.md`
 - `docs/roadmap_v2/migration_round_w_ai_washing_build_filing_manifest_seed_v1.md`
 - `docs/roadmap_v2/restructure_progress_checkpoint_v1.md`
 - `docs/roadmap_v2/restructure_progress_checkpoint_v2.md`
