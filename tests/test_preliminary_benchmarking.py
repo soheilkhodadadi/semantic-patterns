@@ -17,7 +17,7 @@ from semantic_ai_washing.classification.publish_selected_preliminary_eval import
 from ai_washing_member.classification.train_binary_relevance_then_as import (
     run_training as run_binary_training,
 )
-from semantic_ai_washing.classification.train_logreg_preliminary import (
+from ai_washing_member.classification.train_logreg_preliminary import (
     run_training as run_logreg_training,
 )
 from ai_washing_member.classification.train_preliminary_centroids import (
