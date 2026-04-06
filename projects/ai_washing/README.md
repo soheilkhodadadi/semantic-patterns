@@ -75,8 +75,8 @@ Legacy compatibility still exists in:
 
 1. `projects/ai_washing/root_surface_triage_registry_v1.md`
 2. `projects/ai_washing/migration_sheets/README.md`
-3. `docs/roadmap_v2/restructure_progress_checkpoint_v6.md`
-4. `docs/roadmap_v2/batched_execution_queue_v13.md`
+3. `docs/roadmap_v2/restructure_progress_checkpoint_v7.md`
+4. `docs/roadmap_v2/batched_execution_queue_v14.md`
 
 ## Planning documents that still matter
 

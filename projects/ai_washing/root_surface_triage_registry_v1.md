@@ -22,7 +22,7 @@ It exists to keep future queues grounded.
 ## Current counts
 
 - labeling still root-owned: 3
-- classification still root-owned: 16
+- classification still root-owned: 13
 - data still root-owned: 18
 
 ## Labeling surfaces still root-owned
@@ -41,18 +41,18 @@ It exists to keep future queues grounded.
 
 ### Active migration candidate
 - `src/semantic_ai_washing/classification/benchmark_preliminary_models.py`
-- `src/semantic_ai_washing/classification/classify_active_window_preliminary.py`
-- `src/semantic_ai_washing/classification/classify_active_window_preliminary_restartable.py`
-- `src/semantic_ai_washing/classification/evaluate_preliminary_heldout.py`
 - `src/semantic_ai_washing/classification/publish_selected_preliminary_eval.py`
 - `src/semantic_ai_washing/classification/reconcile_preliminary_classification_report.py`
 - `src/semantic_ai_washing/classification/train_binary_relevance_then_as.py`
 - `src/semantic_ai_washing/classification/train_logreg_preliminary.py`
-- `src/semantic_ai_washing/classification/train_preliminary_centroids.py`
 
 Reason:
 - these still sit on the active preliminary classification path and are covered
   by the existing benchmarking/phase-3 regression bundles
+
+### Wrapper or runner
+- `src/semantic_ai_washing/classification/classify_active_window_preliminary_restartable.py`
+  - restartable wrapper around the now-member-owned active-window classification surface
 
 ### Dormant but relevant
 - `src/semantic_ai_washing/classification/classify_all_ai_sentences.py`

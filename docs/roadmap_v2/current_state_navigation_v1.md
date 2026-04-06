@@ -33,8 +33,8 @@ Project member:
 Ballpark progress:
 - `labcore`: ~95-100%
 - `director`: ~90-95%
-- `ai_washing` active member migration: ~60-70%
-- full clean final lab structure: ~60-65%
+- `ai_washing` active member migration: ~65-75%
+- full clean final lab structure: ~65-70%
 
 ### Labcore
 
@@ -67,8 +67,8 @@ See:
 ## What still matters operationally
 
 Latest queue closed cleanly:
-- `docs/roadmap_v2/batched_execution_queue_v13.md`
-- `docs/roadmap_v2/restructure_progress_checkpoint_v6.md`
+- `docs/roadmap_v2/batched_execution_queue_v14.md`
+- `docs/roadmap_v2/restructure_progress_checkpoint_v7.md`
 
 Operational history is still kept in the repo, but it is now secondary.
 Use this index for the categories and retention logic:

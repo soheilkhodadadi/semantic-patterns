@@ -47,10 +47,10 @@ Contracts:
 ## Current operational state
 
 Latest completed queue:
-- `docs/roadmap_v2/batched_execution_queue_v13.md`
+- `docs/roadmap_v2/batched_execution_queue_v14.md`
 
 Latest queue checkpoint:
-- `docs/roadmap_v2/restructure_progress_checkpoint_v6.md`
+- `docs/roadmap_v2/restructure_progress_checkpoint_v7.md`
 
 Operational history index:
 - `docs/roadmap_v2/operational_history_index_v1.md`
