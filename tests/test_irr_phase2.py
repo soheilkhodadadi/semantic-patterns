@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from semantic_ai_washing.labeling.adjudicate_irr_labels import run_adjudication
+from ai_washing_member.labeling.adjudicate_irr_labels import run_adjudication
 from ai_washing_member.labeling.audit_sentence_integrity import run_audit
 from semantic_ai_washing.labeling.compute_irr_metrics import run_metrics
 from semantic_ai_washing.labeling.diagnose_irr_disagreements import run_diagnostic

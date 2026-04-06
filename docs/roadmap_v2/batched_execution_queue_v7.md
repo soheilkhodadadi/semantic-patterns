@@ -80,7 +80,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- planned
+- complete via `docs/roadmap_v2/migration_round_an_ai_washing_adjudication_seed_v1.md`
 
 Fallback if pre-scan gets messy:
 - rotate early to Batch 3
@@ -123,7 +123,7 @@ Next in Queue V7:
 
 1. Batch 1 complete:
    - `ai_washing_member.labeling.prepare_irr_subset`
-2. Batch 2 planned:
+2. Batch 2 complete:
    - `ai_washing_member.labeling.adjudicate_irr_labels`
 3. Batch 3 planned:
    - `semantic_director.gates`

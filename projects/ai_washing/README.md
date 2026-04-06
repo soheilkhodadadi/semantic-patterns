@@ -137,6 +137,10 @@ Queue V7 IRR subset follow-on:
 - `docs/roadmap_v2/migration_round_am_ai_washing_prepare_irr_subset_seed_v1.md`
 - `projects/ai_washing/prepare_irr_subset_grouped_migration_sheet_v1.md`
 
+Queue V7 adjudication follow-on:
+- `docs/roadmap_v2/migration_round_an_ai_washing_adjudication_seed_v1.md`
+- `projects/ai_washing/adjudicate_irr_labels_grouped_migration_sheet_v1.md`
+
 Structured member shell lanes now exist:
 - `projects/ai_washing/docs/`
 - `projects/ai_washing/reports/`
