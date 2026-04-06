@@ -74,3 +74,19 @@ moving cleanly.
 
 That keeps momentum in the migration lane while still making cleanup a real,
 tracked deliverable.
+
+## Current status
+
+The first hygiene cycle has now been executed as Queue V22 with three outputs:
+- `docs/roadmap_v2/migration_round_cf_hygiene_ai_washing_inventory_v1.md`
+- `docs/roadmap_v2/migration_round_cg_hygiene_repo_visible_scaffolds_v1.md`
+- `docs/roadmap_v2/migration_round_ch_hygiene_quarantine_readiness_v1.md`
+
+Result:
+- the inventory and scaffold review are now explicit
+- no code surfaces were quarantined or deleted
+- the six legacy/template-looking data utilities are not retire-ready yet
+
+This means the next hygiene-class follow-on, if scheduled, should be a
+script-deprecation and registry/inventory cleanup queue rather than an
+immediate code-removal queue.

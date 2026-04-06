@@ -64,15 +64,15 @@ For day-to-day navigation, prefer:
 - `docs/roadmap_v2/current_state_navigation_v1.md`
 - `projects/ai_washing/README.md`
 - `projects/ai_washing/migration_sheets/README.md`
-- `projects/ai_washing/root_surface_triage_registry_v1.md`
+- `projects/ai_washing/root_surface_triage_registry_v2.md`
 
 ## Current state
 
 Latest completed queue:
-- `docs/roadmap_v2/batched_execution_queue_v16.md`
+- `docs/roadmap_v2/batched_execution_queue_v22.md`
 
 Latest queue checkpoint:
-- `docs/roadmap_v2/restructure_progress_checkpoint_v9.md`
+- `docs/roadmap_v2/restructure_progress_checkpoint_v15.md`
 
 Latest protocol anchor:
 - `docs/roadmap_v2/fast_safe_migration_protocol_v2.md`
