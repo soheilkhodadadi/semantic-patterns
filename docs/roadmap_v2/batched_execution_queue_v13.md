@@ -84,7 +84,7 @@ Default gate:
 - `git diff --check`
 
 Status:
-- planned
+- complete
 
 ## Current recommendation
 
