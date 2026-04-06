@@ -62,6 +62,63 @@ TRANSITIONAL_CANONICAL_MODULES: dict[str, dict[str, str]] = {
     },
 }
 
+SCRIPT_DEPRECATION_CANDIDATES: dict[str, dict[str, str]] = {
+    "semantic_ai_washing.data.clean_compustat": {
+        "replacement_path": "pending script-deprecation decision; keep operational but do not extend",
+        "replacement_phase": "queue-v23/script-deprecation-hygiene",
+        "notes": (
+            "Historical data cleanup utility retained for traceability and possible reruns. "
+            "Downgrade registry visibility before any quarantine or removal patch."
+        ),
+        "status_detail": "script_deprecation_candidate",
+    },
+    "semantic_ai_washing.data.clean_crsp": {
+        "replacement_path": "pending script-deprecation decision; keep operational but do not extend",
+        "replacement_phase": "queue-v23/script-deprecation-hygiene",
+        "notes": (
+            "Historical data cleanup utility retained for traceability and possible reruns. "
+            "Downgrade registry visibility before any quarantine or removal patch."
+        ),
+        "status_detail": "script_deprecation_candidate",
+    },
+    "semantic_ai_washing.data.clean_sec": {
+        "replacement_path": "pending script-deprecation decision; keep operational but do not extend",
+        "replacement_phase": "queue-v23/script-deprecation-hygiene",
+        "notes": (
+            "Historical data cleanup utility retained for traceability and possible reruns. "
+            "Downgrade registry visibility before any quarantine or removal patch."
+        ),
+        "status_detail": "script_deprecation_candidate",
+    },
+    "semantic_ai_washing.data.download_compustat": {
+        "replacement_path": "pending script-deprecation decision; keep operational but do not extend",
+        "replacement_phase": "queue-v23/script-deprecation-hygiene",
+        "notes": (
+            "Historical data acquisition utility retained for traceability and possible reruns. "
+            "Downgrade registry visibility before any quarantine or removal patch."
+        ),
+        "status_detail": "script_deprecation_candidate",
+    },
+    "semantic_ai_washing.data.download_crsp": {
+        "replacement_path": "pending script-deprecation decision; keep operational but do not extend",
+        "replacement_phase": "queue-v23/script-deprecation-hygiene",
+        "notes": (
+            "Historical data acquisition utility retained for traceability and possible reruns. "
+            "Downgrade registry visibility before any quarantine or removal patch."
+        ),
+        "status_detail": "script_deprecation_candidate",
+    },
+    "semantic_ai_washing.data.download_sec": {
+        "replacement_path": "pending script-deprecation decision; keep operational but do not extend",
+        "replacement_phase": "queue-v23/script-deprecation-hygiene",
+        "notes": (
+            "Historical data acquisition utility retained for traceability and possible reruns. "
+            "Downgrade registry visibility before any quarantine or removal patch."
+        ),
+        "status_detail": "script_deprecation_candidate",
+    },
+}
+
 
 def _module_name(src_root: Path, file_path: Path) -> str:
     return ".".join(file_path.relative_to(src_root).with_suffix("").parts)
@@ -137,6 +194,14 @@ def _classify_module(
         return (
             "transitional",
             "canonical implementation kept operational while target data architecture is built",
+            meta,
+        )
+
+    if module_name in SCRIPT_DEPRECATION_CANDIDATES:
+        meta = SCRIPT_DEPRECATION_CANDIDATES[module_name]
+        return (
+            "transitional",
+            "historical data utility kept operational pending script-deprecation cleanup",
             meta,
         )
 
@@ -253,7 +318,9 @@ def build_script_inventory(
                 "classification": classification,
                 "rationale": rationale,
                 "status_detail": (
-                    "compatibility_shim"
+                    replacement_meta["status_detail"]
+                    if "status_detail" in replacement_meta
+                    else "compatibility_shim"
                     if shim_target and not module_name.startswith("semantic_ai_washing.")
                     else "replacement_planned"
                     if module_name in TRANSITIONAL_CANONICAL_MODULES

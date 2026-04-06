@@ -44,6 +44,17 @@ if __name__ == "__main__":
 ''',
     )
     _write(
+        repo_root / "src" / "semantic_ai_washing" / "data" / "clean_compustat.py",
+        '''"""Historical cleanup utility."""
+
+def main() -> None:
+    return
+
+if __name__ == "__main__":
+    main()
+''',
+    )
+    _write(
         repo_root / "src" / "scripts" / "extract_ai_sentences.py",
         '''"""Legacy compatibility shim.
 
@@ -72,7 +83,7 @@ def main() -> None:
 
     assert output.exists()
     assert payload["summary"]["canonical_count"] == 1
-    assert payload["summary"]["transitional_count"] == 2
+    assert payload["summary"]["transitional_count"] == 3
     assert payload["summary"]["legacy_count"] == 1
     assert payload["summary"]["hygiene_finding_count"] == 2
 
@@ -90,6 +101,15 @@ def main() -> None:
     assert (
         modules["semantic_ai_washing.data.extract_ai_sentences"]["replacement_phase"]
         == "iteration1/sentence-table-pilot-2024"
+    )
+    assert modules["semantic_ai_washing.data.clean_compustat"]["classification"] == "transitional"
+    assert (
+        modules["semantic_ai_washing.data.clean_compustat"]["status_detail"]
+        == "script_deprecation_candidate"
+    )
+    assert (
+        modules["semantic_ai_washing.data.clean_compustat"]["replacement_phase"]
+        == "queue-v23/script-deprecation-hygiene"
     )
 
 
