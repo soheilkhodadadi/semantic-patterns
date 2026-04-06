@@ -260,7 +260,7 @@ def _write_run_artifacts(tmp_path: Path) -> None:
                 "step-001": {
                     "title": "Task command: API smoke",
                     "command_result": {
-                        "command": ".venv/bin/python -m semantic_ai_washing.director.tasks.api_bootstrap --mode live",
+                        "command": ".venv/bin/python -m semantic_director.api_bootstrap --mode live",
                         "started_at": "2026-03-06T01:00:00+00:00",
                         "finished_at": "2026-03-06T01:00:05+00:00",
                     },
@@ -270,7 +270,7 @@ def _write_run_artifacts(tmp_path: Path) -> None:
                 "blocker_id": "block-api-missing-key",
                 "blocker_type": "runtime",
                 "severity": "high",
-                "message": "Step command failed: .venv/bin/python -m semantic_ai_washing.director.tasks.api_bootstrap --mode live",
+                "message": "Step command failed: .venv/bin/python -m semantic_director.api_bootstrap --mode live",
             },
         },
     )
@@ -298,7 +298,7 @@ def _write_run_artifacts(tmp_path: Path) -> None:
                 "step-001": {
                     "title": "Task command: API smoke",
                     "command_result": {
-                        "command": ".venv/bin/python -m semantic_ai_washing.director.tasks.api_bootstrap --mode live",
+                        "command": ".venv/bin/python -m semantic_director.api_bootstrap --mode live",
                         "started_at": "2026-03-06T02:00:00+00:00",
                         "finished_at": "2026-03-06T02:00:03+00:00",
                     },
