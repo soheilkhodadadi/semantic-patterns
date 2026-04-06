@@ -92,7 +92,7 @@ Legacy compatibility still exists in:
 1. `projects/ai_washing/root_surface_triage_registry_v2.md`
 2. `projects/ai_washing/migration_sheets/README.md`
 3. `projects/ai_washing/planning_notes/README.md`
-4. `docs/roadmap_v2/restructure_progress_checkpoint_v20.md`
+4. `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v20.md`
 5. `docs/roadmap_v2/current_state_navigation_v1.md`
 
 ## Current posture

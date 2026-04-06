@@ -76,7 +76,7 @@ Compatibility shims still exist in:
 
 1. `packages/director/src/semantic_director/`
 2. `packages/director/migration_sheets/README.md`
-3. `docs/roadmap_v2/restructure_progress_checkpoint_v19.md`
+3. `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v19.md`
 4. `docs/roadmap_v2/current_state_navigation_v1.md`
 
 ## Planning documents that still matter

@@ -10,7 +10,7 @@ them without treating every file as a front-door document.
 ### Queue docs
 
 Pattern:
-- `docs/roadmap_v2/batched_execution_queue_v*.md`
+- `docs/roadmap_v2/history/queues/batched_execution_queue_v*.md`
 
 Role:
 - record the planned three-batch queue for a given cycle
@@ -23,7 +23,7 @@ Use when:
 ### Fresh-authority comparisons
 
 Pattern:
-- `docs/roadmap_v2/fresh_authority_comparison_v*.md`
+- `docs/roadmap_v2/history/comparisons/fresh_authority_comparison_v*.md`
 
 Role:
 - explain why one authority was chosen over another before a queue opened
@@ -46,7 +46,7 @@ Use when:
 ### Progress checkpoints
 
 Pattern:
-- `docs/roadmap_v2/restructure_progress_checkpoint_v*.md`
+- `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v*.md`
 
 Role:
 - summarize the queue-level result
@@ -69,10 +69,10 @@ For day-to-day navigation, prefer:
 ## Current state
 
 Latest completed queue:
-- `docs/roadmap_v2/batched_execution_queue_v28.md`
+- `docs/roadmap_v2/history/queues/batched_execution_queue_v28.md`
 
 Latest queue checkpoint:
-- `docs/roadmap_v2/restructure_progress_checkpoint_v21.md`
+- `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v21.md`
 
 Latest protocol anchor:
 - `docs/roadmap_v2/fast_safe_migration_protocol_v2.md`
