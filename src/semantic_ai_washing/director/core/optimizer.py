@@ -13,7 +13,7 @@ from semantic_director.roadmap_model import (
     load_remediation_library,
     load_roadmap_model,
 )
-from semantic_ai_washing.director.core.task_graph import build_task_graph
+from semantic_director.task_graph import build_task_graph
 from semantic_ai_washing.director.core.utils import dump_json, now_utc_iso, sha256_file
 from semantic_ai_washing.director.schemas import (
     DeferredBlockerRecord,

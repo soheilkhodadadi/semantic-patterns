@@ -17,7 +17,7 @@ from semantic_director.roadmap_model import (
     load_roadmap_model,
     resolve_model_path,
 )
-from semantic_ai_washing.director.core.task_graph import build_task_graph
+from semantic_director.task_graph import build_task_graph
 from semantic_ai_washing.director.core.utils import (
     dump_json,
     ensure_dir,

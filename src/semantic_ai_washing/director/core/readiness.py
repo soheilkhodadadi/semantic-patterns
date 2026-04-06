@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from semantic_ai_washing.director.core.sensors import evaluate_condition
-from semantic_ai_washing.director.core.task_graph import TaskGraph
+from semantic_director.task_graph import TaskGraph
 from semantic_ai_washing.director.schemas import (
     ConditionSpec,
     DeferredBlockerRecord,
