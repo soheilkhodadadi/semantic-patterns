@@ -135,6 +135,7 @@ The next concrete artifacts to create or refresh after this plan are:
 
 Current A1 anchor:
 - `projects/ai_washing/docs/track_a_2025_refresh_readiness_v1.md`
+- `projects/ai_washing/docs/track_a_2025_source_staging_v1.md`
 
 ## Execution posture
 
