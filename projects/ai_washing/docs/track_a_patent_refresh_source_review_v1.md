@@ -103,6 +103,21 @@ from `g_patent.tsv`.
 Based on the dictionary, `patent_date` is the patent grant date, not the
 application filing date.
 
+### 4b. No direct CIK bridge was found in the current local grant tables
+
+The local `g_*` PatentViews tables expose:
+- `patent_id`
+- `application_id`
+- assignee identifiers / organization names
+
+They do **not** expose a direct public-firm identifier such as:
+- CIK
+- GVKEY
+- PERMNO
+
+This means the current local PatentViews batch does not remove the need for an
+external firm-identity layer.
+
 ### 5. Application-level filing dates are available locally
 
 The local source root already includes:
@@ -128,12 +143,17 @@ It is USPTO bulk-data discovery/download automation.
 Official source reviewed:
 - USPTO BDSS Services User Guide:
   https://developer.uspto.gov/sites/default/files/bdss_ug.pdf
+- PatentsView 2.x release docs:
+  https://search.patentsview.org/docs/2024/02/16/2.0-release/
 
 Useful takeaway:
 - the BDSS API can search and retrieve USPTO bulk data product metadata and file
   download URLs
 - this is a good fit for discovering and versioning future PatentViews/bulk
   products without relying on ad hoc manual browsing
+- it does **not** change the current identity problem by itself; for now we
+  still need WRDS / SEC-backed firm identity and name enrichment outside the
+  local PatentViews grant tables
 
 ### 7. A direct API may still be useful later, but not as the main historical refresh lane
 
@@ -146,70 +166,110 @@ For our use case, the best near-term posture is:
 
 ## Track A decision update
 
-After review, the working decision is:
+The initial working preference was:
 - main patent series = application filing timing
 - robustness patent series = grant timing
-- current refresh path = adapt the bulk workflow, not replace it with an API
 
-Reason:
-- filing timing is the conceptually cleaner main specification for the final paper
-- grant timing is still useful as a robustness or comparison series
-- the current bulk workflow is already close enough that adapting it is lower-risk
-  than replacing it mid-refresh
+That preference was conceptually sound, but the live rebuild taught us an
+important constraint:
+- `g_application.tsv` inside a **grant-centered** PatentViews drop is not a
+  complete application-side source
+- it right-censors late-sample activity because it only covers applications
+  attached to patents already present in the granted universe
+
+So the current Track A posture is more precise:
+- full-span panel backbone = refreshed **grant-timed** series
+- preferred filing-timed upgrade = **true pregrant** application tables
+- grant-derived `g_application.tsv` timing = useful diagnostic / comparison
+  lane, but not the final application backbone
 
 ## Recommended Track A decision
 
 ### Immediate operational choice
 
-Use the modern filtered patent extractor lane, but patch filename resolution so
-it accepts either:
+Keep the modern filtered extractor lane patched so it accepts either:
 - `patent.tsv` or `g_patent.tsv`
 - `patent_abstract.tsv` or `g_patent_abstract.tsv`
 - `patent_assignee.tsv` or `g_assignee_disambiguated.tsv`
 
-This is lower-risk than manual renaming and keeps the repo compatible with more
-than one PatentViews vintage.
-
+This remains the right grant-side posture and keeps the repo compatible with
+more than one PatentViews vintage.
 
 ### Timing decision recorded for Track A
 
-Decision:
-- pursue **application-filing-date patent timing** as the preferred main path
-  for the refreshed paper backbone
-- retain **grant-date timing** as a later robustness lane if needed
+Refined decision:
+- use the refreshed **hybrid grant-timed** series as the panel backbone
+- build a separate **true application-timed** lane from PatentsView pregrant
+  tables
+- do not treat grant-derived application dates as the final paper-grade
+  application backbone
 
-Why this is the right choice:
-- the paper is moving from a preliminary disclosure-validation version toward a
-  more defensible final empirical package
-- if the supervisor later objects to grant timing, rerunning the patent lane a
-  second time would be slower and riskier than getting the timing definition
-  right now
-- the local PatentViews root already includes `g_application.tsv`, so this is
-  now a workflow-adaptation problem rather than a source-access problem
+## April 2026 live-run update
 
-Operational implication:
-- we should still patch filename resolution in the modern filtered extractor
-  lane now
-- the first serious patent rebuild should target application filing timing
-  directly using the local `g_application.tsv` join
-- grant-date timing should be documented as a secondary robustness option, not
-  silently used as the main refreshed series
+The first corrected application-timing rebuild surfaced an important practical
+constraint:
+
+- lookup undercoverage was real and was repaired using SEC-header company names
+- after that repair, the application-timing series still collapsed sharply in
+  `2023-2025`
+
+That remaining collapse is not a lookup bug. It is the expected right-censoring
+pattern when we use **application dates from a granted-patent dataset**.
+
+Practical implication for Track A:
+- the repaired **application-timing** series should be kept as the conceptually
+  cleaner patent-timing lane
+- but it should not be treated as the only full-span `2016-2025` backbone
+- Track A should also maintain a corrected **grant-timing** series so the
+  refreshed annual panel can still be rebuilt on a less-censored patent series
+
+Working posture now:
+1. full-span panel backbone = corrected grant-timing series
+2. grant-derived application-timing series = diagnostic comparison lane
+3. true filing-timed application series = next upgrade lane via pregrant tables
+
+### Hybrid grant validation update
+
+The first WRDS-only grant rebuild still under-matched the old validated patent
+series. A hybrid lookup that combines:
+- old patent-validated names
+- refreshed WRDS-backed firm identity
+- SEC-header company names
+
+recovered the count pattern much better.
+
+Current comparison:
+- old validated `2024`: `38,191` total / `2,205` AI
+- WRDS-only refreshed `2024`: `34,252` total / `1,703` AI
+- hybrid refreshed `2024`: `40,931` total / `2,122` AI
+
+Interpretation:
+- the hybrid grant lane is now credible enough to support the refreshed panel
+  backbone
+- the application upgrade should now focus on **source completeness**, not just
+  more name matching
 
 
 ## Immediate next tasks
 
-1. Patch patent filename resolution in the modern filtered extractor lane.
-2. Add `g_application.tsv` to the filtered patent join path and carry
-   `filing_date` into the annual counts pipeline.
-3. Extend the patent refresh window to at least `2014-2025`.
-4. Rebuild the annual patent series using application filing timing as the main
-   path.
-5. Keep a grant-date rebuild as an optional robustness lane only after the main
-   filing-timing series is working.
+1. Keep the patched grant-side extractor lane as the running default.
+2. Use the hybrid grant-timed rebuild as the patent input for the refreshed
+   annual panel.
+3. Download true pregrant tables:
+   - `pg_published_application`
+   - `pg_published_application_abstract`
+   - `pg_assignee_disambiguated`
+   - `pg_granted_pgpubs_crosswalk`
+4. Build the pregrant application-timed lane against the refreshed speaker
+   universe.
+5. Compare true pregrant application timing against the hybrid grant backbone
+   before choosing the final main-vs-robustness presentation in the paper.
 
 ## Bottom line
 
-The new PatentViews drop is usable, but not plug-and-play.
+The new PatentViews grant drop is usable for the panel backbone once name
+matching is repaired, but a serious application-timing lane should move to
+true pregrant tables rather than leaning on `g_application.tsv` alone.
 
 The real issues are:
 - filename-contract drift

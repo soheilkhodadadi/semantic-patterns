@@ -39,6 +39,15 @@ Tasks:
 - define the exact rebuild path for downstream measures and panels
 - audit filing-date availability for later event-study use
 - audit patent timing and source-window requirements before panel rebuild
+- decide how to handle application-timing right-censoring in the refreshed
+  patent lane
+- decide how the refreshed speaker-firm universe should connect to WRDS firm
+  identity and controls
+- decide whether the application-timing lane should stay grant-derived or move
+  to true pregrant publication tables
+- validate whether the refreshed hybrid grant-timed patent lane is strong
+  enough to support the main panel backbone while the pregrant application lane
+  is built
 
 Deliverables:
 - 2025 refresh readiness note
@@ -46,6 +55,8 @@ Deliverables:
 - explicit output targets for refreshed sentence/classification/panel artifacts
 - filing-date and patent-window audit note
 - patent refresh source review note
+- firm identity backbone review note
+- pregrant source review note
 
 Primary dependencies:
 - filing access
@@ -138,6 +149,8 @@ The next concrete artifacts to create or refresh after this plan are:
 - `projects/ai_washing/docs/track_a_2025_refresh_readiness_v1.md`
 - `projects/ai_washing/docs/track_a_filing_date_and_patent_window_audit_v1.md`
 - `projects/ai_washing/docs/track_a_patent_refresh_source_review_v1.md`
+- `projects/ai_washing/docs/track_a_firm_identity_backbone_review_v1.md`
+- `projects/ai_washing/docs/track_a_pregrant_source_review_v1.md`
 - `projects/ai_washing/docs/track_a_market_data_source_review_v1.md`
 - `projects/ai_washing/docs/track_a_data_refresh_todo_v1.md`
 - `projects/ai_washing/docs/track_a_2025_classification_spot_check_v1.md`
@@ -152,7 +165,9 @@ Current A1 anchor:
 - `projects/ai_washing/docs/track_a_2025_refresh_contract_v1.md`
 - `projects/ai_washing/docs/track_a_filing_date_and_patent_window_audit_v1.md`
 - `projects/ai_washing/docs/track_a_patent_refresh_source_review_v1.md`
+- `projects/ai_washing/docs/track_a_firm_identity_backbone_review_v1.md`
 - `projects/ai_washing/docs/track_a_market_data_source_review_v1.md`
+- `projects/ai_washing/docs/track_a_data_refresh_todo_v1.md`
 
 ## Execution posture
 

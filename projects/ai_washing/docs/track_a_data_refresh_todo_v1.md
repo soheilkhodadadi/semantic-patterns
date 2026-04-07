@@ -13,9 +13,14 @@ sequence for execution.
 - then classify the cleaned `2025` annual 10-K sentence table
 
 ### Patent lane
-- use application filing timing as the preferred main path
-- keep grant-date timing as a later robustness lane if useful
+- keep both patent-timing lanes active:
+  - true pregrant application filing timing for the conceptually cleaner lane
+  - corrected hybrid grant timing for the less-censored full-span backbone
 - expand the patent window to `2014-2025`
+- rebuild the panel from a refreshed disclosure-side speaker universe rather
+  than merging new patent outputs into the old panel backbone
+- prefer PatentsView **pregrant tables** over raw USPTO XML for the serious
+  application-timing rebuild
 
 ### Market-reaction lane
 - keep this as a separate lane from the annual disclosure/patent rebuild
@@ -25,21 +30,29 @@ sequence for execution.
 
 ## Immediate execution sequence
 
-1. Finish `2025` sentence cleanup.
-2. Classify the cleaned `2025` sentence table into the annual clean model lane.
-3. Run a spot-check pass on the cleaned/classified `2025` outputs to confirm
-   sentence quality, segmentation quality, and absence of obvious junk rows.
-4. Patch patent extractor filename resolution for the new `g_*` PatentViews
-   files.
-5. Extend the filtered patent workflow to join `g_application.tsv` and carry
-   `filing_date`.
-6. Rebuild the patent series on a `2014-2025` window.
-7. Open the classifier-upgrade planning lane before any final regression or
-   event-study reruns.
-8. Rebuild the annual ever-speaker panel only after the widened patent window
-   is ready and the classifier-upgrade decision is explicit.
-9. After the annual backbone is stable, open the filing-date event-study lane
-   using daily return data.
+Completed:
+1. `2025` sentence cleanup
+2. `2025` classification
+3. `2025` classification spot check
+4. refreshed `2016-2025` narrative measures
+5. refreshed speaker-firm universe
+6. refreshed WRDS identity/crosswalk + annual controls
+7. refreshed hybrid grant-timed patent rebuild
+8. refreshed annual ever-speaker panel backbone on the hybrid grant lane
+
+Next:
+9. download true pregrant tables:
+   - `pg_published_application`
+   - `pg_published_application_abstract`
+   - `pg_assignee_disambiguated`
+   - `pg_granted_pgpubs_crosswalk`
+   - optional `pg_applicant_not_disambiguated`
+10. build the true pregrant application-timed patent lane
+11. compare pregrant application timing against the hybrid grant backbone
+12. open the classifier-upgrade planning lane before any final regression or
+    event-study reruns
+13. after the annual backbone is stable, open the filing-date event-study lane
+    using daily return data
 
 Classifier-upgrade planning anchors:
 - `projects/ai_washing/docs/track_a_2025_classification_spot_check_v1.md`
@@ -48,10 +61,14 @@ Classifier-upgrade planning anchors:
 ## Data dependencies to prepare
 
 ### PatentViews
-- `g_application.tsv`
 - `g_patent.tsv`
 - `g_patent_abstract.tsv`
 - `g_assignee_disambiguated.tsv`
+- `pg_published_application`
+- `pg_published_application_abstract`
+- `pg_assignee_disambiguated`
+- `pg_granted_pgpubs_crosswalk`
+- optional `pg_applicant_not_disambiguated`
 
 ### WRDS / CCM
 - `ccmsecd` for daily event-window returns
@@ -62,12 +79,15 @@ Classifier-upgrade planning anchors:
 - not folding event-study data requirements into the annual panel rebuild
 - not treating monthly returns as the main event-study input
 - not using the old exploratory patent scripts for the refreshed patent lane
+- not treating the old panel as the implicit source of truth for refreshed firm
+  identity
 - not treating the current classifier as the automatically final model for the
   rerun; model-upgrade review still has to happen before final empirical output
 
 ## Bottom line
 
 The fastest safe path now is:
-- keep the sentence/classification lane moving immediately
-- prepare the patent lane correctly for application filing timing
+- use the refreshed hybrid grant lane to keep the panel rebuild moving
+- build a true pregrant application lane rather than forcing application timing
+  through a grant-centered source
 - open the market-reaction lane after the refreshed annual backbone is rebuilt
