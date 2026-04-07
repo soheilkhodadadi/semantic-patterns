@@ -29,6 +29,11 @@ Migration sheets:
 Planning notes:
 - `projects/ai_washing/planning_notes/README.md`
 
+Member docs:
+- `projects/ai_washing/docs/README.md`
+- `projects/ai_washing/docs/publication_upgrade_stakeholder_expectations_v1.md`
+- `projects/ai_washing/docs/publication_upgrade_roadmap_v1.md`
+
 Current root-surface triage:
 - `projects/ai_washing/root_surface_triage_registry_v2.md`
 
@@ -90,9 +95,9 @@ Legacy compatibility still exists in:
 ## Read this folder in this order
 
 1. `projects/ai_washing/root_surface_triage_registry_v2.md`
-2. `projects/ai_washing/migration_sheets/README.md`
-3. `projects/ai_washing/planning_notes/README.md`
-4. `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v20.md`
+2. `projects/ai_washing/docs/publication_upgrade_roadmap_v1.md`
+3. `projects/ai_washing/migration_sheets/README.md`
+4. `projects/ai_washing/planning_notes/README.md`
 5. `docs/roadmap_v2/current_state_navigation_v1.md`
 
 ## Current posture

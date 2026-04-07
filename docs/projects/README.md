@@ -16,6 +16,8 @@ Current project-doc fronts:
 
 Current project-member/code fronts:
 - `projects/ai_washing/README.md`
+- `projects/eri/docs/pilot_charter_v1.md`
+- `projects/allocationlab/docs/pilot_charter_v1.md`
 
 Current repo posture:
 - `docs/roadmap_v2/current_state_navigation_v1.md`

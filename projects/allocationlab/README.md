@@ -26,6 +26,9 @@ Promote tracked member structure here only when:
 - the dependency shape is explicit
 - there is enough implementation pressure to justify the member seed becoming buildable
 
+Current pilot activation doc:
+- `projects/allocationlab/docs/pilot_charter_v1.md`
+
 See also:
 - `docs/projects/allocationlab/adapter_framing_v1.md`
 - `projects/allocationlab/member_seed_decision_v1.md`

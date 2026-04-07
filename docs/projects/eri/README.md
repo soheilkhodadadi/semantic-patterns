@@ -12,4 +12,7 @@ Current anchor:
 - adapter framing note:
   - `docs/projects/eri/adapter_framing_v1.md`
 
+Current member-local pilot anchor:
+- `projects/eri/docs/pilot_charter_v1.md`
+
 Keep organization-specific planning and interview materials under `local_private/projects/eri/`.

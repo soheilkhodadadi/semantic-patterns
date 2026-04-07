@@ -46,3 +46,4 @@ Canonical in-repo strategy inputs:
 - `docs/director/stakeholder_expectations.md`
 - `docs/director/proposal_methodology.md`
 - `docs/director/playbook_library.md`
+- `docs/director/project_scoped_roadmap_pattern_v1.md`

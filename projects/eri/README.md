@@ -25,6 +25,9 @@ Promote tracked, public-safe member structure here only when:
 - intake materials are ready to normalize
 - the shared-vs-project split is explicit
 
+Current pilot activation doc:
+- `projects/eri/docs/pilot_charter_v1.md`
+
 See also:
 - `docs/projects/eri/adapter_framing_v1.md`
 - `projects/eri/member_seed_decision_v1.md`
