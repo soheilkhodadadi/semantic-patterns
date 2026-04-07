@@ -133,6 +133,9 @@ The next concrete artifacts to create or refresh after this plan are:
 - `projects/ai_washing/docs/track_a_capital_market_design_v1.md`
 - `projects/ai_washing/docs/track_a_identification_candidate_review_v1.md`
 
+Current A1 anchor:
+- `projects/ai_washing/docs/track_a_2025_refresh_readiness_v1.md`
+
 ## Execution posture
 
 Track A should be run as project work, not as another restructure queue.
