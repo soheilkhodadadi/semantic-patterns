@@ -8,3 +8,4 @@ Do not bulk-copy existing top-level docs here yet.
 Current active member-scoped docs:
 - `projects/ai_washing/docs/publication_upgrade_stakeholder_expectations_v1.md`
 - `projects/ai_washing/docs/publication_upgrade_roadmap_v1.md`
+- `projects/ai_washing/docs/track_a_execution_plan_v1.md`

@@ -148,6 +148,11 @@ Deliverables:
 - one identification design note
 - one model-credibility robustness plan
 
+## Active execution anchor
+
+The current first execution surface for this roadmap is:
+- `projects/ai_washing/docs/track_a_execution_plan_v1.md`
+
 ## What this roadmap is not
 
 This roadmap is not:
