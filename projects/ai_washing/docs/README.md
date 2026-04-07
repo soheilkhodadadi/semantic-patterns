@@ -11,3 +11,4 @@ Current active member-scoped docs:
 - `projects/ai_washing/docs/track_a_execution_plan_v1.md`
 - `projects/ai_washing/docs/track_a_2025_refresh_readiness_v1.md`
 - `projects/ai_washing/docs/track_a_2025_source_staging_v1.md`
+- `projects/ai_washing/docs/track_a_2025_refresh_contract_v1.md`

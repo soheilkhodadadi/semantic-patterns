@@ -36,6 +36,7 @@ Member docs:
 - `projects/ai_washing/docs/track_a_execution_plan_v1.md`
 - `projects/ai_washing/docs/track_a_2025_refresh_readiness_v1.md`
 - `projects/ai_washing/docs/track_a_2025_source_staging_v1.md`
+- `projects/ai_washing/docs/track_a_2025_refresh_contract_v1.md`
 
 Current root-surface triage:
 - `projects/ai_washing/root_surface_triage_registry_v2.md`
@@ -95,6 +96,9 @@ Legacy compatibility still exists in:
 - `data/run_historical_backfill.py`
 - `data/reextract_tranche_slice.py`
 - `data/stage_sec_year_root.py`
+- `data/index_refresh_window.py`
+- `data/build_refresh_extraction_manifests.py`
+- `data/extract_refresh_year_batches.py`
 
 ## Read this folder in this order
 
