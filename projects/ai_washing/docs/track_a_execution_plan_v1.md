@@ -37,11 +37,15 @@ Tasks:
 - compare the 2025 filing format with the current ingestion assumptions
 - run refreshed indexing/extraction/classification planning
 - define the exact rebuild path for downstream measures and panels
+- audit filing-date availability for later event-study use
+- audit patent timing and source-window requirements before panel rebuild
 
 Deliverables:
 - 2025 refresh readiness note
 - updated refresh command path
 - explicit output targets for refreshed sentence/classification/panel artifacts
+- filing-date and patent-window audit note
+- patent refresh source review note
 
 Primary dependencies:
 - filing access
@@ -79,6 +83,8 @@ Tasks:
 - list feasible market-data inputs
 - define the main candidate dependent variables
 - choose the first serious test to implement
+- decide whether daily or monthly data are appropriate for the first event-study lane
+- decide whether WRDS merged CCM tables can replace the older split controls path
 
 Current preferred first candidate:
 - filing-date market reaction / event-study lane
@@ -87,6 +93,7 @@ Deliverables:
 - capital-market design note
 - required data dependency list
 - first chosen test
+- market-data source review note
 
 ### A4. Identification design selection
 
@@ -129,6 +136,9 @@ Deliverable:
 
 The next concrete artifacts to create or refresh after this plan are:
 - `projects/ai_washing/docs/track_a_2025_refresh_readiness_v1.md`
+- `projects/ai_washing/docs/track_a_filing_date_and_patent_window_audit_v1.md`
+- `projects/ai_washing/docs/track_a_patent_refresh_source_review_v1.md`
+- `projects/ai_washing/docs/track_a_market_data_source_review_v1.md`
 - `projects/ai_washing/docs/track_a_model_robustness_plan_v1.md`
 - `projects/ai_washing/docs/track_a_capital_market_design_v1.md`
 - `projects/ai_washing/docs/track_a_identification_candidate_review_v1.md`
@@ -137,6 +147,9 @@ Current A1 anchor:
 - `projects/ai_washing/docs/track_a_2025_refresh_readiness_v1.md`
 - `projects/ai_washing/docs/track_a_2025_source_staging_v1.md`
 - `projects/ai_washing/docs/track_a_2025_refresh_contract_v1.md`
+- `projects/ai_washing/docs/track_a_filing_date_and_patent_window_audit_v1.md`
+- `projects/ai_washing/docs/track_a_patent_refresh_source_review_v1.md`
+- `projects/ai_washing/docs/track_a_market_data_source_review_v1.md`
 
 ## Execution posture
 

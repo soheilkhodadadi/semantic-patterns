@@ -37,6 +37,9 @@ Member docs:
 - `projects/ai_washing/docs/track_a_2025_refresh_readiness_v1.md`
 - `projects/ai_washing/docs/track_a_2025_source_staging_v1.md`
 - `projects/ai_washing/docs/track_a_2025_refresh_contract_v1.md`
+- `projects/ai_washing/docs/track_a_filing_date_and_patent_window_audit_v1.md`
+- `projects/ai_washing/docs/track_a_patent_refresh_source_review_v1.md`
+- `projects/ai_washing/docs/track_a_market_data_source_review_v1.md`
 
 Current root-surface triage:
 - `projects/ai_washing/root_surface_triage_registry_v2.md`
