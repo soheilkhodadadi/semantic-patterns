@@ -102,3 +102,34 @@ def test_member_classify_active_window_preliminary_smoke(tmp_path):
 
     assert report["status"] == "passed"
     assert report["summary"]["completed_year_count"] == 2
+
+
+def test_member_resolve_runtime_prefers_explicit_source_window_id(monkeypatch):
+    from ai_washing_member.classification.classify_active_window_preliminary import _resolve_runtime
+
+    selected_manifest = {
+        "status": "selected",
+        "winner": {
+            "model_id": "binary_relevance_then_as_v1",
+            "model_type": "binary_relevance_then_as",
+            "source_window_id": "active_2021_2024",
+        },
+    }
+
+    monkeypatch.setattr(
+        "ai_washing_member.classification.classify_active_window_preliminary.load_manifest",
+        lambda _path: selected_manifest,
+    )
+
+    runtime, selected, output_model_id, source_window_id = _resolve_runtime(
+        argparse.Namespace(
+            selected_model_manifest="artifacts/models/prelim_selected_model_v1.json",
+            model_id="prelim_selected_model_v1",
+            source_window_id="annual_10k_2025_refresh_v1",
+        )
+    )
+
+    assert runtime["model_id"] == "binary_relevance_then_as_v1"
+    assert selected["status"] == "selected"
+    assert output_model_id == "prelim_selected_model_v1"
+    assert source_window_id == "annual_10k_2025_refresh_v1"

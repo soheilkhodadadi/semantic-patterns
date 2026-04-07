@@ -139,6 +139,7 @@ The next concrete artifacts to create or refresh after this plan are:
 - `projects/ai_washing/docs/track_a_filing_date_and_patent_window_audit_v1.md`
 - `projects/ai_washing/docs/track_a_patent_refresh_source_review_v1.md`
 - `projects/ai_washing/docs/track_a_market_data_source_review_v1.md`
+- `projects/ai_washing/docs/track_a_data_refresh_todo_v1.md`
 - `projects/ai_washing/docs/track_a_model_robustness_plan_v1.md`
 - `projects/ai_washing/docs/track_a_capital_market_design_v1.md`
 - `projects/ai_washing/docs/track_a_identification_candidate_review_v1.md`

@@ -10,3 +10,7 @@ from ai_washing_member.classification.classify_active_window_preliminary_restart
 __all__ = ["run_classification_restartable", "parse_args", "main"]
 
 member = _member
+
+
+if __name__ == "__main__":
+    main()

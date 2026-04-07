@@ -1,4 +1,4 @@
-"""Build an annual ever-speaker panel with calendar-year patent timing."""
+"""Build an annual ever-speaker panel with buffered calendar-year patent timing."""
 
 from __future__ import annotations
 
@@ -19,6 +19,7 @@ DEFAULT_CONTROLS = (
 DEFAULT_LOOKUP = "data/metadata/company_lookup_active_annual_allyears_2021_2024.csv"
 DEFAULT_OUT = "data/processed/panel/panel_ai_patents_controls_ever_speaker_2016_2024_v1.csv"
 DEFAULT_QC = "reports/merge_qc_ever_speaker_2016_2024_v1.md"
+DEFAULT_PATENT_BUFFER_YEARS = 2
 
 NARRATIVE_COUNT_COLS = ["ai_total", "doc_count", "n_A", "n_S", "n_I", "n_total"]
 CONTROL_COLS = [
@@ -118,6 +119,73 @@ def _add_calendar_patent_timing(df: pd.DataFrame) -> pd.DataFrame:
     return panel
 
 
+def _prepare_patent_panel(
+    patents: pd.DataFrame,
+    *,
+    ciks: pd.Series,
+    start_year: int,
+    end_year: int,
+    buffer_years: int = DEFAULT_PATENT_BUFFER_YEARS,
+) -> pd.DataFrame:
+    padded_start = int(start_year) - max(int(buffer_years), 0)
+    padded_end = int(end_year) + max(int(buffer_years), 0)
+
+    patent_series = patents.copy()
+    patent_series["cik"] = patent_series["cik"].apply(normalize_cik)
+    patent_series["year"] = pd.to_numeric(patent_series["year"], errors="coerce").astype(int)
+    patent_series = patent_series.loc[
+        patent_series["year"].between(padded_start, padded_end)
+    ].copy()
+    patent_series = patent_series.sort_values(["cik", "year"]).drop_duplicates(
+        ["cik", "year"], keep="last"
+    )
+
+    scaffold = _build_scaffold(ciks, range(padded_start, padded_end + 1))
+    patent_keep = ["cik", "year", "patents_total", "patents_ai", "ai_share"]
+    patent_panel = scaffold.merge(
+        patent_series[patent_keep], on=["cik", "year"], how="left"
+    )
+    patent_panel["patents_total"] = pd.to_numeric(
+        patent_panel["patents_total"], errors="coerce"
+    ).fillna(0)
+    patent_panel["patents_ai"] = pd.to_numeric(
+        patent_panel["patents_ai"], errors="coerce"
+    ).fillna(0)
+    patent_panel["ai_share_patents"] = (
+        patent_panel["patents_ai"] / patent_panel["patents_total"].replace(0, np.nan)
+    )
+    if "ai_share" in patent_panel.columns:
+        patent_panel = patent_panel.drop(columns=["ai_share"])
+
+    patent_panel = _add_calendar_patent_timing(patent_panel)
+    patent_panel = patent_panel.loc[
+        patent_panel["year"].between(start_year, end_year)
+    ].copy()
+    keep_cols = [
+        "cik",
+        "year",
+        "patents_total",
+        "patents_ai",
+        "ai_share_patents",
+        "patents_ai_lag1",
+        "patents_ai_lag2",
+        "patents_ai_lead0",
+        "patents_ai_lead1",
+        "patents_ai_lead2",
+        "log_patents_ai_lag1",
+        "log_patents_ai_lag2",
+        "log_patents_ai_lead0",
+        "log_patents_ai_lead1",
+        "log_patents_ai_lead2",
+        "any_pat_lag1",
+        "any_pat_lag2",
+        "any_pat_0",
+        "any_pat_1",
+        "any_pat_2",
+    ]
+    return patent_panel[keep_cols]
+
+
 def _write_qc(path: Path, panel: pd.DataFrame, source_rows: int, source_firms: int) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     zero_talk_rows = int((panel["any_ai_talk"] == 0).sum())
@@ -167,6 +235,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--lookup", default=DEFAULT_LOOKUP)
     parser.add_argument("--start-year", type=int, default=2016)
     parser.add_argument("--end-year", type=int, default=2024)
+    parser.add_argument("--patent-buffer-years", type=int, default=DEFAULT_PATENT_BUFFER_YEARS)
     parser.add_argument("--out", default=DEFAULT_OUT)
     parser.add_argument("--qc", default=DEFAULT_QC)
     return parser.parse_args()
@@ -215,19 +284,14 @@ def main() -> None:
     panel = _compute_narrative_features(panel)
 
     patents = pd.read_csv(args.patents).copy()
-    patents["cik"] = patents["cik"].apply(normalize_cik)
-    patents["year"] = pd.to_numeric(patents["year"], errors="coerce").astype(int)
-    patents = patents.loc[patents["year"].between(args.start_year, args.end_year)].copy()
-    patents = patents.sort_values(["cik", "year"]).drop_duplicates(["cik", "year"], keep="last")
-    patent_keep = ["cik", "year", "patents_total", "patents_ai", "ai_share"]
-    panel = panel.merge(patents[patent_keep], on=["cik", "year"], how="left")
-    panel["patents_total"] = pd.to_numeric(panel["patents_total"], errors="coerce").fillna(0)
-    panel["patents_ai"] = pd.to_numeric(panel["patents_ai"], errors="coerce").fillna(0)
-    panel["ai_share_patents"] = (
-        panel["patents_ai"] / panel["patents_total"].replace(0, np.nan)
+    patent_panel = _prepare_patent_panel(
+        patents,
+        ciks=panel["cik"],
+        start_year=args.start_year,
+        end_year=args.end_year,
+        buffer_years=args.patent_buffer_years,
     )
-    if "ai_share" in panel.columns:
-        panel = panel.drop(columns=["ai_share"])
+    panel = panel.merge(patent_panel, on=["cik", "year"], how="left")
 
     controls = pd.read_csv(args.controls).copy()
     controls["cik"] = controls["cik"].apply(normalize_cik)
@@ -246,8 +310,6 @@ def main() -> None:
         if col not in lookup.columns:
             lookup[col] = ""
     panel = panel.merge(lookup[["cik", "name", "ticker"]], on="cik", how="left")
-
-    panel = _add_calendar_patent_timing(panel)
 
     preferred = [
         "cik",

@@ -13,12 +13,20 @@ It answers four questions:
 ## Local source files observed
 
 Observed under `/Users/soheilkhodadadi/DataWork/patentsview`:
+- `g_application.tsv`
 - `g_patent.tsv`
 - `g_patent_abstract.tsv`
 - `g_assignee_disambiguated.tsv`
 - `PV_grant_data_dictionary.pdf`
 
 Observed headers:
+
+### `g_application.tsv`
+- `application_id`
+- `patent_id`
+- `patent_application_type`
+- `filing_date`
+- additional application-level fields
 
 ### `g_patent.tsv`
 - `patent_id`
@@ -95,15 +103,20 @@ from `g_patent.tsv`.
 Based on the dictionary, `patent_date` is the patent grant date, not the
 application filing date.
 
-### 5. The dictionary indicates application-level filing dates exist, but they are not in the local three-file drop
+### 5. Application-level filing dates are available locally
 
-The dictionary includes a `g_application` table and a `filing_date` field.
+The local source root already includes:
+- `g_application.tsv`
+
+and it exposes:
+- `patent_id`
+- `filing_date`
 
 Implication:
-- if we want yearly counts aligned to **application filing timing**, the current
-  three-file local drop is not enough by itself
-- we would need to add the relevant application-level table(s), or another
-  authoritative application-timing source, before rebuilding the patent counts
+- we can adapt the current filtered patent workflow to join
+  `g_application.tsv` on `patent_id`
+- we do **not** need to pause for an API-based patent source just to build the
+  application-timing series
 
 ## API / future automation review
 
@@ -131,6 +144,19 @@ For our use case, the best near-term posture is:
 - keep bulk files as the canonical refresh input
 - optionally use API-based discovery later to find the newest product files
 
+## Track A decision update
+
+After review, the working decision is:
+- main patent series = application filing timing
+- robustness patent series = grant timing
+- current refresh path = adapt the bulk workflow, not replace it with an API
+
+Reason:
+- filing timing is the conceptually cleaner main specification for the final paper
+- grant timing is still useful as a robustness or comparison series
+- the current bulk workflow is already close enough that adapting it is lower-risk
+  than replacing it mid-refresh
+
 ## Recommended Track A decision
 
 ### Immediate operational choice
@@ -144,36 +170,42 @@ it accepts either:
 This is lower-risk than manual renaming and keeps the repo compatible with more
 than one PatentViews vintage.
 
-### Timing choice that still needs an explicit decision
 
-We need to decide between:
+### Timing decision recorded for Track A
 
-1. **Grant-date annual refresh first**
-- fastest path
-- closest to the current implemented scripts
-- good enough if Track A needs a refreshed annual backbone quickly
+Decision:
+- pursue **application-filing-date patent timing** as the preferred main path
+  for the refreshed paper backbone
+- retain **grant-date timing** as a later robustness lane if needed
 
-2. **Application-filing-date annual refresh**
-- conceptually closer to the paper language about filing timing
-- requires additional source tables beyond the current local three-file drop
-- should be chosen on purpose, not assumed accidentally
+Why this is the right choice:
+- the paper is moving from a preliminary disclosure-validation version toward a
+  more defensible final empirical package
+- if the supervisor later objects to grant timing, rerunning the patent lane a
+  second time would be slower and riskier than getting the timing definition
+  right now
+- the local PatentViews root already includes `g_application.tsv`, so this is
+  now a workflow-adaptation problem rather than a source-access problem
 
-My recommendation:
-- for immediate Track A panel refresh, do **not** pretend this is already a
-  filing-date patent series
-- document the current grant-date reality clearly
-- then decide whether to upgrade the patent timing definition before the next
-  panel rebuild
+Operational implication:
+- we should still patch filename resolution in the modern filtered extractor
+  lane now
+- the first serious patent rebuild should target application filing timing
+  directly using the local `g_application.tsv` join
+- grant-date timing should be documented as a secondary robustness option, not
+  silently used as the main refreshed series
+
 
 ## Immediate next tasks
 
 1. Patch patent filename resolution in the modern filtered extractor lane.
-2. Decide whether the first refresh rebuild will use grant timing or be held
-   until application-filing timing is added.
-3. If filing timing is required, acquire the application-level PatentViews bulk
-   table(s) that expose `filing_date`.
-4. Extend the year window to at least `2014-2025` before rebuilding the annual
-   panel.
+2. Add `g_application.tsv` to the filtered patent join path and carry
+   `filing_date` into the annual counts pipeline.
+3. Extend the patent refresh window to at least `2014-2025`.
+4. Rebuild the annual patent series using application filing timing as the main
+   path.
+5. Keep a grant-date rebuild as an optional robustness lane only after the main
+   filing-timing series is working.
 
 ## Bottom line
 

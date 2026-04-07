@@ -37,7 +37,7 @@ def _resolve_runtime(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str
             )
         winner = dict(selected["winner"])
         output_model_id = str(args.model_id or "prelim_selected_model_v1")
-        source_window_id = str(winner.get("source_window_id", args.source_window_id))
+        source_window_id = str(args.source_window_id or winner.get("source_window_id", ""))
         return winner, selected, output_model_id, source_window_id
 
     metadata = _load_metadata(args.model_metadata)

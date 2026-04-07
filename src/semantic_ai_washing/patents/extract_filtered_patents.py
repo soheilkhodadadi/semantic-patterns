@@ -2,22 +2,24 @@
 Extracts AI-related patent counts per firm-year using disambiguated assignee names from PatentsView data.
 
 Steps:
-- Load `patent_assignee.tsv` and match `disambig_assignee_organization` to known firms
-- Use matching patent_ids to pull from `patent.tsv` and `patent_abstract.tsv`
+- Load PatentsView assignee rows and match `disambig_assignee_organization` to known firms
+- Use matching patent_ids to pull from grant tables and, when requested,
+  application filing dates
 - Filter for AI keywords in title + abstract
 - Aggregate AI patent counts per firm-year
 
 Run:
-    python src/patents/extract_filtered_patents.py --min-year 2019
+    python -m semantic_ai_washing.patents.extract_filtered_patents --min-year 2014
 Outputs:
-    - data/processed/patents/ai_patent_counts_filtered_2019plus.csv
-    - data/processed/patents/ai_patent_examples_2019plus.csv
-    - data/processed/patents/patents_diagnostics_2019plus.csv
+    - data/processed/patents/ai_patent_counts_filtered_2014plus.csv
+    - data/processed/patents/ai_patent_examples_2014plus.csv
+    - data/processed/patents/patents_diagnostics_2014plus.csv
 """
 
 import argparse
 import json
 import os
+import re
 from collections import defaultdict
 from datetime import datetime, timezone
 
@@ -29,17 +31,34 @@ from semantic_ai_washing.patents.keyword_matching import (
     matched_keywords,
     normalize_org_name,
 )
+from semantic_ai_washing.patents.patentsview_sources import (
+    attach_patent_timing,
+    load_application_filing_date_lookup,
+    resolve_patentsview_paths,
+)
 
 parser = argparse.ArgumentParser(
     description="Extract AI-related patents per firm-year with example titles/abstracts."
 )
 parser.add_argument(
-    "--min-year", type=int, default=2019, help="Minimum patent year to include (default: 2019)."
+    "--min-year", type=int, default=2014, help="Minimum patent year to include (default: 2014)."
+)
+parser.add_argument(
+    "--max-year",
+    type=int,
+    default=None,
+    help="Maximum patent year to include (default: no upper bound).",
 )
 parser.add_argument(
     "--data-root",
     default=os.getenv("PATENT_DATA_ROOT", "/Users/soheilkhodadadi/DataWork/patentsview"),
-    help="PatentsView root containing patent.tsv/abstract/assignee files.",
+    help="PatentsView root containing PatentsView grant/application files.",
+)
+parser.add_argument(
+    "--timing-field",
+    choices=["application", "grant"],
+    default="application",
+    help="Which date field to use for year assignment (default: application).",
 )
 parser.add_argument(
     "--company-lookup",
@@ -88,14 +107,22 @@ parser.add_argument(
     default=250000,
     help="Chunk size for streaming patent/patent_abstract tables (default: 250000).",
 )
+parser.add_argument(
+    "--application-chunksize",
+    type=int,
+    default=250000,
+    help="Chunk size for streaming g_application.tsv (default: 250000).",
+)
 args = parser.parse_args()
 min_year = args.min_year
-suffix = f"{min_year}plus"
+suffix = f"{min_year}_{args.max_year}" if args.max_year is not None else f"{min_year}plus"
 
+paths = resolve_patentsview_paths(args.data_root, require_application=args.timing_field == "application")
+assignee_path = str(paths.assignee)
+patent_path = str(paths.patent)
+abstract_path = str(paths.abstract)
+application_path = str(paths.application) if paths.application else ""
 data_root = args.data_root
-assignee_path = os.path.join(data_root, "patent_assignee.tsv")
-patent_path = os.path.join(data_root, "patent.tsv")
-abstract_path = os.path.join(data_root, "patent_abstract.tsv")
 
 output_counts_path = args.output_counts.format(suffix=suffix)
 output_examples_path = args.output_examples.format(suffix=suffix)
@@ -127,11 +154,13 @@ def write_progress(status: str, **payload) -> None:
         "status": status,
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "min_year": min_year,
+        "max_year": args.max_year,
         "data_root": data_root,
         "keywords_path": args.keywords_path,
         "output_counts_path": output_counts_path,
         "output_examples_path": output_examples_path,
         "output_diag_path": diag_path,
+        "timing_field": args.timing_field,
     }
     report.update(payload)
     with open(progress_path, "w", encoding="utf-8") as fh:
@@ -289,24 +318,39 @@ if matched_df.empty:
 print("📄 Loading filtered patent and abstract data...")
 patents = load_filtered_patent_rows(patent_path, PATENT_COLUMNS, patent_ids)
 abstracts = load_filtered_patent_rows(abstract_path, ABSTRACT_COLUMNS, patent_ids)
+filing_dates = {}
+if args.timing_field == "application":
+    filing_dates = load_application_filing_date_lookup(
+        application_path,
+        patent_ids,
+        chunksize=args.application_chunksize,
+    )
 write_progress(
     "patent_rows_loaded",
     patent_rows=int(len(patents)),
     abstract_rows=int(len(abstracts)),
+    application_rows=int(len(filing_dates)),
 )
 
 df = matched_df.merge(patents, on="patent_id", how="inner")
 df = df.merge(abstracts, on="patent_id", how="left")
-df.dropna(subset=["patent_title", "patent_date"], inplace=True)
+df = attach_patent_timing(
+    df,
+    timing_field=args.timing_field,
+    filing_date_lookup=filing_dates or None,
+)
+df.dropna(subset=["patent_title", "timing_date"], inplace=True)
 
 df["text"] = (df["patent_title"].fillna("") + " " + df["patent_abstract"].fillna("")).str.lower()
-df["year"] = pd.to_datetime(df["patent_date"], errors="coerce").dt.year
+df["year"] = pd.to_datetime(df["timing_date"], errors="coerce").dt.year
 df = df[df["year"].notnull()]
 df["year"] = df["year"].astype(int)
 
 # Filter to requested year range
 df = df[df["year"] >= min_year].copy()
-df["patent_dt"] = pd.to_datetime(df["patent_date"], errors="coerce")
+if args.max_year is not None:
+    df = df[df["year"] <= args.max_year].copy()
+df["patent_dt"] = pd.to_datetime(df["timing_date"], errors="coerce")
 
 keywords = load_keywords(args.keywords_path)
 pattern = compile_boundary_pattern(keywords)
@@ -343,7 +387,19 @@ if not df_ai.empty:
         .tail(1)
     )
     examples_out = examples[
-        ["cik", "name", "year", "patent_id", "patent_title", "patent_abstract", "matched_keywords"]
+        [
+            "cik",
+            "name",
+            "year",
+            "patent_id",
+            "patent_title",
+            "patent_abstract",
+            "matched_keywords",
+            "timing_field",
+            "timing_date",
+            "patent_date",
+            "filing_date",
+        ]
     ].drop_duplicates()
     examples_out.to_csv(output_examples_path, index=False)
     print(f"[✓] Saved example titles/abstracts to {output_examples_path}")

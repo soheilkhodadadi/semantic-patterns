@@ -17,6 +17,10 @@ from semantic_ai_washing.patents.keyword_matching import (
     matched_keywords,
     normalize_org_name,
 )
+from semantic_ai_washing.patents.patentsview_sources import (
+    load_application_filing_date_lookup,
+    resolve_patentsview_paths,
+)
 
 
 def load_company_lookup(path: str) -> pd.DataFrame:
@@ -119,6 +123,8 @@ def load_filtered_patent_rows(
     abstract_path: str,
     patent_ids: set[str],
     *,
+    application_path: str | None,
+    timing_field: str,
     min_year: int,
     max_year: int,
     patent_chunksize: int,
@@ -136,11 +142,33 @@ def load_filtered_patent_rows(
         chunk = chunk[chunk["patent_id"].isin(patent_ids)].copy()
         if chunk.empty:
             continue
-        chunk["year"] = pd.to_datetime(chunk["patent_date"], errors="coerce").dt.year
-        chunk = chunk[chunk["year"].between(min_year, max_year, inclusive="both")]
         if not chunk.empty:
             patents.append(chunk)
     patents_df = pd.concat(patents, ignore_index=True) if patents else pd.DataFrame(columns=patent_cols)
+    if patents_df.empty:
+        return pd.DataFrame(columns=patent_cols + ["filing_date", "timing_date", "year"])
+    if timing_field == "application":
+        if not application_path:
+            raise FileNotFoundError("Application timing requested but no application file was resolved.")
+        filing_dates = load_application_filing_date_lookup(
+            application_path,
+            patent_ids,
+            chunksize=patent_chunksize,
+        )
+        patents_df["filing_date"] = patents_df["patent_id"].map(filing_dates).fillna("")
+        patents_df["timing_date"] = patents_df["filing_date"]
+    else:
+        patents_df["filing_date"] = ""
+        patents_df["timing_date"] = patents_df["patent_date"]
+
+    patents_df = patents_df[
+        patents_df["timing_date"].notna() & (patents_df["timing_date"].astype(str).str.strip() != "")
+    ].copy()
+    patents_df["year"] = pd.to_datetime(patents_df["timing_date"], errors="coerce").dt.year
+    patents_df = patents_df[patents_df["year"].notna()].copy()
+    patents_df["year"] = patents_df["year"].astype(int)
+    patents_df = patents_df[patents_df["year"].between(min_year, max_year, inclusive="both")]
+
     filtered_ids = set(patents_df["patent_id"].astype(str)) if not patents_df.empty else set()
 
     abstracts = []
@@ -198,9 +226,23 @@ def benchmark_keyword_set(
         "total_patents_ai": int(agg["patents_ai"].sum()),
     }
 
-    examples = positives[
-        ["cik", "name", "year", "patent_id", "patent_title", "patent_abstract", "matched_keywords"]
-    ].drop_duplicates()
+    example_cols = [
+        "cik",
+        "name",
+        "year",
+        "patent_id",
+        "patent_title",
+        "patent_abstract",
+        "matched_keywords",
+        "timing_field",
+        "timing_date",
+        "patent_date",
+        "filing_date",
+    ]
+    for column in example_cols:
+        if column not in positives.columns:
+            positives[column] = ""
+    examples = positives[example_cols].drop_duplicates()
     examples.insert(0, "keyword_set", label)
     return result, examples.head(examples_per_set)
 
@@ -228,6 +270,12 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--min-year", type=int, required=True)
     parser.add_argument("--max-year", type=int, required=True)
+    parser.add_argument(
+        "--timing-field",
+        choices=["application", "grant"],
+        default="application",
+        help="Which patent date should define year assignment (default: application).",
+    )
     parser.add_argument("--assignee-chunksize", type=int, default=250000)
     parser.add_argument("--patent-chunksize", type=int, default=250000)
     parser.add_argument("--examples-per-set", type=int, default=20)
@@ -266,6 +314,7 @@ def main() -> None:
                     "min_year": args.min_year,
                     "max_year": args.max_year,
                     "data_root": args.data_root,
+                    "timing_field": args.timing_field,
                     "output_report": args.output_report,
                     "output_examples": args.output_examples,
                     **payload,
@@ -276,9 +325,11 @@ def main() -> None:
         )
 
     data_root = Path(args.data_root)
-    assignee_path = data_root / "patent_assignee.tsv"
-    patent_path = data_root / "patent.tsv"
-    abstract_path = data_root / "patent_abstract.tsv"
+    paths = resolve_patentsview_paths(data_root, require_application=args.timing_field == "application")
+    assignee_path = paths.assignee
+    patent_path = paths.patent
+    abstract_path = paths.abstract
+    application_path = paths.application
 
     write_progress("starting")
     firms = load_company_lookup(args.company_lookup)
@@ -296,6 +347,8 @@ def main() -> None:
         str(patent_path),
         str(abstract_path),
         patent_ids,
+        application_path=str(application_path) if application_path else None,
+        timing_field=args.timing_field,
         min_year=args.min_year,
         max_year=args.max_year,
         patent_chunksize=args.patent_chunksize,
@@ -327,6 +380,7 @@ def main() -> None:
     report_payload = {
         "min_year": args.min_year,
         "max_year": args.max_year,
+        "timing_field": args.timing_field,
         "candidate_patent_rows": int(len(frame)),
         "candidate_firms": int(frame["cik"].nunique()),
         "keyword_sets": results,

@@ -16,14 +16,23 @@ from semantic_ai_washing.patents.keyword_matching import (
     matched_keywords,
     normalize_org_name,
 )
+from semantic_ai_washing.patents.patentsview_sources import (
+    load_application_filing_date_lookup,
+    resolve_patentsview_paths,
+)
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--min-year", type=int, default=2019)
+    parser.add_argument("--min-year", type=int, default=2014)
     parser.add_argument(
         "--data-root",
         default=os.getenv("PATENT_DATA_ROOT", "/Users/soheilkhodadadi/DataWork/patentsview"),
+    )
+    parser.add_argument(
+        "--timing-field",
+        choices=["application", "grant"],
+        default="application",
     )
     parser.add_argument(
         "--company-lookup",
@@ -53,6 +62,7 @@ def parse_args() -> argparse.Namespace:
         "--progress-report",
         default="reports/data/patent_extraction_progress_{suffix}.json",
     )
+    parser.add_argument("--application-chunksize", type=int, default=250000)
     return parser.parse_args()
 
 
@@ -140,10 +150,11 @@ def main() -> None:
     for path in [output_counts, output_examples, output_diag]:
         path.parent.mkdir(parents=True, exist_ok=True)
 
-    data_root = Path(args.data_root)
-    assignee_path = data_root / "patent_assignee.tsv"
-    patent_path = data_root / "patent.tsv"
-    abstract_path = data_root / "patent_abstract.tsv"
+    paths = resolve_patentsview_paths(args.data_root, require_application=args.timing_field == "application")
+    assignee_path = paths.assignee
+    patent_path = paths.patent
+    abstract_path = paths.abstract
+    application_path = paths.application
 
     firms = load_company_lookup(args.company_lookup)
     aliases = load_company_aliases(args.company_aliases)
@@ -154,6 +165,7 @@ def main() -> None:
         min_year=args.min_year,
         keywords_path=args.keywords_path,
         normalized_company_terms=len(term_index),
+        timing_field=args.timing_field,
     )
 
     matched_by_patent: dict[str, list[tuple[str, str]]] = defaultdict(list)
@@ -185,19 +197,37 @@ def main() -> None:
             if patent_id not in patent_ids:
                 continue
             patent_date = str(row.get("patent_date", "")).strip()
-            try:
-                year = int(patent_date[:4])
-            except Exception:
-                continue
-            if year < args.min_year:
-                continue
             patents[patent_id] = {
                 "patent_title": str(row.get("patent_title", "")).strip(),
                 "patent_date": patent_date,
-                "year": year,
             }
-    filtered_ids = set(patents)
-    write_progress(progress_path, "patent_rows_filtered", filtered_patent_rows=len(filtered_ids))
+    if args.timing_field == "application":
+        filing_dates = load_application_filing_date_lookup(application_path, patent_ids)
+    else:
+        filing_dates = {}
+    filtered_ids: set[str] = set()
+    for patent_id, patent in patents.items():
+        filing_date = filing_dates.get(patent_id, "")
+        timing_date = filing_date if args.timing_field == "application" else str(patent["patent_date"])
+        if not timing_date:
+            continue
+        try:
+            year = int(timing_date[:4])
+        except Exception:
+            continue
+        if year < args.min_year:
+            continue
+        patent["filing_date"] = filing_date
+        patent["timing_date"] = timing_date
+        patent["timing_field"] = args.timing_field
+        patent["year"] = year
+        filtered_ids.add(patent_id)
+    write_progress(
+        progress_path,
+        "patent_rows_filtered",
+        filtered_patent_rows=len(filtered_ids),
+        application_rows=len(filing_dates),
+    )
 
     abstracts: dict[str, str] = {}
     with open(abstract_path, newline="", encoding="utf-8") as fh:
@@ -246,6 +276,9 @@ def main() -> None:
                         "patent_abstract": abstract,
                         "matched_keywords": mk,
                         "patent_date": patent["patent_date"],
+                        "filing_date": patent.get("filing_date", ""),
+                        "timing_date": patent.get("timing_date", patent["patent_date"]),
+                        "timing_field": patent.get("timing_field", args.timing_field),
                     }
                 )
 
