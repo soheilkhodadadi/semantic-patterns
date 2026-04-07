@@ -41,6 +41,10 @@ sequence for execution.
 9. After the annual backbone is stable, open the filing-date event-study lane
    using daily return data.
 
+Classifier-upgrade planning anchors:
+- `projects/ai_washing/docs/track_a_2025_classification_spot_check_v1.md`
+- `projects/ai_washing/docs/track_a_classifier_upgrade_diagnostic_plan_v1.md`
+
 ## Data dependencies to prepare
 
 ### PatentViews
