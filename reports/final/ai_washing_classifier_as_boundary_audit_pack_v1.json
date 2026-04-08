@@ -1,0 +1,9 @@
+{
+  "status": "passed",
+  "irr_rows_total": 26,
+  "irr_as_rows": 12,
+  "heldout_rows_total": 22,
+  "heldout_high_priority_rows": 11,
+  "audit_pack_rows": 34,
+  "output_csv": "reports/final/ai_washing_classifier_as_boundary_audit_pack_v1.csv"
+}
