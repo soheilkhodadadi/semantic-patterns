@@ -8,7 +8,7 @@ the next classifier-upgrade cycle.
 ## Fixed benchmark asset
 
 Use:
-- [ai_washing_classifier_as_probe_benchmark_v1.csv](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/reports/final/ai_washing_classifier_as_probe_benchmark_v1.csv)
+- [ai_washing_classifier_as_probe_benchmark_v2.csv](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/reports/final/ai_washing_classifier_as_probe_benchmark_v2.csv)
 
 This is a small fixed slice designed to stress exactly the boundary types that
 are currently hurting agreement:

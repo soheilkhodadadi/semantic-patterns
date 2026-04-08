@@ -1,0 +1,17 @@
+row_id,predicted_label,variant_id,short_rationale
+0,Speculative,variant_b_strict_current_claim_v1,Build/integrate language with a risk clause describes in-progress work rather than an explicit current deployed capability.
+2,Actionable,variant_b_strict_current_claim_v1,The IaaS is already enabling AI/ML workflow use cases as a present operating capability.
+3,Speculative,variant_b_strict_current_claim_v1,This is an AI investment statement tied to intended future product improvements, not a current business claim.
+5,Irrelevant,variant_b_strict_current_claim_v1,The sentence is an acquisition/ownership reference rather than a present AI capability claim by the reporting firm.
+6,Speculative,variant_b_strict_current_claim_v1,The sentence is framed as intended implementation over time, so it stays future-oriented.
+10,Speculative,variant_b_strict_current_claim_v1,This says AI may be incorporated in the future, which is not a present business capability claim.
+12,Irrelevant,variant_b_strict_current_claim_v1,The sentence uses AI only in a competition-risk context, not as a firm capability disclosure.
+14,Irrelevant,variant_b_strict_current_claim_v1,This is a dependency and competitiveness risk statement, not a current AI-use claim.
+15,Speculative,variant_b_strict_current_claim_v1,The sentence describes planned changes and possible AI substitution, so it remains in the speculative bucket.
+19,Speculative,variant_b_strict_current_claim_v1,Ongoing R&D plus may-begin language signals future use rather than a clearly current operating claim.
+20,Speculative,variant_b_strict_current_claim_v1,This is a digitization priority statement with AI as part of the goal, not a clearly current deployed capability.
+24,Speculative,variant_b_strict_current_claim_v1,The sentence lists AI as one of several intended investment areas rather than a present operational use.
+25,Irrelevant,variant_b_strict_current_claim_v1,The sentence is a third-party dependency risk statement, not a direct AI capability disclosure.
+26,Actionable,variant_b_strict_current_claim_v1,The firm describes a current risk-management process that uses machine learning as part of present operations.
+28,Actionable,variant_b_strict_current_claim_v1,The sentence describes current AI-driven origination tasks and risk analysis as an operating capability.
+31,Actionable,variant_b_strict_current_claim_v1,The measurement process currently relies on machine learning models to perform a named business function.

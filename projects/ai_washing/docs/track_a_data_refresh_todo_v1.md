@@ -72,6 +72,7 @@ Classifier-upgrade planning anchors:
 - `projects/ai_washing/docs/track_a_2025_classification_spot_check_v1.md`
 - `projects/ai_washing/docs/track_a_classifier_upgrade_diagnostic_plan_v1.md`
 - `projects/ai_washing/docs/track_a_classifier_upgrade_execution_roadmap_v1.md`
+- `projects/ai_washing/docs/track_a_phase1_rubric_benchmark_v1.md`
 
 ## Data dependencies to prepare
 

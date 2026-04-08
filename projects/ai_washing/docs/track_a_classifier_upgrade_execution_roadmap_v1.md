@@ -28,12 +28,18 @@ Goal:
 
 Inputs:
 - `projects/ai_washing/docs/track_a_as_rubric_rewrite_v1.md`
-- `reports/final/ai_washing_classifier_as_probe_benchmark_v1.csv`
+- `reports/final/ai_washing_classifier_as_probe_benchmark_v2.csv`
 - `reports/final/ai_washing_classifier_rubric_probe_slice_revised_labels_v1.csv`
 
 Output:
 - a benchmark note on whether the revised rubric resolves the known failure
   categories more cleanly than the older posture
+
+Current status:
+- completed on the fixed `16`-row slice
+- both blinded rubric variants reproduced the revised benchmark labels exactly
+- Phase 2 is now the deciding step because the fixed slice is no longer
+  discriminating enough to choose between Variant A and Variant B
 
 ## Phase 2. Small benchmark pack
 

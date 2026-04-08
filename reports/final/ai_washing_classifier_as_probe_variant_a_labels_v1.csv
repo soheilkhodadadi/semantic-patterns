@@ -1,0 +1,17 @@
+row_id,predicted_label,variant_id,short_rationale
+0,Speculative,variant_a_two_gate_v1,"Build/integrate language with a trailing risk clause is future-oriented, not present capability."
+2,Actionable,variant_a_two_gate_v1,Current IaaS use explicitly supports AI/ML workflows.
+3,Speculative,variant_a_two_gate_v1,Investment in AI initiatives and to-build product work is not a present operating claim.
+5,Irrelevant,variant_a_two_gate_v1,"The sentence is an acquisition/ownership reference, not a current AI capability claim by the filer."
+6,Speculative,variant_a_two_gate_v1,Intent to implement and in-process refinement language points to future deployment.
+10,Speculative,variant_a_two_gate_v1,"The sentence says AI may be incorporated in the future, so it is not current capability."
+12,Irrelevant,variant_a_two_gate_v1,AI appears only in a competition-risk context without a present capability claim.
+14,Irrelevant,variant_a_two_gate_v1,"This is a dependency/risk statement about AI deployment, not a disclosed current use."
+15,Speculative,variant_a_two_gate_v1,Planned delivery-model changes and may language make this future-oriented.
+19,Speculative,variant_a_two_gate_v1,Ongoing R&D with may-begin language is not yet a present operative claim.
+20,Speculative,variant_a_two_gate_v1,The sentence mixes strategy and digitization goals without a clean present AI capability claim.
+24,Speculative,variant_a_two_gate_v1,AI is listed as an investment priority rather than a current business function.
+25,Irrelevant,variant_a_two_gate_v1,"This is a dependency statement about infrastructure and competition, not current AI use."
+26,Actionable,variant_a_two_gate_v1,The firm currently uses machine learning in a concrete risk-management process.
+28,Actionable,variant_a_two_gate_v1,AI-driven origination tasks and real-time risk analysis are current operating capabilities.
+31,Actionable,variant_a_two_gate_v1,The sentence describes a current machine-learning-based measurement process in operation.

@@ -1,0 +1,24 @@
+{
+  "status": "passed",
+  "variant_id": "variant_a_two_gate_v1",
+  "row_count": 16,
+  "match_count": 16,
+  "mismatch_count": 0,
+  "accuracy": 1.0,
+  "predicted_label_counts": {
+    "Speculative": 8,
+    "Actionable": 4,
+    "Irrelevant": 4
+  },
+  "benchmark_label_counts": {
+    "Speculative": 8,
+    "Actionable": 4,
+    "Irrelevant": 4
+  },
+  "transition_counts": {
+    "Speculative->Speculative": 8,
+    "Actionable->Actionable": 4,
+    "Irrelevant->Irrelevant": 4
+  },
+  "mismatch_rows": []
+}

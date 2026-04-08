@@ -1,0 +1,18 @@
+{
+  "status": "passed",
+  "row_count": 16,
+  "revised_label_counts": {
+    "Speculative": 8,
+    "Actionable": 4,
+    "Irrelevant": 4
+  },
+  "reference_to_revised": {
+    "Speculative->Speculative": 6,
+    "Actionable->Actionable": 4,
+    "Speculative->Irrelevant": 3,
+    "Actionable->Speculative": 2,
+    "Actionable->Irrelevant": 1
+  },
+  "output_csv": "reports/final/ai_washing_classifier_as_probe_benchmark_v2.csv",
+  "output_blinded_csv": "reports/final/ai_washing_classifier_as_probe_benchmark_blinded_v1.csv"
+}
