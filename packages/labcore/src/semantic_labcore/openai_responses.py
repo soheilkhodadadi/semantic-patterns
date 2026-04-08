@@ -11,6 +11,7 @@ import urllib.request
 from typing import Any
 
 OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses"
+RETRYABLE_HTTP_STATUS_CODES = {408, 409, 429}
 
 
 class OpenAIResponsesError(RuntimeError):
@@ -86,8 +87,15 @@ def call_responses_api(
             break
         except urllib.error.HTTPError as exc:
             response_body = exc.read().decode("utf-8", errors="replace")
+            status_code = int(exc.code)
+            if attempt < int(max_retries) and (
+                status_code in RETRYABLE_HTTP_STATUS_CODES or status_code >= 500
+            ):
+                attempt += 1
+                time.sleep(min(2**attempt, 5))
+                continue
             raise OpenAIResponsesHTTPError(
-                status_code=int(exc.code),
+                status_code=status_code,
                 message=f"Responses API HTTP error: {exc.code}",
                 response_body=response_body,
             ) from exc

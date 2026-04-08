@@ -43,6 +43,7 @@ ASSISTIVE_COLUMNS = [
     "assistive_prompt_hash",
 ]
 REQUIRED_COLUMNS = ["sentence_id", "sentence", "source_file", "sentence_index", "label"]
+PARSE_RETRY_LIMIT = 2
 
 
 def _resolve(path: str | Path) -> Path:
@@ -141,6 +142,21 @@ def _record_usage(
         "total_tokens": total_tokens,
         "estimated_cost_usd": estimated_cost,
         "cost_estimation_status": "pricing_unconfigured" if pricing_unconfigured else "estimated",
+    }
+
+
+def _response_debug_excerpt(response_payload: dict[str, Any], response_text: str) -> dict[str, Any]:
+    output_items = response_payload.get("output", []) if isinstance(response_payload, dict) else []
+    content_types: list[str] = []
+    for item in output_items:
+        for content in item.get("content", []):
+            content_types.append(str(content.get("type", "<missing>")))
+    excerpt = response_text[:240] if response_text else ""
+    return {
+        "response_id": str(response_payload.get("id", "")),
+        "response_status": str(response_payload.get("status", "")),
+        "output_content_types": content_types,
+        "response_text_excerpt": excerpt,
     }
 
 
@@ -260,26 +276,41 @@ def generate_assistive_prelabels(
         if isinstance(text_format, dict) and text_format:
             extra_payload["text"] = {"format": text_format}
 
+        response_payload: dict[str, Any] | None = None
+        response_text = ""
+        summary: dict[str, Any] | None = None
+        usage: dict[str, Any] | None = None
+        parse_error: Exception | None = None
+
         try:
-            response_payload = call_responses_api(
-                model=policy.model,
-                input_payload=messages,
-                api_key=api_key,
-                max_output_tokens=int(policy.request.get("max_output_tokens", 200) or 200),
-                timeout_seconds=int(policy.request.get("timeout_seconds", 60) or 60),
-                store=bool(policy.request.get("store", False)),
-                extra_payload=extra_payload or None,
-            )
-            response_text = extract_response_text(response_payload)
-            parsed = parse_assistive_response_text(response_text)
-            summary = validate_assistive_response_payload(parsed, policy)
-            usage = _record_usage(
-                controller,
-                cost_policy,
-                prompt_hash_value=prompt_hash_value,
-                model_name=policy.model,
-                response_payload=response_payload,
-            )
+            for attempt in range(PARSE_RETRY_LIMIT + 1):
+                response_payload = call_responses_api(
+                    model=policy.model,
+                    input_payload=messages,
+                    api_key=api_key,
+                    max_output_tokens=int(policy.request.get("max_output_tokens", 200) or 200),
+                    timeout_seconds=int(policy.request.get("timeout_seconds", 60) or 60),
+                    store=bool(policy.request.get("store", False)),
+                    extra_payload=extra_payload or None,
+                )
+                response_text = extract_response_text(response_payload)
+                try:
+                    parsed = parse_assistive_response_text(response_text)
+                    summary = validate_assistive_response_payload(parsed, policy)
+                    usage = _record_usage(
+                        controller,
+                        cost_policy,
+                        prompt_hash_value=prompt_hash_value,
+                        model_name=policy.model,
+                        response_payload=response_payload,
+                    )
+                    parse_error = None
+                    break
+                except (ValueError, json.JSONDecodeError) as exc:
+                    parse_error = exc
+                    if attempt >= PARSE_RETRY_LIMIT:
+                        raise
+                    time.sleep(min(2**attempt, 3))
         except OpenAIResponsesHTTPError as exc:
             report["errors"].append(
                 {
@@ -293,16 +324,22 @@ def generate_assistive_prelabels(
             _flush_progress(frame, output_path, report, report_file, status="request_failed")
             break
         except (OpenAIResponsesError, ValueError, json.JSONDecodeError) as exc:
-            report["errors"].append(
-                {
-                    "sentence_id": str(row.sentence_id),
-                    "type": type(exc).__name__,
-                    "message": str(exc),
-                }
-            )
+            error_payload = {
+                "sentence_id": str(row.sentence_id),
+                "type": type(exc).__name__,
+                "message": str(exc),
+            }
+            if response_payload is not None:
+                error_payload.update(_response_debug_excerpt(response_payload, response_text))
+            if parse_error is not None:
+                error_payload["parse_attempts"] = PARSE_RETRY_LIMIT + 1
+            report["errors"].append(error_payload)
             report["counts"]["failed_rows"] += 1
             _flush_progress(frame, output_path, report, report_file, status="request_failed")
             break
+
+        assert summary is not None
+        assert usage is not None
 
         frame.at[row.Index, "assistive_label"] = summary["label"]
         frame.at[row.Index, "assistive_confidence"] = summary["confidence"]

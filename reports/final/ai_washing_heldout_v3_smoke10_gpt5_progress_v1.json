@@ -1,0 +1,26 @@
+{
+  "status": "failed",
+  "generated_at_utc": "2026-04-08T20:44:32.681790+00:00",
+  "inputs": {
+    "input_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/validation/held_out_v3/held_out_sentences_v3_smoke10_gpt5.csv",
+    "output_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/validation/held_out_v3/held_out_sentences_v3_smoke10_gpt5.csv",
+    "report_path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/reports/final/ai_washing_heldout_v3_smoke10_gpt5_report_v1.json"
+  },
+  "summary": {
+    "iterations_completed": 1,
+    "max_requests": 10,
+    "total_estimated_cost_usd": 0.0,
+    "last_run_status": "request_failed"
+  },
+  "counts": {
+    "input_rows": 10,
+    "canonical_labeled_rows": 0,
+    "assistive_labeled_rows": 0,
+    "pending_rows": 10
+  },
+  "last_error": {
+    "sentence_id": "041b8fbcd1ea8ff9",
+    "type": "JSONDecodeError",
+    "message": "Unterminated string starting at: line 1 column 55 (char 54)"
+  }
+}

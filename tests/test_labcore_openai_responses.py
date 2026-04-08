@@ -98,16 +98,14 @@ def test_call_responses_api_requires_api_key(monkeypatch: pytest.MonkeyPatch) ->
 
 
 def test_call_responses_api_normalizes_http_error(monkeypatch: pytest.MonkeyPatch) -> None:
-    http_error = urllib.error.HTTPError(
-        url="https://api.openai.com/v1/responses",
-        code=429,
-        msg="Too Many Requests",
-        hdrs=None,
-        fp=io.BytesIO(b'{"error":"rate limit"}'),
-    )
-
     def _fake_urlopen(req, timeout):  # type: ignore[no-untyped-def]
-        raise http_error
+        raise urllib.error.HTTPError(
+            url="https://api.openai.com/v1/responses",
+            code=429,
+            msg="Too Many Requests",
+            hdrs=None,
+            fp=io.BytesIO(b'{"error":"rate limit"}'),
+        )
 
     monkeypatch.setattr(
         "semantic_ai_washing.labcore.openai_responses.urllib.request.urlopen",
@@ -149,4 +147,38 @@ def test_call_responses_api_retries_and_surfaces_network_error(
             max_retries=2,
         )
 
+    assert attempts["count"] == 3
+
+
+def test_call_responses_api_retries_retryable_http_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    attempts = {"count": 0}
+
+    def _fake_urlopen(req, timeout):  # type: ignore[no-untyped-def]
+        attempts["count"] += 1
+        if attempts["count"] < 3:
+            raise urllib.error.HTTPError(
+                url="https://api.openai.com/v1/responses",
+                code=500,
+                msg="Server Error",
+                hdrs=None,
+                fp=io.BytesIO(b'{"error":"transient"}'),
+            )
+        return _FakeResponse({"id": "resp_123", "output_text": "ok"})
+
+    monkeypatch.setattr(
+        "semantic_ai_washing.labcore.openai_responses.urllib.request.urlopen",
+        _fake_urlopen,
+    )
+    monkeypatch.setattr("semantic_ai_washing.labcore.openai_responses.time.sleep", lambda *_: None)
+
+    payload = call_responses_api(
+        model="gpt-test",
+        input_payload=[],
+        api_key="sk-proj-abcdefghijklmnopqrstuvwxyz12345",
+        max_retries=2,
+    )
+
+    assert payload["output_text"] == "ok"
     assert attempts["count"] == 3
