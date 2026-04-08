@@ -180,6 +180,49 @@ latest years:
 That remaining drop is now more plausibly explained by publication lag rather
 than by a matching collapse.
 
+### Bounded fuzzy-matching sensitivity
+
+A bounded fuzzy-matching sensitivity run was executed for `2024` on both:
+- grants
+- pregrant applications
+
+Thresholds tested:
+- `0.90`
+- `0.95`
+
+Summary artifact:
+- `reports/final/ai_washing_patent_fuzzy_sensitivity_2024_v1.json`
+
+Small review sample:
+- `reports/final/ai_washing_patent_fuzzy_sensitivity_2024_sample_examples_v1.csv`
+
+Results were not usable as a robustness lane.
+
+Grant-side comparison:
+- baseline exact hybrid: `40,931` total / `2,122` AI
+- fuzzy `0.90`: `105,018` total / `4,453` AI
+- fuzzy `0.95`: `76,063` total / `3,621` AI
+
+Pregrant-side comparison:
+- baseline exact hybrid: `27,595` total / `1,849` AI
+- fuzzy `0.90`: `72,886` total / `3,923` AI
+- fuzzy `0.95`: `51,557` total / `3,302` AI
+
+These increases are implausibly large. Manual inspection of fuzzy-only added
+matches showed obvious false positives driven by generic tokens or partial-name
+coincidences, for example:
+- `City of Hope` matching `CITY HOLDING CO`
+- `CAPITAL ONE SERVICES` matching through `one`
+- `INTELLECTUAL DISCOVERY` matching `WARNER BROS DISCOVERY`
+- `ADVANCED VIEW` matching `VIEW INC`
+
+Interpretation:
+- the current fuzzy supplement is too permissive even at `0.95`
+- the exact normalized hybrid method is not just more conservative, it is more
+  credible
+- fuzzy matching should be reported as a rejected stress test, not adopted as a
+  live robustness specification
+
 ## Critical view
 
 ### What is strong about the current method
@@ -209,6 +252,8 @@ than by a matching collapse.
 2. Exact matching trades recall for precision.
 - By avoiding fuzzy matching, we likely miss some valid organizational variants.
 - This is a deliberate choice, not an accident.
+- We tested a bounded fuzzy supplement at high thresholds and found that it
+  produced too many false positives to use safely.
 
 3. Applicant fallback uses a non-disambiguated file.
 - That improves coverage, but it can introduce extra noise if a raw applicant
@@ -261,5 +306,6 @@ Recommended current posture:
 
 The refreshed patent pipeline is now robust enough to defend: it uses strict
 normalized exact matching plus hybrid identity enrichment and pregrant applicant
-fallback, and the remaining weakness is publication-lag censoring in the latest
+fallback, rejects loose fuzzy matching after an explicit failed sensitivity
+test, and its remaining weakness is publication-lag censoring in the latest
 application years rather than a broken matching process.

@@ -213,6 +213,7 @@ def evaluate_grant_sample(
     exact_pairs: dict[str, set[tuple[str, str]]] = defaultdict(set)
     fuzzy_pairs: dict[str, set[tuple[str, str]]] = defaultdict(set)
     fuzzy_examples: list[dict[str, object]] = []
+    resolution_cache: dict[str, tuple[str, tuple[str, str] | None, float, float | None, str | None]] = {}
 
     with open(layout.assignee, newline="", encoding="utf-8") as fh:
         reader = csv.DictReader(fh, delimiter="\t")
@@ -224,21 +225,38 @@ def evaluate_grant_sample(
             if not org_raw:
                 continue
             org_clean = normalize_org_name(org_raw)
-            exact = term_index.get(org_clean)
-            if exact:
-                for item in exact:
-                    exact_pairs[patent_id].add(item)
+            cached = resolution_cache.get(org_clean)
+            if cached is None:
+                exact = term_index.get(org_clean)
+                if exact:
+                    resolution_cache[org_clean] = ("exact", exact[0], 1.0, None, org_clean)
+                    cached = resolution_cache[org_clean]
+                else:
+                    match, score, second_score = fuzzy_best_match(
+                        org_clean,
+                        catalog=catalog,
+                        threshold=threshold,
+                        min_gap=min_gap,
+                    )
+                    if match is None:
+                        resolution_cache[org_clean] = ("none", None, score, second_score, None)
+                    else:
+                        resolution_cache[org_clean] = (
+                            "fuzzy",
+                            (match.cik, match.name),
+                            score,
+                            second_score,
+                            match.term,
+                        )
+                    cached = resolution_cache[org_clean]
+
+            match_type, pair, score, second_score, matched_term = cached
+            if match_type == "exact" and pair is not None:
+                exact_pairs[patent_id].add(pair)
+                continue
+            if match_type != "fuzzy" or pair is None:
                 continue
 
-            match, score, second_score = fuzzy_best_match(
-                org_clean,
-                catalog=catalog,
-                threshold=threshold,
-                min_gap=min_gap,
-            )
-            if match is None:
-                continue
-            pair = (match.cik, match.name)
             fuzzy_pairs[patent_id].add(pair)
             fuzzy_examples.append(
                 {
@@ -248,11 +266,11 @@ def evaluate_grant_sample(
                     "id": patent_id,
                     "org_raw": org_raw,
                     "org_clean": org_clean,
-                    "matched_term": match.term,
+                    "matched_term": matched_term or "",
                     "score": round(score, 4),
                     "second_score": round(second_score, 4) if second_score is not None else "",
-                    "cik": match.cik,
-                    "name": match.name,
+                    "cik": pair[0],
+                    "name": pair[1],
                     "title": patents[patent_id]["patent_title"],
                     "matched_keywords": matched_keywords(
                         f"{patents[patent_id]['patent_title']} {abstracts.get(patent_id, '')}".lower(),
@@ -363,6 +381,7 @@ def evaluate_pregrant_sample(
     exact_pairs: dict[str, set[tuple[str, str]]] = defaultdict(set)
     fuzzy_pairs: dict[str, set[tuple[str, str]]] = defaultdict(set)
     fuzzy_examples: list[dict[str, object]] = []
+    resolution_cache: dict[str, tuple[str, tuple[str, str] | None, float, float | None, str | None]] = {}
 
     def process_org_file(path: Path, *, org_column: str, exact_fallback_only: bool, fuzzy_fallback_only: bool) -> None:
         with open(path, newline="", encoding="utf-8") as fh:
@@ -377,22 +396,40 @@ def evaluate_pregrant_sample(
                 if not org_raw:
                     continue
                 org_clean = normalize_org_name(org_raw)
-                exact = term_index.get(org_clean)
-                if exact:
-                    for item in exact:
-                        exact_pairs[pgpub_id].add(item)
+                cached = resolution_cache.get(org_clean)
+                if cached is None:
+                    exact = term_index.get(org_clean)
+                    if exact:
+                        resolution_cache[org_clean] = ("exact", exact[0], 1.0, None, org_clean)
+                        cached = resolution_cache[org_clean]
+                    else:
+                        match, score, second_score = fuzzy_best_match(
+                            org_clean,
+                            catalog=catalog,
+                            threshold=threshold,
+                            min_gap=min_gap,
+                        )
+                        if match is None:
+                            resolution_cache[org_clean] = ("none", None, score, second_score, None)
+                        else:
+                            resolution_cache[org_clean] = (
+                                "fuzzy",
+                                (match.cik, match.name),
+                                score,
+                                second_score,
+                                match.term,
+                            )
+                        cached = resolution_cache[org_clean]
+
+                match_type, pair, score, second_score, matched_term = cached
+                if match_type == "exact" and pair is not None:
+                    exact_pairs[pgpub_id].add(pair)
                     continue
                 if fuzzy_fallback_only and (exact_pairs.get(pgpub_id) or fuzzy_pairs.get(pgpub_id)):
                     continue
-                match, score, second_score = fuzzy_best_match(
-                    org_clean,
-                    catalog=catalog,
-                    threshold=threshold,
-                    min_gap=min_gap,
-                )
-                if match is None:
+                if match_type != "fuzzy" or pair is None:
                     continue
-                pair = (match.cik, match.name)
+
                 fuzzy_pairs[pgpub_id].add(pair)
                 application = applications[pgpub_id]
                 fuzzy_examples.append(
@@ -403,11 +440,11 @@ def evaluate_pregrant_sample(
                         "id": pgpub_id,
                         "org_raw": org_raw,
                         "org_clean": org_clean,
-                        "matched_term": match.term,
+                        "matched_term": matched_term or "",
                         "score": round(score, 4),
                         "second_score": round(second_score, 4) if second_score is not None else "",
-                        "cik": match.cik,
-                        "name": match.name,
+                        "cik": pair[0],
+                        "name": pair[1],
                         "title": application["application_title"],
                         "matched_keywords": matched_keywords(
                             f"{application['application_title']} {abstracts.get(pgpub_id, '')}".lower(),

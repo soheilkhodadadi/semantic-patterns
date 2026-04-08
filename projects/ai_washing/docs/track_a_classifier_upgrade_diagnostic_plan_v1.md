@@ -29,6 +29,13 @@ It is meant to answer:
 - `0.85` is a reasonable **stretch target** for the final paper if the rubric
   and training data support it
 
+Supporting notes now available:
+- `projects/ai_washing/docs/track_a_classifier_model_capability_review_v1.md`
+- `projects/ai_washing/docs/track_a_as_rubric_rewrite_v1.md`
+- `projects/ai_washing/docs/track_a_as_rubric_probe_adjudication_v1.md`
+- `projects/ai_washing/docs/track_a_classifier_boundary_benchmark_plan_v1.md`
+- `projects/ai_washing/docs/track_a_deferred_classifier_design_v1.md`
+
 ## Critical view
 
 ### What I agree with
@@ -100,6 +107,7 @@ Use them as:
 Output:
 - a short rubric-stability note each round
 - concrete examples where instructions change the result
+- a fixed benchmark artifact that stays constant while variants change
 
 ### B3. Human review pack redesign
 
@@ -125,6 +133,8 @@ Possible candidate families:
 - rubric-aware relabel + retrain
 - confidence-threshold / abstention variants
 - API-assisted prelabeling only as a helper for human review acceleration
+- selective-defer hybrid classifier where only edge cases escalate to a
+  stronger external model
 
 ## Suggested sub-agent / API role
 
@@ -132,6 +142,7 @@ Good use:
 - classify tiny blinded samples under different rubric versions
 - explain why a sentence was treated as irrelevant vs relevant
 - surface sentences where two rubric variants disagree
+- compare prompt or rubric variants on the fixed A/S benchmark slice
 
 Bad use:
 - claiming that agent-agent agreement is IRR

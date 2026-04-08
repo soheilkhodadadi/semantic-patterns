@@ -1,0 +1,15 @@
+{
+  "row_count":16,
+  "revised_label_counts":{
+    "Speculative":8,
+    "Irrelevant":4,
+    "Actionable":4
+  },
+  "reference_to_revised":{
+    "Actionable->Actionable":4,
+    "Actionable->Irrelevant":1,
+    "Actionable->Speculative":2,
+    "Speculative->Irrelevant":3,
+    "Speculative->Speculative":6
+  }
+}

@@ -39,23 +39,34 @@ Completed:
 6. refreshed WRDS identity/crosswalk + annual controls
 7. refreshed hybrid grant-timed patent rebuild
 8. refreshed annual ever-speaker panel backbone on the hybrid grant lane
+9. true pregrant application-timed patent lane
+10. combined refreshed panel with both grant and application timing
+11. patent-matching robustness note and shareable report package
+12. first A/S classifier audit pack and probe slice
 
 Next:
-9. download true pregrant tables:
-   - `pg_published_application`
-   - `pg_published_application_abstract`
-   - `pg_assignee_disambiguated`
-   - `pg_granted_pgpubs_crosswalk`
-   - optional `pg_applicant_not_disambiguated`
-10. build the true pregrant application-timed patent lane
-11. decide whether the latest application-filing cohorts should be truncated or
-    caveated because the pregrant source still depends on published
-    applications
-12. compare pregrant application timing against the hybrid grant backbone
-13. open the classifier-upgrade planning lane before any final regression or
-    event-study reruns
-14. after the annual backbone is stable, open the filing-date event-study lane
+13. finish the bounded `2024` patent fuzzy-sensitivity run at `0.90` and
+    `0.95`, then inspect fuzzy-only added matches one by one
+14. if the fuzzy additions look real, scale fuzzy matching into a stored
+    robustness lane for the master panel without changing the baseline method
+15. benchmark the revised A/S rubric on the `16`-row probe slice
+16. build a small rubric-probe review pack for fast sub-agent and later human
+    review
+17. decide whether the next classifier gain should come from:
+    - rubric rewrite alone
+    - targeted training-set cleanup/expansion
+    - probability tuning
+18. if local-model gains stall after rubric cleanup and retraining, open an
+    API-based robustness lane rather than forcing the same architecture past its
+    credible ceiling
+19. if the local model remains strong on easy cases but weak on a narrow hard
+    tail, test a selective-defer hybrid classifier that escalates only edge
+    cases to an API or expert lane
+20. after the annual backbone is stable, open the filing-date event-study lane
     using daily return data
+21. once the patent lane and classifier audit lane are stable, merge the
+    restructure/publication-refresh work back into `main` and start a new
+    publication-revision branch for coauthor-facing work
 
 Classifier-upgrade planning anchors:
 - `projects/ai_washing/docs/track_a_2025_classification_spot_check_v1.md`
@@ -86,6 +97,8 @@ Classifier-upgrade planning anchors:
   identity
 - not treating the current classifier as the automatically final model for the
   rerun; model-upgrade review still has to happen before final empirical output
+- not replacing the exact normalized patent match with fuzzy matching in the
+  baseline method before the sensitivity check is inspected manually
 
 ## Bottom line
 
@@ -96,3 +109,6 @@ The fastest safe path now is:
 - make an explicit publication-lag decision before treating the latest
   application years as final-paper-grade
 - open the market-reaction lane after the refreshed annual backbone is rebuilt
+
+Operational lesson captured here:
+- `reports/final/ai_washing_long_run_job_resilience_lessons_v1.md`

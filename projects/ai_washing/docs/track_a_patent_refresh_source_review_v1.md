@@ -274,23 +274,41 @@ Interpretation:
 - so application timing is now substantially cleaner, but not fully free of
   end-of-sample censoring
 
+### Bounded fuzzy sensitivity update
+
+A bounded fuzzy-matching sensitivity run was then executed for `2024` at:
+- `0.90`
+- `0.95`
+
+Result:
+- the fuzzy supplement produced implausibly large jumps in both grant and
+  pregrant counts
+- manual spot checks showed obvious false positives driven by generic tokens
+  such as:
+  - `city`
+  - `new`
+  - `one`
+  - `discovery`
+  - `view`
+
+Interpretation:
+- the current fuzzy supplement is too permissive even at high thresholds
+- exact normalized hybrid matching should remain the live baseline
+- the current fuzzy supplement should be treated as a rejected stress test, not
+  as a lane to scale across the full sample
+
 
 ## Immediate next tasks
 
 1. Keep the patched grant-side extractor lane as the running default.
 2. Use the hybrid grant-timed rebuild as the patent input for the refreshed
    annual panel.
-3. Download true pregrant tables:
-   - `pg_published_application`
-   - `pg_published_application_abstract`
-   - `pg_assignee_disambiguated`
-   - `pg_granted_pgpubs_crosswalk`
-4. Build the pregrant application-timed lane against the refreshed speaker
-   universe.
-5. Decide whether the main application-timed paper lane should truncate the
+3. Keep the true pregrant application lane as the conceptually cleaner timing
+   series.
+4. Decide whether the main application-timed paper lane should truncate the
    most recent years because of publication lag.
-6. Compare true pregrant application timing against the hybrid grant backbone
-   before choosing the final main-vs-robustness presentation in the paper.
+5. Keep exact normalized hybrid matching as the baseline method.
+6. Do not scale the current fuzzy supplement across the full sample.
 
 ## Bottom line
 

@@ -1,0 +1,75 @@
+{
+  "status": "passed",
+  "year": 2024,
+  "thresholds": [
+    0.9,
+    0.95
+  ],
+  "min_gap": 0.03,
+  "results": [
+    {
+      "family": "grant",
+      "year": 2024,
+      "threshold": 0.9,
+      "min_gap": 0.03,
+      "baseline_total_patent_matches": 40931,
+      "baseline_ai_patent_matches": 2122,
+      "baseline_firms": 1055,
+      "fuzzy_total_patent_matches": 105018,
+      "fuzzy_ai_patent_matches": 4453,
+      "fuzzy_firms": 2115,
+      "added_total_patent_matches": 64087,
+      "added_ai_patent_matches": 2331,
+      "added_firm_count": 1060,
+      "fuzzy_only_patent_ids": 63985
+    },
+    {
+      "family": "grant",
+      "year": 2024,
+      "threshold": 0.95,
+      "min_gap": 0.03,
+      "baseline_total_patent_matches": 40931,
+      "baseline_ai_patent_matches": 2122,
+      "baseline_firms": 1055,
+      "fuzzy_total_patent_matches": 76063,
+      "fuzzy_ai_patent_matches": 3621,
+      "fuzzy_firms": 1768,
+      "added_total_patent_matches": 35132,
+      "added_ai_patent_matches": 1499,
+      "added_firm_count": 713,
+      "fuzzy_only_patent_ids": 35181
+    },
+    {
+      "family": "pregrant",
+      "year": 2024,
+      "threshold": 0.9,
+      "min_gap": 0.03,
+      "baseline_total_applications": 27595,
+      "baseline_ai_applications": 1849,
+      "baseline_firms": 990,
+      "fuzzy_total_applications": 72886,
+      "fuzzy_ai_applications": 3923,
+      "fuzzy_firms": 1993,
+      "added_total_applications": 45291,
+      "added_ai_applications": 2074,
+      "added_firm_count": 1003,
+      "fuzzy_only_pgpub_ids": 45397
+    },
+    {
+      "family": "pregrant",
+      "year": 2024,
+      "threshold": 0.95,
+      "min_gap": 0.03,
+      "baseline_total_applications": 27595,
+      "baseline_ai_applications": 1849,
+      "baseline_firms": 990,
+      "fuzzy_total_applications": 51557,
+      "fuzzy_ai_applications": 3302,
+      "fuzzy_firms": 1642,
+      "added_total_applications": 23962,
+      "added_ai_applications": 1453,
+      "added_firm_count": 652,
+      "fuzzy_only_pgpub_ids": 24027
+    }
+  ]
+}
