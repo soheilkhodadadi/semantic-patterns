@@ -10,3 +10,7 @@ from ai_washing_member.classification.train_binary_relevance_then_as import (
 __all__ = ["run_training", "parse_args", "main"]
 
 member = _member
+
+
+if __name__ == "__main__":
+    main()

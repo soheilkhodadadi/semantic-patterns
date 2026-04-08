@@ -11,3 +11,7 @@ from ai_washing_member.classification.benchmark_preliminary_models import (
 __all__ = ["predict_sentences", "run_benchmark", "parse_args", "main"]
 
 member = _member
+
+
+if __name__ == "__main__":
+    main()

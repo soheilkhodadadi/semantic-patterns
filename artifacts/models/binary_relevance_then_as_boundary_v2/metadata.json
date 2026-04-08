@@ -1,0 +1,51 @@
+{
+  "status": "trained",
+  "generated_at_utc": "2026-04-08T18:25:32.461241+00:00",
+  "model_id": "binary_relevance_then_as_boundary_v2",
+  "model_type": "binary_relevance_then_as",
+  "preliminary_only": true,
+  "source_window_id": "active_2021_2024_boundary_revised_v1",
+  "embedding_backend": "sentence_transformers",
+  "model_name": "sentence-transformers/all-mpnet-base-v2",
+  "hash_dim": 64,
+  "batch_size": 32,
+  "runtime": {
+    "relevance_model_pickle": "artifacts/models/binary_relevance_then_as_boundary_v2/relevance_model.pkl",
+    "relevance_model_pickle_sha256": "ee48a266e0e71ec1d343d5f4c302322464b645bf7c4193594bbbb4799a69cfe5",
+    "actionable_speculative_model_pickle": "artifacts/models/binary_relevance_then_as_boundary_v2/actionable_speculative_model.pkl",
+    "actionable_speculative_model_pickle_sha256": "1d3b43a2d9f155f981e8c6016d1281712c803a20374699becd2c345cdd52a5c5",
+    "embedding_backend": "sentence_transformers",
+    "model_name": "sentence-transformers/all-mpnet-base-v2",
+    "hash_dim": 64,
+    "batch_size": 32
+  },
+  "inputs": {
+    "labels_master": "data/labels/v1/labels_master_boundary_revised_v1.parquet",
+    "split_registry": "data/metadata/splits/split_registry_v1.csv",
+    "labels_master_sha256": "713619249692f3ea89936ed3612d1776e69af20a4afe9683ff54ef1ba8820d0e",
+    "split_registry_sha256": "eacaeddec7a7b089cda40958cbfed80709558ce66d36b6d7e6adc672b7a47293"
+  },
+  "outputs": {
+    "relevance_model_pickle": "artifacts/models/binary_relevance_then_as_boundary_v2/relevance_model.pkl",
+    "relevance_model_pickle_sha256": "ee48a266e0e71ec1d343d5f4c302322464b645bf7c4193594bbbb4799a69cfe5",
+    "actionable_speculative_model_pickle": "artifacts/models/binary_relevance_then_as_boundary_v2/actionable_speculative_model.pkl",
+    "actionable_speculative_model_pickle_sha256": "1d3b43a2d9f155f981e8c6016d1281712c803a20374699becd2c345cdd52a5c5"
+  },
+  "summary": {
+    "rows_total": 551,
+    "rows_train": 440,
+    "rows_validation_reserved": 111,
+    "train_class_counts": {
+      "Actionable": 83,
+      "Speculative": 79,
+      "Irrelevant": 278
+    },
+    "validation_class_counts": {
+      "Actionable": 23,
+      "Speculative": 19,
+      "Irrelevant": 69
+    },
+    "split_version": "v1",
+    "seed": 20260315
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "status": "passed",
+  "reviewed_boundary_rows": 34,
+  "training_eligible_rows": 12,
+  "benchmark_only_rows": 22,
+  "ambiguous_overlap_rows": 0,
+  "label_update_rows": 8,
+  "eligible_split_counts": {
+    "train": 9,
+    "validation": 3
+  },
+  "label_update_split_counts": {
+    "train": 5,
+    "validation": 3
+  },
+  "output_tranche_csv": "reports/final/ai_washing_classifier_retraining_candidate_tranche_v1.csv",
+  "output_labels_master_parquet": "data/labels/v1/labels_master_boundary_revised_v1.parquet",
+  "output_labels_master_review_csv": "data/labels/v1/labels_master_boundary_revised_v1_review.csv"
+}

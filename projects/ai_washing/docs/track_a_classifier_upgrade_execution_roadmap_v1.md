@@ -77,7 +77,12 @@ Priority order:
 
 Current posture:
 - `1` and `2` are now effectively complete at the rubric-benchmark level
-- the next live execution step is training-set cleanup / expansion and retraining
+- the first controlled retraining tranche is now built:
+  - `34` reviewed boundary rows
+  - `12` training-eligible overlap rows
+  - `8` actual label updates in `labels_master`
+- the next live execution step is local retraining on the revised labels-master
+  tranche
 
 ## Phase 4. Local-model rerun
 
@@ -89,6 +94,27 @@ Required outputs:
 - macro F1
 - binary relevance accuracy
 - conditional A/S accuracy
+
+Current constraint:
+- the frozen `held_out_v2` report exists, but the underlying
+  `data/validation/held_out_sentences_v2.csv` asset is currently missing from
+  the repository tree
+- so the immediate honest rerun surfaces are:
+  - revised frozen validation split
+  - regenerated IRR boundary benchmark
+- a fresh publication-grade held-out rerun still requires recovering or
+  regenerating the frozen `held_out_v2` CSV
+
+Current result:
+- the first revised-rubric retraining tranche did not improve the local binary
+  model
+- `binary_relevance_then_as_boundary_v2` underperformed
+  `binary_relevance_then_as_v1` on both available secondary surfaces
+- the observed pattern is:
+  - slightly better binary relevance behavior
+  - noticeably worse actionable/speculative behavior
+- so the next step is not promotion
+- it is a larger reviewed A/S tranche plus another controlled retraining pass
 
 Decision gate:
 - if we meaningfully improve and approach `0.80+`, continue optimizing the
