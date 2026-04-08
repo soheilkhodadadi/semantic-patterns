@@ -20,3 +20,4 @@ Current active member-scoped docs:
 - `projects/ai_washing/docs/track_a_data_refresh_todo_v1.md`
 - `projects/ai_washing/docs/track_a_2025_classification_spot_check_v1.md`
 - `projects/ai_washing/docs/track_a_classifier_upgrade_diagnostic_plan_v1.md`
+- `projects/ai_washing/docs/track_a_classifier_failure_audit_readiness_v1.md`

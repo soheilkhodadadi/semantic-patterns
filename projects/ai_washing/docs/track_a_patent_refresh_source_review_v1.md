@@ -249,6 +249,28 @@ Interpretation:
 - the application upgrade should now focus on **source completeness**, not just
   more name matching
 
+### True pregrant application update
+
+The true pregrant extraction has now been run successfully against:
+- `pg_published_application`
+- `pg_published_application_abstract`
+- `pg_assignee_disambiguated`
+- `pg_granted_pgpubs_crosswalk`
+
+Resulting aggregate application counts:
+- `2021`: `9,842` total / `498` AI
+- `2022`: `9,603` / `532`
+- `2023`: `9,135` / `625`
+- `2024`: `6,432` / `447`
+- `2025`: `1,816` / `105`
+
+Interpretation:
+- this is far more credible than the older grant-derived application series
+- but it still likely understates the latest filing cohorts because the source
+  is built from **published** applications
+- so application timing is now substantially cleaner, but not fully free of
+  end-of-sample censoring
+
 
 ## Immediate next tasks
 
@@ -262,7 +284,9 @@ Interpretation:
    - `pg_granted_pgpubs_crosswalk`
 4. Build the pregrant application-timed lane against the refreshed speaker
    universe.
-5. Compare true pregrant application timing against the hybrid grant backbone
+5. Decide whether the main application-timed paper lane should truncate the
+   most recent years because of publication lag.
+6. Compare true pregrant application timing against the hybrid grant backbone
    before choosing the final main-vs-robustness presentation in the paper.
 
 ## Bottom line

@@ -119,6 +119,28 @@ def _add_calendar_patent_timing(df: pd.DataFrame) -> pd.DataFrame:
     return panel
 
 
+def _add_calendar_application_timing(df: pd.DataFrame) -> pd.DataFrame:
+    panel = df.sort_values(["cik", "year"]).copy()
+    panel["applications_ai"] = pd.to_numeric(
+        panel["applications_ai"], errors="coerce"
+    ).fillna(0)
+    for k in [0, 1, 2]:
+        if k == 0:
+            panel[f"applications_ai_lead{k}"] = panel["applications_ai"]
+        else:
+            panel[f"applications_ai_lead{k}"] = panel.groupby("cik")["applications_ai"].shift(-k)
+        panel[f"log_applications_ai_lead{k}"] = np.log1p(panel[f"applications_ai_lead{k}"])
+        panel[f"any_app_{k}"] = (panel[f"applications_ai_lead{k}"].fillna(0) > 0).astype(float)
+
+    for k in [1, 2]:
+        panel[f"applications_ai_lag{k}"] = panel.groupby("cik")["applications_ai"].shift(k)
+        panel[f"log_applications_ai_lag{k}"] = np.log1p(panel[f"applications_ai_lag{k}"])
+        panel[f"any_app_lag{k}"] = (
+            panel[f"applications_ai_lag{k}"].fillna(0) > 0
+        ).astype(float)
+    return panel
+
+
 def _prepare_patent_panel(
     patents: pd.DataFrame,
     *,
@@ -186,6 +208,72 @@ def _prepare_patent_panel(
     return patent_panel[keep_cols]
 
 
+def _prepare_application_panel(
+    applications: pd.DataFrame,
+    *,
+    ciks: pd.Series,
+    start_year: int,
+    end_year: int,
+    buffer_years: int = DEFAULT_PATENT_BUFFER_YEARS,
+) -> pd.DataFrame:
+    padded_start = int(start_year) - max(int(buffer_years), 0)
+    padded_end = int(end_year) + max(int(buffer_years), 0)
+
+    application_series = applications.copy()
+    application_series["cik"] = application_series["cik"].apply(normalize_cik)
+    application_series["year"] = pd.to_numeric(
+        application_series["year"], errors="coerce"
+    ).astype(int)
+    application_series = application_series.loc[
+        application_series["year"].between(padded_start, padded_end)
+    ].copy()
+    application_series = application_series.sort_values(["cik", "year"]).drop_duplicates(
+        ["cik", "year"], keep="last"
+    )
+
+    scaffold = _build_scaffold(ciks, range(padded_start, padded_end + 1))
+    keep = ["cik", "year", "applications_total", "applications_ai", "ai_share_applications"]
+    application_panel = scaffold.merge(application_series[keep], on=["cik", "year"], how="left")
+    application_panel["applications_total"] = pd.to_numeric(
+        application_panel["applications_total"], errors="coerce"
+    ).fillna(0)
+    application_panel["applications_ai"] = pd.to_numeric(
+        application_panel["applications_ai"], errors="coerce"
+    ).fillna(0)
+    application_panel["ai_share_applications"] = (
+        application_panel["applications_ai"]
+        / application_panel["applications_total"].replace(0, np.nan)
+    )
+
+    application_panel = _add_calendar_application_timing(application_panel)
+    application_panel = application_panel.loc[
+        application_panel["year"].between(start_year, end_year)
+    ].copy()
+    keep_cols = [
+        "cik",
+        "year",
+        "applications_total",
+        "applications_ai",
+        "ai_share_applications",
+        "applications_ai_lag1",
+        "applications_ai_lag2",
+        "applications_ai_lead0",
+        "applications_ai_lead1",
+        "applications_ai_lead2",
+        "log_applications_ai_lag1",
+        "log_applications_ai_lag2",
+        "log_applications_ai_lead0",
+        "log_applications_ai_lead1",
+        "log_applications_ai_lead2",
+        "any_app_lag1",
+        "any_app_lag2",
+        "any_app_0",
+        "any_app_1",
+        "any_app_2",
+    ]
+    return application_panel[keep_cols]
+
+
 def _write_qc(path: Path, panel: pd.DataFrame, source_rows: int, source_firms: int) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     zero_talk_rows = int((panel["any_ai_talk"] == 0).sum())
@@ -231,6 +319,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--narrative", default=DEFAULT_NARRATIVE)
     parser.add_argument("--patents", default=DEFAULT_PATENTS)
+    parser.add_argument("--applications", default=None)
     parser.add_argument("--controls", default=DEFAULT_CONTROLS)
     parser.add_argument("--lookup", default=DEFAULT_LOOKUP)
     parser.add_argument("--start-year", type=int, default=2016)
@@ -293,6 +382,17 @@ def main() -> None:
     )
     panel = panel.merge(patent_panel, on=["cik", "year"], how="left")
 
+    if args.applications:
+        applications = pd.read_csv(args.applications).copy()
+        application_panel = _prepare_application_panel(
+            applications,
+            ciks=panel["cik"],
+            start_year=args.start_year,
+            end_year=args.end_year,
+            buffer_years=args.patent_buffer_years,
+        )
+        panel = panel.merge(application_panel, on=["cik", "year"], how="left")
+
     controls = pd.read_csv(args.controls).copy()
     controls["cik"] = controls["cik"].apply(normalize_cik)
     controls["year"] = pd.to_numeric(controls["year"], errors="coerce").astype(int)
@@ -344,6 +444,24 @@ def main() -> None:
         "patents_total",
         "patents_ai",
         "ai_share_patents",
+        "applications_total",
+        "applications_ai",
+        "ai_share_applications",
+        "applications_ai_lag1",
+        "applications_ai_lag2",
+        "applications_ai_lead0",
+        "applications_ai_lead1",
+        "applications_ai_lead2",
+        "log_applications_ai_lag1",
+        "log_applications_ai_lag2",
+        "log_applications_ai_lead0",
+        "log_applications_ai_lead1",
+        "log_applications_ai_lead2",
+        "any_app_lag1",
+        "any_app_lag2",
+        "any_app_0",
+        "any_app_1",
+        "any_app_2",
         "patents_ai_lag1",
         "patents_ai_lag2",
         "patents_ai_lead0",

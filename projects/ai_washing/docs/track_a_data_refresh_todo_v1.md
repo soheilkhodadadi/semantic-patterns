@@ -48,10 +48,13 @@ Next:
    - `pg_granted_pgpubs_crosswalk`
    - optional `pg_applicant_not_disambiguated`
 10. build the true pregrant application-timed patent lane
-11. compare pregrant application timing against the hybrid grant backbone
-12. open the classifier-upgrade planning lane before any final regression or
+11. decide whether the latest application-filing cohorts should be truncated or
+    caveated because the pregrant source still depends on published
+    applications
+12. compare pregrant application timing against the hybrid grant backbone
+13. open the classifier-upgrade planning lane before any final regression or
     event-study reruns
-13. after the annual backbone is stable, open the filing-date event-study lane
+14. after the annual backbone is stable, open the filing-date event-study lane
     using daily return data
 
 Classifier-upgrade planning anchors:
@@ -90,4 +93,6 @@ The fastest safe path now is:
 - use the refreshed hybrid grant lane to keep the panel rebuild moving
 - build a true pregrant application lane rather than forcing application timing
   through a grant-centered source
+- make an explicit publication-lag decision before treating the latest
+  application years as final-paper-grade
 - open the market-reaction lane after the refreshed annual backbone is rebuilt

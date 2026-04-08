@@ -216,6 +216,36 @@ This means Track A can support two meaningful patent lanes:
 That is much stronger than using application dates pulled only from granted
 patent tables, which right-censors late-sample application activity.
 
+## April 2026 live-run update
+
+The true pregrant lane is now live and materially better than the earlier
+grant-derived application proxy.
+
+However, one important constraint remains:
+- these are still **published applications**
+- they are not a complete census of all applications filed in the most recent
+  years
+
+Observed aggregate pattern in the refreshed hybrid pregrant run:
+- `2021`: `9,842` applications / `498` AI applications
+- `2022`: `9,603` / `532`
+- `2023`: `9,135` / `625`
+- `2024`: `6,432` / `447`
+- `2025`: `1,816` / `105`
+
+Interpretation:
+- the pregrant lane fixes the catastrophic collapse seen in the
+  grant-derived-application proxy
+- but it still shows likely publication-lag censoring in the latest filing
+  cohorts, especially `2025`
+
+Practical implication:
+- pregrant application timing is now a serious paper-grade lane
+- but we still need to decide whether the main application-timed analysis
+  should:
+  - truncate the most recent filing years, or
+  - keep the full span with an explicit censoring caveat
+
 ## Bottom line
 
 The best next data pull is:

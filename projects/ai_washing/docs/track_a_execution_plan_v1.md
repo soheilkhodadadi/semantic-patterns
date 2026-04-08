@@ -155,6 +155,7 @@ The next concrete artifacts to create or refresh after this plan are:
 - `projects/ai_washing/docs/track_a_data_refresh_todo_v1.md`
 - `projects/ai_washing/docs/track_a_2025_classification_spot_check_v1.md`
 - `projects/ai_washing/docs/track_a_classifier_upgrade_diagnostic_plan_v1.md`
+- `projects/ai_washing/docs/track_a_classifier_failure_audit_readiness_v1.md`
 - `projects/ai_washing/docs/track_a_model_robustness_plan_v1.md`
 - `projects/ai_washing/docs/track_a_capital_market_design_v1.md`
 - `projects/ai_washing/docs/track_a_identification_candidate_review_v1.md`
