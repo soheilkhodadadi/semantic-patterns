@@ -155,6 +155,45 @@ def build_term_index(
     return term_index
 
 
+def append_pgpub_matches_from_org_file(
+    matched_by_pgpub: dict[str, list[tuple[str, str]]],
+    *,
+    path: str | Path,
+    org_column: str,
+    term_index: dict[str, list[tuple[str, str]]],
+    fallback_only: bool,
+) -> tuple[int, int]:
+    """Append matched firm rows from a pregrant org-name file."""
+
+    rows_added = 0
+    pgpubs_added = 0
+    with open(path, newline="", encoding="utf-8") as fh:
+        reader = csv.DictReader(fh, delimiter="\t")
+        for row in reader:
+            pgpub_id = _clean_field(row.get("pgpub_id"))
+            if not pgpub_id:
+                continue
+            if fallback_only and pgpub_id in matched_by_pgpub:
+                continue
+            org = _clean_field(row.get(org_column))
+            if not org:
+                continue
+            org_clean = normalize_org_name(org)
+            if org_clean not in term_index:
+                continue
+            existing = set(matched_by_pgpub.get(pgpub_id, []))
+            before = len(existing)
+            for item in term_index[org_clean]:
+                existing.add(item)
+            after = len(existing)
+            if after > before:
+                matched_by_pgpub[pgpub_id] = sorted(existing)
+                rows_added += after - before
+                if before == 0:
+                    pgpubs_added += 1
+    return rows_added, pgpubs_added
+
+
 def _dedupe_application_matches(frame: pd.DataFrame) -> pd.DataFrame:
     if frame.empty:
         return frame
@@ -210,26 +249,33 @@ def main() -> None:
     )
 
     matched_by_pgpub: dict[str, list[tuple[str, str]]] = defaultdict(list)
-    with open(layout.assignee, newline="", encoding="utf-8") as fh:
-        reader = csv.DictReader(fh, delimiter="\t")
-        for row in reader:
-            org = _clean_field(row.get("disambig_assignee_organization"))
-            if not org:
-                continue
-            org_clean = normalize_org_name(org)
-            if org_clean not in term_index:
-                continue
-            pgpub_id = _clean_field(row.get("pgpub_id"))
-            if not pgpub_id:
-                continue
-            for item in term_index[org_clean]:
-                matched_by_pgpub[pgpub_id].append(item)
+    assignee_rows_added, assignee_pgpubs_added = append_pgpub_matches_from_org_file(
+        matched_by_pgpub,
+        path=layout.assignee,
+        org_column="disambig_assignee_organization",
+        term_index=term_index,
+        fallback_only=False,
+    )
+    applicant_rows_added = 0
+    applicant_pgpubs_added = 0
+    if layout.applicant is not None:
+        applicant_rows_added, applicant_pgpubs_added = append_pgpub_matches_from_org_file(
+            matched_by_pgpub,
+            path=layout.applicant,
+            org_column="raw_applicant_organization",
+            term_index=term_index,
+            fallback_only=True,
+        )
     matched_pgpub_ids = set(matched_by_pgpub)
     write_progress(
         progress_path,
         "assignee_matching_complete",
         matched_pgpub_rows=len(matched_pgpub_ids),
         matched_firms=len({cik for rows in matched_by_pgpub.values() for cik, _ in rows}),
+        assignee_rows_added=assignee_rows_added,
+        assignee_pgpubs_added=assignee_pgpubs_added,
+        applicant_rows_added=applicant_rows_added,
+        applicant_pgpubs_added=applicant_pgpubs_added,
     )
 
     applications: dict[str, dict[str, str]] = {}

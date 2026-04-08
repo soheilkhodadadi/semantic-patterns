@@ -227,15 +227,16 @@ However, one important constraint remains:
   years
 
 Observed aggregate pattern in the refreshed hybrid pregrant run:
-- `2021`: `9,842` applications / `498` AI applications
-- `2022`: `9,603` / `532`
-- `2023`: `9,135` / `625`
-- `2024`: `6,432` / `447`
-- `2025`: `1,816` / `105`
+- `2021`: `47,540` applications / `2,749` AI applications
+- `2022`: `45,332` / `2,711`
+- `2023`: `42,072` / `3,206`
+- `2024`: `27,597` / `1,850`
+- `2025`: `6,881` / `395`
 
 Interpretation:
-- the pregrant lane fixes the catastrophic collapse seen in the
-  grant-derived-application proxy
+- the pregrant lane now fixes both:
+  - the catastrophic collapse seen in the grant-derived-application proxy
+  - the additional undercount caused by relying on assignee matching alone
 - but it still shows likely publication-lag censoring in the latest filing
   cohorts, especially `2025`
 
@@ -245,6 +246,16 @@ Practical implication:
   should:
   - truncate the most recent filing years, or
   - keep the full span with an explicit censoring caveat
+
+### Matching lesson from the live run
+
+The key operational fix was:
+- use `pg_assignee_disambiguated` first
+- then use `pg_applicant_not_disambiguated` as a fallback for unmatched
+  `pgpub_id`
+
+This mattered materially because some firms were weak or absent on the assignee
+surface but strong on the applicant surface.
 
 ## Bottom line
 

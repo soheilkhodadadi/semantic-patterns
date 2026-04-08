@@ -256,16 +256,19 @@ The true pregrant extraction has now been run successfully against:
 - `pg_published_application_abstract`
 - `pg_assignee_disambiguated`
 - `pg_granted_pgpubs_crosswalk`
+- `pg_applicant_not_disambiguated` as fallback matching support
 
 Resulting aggregate application counts:
-- `2021`: `9,842` total / `498` AI
-- `2022`: `9,603` / `532`
-- `2023`: `9,135` / `625`
-- `2024`: `6,432` / `447`
-- `2025`: `1,816` / `105`
+- `2021`: `47,540` total / `2,749` AI
+- `2022`: `45,332` / `2,711`
+- `2023`: `42,072` / `3,206`
+- `2024`: `27,597` / `1,850`
+- `2025`: `6,881` / `395`
 
 Interpretation:
-- this is far more credible than the older grant-derived application series
+- this is far more credible than both:
+  - the older grant-derived application series
+  - the first assignee-only pregrant run
 - but it still likely understates the latest filing cohorts because the source
   is built from **published** applications
 - so application timing is now substantially cleaner, but not fully free of
