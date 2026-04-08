@@ -1,0 +1,146 @@
+{
+  "generated_on": "2026-04-08",
+  "canonical_training_backbone": {
+    "path": "data/labels/v1/labels_master_boundary_revised_v1.parquet",
+    "role": "current_local_training_backbone_under_revised_boundary_rubric",
+    "exists": true,
+    "row_count": 551,
+    "label_distribution": {
+      "Irrelevant": 347,
+      "Actionable": 106,
+      "Speculative": 98
+    },
+    "notes": [
+      "Revised-rubric version of labels_master.",
+      "Contains 8 row-level label updates relative to labels_master.parquet."
+    ]
+  },
+  "canonical_training_backbone_review": {
+    "path": "data/labels/v1/labels_master_boundary_revised_v1_review.csv",
+    "role": "human-readable review mirror of revised backbone",
+    "exists": true,
+    "row_count": 551
+  },
+  "split_registry": {
+    "path": "data/metadata/splits/split_registry_v1.csv",
+    "role": "current_train_validation_split_assignment",
+    "exists": true,
+    "row_count": 551,
+    "split_distribution": {
+      "train": 440,
+      "validation": 111
+    },
+    "label_distribution_by_split": {
+      "train": {
+        "Actionable": 86,
+        "Irrelevant": 275,
+        "Speculative": 79
+      },
+      "validation": {
+        "Actionable": 22,
+        "Irrelevant": 69,
+        "Speculative": 20
+      }
+    },
+    "notes": [
+      "Frozen from the older labels_master posture.",
+      "If labels_master_boundary_revised_v1 becomes canonical, refreeze the split registry."
+    ]
+  },
+  "irr_chain": {
+    "source_sample": {
+      "path": "data/labels/v1/irr_subset.parquet",
+      "exists": true,
+      "row_count": 120
+    },
+    "second_rater_completed": {
+      "path": "data/labels/v1/irr_subset_rater2_completed.xlsx",
+      "exists": true,
+      "row_count": 120
+    },
+    "adjudication_completed": {
+      "path": "data/labels/v1/irr_adjudication_completed.xlsx",
+      "exists": true,
+      "row_count": 26
+    },
+    "machine_readable_resolution": {
+      "path": "data/labels/v1/adjudication.parquet",
+      "exists": true,
+      "row_count": 120,
+      "resolution_source_counts": {
+        "agreement": 94,
+        "third_adjudicator": 26
+      },
+      "label_distribution": {
+        "Irrelevant": 50,
+        "Actionable": 35,
+        "Speculative": 35
+      }
+    },
+    "benchmark_csv": {
+      "path": "data/validation/irr_boundary_benchmark_v1.csv",
+      "role": "diagnostic_boundary_benchmark",
+      "exists": true,
+      "row_count": 120
+    },
+    "notes": [
+      "The IRR chain is recoverable and machine-readable.",
+      "Human-human kappa reported in reports/labels/irr_report.json is 0.675, below the 0.7 gate."
+    ]
+  },
+  "filled_tranche_inputs": {
+    "paths": [
+      "data/labels/v1/labeling_batch_v1_filled_v2_4.csv",
+      "data/labels/v1/labeling_batch_v2_filled.csv",
+      "data/labels/v1/labeling_batch_v3_filled.csv"
+    ],
+    "row_counts": {
+      "labeling_batch_v1_filled_v2_4.csv": 240,
+      "labeling_batch_v2_filled.csv": 160,
+      "labeling_batch_v3_filled.csv": 160
+    },
+    "merge_summary": {
+      "total_input_rows": 560,
+      "canonical_labeled_rows": 551,
+      "blank_label_rows_excluded": 3,
+      "heldout_overlap_rows_removed": 6
+    }
+  },
+  "recovered_primary_benchmark_source": {
+    "path": "data/validation/recovery_sources/held_out_sentences_v2_review_sheet_10k_only_clean_prelabeled_recovered.csv",
+    "role": "primary_benchmark_rebuild_source_not_yet_frozen",
+    "exists": true,
+    "row_count_before_exclusions": 180,
+    "excluded_sentence_ids_from_freeze_report": [
+      "70d33b9f57a2874e",
+      "773f16a020f75457",
+      "ad6e625b4aa0275c"
+    ],
+    "effective_row_count_after_exclusions": 177,
+    "candidate_label_distribution_before_exclusions": {
+      "Actionable": 60,
+      "Irrelevant": 60,
+      "Speculative": 60
+    },
+    "notes": [
+      "Recovered from external storage and staged into the repo.",
+      "Final label column is blank, so this is not a frozen benchmark."
+    ]
+  },
+  "historical_registry_caveat": {
+    "stale_registry_paths": [
+      "reports/validation/validation_asset_registry.json",
+      "reports/validation/validation_asset_registry_v2.json"
+    ],
+    "missing_referenced_assets": [
+      "data/validation/held_out_sentences.csv",
+      "data/validation/held_out_sentences_v2.csv",
+      "data/validation/CollectedAiSentencesClassifiedCleaned.csv",
+      "data/validation/hand_labeled_ai_sentences_with_embeddings_revised.csv"
+    ],
+    "notes": [
+      "Older registry JSON files are still useful historical evidence.",
+      "They are not the current live asset map for this checkout."
+    ]
+  }
+}
