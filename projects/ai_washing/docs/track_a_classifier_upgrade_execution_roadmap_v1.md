@@ -88,14 +88,19 @@ Goal:
 Design:
 1. local model handles easy cases
 2. edge cases are deferred
-3. API `A` labels deferred rows
+3. API `A` labels deferred rows with a lighter lower-cost model
 4. if API `A` disagrees with the local model, API `B` arbitrates
+   with a stronger model
 5. majority vote determines the final label on deferred rows
 
 This keeps the system:
 - reproducible
 - fully automated
 - free of manual intervention in the live labeling path
+
+Critical caution:
+- API `A` and API `B` need enough independence in capability or prompting
+  posture that the second call adds real arbitration value
 
 ## Phase 6. API lane decision
 

@@ -5,7 +5,7 @@
 This note evaluates a possible next-step architecture for the classifier lane:
 
 - keep the local two-stage model as the primary engine
-- defer only hard edge cases to a stronger external model or expert lane
+- defer only hard edge cases to a bounded external API lane
 
 This is a serious design option, not just a convenience hack.
 
@@ -66,9 +66,8 @@ Only defer rows that meet one or more hard-case triggers, such as:
 - mixed-clause sentence pattern flagged by rules
 - known failure-mode categories from the audit pack
 
-Possible fallback targets:
-- stronger API model
-- API-only arbitration lane using more than one API call when needed
+Fallback target:
+- an API-only arbitration lane using more than one API call when needed
 
 ## What this is not
 
@@ -80,6 +79,7 @@ It is **not** a replacement for:
 It is a way to:
 - spend stronger-model capacity only where it matters
 - preserve the local model as the default reusable lab asset
+- keep the live classification path reproducible without manual tie-breaking
 
 ## Why this could be valuable beyond this paper
 
@@ -131,11 +131,14 @@ Output:
 
 Only after offline simulation looks promising:
 - pick `10-30` deferred rows
-- send them to a strong API model under a fixed rubric prompt
+- send them to a lighter API model under a fixed rubric prompt
 - compare:
   - local model
   - API model
   - revised benchmark label
+
+Then repeat on the same deferred rows with a stronger API model to estimate how
+much extra gain the second-stage call is likely to buy.
 
 ### Phase 3. API arbitration design
 
@@ -143,11 +146,12 @@ If the deferred API lane looks promising, test this production posture on the
 same fixed deferred slice:
 
 1. local model produces a label
-2. API `A` labels the deferred row under the fixed rubric
+2. API `A` labels the deferred row under the fixed rubric using a cheaper,
+   lighter model
 3. if API `A` agrees with the local model:
    - accept that label
 4. if API `A` disagrees:
-   - call API `B` in isolation under the same rubric
+   - call API `B` in isolation under the same rubric using a stronger model
 5. final label is determined by majority agreement:
    - local + API `A`
    - or API `A` + API `B`
@@ -157,6 +161,11 @@ This keeps the lane:
 - reproducible
 - fully automated
 - free of manual tie-breaking in the live classification path
+
+The intended posture is:
+- API `A` is the cheaper high-throughput check
+- API `B` is the more expensive escalation only for real disagreements
+- the live path never depends on human adjudication
 
 ### Phase 4. Decide posture
 
@@ -191,6 +200,8 @@ The hybrid architecture only helps if:
 - we measure the cost / coverage tradeoff honestly
 - the arbitration logic stays reproducible and does not depend on ad hoc human
   intervention
+- API `A` and API `B` are meaningfully different enough that the second call
+  adds information rather than just repeating the same error pattern
 
 If we defer too much, the local model stops mattering.
 If we defer too little, the hybrid gain will be small.

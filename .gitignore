@@ -26,6 +26,9 @@ data/processed/projects/*
 # Mac OS-specific storage files
 .DS_Store
 
+# Duplicate save-as artifacts from editors
+* 2.*
+
 # vim
 *.swp
 *.swo

@@ -61,7 +61,10 @@ Next:
     credible ceiling
 20. if the local model remains strong on easy cases but weak on a narrow hard
     tail, test a selective-defer hybrid classifier that escalates only edge
-    cases to API arbitration
+    cases to API arbitration, with:
+    - API `A` as the cheaper first deferred call
+    - API `B` as the stronger disagreement arbiter
+    - no human tie-break in the live path
 21. after the annual backbone is stable, open the filing-date event-study lane
     using daily return data
 
