@@ -115,6 +115,10 @@ Current result:
   - noticeably worse actionable/speculative behavior
 - so the next step is not promotion
 - it is a larger reviewed A/S tranche plus another controlled retraining pass
+- and the strongest current local-design hypothesis is now layered:
+  - binary model for relevance
+  - MPNet logreg for local A/S resolution
+  - defer only true conflict cases
 
 Decision gate:
 - if we meaningfully improve and approach `0.80+`, continue optimizing the
@@ -139,6 +143,12 @@ This keeps the system:
 - reproducible
 - fully automated
 - free of manual intervention in the live labeling path
+
+Local-model precondition:
+- before opening the API lane, test a purely local layered version first:
+  - binary relevance gate
+  - MPNet logreg A/S resolver
+  - defer only when the local models disagree or confidence is low
 
 Critical caution:
 - API `A` and API `B` need enough independence in capability or prompting
