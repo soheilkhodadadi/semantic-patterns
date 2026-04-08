@@ -22,6 +22,7 @@ Current active member-scoped docs:
 - `projects/ai_washing/docs/track_a_classifier_upgrade_diagnostic_plan_v1.md`
 - `projects/ai_washing/docs/track_a_classifier_failure_audit_readiness_v1.md`
 - `projects/ai_washing/docs/track_a_classifier_as_boundary_audit_pack_v1.md`
+- `projects/ai_washing/docs/track_a_classifier_failure_mode_review_v1.md`
 - `projects/ai_washing/docs/track_a_patent_matching_validation_v1.md`
 
 Reusable handoff-style reports:

@@ -157,6 +157,7 @@ The next concrete artifacts to create or refresh after this plan are:
 - `projects/ai_washing/docs/track_a_classifier_upgrade_diagnostic_plan_v1.md`
 - `projects/ai_washing/docs/track_a_classifier_failure_audit_readiness_v1.md`
 - `projects/ai_washing/docs/track_a_classifier_as_boundary_audit_pack_v1.md`
+- `projects/ai_washing/docs/track_a_classifier_failure_mode_review_v1.md`
 - `projects/ai_washing/docs/track_a_patent_matching_validation_v1.md`
 - `reports/final/ai_washing_patent_matching_robustness_v1.md`
 - `projects/ai_washing/docs/track_a_model_robustness_plan_v1.md`
