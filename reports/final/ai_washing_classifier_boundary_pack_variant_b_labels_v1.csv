@@ -1,0 +1,35 @@
+row_id,predicted_label,variant_id,short_rationale
+0,Speculative,variant_b_strict_current_claim_v1,"Build/integrate language with a trailing risk clause is future-oriented, not present capability."
+1,Actionable,variant_b_strict_current_claim_v1,Current ETF product packaging explicitly incorporates AI/ML into the fund structure.
+2,Actionable,variant_b_strict_current_claim_v1,Current IaaS use explicitly supports AI/ML workflows.
+3,Speculative,variant_b_strict_current_claim_v1,Investment in AI initiatives and to-build product work is not a present operating claim.
+4,Speculative,variant_b_strict_current_claim_v1,R&D and continued investment in AI solutions does not disclose a current deployed capability.
+5,Irrelevant,variant_b_strict_current_claim_v1,"The sentence is an acquisition/ownership reference, not a current AI capability claim by the filer."
+6,Speculative,variant_b_strict_current_claim_v1,Intent to implement and in-process refinement language points to future deployment.
+7,Irrelevant,variant_b_strict_current_claim_v1,This is an investment or exposure reference rather than a capability claim by the reporting firm.
+8,Actionable,variant_b_strict_current_claim_v1,"The sentence implies current machine learning models already support customer capture and segmentation, even though further enhancement is ongoing."
+9,Actionable,variant_b_strict_current_claim_v1,This describes a current ML-based operational process for analyzing energy consumption and identifying savings.
+10,Speculative,variant_b_strict_current_claim_v1,"The sentence says AI may be incorporated in the future, so it is not current capability."
+11,Irrelevant,variant_b_strict_current_claim_v1,"The sentence is about entering AI-related industries, not about the firm currently using or offering AI capabilities."
+12,Irrelevant,variant_b_strict_current_claim_v1,AI appears only in a competition-risk context without a present capability claim.
+13,Speculative,variant_b_strict_current_claim_v1,Customer expectations about using generative AI are future-facing and do not assert current deployment.
+14,Irrelevant,variant_b_strict_current_claim_v1,"This is a dependency/risk statement about AI deployment, not a disclosed current use."
+15,Speculative,variant_b_strict_current_claim_v1,Planned delivery-model changes and may language make this future-oriented.
+16,Speculative,variant_b_strict_current_claim_v1,"The sentence says methodologies may evolve through machine learning, which is future-oriented rather than a clear current AI-use claim."
+17,Speculative,variant_b_strict_current_claim_v1,Expected future investment requirements for AI initiatives are not current capability disclosures.
+18,Irrelevant,variant_b_strict_current_claim_v1,"This is a risk statement about potential generative AI reliance, not an independent present-use disclosure."
+19,Speculative,variant_b_strict_current_claim_v1,Ongoing R&D with may-begin language is not yet a present operative claim.
+20,Speculative,variant_b_strict_current_claim_v1,The sentence mixes strategy and digitization goals without a clean present AI capability claim.
+21,Speculative,variant_b_strict_current_claim_v1,"AI appears as part of a digitization priority and operational goal, not as a clean current capability claim."
+22,Speculative,variant_b_strict_current_claim_v1,The sentence describes continued investment in AI and machine learning as part of future-facing expansion and implementation.
+23,Irrelevant,variant_b_strict_current_claim_v1,This is a competition statement and does not independently disclose a present AI capability by the firm.
+24,Speculative,variant_b_strict_current_claim_v1,AI is listed as an investment priority rather than a current business function.
+25,Irrelevant,variant_b_strict_current_claim_v1,"This is a dependency statement about infrastructure and competition, not current AI use."
+26,Actionable,variant_b_strict_current_claim_v1,The firm currently uses machine learning in a concrete risk-management process.
+27,Irrelevant,variant_b_strict_current_claim_v1,AI appears in a competition context rather than as a direct current-use disclosure.
+28,Actionable,variant_b_strict_current_claim_v1,AI-driven origination tasks and real-time risk analysis are current operating capabilities.
+29,Speculative,variant_b_strict_current_claim_v1,The sentence is forward-looking competition language tied to continued progress on named capabilities rather than a clean current-use claim.
+30,Speculative,variant_b_strict_current_claim_v1,The sentence is forward-looking competition language tied to continued progress on named capabilities rather than a clean current-use claim.
+31,Actionable,variant_b_strict_current_claim_v1,The sentence describes a current machine-learning-based measurement process in operation.
+32,Actionable,variant_b_strict_current_claim_v1,The firm currently relies on machine learning models in a live measurement process.
+33,Actionable,variant_b_strict_current_claim_v1,The firm currently relies on machine learning models in a live measurement process.

@@ -52,20 +52,20 @@ Next:
 16. benchmark the revised A/S rubric on the fixed `16`-row probe slice
 17. build a small rubric-probe review pack for fast sub-agent and later human
     benchmark review
-18. decide whether the next classifier gain should come from:
-    - rubric rewrite alone
-    - targeted training-set cleanup/expansion
-    - probability tuning
-19. if local-model gains stall after rubric cleanup and retraining, open an
+18. expand to a larger reviewed boundary pack and test whether stricter rubric
+    variants meaningfully diverge
+19. move to targeted training-set cleanup / expansion and local retraining under
+    the revised default rubric
+20. if local-model gains stall after rubric cleanup and retraining, open an
     API-based robustness lane rather than forcing the same architecture past its
     credible ceiling
-20. if the local model remains strong on easy cases but weak on a narrow hard
+21. if the local model remains strong on easy cases but weak on a narrow hard
     tail, test a selective-defer hybrid classifier that escalates only edge
     cases to API arbitration, with:
     - API `A` as the cheaper first deferred call
     - API `B` as the stronger disagreement arbiter
     - no human tie-break in the live path
-21. after the annual backbone is stable, open the filing-date event-study lane
+22. after the annual backbone is stable, open the filing-date event-study lane
     using daily return data
 
 Classifier-upgrade planning anchors:

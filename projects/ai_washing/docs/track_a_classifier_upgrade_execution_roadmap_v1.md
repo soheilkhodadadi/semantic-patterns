@@ -56,6 +56,12 @@ Focus categories:
 Output:
 - a stable reviewed boundary pack for retraining and later API comparison
 
+Current status:
+- completed on the `34`-row reviewed boundary pack
+- Variant A and Variant B both matched the reviewed labels exactly
+- the benchmark did not separate the two rubric variants
+- proceed with Variant A as the default revised rubric and move to retraining
+
 ## Phase 3. Retraining decision
 
 Goal:
@@ -68,6 +74,10 @@ Priority order:
 1. rubric rewrite
 2. targeted training-set cleanup / expansion
 3. threshold or probability tuning
+
+Current posture:
+- `1` and `2` are now effectively complete at the rubric-benchmark level
+- the next live execution step is training-set cleanup / expansion and retraining
 
 ## Phase 4. Local-model rerun
 

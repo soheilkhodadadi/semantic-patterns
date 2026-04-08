@@ -1,0 +1,20 @@
+{
+  "status": "passed",
+  "row_count": 34,
+  "reviewed_label_counts": {
+    "Speculative": 16,
+    "Irrelevant": 9,
+    "Actionable": 9
+  },
+  "failure_mode_counts": {
+    "future_intent_or_expectation": 9,
+    "risk_or_competition_reference": 6,
+    "in_progress_build_or_integrate": 6,
+    "generic_metric_or_tooling_reference": 5,
+    "current_capability_or_enabled_use": 5,
+    "acquisition_or_exposure_reference": 2,
+    "current_capability_or_product_packaging": 1
+  },
+  "output_csv": "reports/final/ai_washing_classifier_boundary_review_pack_v1.csv",
+  "output_blinded_csv": "reports/final/ai_washing_classifier_boundary_review_pack_blinded_v1.csv"
+}

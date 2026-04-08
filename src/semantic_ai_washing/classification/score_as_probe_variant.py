@@ -49,7 +49,16 @@ def score_as_probe_variant(
     benchmark["row_id"] = benchmark["row_id"].astype(str)
     variant["row_id"] = variant["row_id"].astype(str)
 
-    required_benchmark = {"row_id", "revised_label", "sentence"}
+    if "revised_label" in benchmark.columns:
+        benchmark_label_col = "revised_label"
+    elif "reviewed_label" in benchmark.columns:
+        benchmark_label_col = "reviewed_label"
+    else:
+        raise ValueError(
+            "Benchmark CSV must contain either `revised_label` or `reviewed_label`."
+        )
+
+    required_benchmark = {"row_id", "sentence", benchmark_label_col}
     required_variant = {"row_id", "predicted_label", "variant_id"}
     missing_benchmark = required_benchmark.difference(benchmark.columns)
     missing_variant = required_variant.difference(variant.columns)
@@ -65,7 +74,7 @@ def score_as_probe_variant(
         missing_ids = merged.loc[merged["predicted_label"].isna(), "row_id"].tolist()
         raise ValueError(f"Variant CSV is missing predictions for row_id values: {missing_ids}")
 
-    merged["is_match"] = merged["revised_label"] == merged["predicted_label"]
+    merged["is_match"] = merged[benchmark_label_col] == merged["predicted_label"]
     accuracy = float(merged["is_match"].mean())
 
     mismatch_rows = merged.loc[~merged["is_match"]].copy()
@@ -73,7 +82,7 @@ def score_as_probe_variant(
         [
             "row_id",
             "sentence",
-            "revised_label",
+            benchmark_label_col,
             "predicted_label",
             "variant_id",
             "short_rationale",
@@ -93,13 +102,13 @@ def score_as_probe_variant(
         },
         "benchmark_label_counts": {
             str(key): int(value)
-            for key, value in merged["revised_label"].value_counts().to_dict().items()
+            for key, value in merged[benchmark_label_col].value_counts().to_dict().items()
         },
         "transition_counts": {
             str(key): int(value)
             for key, value in (
                 merged.assign(
-                    transition=merged["revised_label"].astype(str)
+                    transition=merged[benchmark_label_col].astype(str)
                     + "->"
                     + merged["predicted_label"].astype(str)
                 )["transition"]
