@@ -68,15 +68,14 @@ Only defer rows that meet one or more hard-case triggers, such as:
 
 Possible fallback targets:
 - stronger API model
-- manual review queue
-- API first, manual review only when API and local model still conflict
+- API-only arbitration lane using more than one API call when needed
 
 ## What this is not
 
 It is **not** a replacement for:
 - a clear rubric
 - proper held-out evaluation
-- human IRR
+- human IRR for benchmark construction
 
 It is a way to:
 - spend stronger-model capacity only where it matters
@@ -138,7 +137,28 @@ Only after offline simulation looks promising:
   - API model
   - revised benchmark label
 
-### Phase 3. Decide posture
+### Phase 3. API arbitration design
+
+If the deferred API lane looks promising, test this production posture on the
+same fixed deferred slice:
+
+1. local model produces a label
+2. API `A` labels the deferred row under the fixed rubric
+3. if API `A` agrees with the local model:
+   - accept that label
+4. if API `A` disagrees:
+   - call API `B` in isolation under the same rubric
+5. final label is determined by majority agreement:
+   - local + API `A`
+   - or API `A` + API `B`
+   - or local + API `B`
+
+This keeps the lane:
+- reproducible
+- fully automated
+- free of manual tie-breaking in the live classification path
+
+### Phase 4. Decide posture
 
 If the hybrid setup improves A/S accuracy materially at modest deferral rate,
 then:
@@ -169,6 +189,8 @@ The hybrid architecture only helps if:
 - the deferral policy is selective
 - the fallback model is actually better on the hard cases
 - we measure the cost / coverage tradeoff honestly
+- the arbitration logic stays reproducible and does not depend on ad hoc human
+  intervention
 
 If we defer too much, the local model stops mattering.
 If we defer too little, the hybrid gain will be small.

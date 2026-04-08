@@ -43,34 +43,32 @@ Completed:
 10. combined refreshed panel with both grant and application timing
 11. patent-matching robustness note and shareable report package
 12. first A/S classifier audit pack and probe slice
+13. bounded `2024` fuzzy sensitivity run and rejection of fuzzy matching as a
+    live patent robustness lane
+14. merge restructure/publication-refresh work back into `main`
+15. open fresh branch `codex/ai-washing-publication-upgrade`
 
 Next:
-13. finish the bounded `2024` patent fuzzy-sensitivity run at `0.90` and
-    `0.95`, then inspect fuzzy-only added matches one by one
-14. if the fuzzy additions look real, scale fuzzy matching into a stored
-    robustness lane for the master panel without changing the baseline method
-15. benchmark the revised A/S rubric on the `16`-row probe slice
-16. build a small rubric-probe review pack for fast sub-agent and later human
-    review
-17. decide whether the next classifier gain should come from:
+16. benchmark the revised A/S rubric on the fixed `16`-row probe slice
+17. build a small rubric-probe review pack for fast sub-agent and later human
+    benchmark review
+18. decide whether the next classifier gain should come from:
     - rubric rewrite alone
     - targeted training-set cleanup/expansion
     - probability tuning
-18. if local-model gains stall after rubric cleanup and retraining, open an
+19. if local-model gains stall after rubric cleanup and retraining, open an
     API-based robustness lane rather than forcing the same architecture past its
     credible ceiling
-19. if the local model remains strong on easy cases but weak on a narrow hard
+20. if the local model remains strong on easy cases but weak on a narrow hard
     tail, test a selective-defer hybrid classifier that escalates only edge
-    cases to an API or expert lane
-20. after the annual backbone is stable, open the filing-date event-study lane
+    cases to API arbitration
+21. after the annual backbone is stable, open the filing-date event-study lane
     using daily return data
-21. once the patent lane and classifier audit lane are stable, merge the
-    restructure/publication-refresh work back into `main` and start a new
-    publication-revision branch for coauthor-facing work
 
 Classifier-upgrade planning anchors:
 - `projects/ai_washing/docs/track_a_2025_classification_spot_check_v1.md`
 - `projects/ai_washing/docs/track_a_classifier_upgrade_diagnostic_plan_v1.md`
+- `projects/ai_washing/docs/track_a_classifier_upgrade_execution_roadmap_v1.md`
 
 ## Data dependencies to prepare
 
@@ -98,7 +96,8 @@ Classifier-upgrade planning anchors:
 - not treating the current classifier as the automatically final model for the
   rerun; model-upgrade review still has to happen before final empirical output
 - not replacing the exact normalized patent match with fuzzy matching in the
-  baseline method before the sensitivity check is inspected manually
+  baseline method because the bounded `2024` sensitivity test showed the current
+  fuzzy supplement is too noisy
 
 ## Bottom line
 
