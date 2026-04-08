@@ -223,6 +223,10 @@ data/validation/*
 !data/validation/recovery_sources/
 data/validation/recovery_sources/*
 !data/validation/recovery_sources/held_out_sentences_v2_review_sheet_10k_only_clean_prelabeled_recovered.csv
+!data/validation/held_out_v3/
+data/validation/held_out_v3/*
+!data/validation/held_out_v3/README.md
+!data/validation/held_out_v3/*.csv
 
 # uv lock from ad-hoc tooling runs
 uv.lock

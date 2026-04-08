@@ -1,0 +1,28 @@
+{
+  "generated_at_utc": "2026-04-08T19:55:02.768950+00:00",
+  "inputs": {
+    "recovered_input_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/validation/recovery_sources/held_out_sentences_v2_review_sheet_10k_only_clean_prelabeled_recovered.csv",
+    "excluded_sentence_ids": [
+      "70d33b9f57a2874e",
+      "773f16a020f75457",
+      "ad6e625b4aa0275c"
+    ]
+  },
+  "outputs": {
+    "candidate_pool_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/validation/held_out_v3/held_out_sentences_v3_candidate_pool.csv",
+    "review_sheet_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/validation/held_out_v3/held_out_sentences_v3_review_sheet.csv",
+    "review_slice_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/validation/held_out_v3/held_out_sentences_v3_review_slice40.csv"
+  },
+  "summary": {
+    "rows_before_exclusions": 180,
+    "rows_excluded": 3,
+    "rows_after_exclusions": 177,
+    "slice_rows": 40,
+    "original_candidate_label_distribution": {
+      "Actionable": 60,
+      "Irrelevant": 60,
+      "Speculative": 60
+    },
+    "legacy_assistive_present_rows": 177
+  }
+}

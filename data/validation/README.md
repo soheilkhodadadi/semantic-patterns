@@ -23,6 +23,27 @@ evaluation.
   - this file is a candidate review sheet only
   - it is not a frozen benchmark because the final `label` column is blank
 
+## Current primary benchmark rebuild lane
+
+- `held_out_v3/held_out_sentences_v3_candidate_pool.csv`
+  - normalized `177`-row candidate pool
+  - invalid rows excluded
+  - historical candidate and assistive fields preserved as `legacy_*`
+- `held_out_v3/held_out_sentences_v3_review_sheet.csv`
+  - active human review sheet for the rebuilt publication benchmark
+- `held_out_v3/held_out_sentences_v3_review_slice40.csv`
+  - first bounded review slice
+- `held_out_v3/held_out_sentences_v3.csv`
+  - future frozen benchmark output
+  - currently not created because review is still pending
+
+Supporting runtime artifacts:
+- `reports/final/ai_washing_heldout_v3_preparation_v1.json`
+- `reports/final/ai_washing_heldout_v3_assistive_prelabel_progress_v1.json`
+- `reports/final/ai_washing_heldout_v3_assistive_prelabel_dry_run_v1.json`
+- `reports/final/ai_washing_heldout_v3_freeze_v1.json`
+- `director/config/api_assistive_policy_heldout_v3.yaml`
+
 ## Historical registry caveat
 
 The older registry files under `reports/validation/` reference historical

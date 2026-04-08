@@ -96,20 +96,23 @@ Required outputs:
 - conditional A/S accuracy
 
 Current constraint:
-- the frozen `held_out_v2` report exists, but the underlying
-  `data/validation/held_out_sentences_v2.csv` asset is currently missing from
-  the repository tree
+- the historical frozen `held_out_v2` report exists, but the underlying
+  `data/validation/held_out_sentences_v2.csv` asset is still missing from the
+  repository tree
 - a repo-local recovery source has now been staged at:
   - `data/validation/recovery_sources/held_out_sentences_v2_review_sheet_10k_only_clean_prelabeled_recovered.csv`
+- the rebuilt benchmark lane is now initialized as `held_out_v3`:
+  - `data/validation/held_out_v3/held_out_sentences_v3_candidate_pool.csv`
+  - `data/validation/held_out_v3/held_out_sentences_v3_review_sheet.csv`
+  - `data/validation/held_out_v3/held_out_sentences_v3_review_slice40.csv`
 - the current live asset map is documented in:
   - `projects/ai_washing/docs/track_a_label_asset_recovery_and_structure_v1.md`
   - `reports/final/ai_washing_validation_asset_registry_v3.json`
 - so the immediate honest rerun surfaces are:
   - revised frozen validation split
   - regenerated IRR boundary benchmark
-- a fresh publication-grade held-out rerun still requires recovering or
-  rebuilding and freezing the missing `held_out_v2` CSV under the revised
-  rubric
+- a fresh publication-grade held-out rerun now depends on reviewing and
+  freezing `held_out_v3` under the revised rubric
 
 Current result:
 - the first revised-rubric retraining tranche did not improve the local binary

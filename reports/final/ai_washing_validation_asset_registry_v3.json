@@ -127,6 +127,51 @@
       "Final label column is blank, so this is not a frozen benchmark."
     ]
   },
+  "held_out_v3_rebuild_lane": {
+    "candidate_pool": {
+      "path": "data/validation/held_out_v3/held_out_sentences_v3_candidate_pool.csv",
+      "exists": true,
+      "row_count": 177
+    },
+    "review_sheet": {
+      "path": "data/validation/held_out_v3/held_out_sentences_v3_review_sheet.csv",
+      "exists": true,
+      "row_count": 177,
+      "labeled_rows": 0
+    },
+    "review_slice": {
+      "path": "data/validation/held_out_v3/held_out_sentences_v3_review_slice40.csv",
+      "exists": true,
+      "row_count": 40
+    },
+    "preparation_report": {
+      "path": "reports/final/ai_washing_heldout_v3_preparation_v1.json",
+      "exists": true
+    },
+    "assistive_policy": {
+      "path": "director/config/api_assistive_policy_heldout_v3.yaml",
+      "exists": true,
+      "model": "gpt-5"
+    },
+    "assistive_dry_run": {
+      "progress_path": "reports/final/ai_washing_heldout_v3_assistive_prelabel_progress_v1.json",
+      "report_path": "reports/final/ai_washing_heldout_v3_assistive_prelabel_dry_run_v1.json",
+      "exists": true,
+      "status": "dry_run",
+      "pending_rows": 177
+    },
+    "freeze_status": {
+      "report_path": "reports/final/ai_washing_heldout_v3_freeze_v1.json",
+      "exists": true,
+      "status": "pending_review",
+      "rows_pending_review": 177
+    },
+    "notes": [
+      "held_out_v3 is the current rebuilt benchmark lane under the revised rubric.",
+      "The historical missing held_out_v2 freeze remains unrecovered as a frozen CSV.",
+      "Live API prelabeling has not been executed in this shell because no OPENAI_API_KEY is present."
+    ]
+  },
   "historical_registry_caveat": {
     "stale_registry_paths": [
       "reports/validation/validation_asset_registry.json",

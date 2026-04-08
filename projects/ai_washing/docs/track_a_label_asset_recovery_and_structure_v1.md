@@ -319,3 +319,27 @@ The next honest move is:
 2. keep it benchmark-only
 3. expand the reviewed A/S training tranche separately
 4. then rerun the local layered design against the rebuilt benchmark
+
+## Current execution status
+
+The rebuild lane is now initialized as `held_out_v3`.
+
+Current repo-local assets:
+- `data/validation/held_out_v3/held_out_sentences_v3_candidate_pool.csv`
+- `data/validation/held_out_v3/held_out_sentences_v3_review_sheet.csv`
+- `data/validation/held_out_v3/held_out_sentences_v3_review_slice40.csv`
+- `reports/final/ai_washing_heldout_v3_preparation_v1.json`
+- `reports/final/ai_washing_heldout_v3_assistive_prelabel_progress_v1.json`
+- `reports/final/ai_washing_heldout_v3_assistive_prelabel_dry_run_v1.json`
+- `reports/final/ai_washing_heldout_v3_freeze_v1.json`
+
+Current status:
+- candidate pool rows after exclusions: `177`
+- current human-reviewed labels: `0`
+- freeze status: `pending_review`
+
+Practical implication:
+- the data flow is now explicit and reproducible
+- the next human step is review of the `held_out_v3` sheet
+- the next model step after that is freezing the rebuilt benchmark and
+  rerunning the local layered candidates against it
