@@ -18,6 +18,7 @@ from ai_washing_member.classification.benchmark_utils import (
 )
 from ai_washing_member.classification.model_runtime import (
     build_centroid_runtime,
+    build_layered_runtime,
     build_legacy_two_stage_runtime,
     build_pickle_runtime,
     predict_sentences,
@@ -260,6 +261,10 @@ def run_benchmark(args: argparse.Namespace) -> dict[str, Any]:
             ),
             build_pickle_runtime(metadata_path=args.logreg_metadata),
             build_pickle_runtime(metadata_path=args.binary_metadata),
+            build_layered_runtime(
+                binary_metadata_path=args.binary_metadata,
+                logreg_metadata_path=args.logreg_metadata,
+            ),
         ]
     )
 

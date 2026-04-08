@@ -282,6 +282,8 @@ def test_run_benchmark_selects_winner_and_selected_manifest_drives_classificatio
         model_id = manifest["model_id"]
         if model_id == "mpnet_logreg_prelim_v1":
             preds = truth
+        elif model_id == "layered_binary_relevance_logreg_as_v1":
+            preds = ["Speculative" if label == "Actionable" else label for label in truth]
         elif model_id == "binary_relevance_then_as_v1":
             preds = ["Irrelevant" if label == "Speculative" else label for label in truth]
         elif model_id == "legacy_two_stage_mpnet_rules":
@@ -411,3 +413,74 @@ def test_run_benchmark_selects_winner_and_selected_manifest_drives_classificatio
     )
     assert measure_report["summary"]["selected_model_id"] == "mpnet_prelim_v1"
     assert measure_report["summary"]["named_measures_complete"] is True
+
+
+def test_run_benchmark_layered_candidate_can_win(tmp_path, monkeypatch):
+    labels_master, split_registry = _write_labels_and_split(tmp_path)
+    paths = _train_wave1_models(tmp_path, labels_master, split_registry)
+    historical = tmp_path / "historical.csv"
+    boundary = tmp_path / "boundary.csv"
+    held_out_v3 = tmp_path / "held_out_v3.csv"
+    for path in (historical, boundary, held_out_v3):
+        pd.DataFrame(
+            [
+                {"sentence": "Actionable benchmark sentence", "label": "Actionable"},
+                {"sentence": "Speculative benchmark sentence", "label": "Speculative"},
+                {"sentence": "Irrelevant benchmark sentence", "label": "Irrelevant"},
+            ]
+        ).to_csv(path, index=False)
+
+    def fake_predict(sentences, manifest):
+        truth = [_label_from_sentence(sentence) for sentence in sentences]
+        model_id = manifest["model_id"]
+        if model_id == "layered_binary_relevance_logreg_as_v1":
+            preds = truth
+        elif model_id == "mpnet_logreg_prelim_v1":
+            preds = ["Speculative" if label == "Actionable" else label for label in truth]
+        elif model_id == "binary_relevance_then_as_v1":
+            preds = ["Irrelevant" if label == "Speculative" else label for label in truth]
+        elif model_id == "legacy_two_stage_mpnet_rules":
+            preds = ["Irrelevant" for _ in truth]
+        else:
+            preds = ["Actionable" if label == "Speculative" else label for label in truth]
+        scores = []
+        for pred in preds:
+            mapping = {"Actionable": 0.05, "Speculative": 0.05, "Irrelevant": 0.05}
+            mapping[pred] = 0.9
+            scores.append(mapping)
+        return preds, scores
+
+    monkeypatch.setattr(
+        "ai_washing_member.classification.benchmark_preliminary_models.predict_sentences",
+        fake_predict,
+    )
+
+    report = run_benchmark(
+        argparse.Namespace(
+            labels_master=str(labels_master),
+            split_registry=str(split_registry),
+            primary_benchmark_name="held_out_v3",
+            primary_benchmark=str(held_out_v3),
+            historical_benchmark=str(historical),
+            irr_boundary_benchmark=str(boundary),
+            centroid_model=str(paths["centroids"]),
+            centroid_metadata=str(paths["centroid_metadata"]),
+            logreg_metadata=str(paths["logreg_metadata"]),
+            binary_metadata=str(paths["binary_metadata"]),
+            output_json=str(tmp_path / "reports" / "matrix.json"),
+            output_md=str(tmp_path / "reports" / "matrix.md"),
+            model_report_dir=str(tmp_path / "reports" / "models"),
+            selected_manifest=str(tmp_path / "artifacts" / "selected.json"),
+            min_primary_accuracy=0.70,
+            min_primary_macro_f1=0.65,
+            min_primary_as_accuracy=0.65,
+            legacy_tau=0.07,
+            legacy_eps_irr=0.03,
+            legacy_min_tokens=6,
+            legacy_rule_boosts=True,
+        )
+    )
+
+    assert report["status"] == "selected"
+    selected = json.loads((tmp_path / "artifacts" / "selected.json").read_text(encoding="utf-8"))
+    assert selected["winner"]["model_id"] == "layered_binary_relevance_logreg_as_v1"

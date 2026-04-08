@@ -92,6 +92,45 @@ def build_pickle_runtime(*, metadata_path: str | Path) -> dict[str, Any]:
     }
 
 
+def build_layered_runtime(
+    *, binary_metadata_path: str | Path, logreg_metadata_path: str | Path
+) -> dict[str, Any]:
+    binary_metadata = json.loads(Path(binary_metadata_path).read_text(encoding="utf-8"))
+    logreg_metadata = json.loads(Path(logreg_metadata_path).read_text(encoding="utf-8"))
+    binary_runtime = dict(binary_metadata.get("runtime", {}))
+    logreg_runtime = dict(logreg_metadata.get("runtime", {}))
+
+    shared_keys = ("embedding_backend", "model_name", "hash_dim", "batch_size")
+    for key in shared_keys:
+        if binary_runtime.get(key) != logreg_runtime.get(key):
+            raise ValueError(
+                "Layered runtime requires matching embedding configuration for binary/logreg "
+                f"models; mismatch on {key!r}."
+            )
+
+    return {
+        "model_id": "layered_binary_relevance_logreg_as_v1",
+        "model_type": "layered_binary_relevance_logreg_as",
+        "status": "trained",
+        "preliminary_only": True,
+        "source_window_id": str(binary_metadata.get("source_window_id", "active_2021_2024")),
+        "runtime": {
+            "relevance_model_pickle": str(binary_runtime["relevance_model_pickle"]),
+            "relevance_model_pickle_sha256": str(binary_runtime["relevance_model_pickle_sha256"]),
+            "logreg_model_pickle": str(logreg_runtime["model_pickle"]),
+            "logreg_model_pickle_sha256": str(logreg_runtime["model_pickle_sha256"]),
+            "binary_metadata": str(binary_metadata_path),
+            "binary_metadata_sha256": sha256_file(binary_metadata_path),
+            "logreg_metadata": str(logreg_metadata_path),
+            "logreg_metadata_sha256": sha256_file(logreg_metadata_path),
+            "embedding_backend": str(binary_runtime["embedding_backend"]),
+            "model_name": str(binary_runtime["model_name"]),
+            "hash_dim": int(binary_runtime["hash_dim"]),
+            "batch_size": int(binary_runtime["batch_size"]),
+        },
+    }
+
+
 def _load_pickle(path: str | Path) -> Any:
     resolved = Path(path).resolve()
     key = ("pickle", str(resolved))
@@ -142,6 +181,21 @@ def warm_runtime(
         _load_pickle(runtime["relevance_model_pickle"])
         emit("load_actionable_speculative_pickle")
         _load_pickle(runtime["actionable_speculative_model_pickle"])
+        backend = str(runtime.get("embedding_backend", "sentence_transformers"))
+        if backend == "sentence_transformers":
+            emit("load_embedding_model")
+            _load_sentence_transformer(
+                _resolve_sentence_transformer_source(
+                    str(runtime.get("model_name", "sentence-transformers/all-mpnet-base-v2"))
+                )
+            )
+        return
+
+    if model_type == "layered_binary_relevance_logreg_as":
+        emit("load_relevance_pickle")
+        _load_pickle(runtime["relevance_model_pickle"])
+        emit("load_logreg_pickle")
+        _load_pickle(runtime["logreg_model_pickle"])
         backend = str(runtime.get("embedding_backend", "sentence_transformers"))
         if backend == "sentence_transformers":
             emit("load_embedding_model")
@@ -237,6 +291,51 @@ def predict_sentences(
             p_relevant = float(rel_row[rel_idx])
             p_actionable = p_relevant * float(as_row[a_idx])
             p_speculative = p_relevant * float(as_row[s_idx])
+            scores = {
+                "Actionable": p_actionable,
+                "Speculative": p_speculative,
+                "Irrelevant": p_irrelevant,
+            }
+            label = max(scores.items(), key=lambda item: item[1])[0]
+            predicted.append(label)
+            score_rows.append(scores)
+        return predicted, score_rows
+
+    if model_type == "layered_binary_relevance_logreg_as":
+        rel_payload = _load_pickle(runtime["relevance_model_pickle"])
+        logreg_payload = _load_pickle(runtime["logreg_model_pickle"])
+        embeddings = embed_sentences(
+            sentences,
+            backend=str(runtime.get("embedding_backend", "sentence_transformers")),
+            model_name=str(runtime.get("model_name", "sentence-transformers/all-mpnet-base-v2")),
+            batch_size=int(runtime.get("batch_size", 32)),
+            hash_dim=int(runtime.get("hash_dim", 64)),
+        )
+        rel_model = rel_payload["model"]
+        rel_classes = [str(value) for value in rel_model.classes_.tolist()]
+        rel_probs = rel_model.predict_proba(embeddings)
+        logreg_model = logreg_payload["model"]
+        logreg_classes = [str(value) for value in logreg_model.classes_.tolist()]
+        logreg_probs = logreg_model.predict_proba(embeddings)
+
+        irr_idx = rel_classes.index("Irrelevant")
+        rel_idx = rel_classes.index("Non-Irrelevant")
+        logreg_index = {label: idx for idx, label in enumerate(logreg_classes)}
+        predicted: list[str] = []
+        score_rows: list[dict[str, float]] = []
+
+        for rel_row, logreg_row in zip(rel_probs, logreg_probs, strict=True):
+            p_irrelevant = float(rel_row[irr_idx])
+            p_relevant = float(rel_row[rel_idx])
+            p_actionable_raw = float(logreg_row[logreg_index["Actionable"]])
+            p_speculative_raw = float(logreg_row[logreg_index["Speculative"]])
+            as_mass = p_actionable_raw + p_speculative_raw
+            if as_mass > 0.0:
+                p_actionable = p_relevant * (p_actionable_raw / as_mass)
+                p_speculative = p_relevant * (p_speculative_raw / as_mass)
+            else:
+                p_actionable = p_relevant * 0.5
+                p_speculative = p_relevant * 0.5
             scores = {
                 "Actionable": p_actionable,
                 "Speculative": p_speculative,

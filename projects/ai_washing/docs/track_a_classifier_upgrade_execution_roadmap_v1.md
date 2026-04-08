@@ -138,6 +138,14 @@ Current result:
     and strongest on the harder A/S boundary surfaces
 - this strengthens the case for the next benchmark being a layered local design
   rather than another single-model promotion attempt
+- the layered local benchmark is now complete:
+  - `reports/evaluation/model_benchmark_matrix_heldout_v3_layered_v1.json`
+  - `projects/ai_washing/docs/track_a_layered_local_benchmark_results_v1.md`
+- result:
+  - `layered_binary_relevance_logreg_as_v1` is the strongest local candidate so
+    far on `held_out_v3` and `irr_boundary_benchmark`
+  - but it still misses the primary gate on `held_out_v3`
+  - so the local-only layered design is an improvement, not a final answer
 
 Decision gate:
 - if we meaningfully improve and approach `0.80+`, continue optimizing the
@@ -168,6 +176,11 @@ Local-model precondition:
   - binary relevance gate
   - MPNet logreg A/S resolver
   - defer only when the local models disagree or confidence is low
+- current status:
+  - completed
+  - the layered local design improved the best local metrics but did not clear
+    the primary `held_out_v3` gate
+  - that makes the selective-defer simulation the next honest execution step
 
 Critical caution:
 - API `A` and API `B` need enough independence in capability or prompting
@@ -198,4 +211,5 @@ The next step is:
 1. benchmark the revised rubric
 2. enlarge the reviewed boundary pack
 3. retrain locally
-4. only then test the selective-defer hybrid design
+4. benchmark the layered local design
+5. now test the selective-defer hybrid design
