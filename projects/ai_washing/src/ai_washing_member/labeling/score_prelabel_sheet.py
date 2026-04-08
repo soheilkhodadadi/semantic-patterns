@@ -23,23 +23,21 @@ def score_prelabel_sheet(*, benchmark_csv: str, assistive_csv: str) -> dict[str,
     reviewed = benchmark.loc[
         benchmark["manual_label"] != "", ["sentence_id", "manual_label"]
     ].copy()
+    optional_columns = [
+        "source_section",
+        "prelabel_eligible",
+        "skip_reason",
+    ]
+    assistive_columns = [
+        "sentence_id",
+        "assistive_label",
+        "assistive_confidence",
+        "assistive_rationale",
+        "sentence",
+        *[column for column in optional_columns if column in assistive.columns],
+    ]
     compare = reviewed.merge(
-        assistive[
-            [
-                "sentence_id",
-                "assistive_label",
-                "assistive_confidence",
-                "assistive_rationale",
-                "source_section",
-                "sentence",
-                *(
-                    ["prelabel_eligible", "skip_reason"]
-                    if "prelabel_eligible" in assistive.columns
-                    or "skip_reason" in assistive.columns
-                    else []
-                ),
-            ]
-        ],
+        assistive[assistive_columns],
         on="sentence_id",
         how="left",
     )

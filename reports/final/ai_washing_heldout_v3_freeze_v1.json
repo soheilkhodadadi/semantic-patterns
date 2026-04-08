@@ -1,13 +1,17 @@
 {
-  "generated_at_utc": "2026-04-08T19:57:15.562148+00:00",
+  "generated_at_utc": "2026-04-08T23:20:57.889172+00:00",
   "inputs": {
-    "reviewed_input": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/validation/held_out_v3/held_out_sentences_v3_review_sheet.csv"
+    "reviewed_input": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/validation/held_out_v3/held_out_sentences_v3_review_sheet_labelled.csv"
   },
   "summary": {
-    "status": "pending_review",
+    "status": "frozen",
     "rows_total": 177,
-    "rows_pending_review": 177,
-    "label_counts": {},
+    "rows_pending_review": 0,
+    "label_counts": {
+      "Irrelevant": 87,
+      "Actionable": 66,
+      "Speculative": 24
+    },
     "benchmark_name": "held_out_v3"
   },
   "outputs": {

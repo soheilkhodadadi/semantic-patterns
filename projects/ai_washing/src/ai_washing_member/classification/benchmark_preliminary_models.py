@@ -45,11 +45,16 @@ def _benchmark_spec(name: str, path: str | Path) -> dict[str, Any]:
 def _load_benchmark_assets(
     args: argparse.Namespace,
 ) -> tuple[dict[str, dict[str, Any]], list[str]]:
+    primary_benchmark_name = str(
+        getattr(args, "primary_benchmark_name", PRIMARY_BENCHMARK_NAME) or PRIMARY_BENCHMARK_NAME
+    )
     assets: dict[str, dict[str, Any]] = {}
     missing: list[str] = []
 
     file_assets = {
-        PRIMARY_BENCHMARK_NAME: _benchmark_spec(PRIMARY_BENCHMARK_NAME, args.primary_benchmark),
+        primary_benchmark_name: _benchmark_spec(
+            primary_benchmark_name, args.primary_benchmark
+        ),
         "historical_held_out": _benchmark_spec("historical_held_out", args.historical_benchmark),
         "irr_boundary_benchmark": _benchmark_spec(
             "irr_boundary_benchmark", args.irr_boundary_benchmark
@@ -60,12 +65,12 @@ def _load_benchmark_assets(
             frame = load_benchmark_frame(spec["path"])
             leakage = (
                 heldout_overlap_count(args.labels_master, frame)
-                if name == PRIMARY_BENCHMARK_NAME
+                if name == primary_benchmark_name
                 else 0
             )
             assets[name] = {
                 "name": name,
-                "role": "primary" if name == PRIMARY_BENCHMARK_NAME else "secondary",
+                "role": "primary" if name == primary_benchmark_name else "secondary",
                 "frame": frame,
                 "path": spec["path"],
                 "sha256": sha256_file(spec["path"]),
@@ -135,13 +140,14 @@ def _select_winner(
     scores: dict[str, dict[str, Any]],
     *,
     primary_available: bool,
+    primary_benchmark_name: str,
     thresholds: dict[str, float],
 ) -> tuple[str, dict[str, Any] | None, str]:
     if not primary_available:
         return (
             "pending_primary_benchmark",
             None,
-            "Primary benchmark held_out_v2 is not frozen yet.",
+            "Primary benchmark is not frozen yet.",
         )
 
     historical_floor = _major_regression_threshold(scores, "historical_held_out")
@@ -149,7 +155,7 @@ def _select_winner(
     eligible: list[tuple[tuple[Any, ...], dict[str, Any], dict[str, Any]]] = []
     for candidate in candidates:
         candidate_id = candidate["model_id"]
-        primary = scores[candidate_id].get(PRIMARY_BENCHMARK_NAME)
+        primary = scores[candidate_id].get(primary_benchmark_name)
         if primary is None or not _candidate_passes_primary(primary, thresholds):
             continue
         historical = scores[candidate_id].get("historical_held_out")
@@ -181,7 +187,8 @@ def _select_winner(
         "source_window_id": winner.get("source_window_id", "active_2021_2024"),
         "preliminary_only": True,
         "runtime": winner["runtime"],
-        "primary_benchmark": PRIMARY_BENCHMARK_NAME,
+        "primary_benchmark": primary_benchmark_name,
+        "primary_benchmark_name": primary_benchmark_name,
         "primary_metrics": {
             "accuracy": winner_primary["accuracy"],
             "macro_f1": winner_primary["macro_f1"],
@@ -224,6 +231,9 @@ def _markdown_report(payload: dict[str, Any]) -> str:
 
 
 def run_benchmark(args: argparse.Namespace) -> dict[str, Any]:
+    primary_benchmark_name = str(
+        getattr(args, "primary_benchmark_name", PRIMARY_BENCHMARK_NAME) or PRIMARY_BENCHMARK_NAME
+    )
     output_json = Path(args.output_json)
     output_md = Path(args.output_md)
     selected_manifest_path = Path(args.selected_manifest)
@@ -280,7 +290,8 @@ def run_benchmark(args: argparse.Namespace) -> dict[str, Any]:
     selection_status, winner_payload, selection_reason = _select_winner(
         candidates,
         scores,
-        primary_available=PRIMARY_BENCHMARK_NAME in assets,
+        primary_available=primary_benchmark_name in assets,
+        primary_benchmark_name=primary_benchmark_name,
         thresholds=thresholds,
     )
 
@@ -289,8 +300,8 @@ def run_benchmark(args: argparse.Namespace) -> dict[str, Any]:
         "generated_at_utc": pd.Timestamp.utcnow().isoformat(),
         "summary": {
             "status": selection_status,
-            "primary_benchmark_name": PRIMARY_BENCHMARK_NAME,
-            "primary_benchmark_available": PRIMARY_BENCHMARK_NAME in assets,
+            "primary_benchmark_name": primary_benchmark_name,
+            "primary_benchmark_available": primary_benchmark_name in assets,
             "missing_benchmarks": missing,
             "skipped_candidates": ["legacy_two_stage_mpnet_rules"]
             if bool(getattr(args, "skip_legacy", False))
@@ -331,6 +342,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--labels-master", default="data/labels/v1/labels_master.parquet")
     parser.add_argument("--split-registry", default="data/metadata/splits/split_registry_v1.csv")
+    parser.add_argument("--primary-benchmark-name", default=PRIMARY_BENCHMARK_NAME)
     parser.add_argument("--primary-benchmark", default="data/validation/held_out_sentences_v2.csv")
     parser.add_argument("--historical-benchmark", default="data/validation/held_out_sentences.csv")
     parser.add_argument(

@@ -1,0 +1,87 @@
+{
+  "generated_at": "2026-04-08T23:23:00.863062+00:00",
+  "benchmark_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/validation/held_out_v3/held_out_sentences_v3_review_sheet_labelled.csv",
+  "assistive_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/validation/held_out_v3/held_out_sentences_v3_review_sheet_labelled.csv",
+  "score": {
+    "gate_basis": "eligible",
+    "overall": {
+      "matches": 177,
+      "total": 177
+    },
+    "action_spec": {
+      "matches": 90,
+      "total": 90
+    },
+    "raw_overall": {
+      "matches": 177,
+      "total": 177
+    },
+    "raw_action_spec": {
+      "matches": 90,
+      "total": 90
+    },
+    "eligible_overall": {
+      "matches": 177,
+      "total": 177
+    },
+    "eligible_action_spec": {
+      "matches": 90,
+      "total": 90
+    },
+    "excluded_from_gate": {
+      "count": 0,
+      "sentence_ids": []
+    },
+    "manual_distribution": {
+      "Irrelevant": 87,
+      "Actionable": 66,
+      "Speculative": 24
+    },
+    "assistive_distribution": {
+      "Irrelevant": 87,
+      "Actionable": 66,
+      "Speculative": 24
+    },
+    "confusion": {
+      "Actionable": {
+        "Actionable": 66,
+        "Irrelevant": 0,
+        "Speculative": 0
+      },
+      "Irrelevant": {
+        "Actionable": 0,
+        "Irrelevant": 87,
+        "Speculative": 0
+      },
+      "Speculative": {
+        "Actionable": 0,
+        "Irrelevant": 0,
+        "Speculative": 24
+      }
+    },
+    "eligible_confusion": {
+      "Actionable": {
+        "Actionable": 66,
+        "Irrelevant": 0,
+        "Speculative": 0
+      },
+      "Irrelevant": {
+        "Actionable": 0,
+        "Irrelevant": 87,
+        "Speculative": 0
+      },
+      "Speculative": {
+        "Actionable": 0,
+        "Irrelevant": 0,
+        "Speculative": 24
+      }
+    },
+    "mismatch_rows": []
+  },
+  "cleaned_text_checks": {
+    "table_of_contents_present": false,
+    "form_10k_present": false,
+    "heading_prefix_present": false,
+    "glossary_fragment_present": false
+  }
+}

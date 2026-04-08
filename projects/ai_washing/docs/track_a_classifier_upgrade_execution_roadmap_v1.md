@@ -128,6 +128,16 @@ Current result:
   - binary model for relevance
   - MPNet logreg for local A/S resolution
   - defer only true conflict cases
+- `held_out_v3` is now frozen and benchmarked:
+  - `data/validation/held_out_v3/held_out_sentences_v3.csv`
+  - `reports/evaluation/model_benchmark_matrix_heldout_v3_v1.json`
+- current `held_out_v3` result:
+  - no local single-model winner
+  - `binary_relevance_then_as_v1` is best on overall `held_out_v3` accuracy
+  - `mpnet_logreg_prelim_v1` is best on the `irr_boundary_benchmark`
+    and strongest on the harder A/S boundary surfaces
+- this strengthens the case for the next benchmark being a layered local design
+  rather than another single-model promotion attempt
 
 Decision gate:
 - if we meaningfully improve and approach `0.80+`, continue optimizing the
