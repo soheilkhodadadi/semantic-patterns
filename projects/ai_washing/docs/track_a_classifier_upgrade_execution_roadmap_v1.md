@@ -231,20 +231,37 @@ Required outputs:
 - refreshed adjudication plan under the tightened rubric
 
 Current posture:
-- initialized
+- second-rater return is now scored
 - revised pack artifacts are now built:
   - `data/labels/v1/irr_subset_boundary_revised_v2.parquet`
   - `data/labels/v1/irr_subset_boundary_revised_v2_master.csv`
   - `data/labels/v1/irr_subset_boundary_revised_v2_rater2_blinded.csv`
   - `data/labels/v1/irr_subset_boundary_revised_v2_rater2_blinded.xlsx`
   - `reports/labels/irr_subset_boundary_revised_v2_sampling_report.json`
+- returned workbook and adjudication lane now live under:
+  - `data/labels/v2/irr_subset_boundary_revised_v2_rater2_blinded_Filled.xlsx`
+  - `data/labels/v2/irr_boundary_revised_v2_adjudication_sheet.xlsx`
+  - `data/labels/v2/adjudication_boundary_revised_v2.parquet`
 - the pack is class-balanced and meets the `120`-firm target
 - important caveat:
   - the current revised label backbone is effectively `2024`-only
   - so this revised IRR pack is also `2024`-only
-- no additional local-model benchmarking is required before this step
-- the next bottleneck is no longer classifier design
-- it is human-reliability confirmation under the revised rubric
+- scored result:
+  - kappa: `0.6625`
+  - disagreements: `27`
+  - gate result: `deferred`
+- interpretation:
+  - selective-defer runtime is ready
+  - human reliability is still not promotion-ready
+  - the remaining blocker is adjudication of the `27` disagreement rows
+
+Current decision:
+- do not promote a new full panel build yet
+- keep the selected hybrid manifests ready:
+  - `artifacts/models/prelim_selected_model_selective_defer_conf49_v1.json`
+  - `artifacts/models/prelim_selected_model_selective_defer_conf54_v1.json`
+- use `0.49` as the main operating point and `0.54` as the higher-API
+  robustness posture once adjudication is complete
 
 ## Success criteria
 
@@ -257,11 +274,11 @@ Stretch:
 
 ## Bottom line
 
-The next step is not blind retraining.
+The next step is not blind retraining and not immediate panel promotion.
 
 The next step is:
-1. benchmark the revised rubric
-2. enlarge the reviewed boundary pack
-3. retrain locally
-4. benchmark the layered local design
-5. now test the selective-defer hybrid design
+1. adjudicate the `27` revised IRR disagreements
+2. recompute the adjudicated benchmark status
+3. compare the `0.49` and `0.54` hybrid manifests against that adjudicated
+   benchmark
+4. only then launch the new full-panel classification refresh

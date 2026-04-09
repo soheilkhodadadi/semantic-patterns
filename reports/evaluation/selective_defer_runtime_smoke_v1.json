@@ -1,0 +1,45 @@
+{
+  "generated_at_utc": "2026-04-09T16:30:26.264964+00:00",
+  "selected_manifest": "artifacts/models/prelim_selected_model_selective_defer_conf49_v1.json",
+  "rows": 3,
+  "prediction_source_counts": {
+    "local": 2,
+    "api_a": 1
+  },
+  "deferred_to_api_count": 1,
+  "rows_detail": [
+    {
+      "sentence_id": "4f25d4cad00ff50d",
+      "predicted_label": "Irrelevant",
+      "prediction_source": "api_a",
+      "deferred_to_api": true,
+      "local_label": "Actionable",
+      "local_confidence": 0.3484493853980774,
+      "api_a_label": "Irrelevant",
+      "api_a_confidence": "high",
+      "api_a_model": "gpt-5-mini"
+    },
+    {
+      "sentence_id": "ff62836557f6fe21",
+      "predicted_label": "Actionable",
+      "prediction_source": "local",
+      "deferred_to_api": false,
+      "local_label": "Actionable",
+      "local_confidence": 0.4901644750381218,
+      "api_a_label": "",
+      "api_a_confidence": "",
+      "api_a_model": ""
+    },
+    {
+      "sentence_id": "5a3d70b33ce7f975",
+      "predicted_label": "Actionable",
+      "prediction_source": "local",
+      "deferred_to_api": false,
+      "local_label": "Actionable",
+      "local_confidence": 0.7034679329446853,
+      "api_a_label": "",
+      "api_a_confidence": "",
+      "api_a_model": ""
+    }
+  ]
+}

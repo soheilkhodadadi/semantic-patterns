@@ -12,7 +12,7 @@ import pandas as pd
 from ai_washing_member.classification.model_runtime import (
     build_centroid_runtime,
     load_manifest,
-    predict_sentences,
+    predict_sentences_with_metadata,
 )
 from ai_washing_member.classification.preliminary_pipeline import sha256_file
 from ai_washing_member.labeling.common import ALLOWED_LABELS, load_table
@@ -74,9 +74,15 @@ def run_classification(args: argparse.Namespace) -> dict:
         if missing:
             raise ValueError(f"Sentence table for year={year} is missing columns: {missing}")
 
-        predicted, score_rows = predict_sentences(
+        source_sections = (
+            frame["source_section"].fillna("").astype(str).tolist()
+            if "source_section" in frame.columns
+            else [""] * len(frame)
+        )
+        predicted, score_rows, metadata_rows = predict_sentences_with_metadata(
             frame["sentence"].fillna("").astype(str).tolist(),
             runtime_manifest,
+            source_sections=source_sections,
         )
         classified = frame.copy()
         classified["predicted_label"] = predicted
@@ -88,6 +94,9 @@ def run_classification(args: argparse.Namespace) -> dict:
             classified[f"score_{label.lower()}"] = [
                 float(row.get(label, 0.0)) for row in score_rows
             ]
+        metadata_columns = sorted({key for row in metadata_rows for key in row})
+        for column in metadata_columns:
+            classified[column] = [row.get(column, "") for row in metadata_rows]
 
         output_path = (
             output_root

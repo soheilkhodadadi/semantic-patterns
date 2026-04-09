@@ -1,0 +1,52 @@
+{
+  "status": "selected",
+  "generated_at_utc": "2026-04-09T16:27:45.645716+00:00",
+  "preliminary_only": true,
+  "source_window_id": "active_2021_2024",
+  "selection_reason": "Recommended main selective-defer operating point from Track A confidence-sweep benchmark; clears minimum gate on held_out_v3 and irr boundary at bounded API use.",
+  "operating_point": {
+    "low_confidence_threshold": 0.49,
+    "defer_policy": "api_a_on_low_local_confidence",
+    "api_policy_path": "director/config/api_assistive_policy_heldout_v3_mini_high_output.yaml",
+    "api_policy_sha256": "78770eb2b259b07db297c75a56f2e2547d5d8eda01bb28c261afede4658a07d8"
+  },
+  "benchmark_refs": {
+    "heldout_report": "reports/evaluation/selective_defer_heldout_v3_v1.json",
+    "heldout_confidence_sweep": "reports/evaluation/selective_defer_heldout_v3_confidence_sweep_v1.csv",
+    "irr_boundary_report": "reports/evaluation/selective_defer_irr_boundary_v1.json",
+    "irr_boundary_confidence_sweep": "reports/evaluation/selective_defer_irr_boundary_confidence_sweep_v1.csv",
+    "decision_note": "projects/ai_washing/docs/track_a_selective_defer_results_v1.md"
+  },
+  "inputs": {
+    "binary_metadata": "artifacts/models/binary_relevance_then_as_v1/metadata.json",
+    "logreg_metadata": "artifacts/models/mpnet_logreg_prelim_v1/metadata.json",
+    "api_policy": "director/config/api_assistive_policy_heldout_v3_mini_high_output.yaml",
+    "binary_metadata_sha256": "23ffe5233102581ef9479b936c0dee3bdd1b606bc6840dde57b9f880a529cd55",
+    "logreg_metadata_sha256": "20f7eb690d1318693a16e75f11600aae418782fb316be8514440a8453e3bbe34",
+    "api_policy_sha256": "78770eb2b259b07db297c75a56f2e2547d5d8eda01bb28c261afede4658a07d8"
+  },
+  "winner": {
+    "model_id": "selective_defer_layered_api_a_conf49_v1",
+    "model_type": "selective_defer_layered_api_a",
+    "status": "trained",
+    "preliminary_only": true,
+    "source_window_id": "active_2021_2024",
+    "runtime": {
+      "relevance_model_pickle": "artifacts/models/binary_relevance_then_as_v1/relevance_model.pkl",
+      "relevance_model_pickle_sha256": "e4fd53b55843ffc5a5e87e2b094444462e08776c6068927c6b05bc049476a8e2",
+      "logreg_model_pickle": "artifacts/models/mpnet_logreg_prelim_v1/model.pkl",
+      "logreg_model_pickle_sha256": "d34b7a19340a0554ff065ff5ed3907c3223a45267d987ca27a63117f1119aada",
+      "binary_metadata": "artifacts/models/binary_relevance_then_as_v1/metadata.json",
+      "binary_metadata_sha256": "23ffe5233102581ef9479b936c0dee3bdd1b606bc6840dde57b9f880a529cd55",
+      "logreg_metadata": "artifacts/models/mpnet_logreg_prelim_v1/metadata.json",
+      "logreg_metadata_sha256": "20f7eb690d1318693a16e75f11600aae418782fb316be8514440a8453e3bbe34",
+      "embedding_backend": "sentence_transformers",
+      "model_name": "sentence-transformers/all-mpnet-base-v2",
+      "hash_dim": 64,
+      "batch_size": 32,
+      "api_a_policy": "director/config/api_assistive_policy_heldout_v3_mini_high_output.yaml",
+      "api_a_policy_sha256": "78770eb2b259b07db297c75a56f2e2547d5d8eda01bb28c261afede4658a07d8",
+      "defer_low_confidence_threshold": 0.49
+    }
+  }
+}

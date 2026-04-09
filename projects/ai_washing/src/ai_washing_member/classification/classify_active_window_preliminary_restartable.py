@@ -10,7 +10,10 @@ from typing import Any
 import pandas as pd
 
 from ai_washing_member.classification.classify_active_window_preliminary import _resolve_runtime
-from ai_washing_member.classification.model_runtime import predict_sentences, warm_runtime
+from ai_washing_member.classification.model_runtime import (
+    predict_sentences_with_metadata,
+    warm_runtime,
+)
 from ai_washing_member.classification.preliminary_pipeline import sha256_file
 from ai_washing_member.labeling.common import ALLOWED_LABELS, load_table
 
@@ -129,9 +132,15 @@ def _write_chunk(
     source_window_id: str,
     chunk_path: Path,
 ) -> int:
-    predicted, score_rows = predict_sentences(
+    source_sections = (
+        frame["source_section"].fillna("").astype(str).tolist()
+        if "source_section" in frame.columns
+        else [""] * len(frame)
+    )
+    predicted, score_rows, metadata_rows = predict_sentences_with_metadata(
         frame["sentence"].fillna("").astype(str).tolist(),
         runtime_manifest,
+        source_sections=source_sections,
     )
     classified = frame.copy()
     classified["predicted_label"] = predicted
@@ -141,6 +150,9 @@ def _write_chunk(
     classified["classified_at_utc"] = _now_utc()
     for label in ALLOWED_LABELS:
         classified[f"score_{label.lower()}"] = [float(row.get(label, 0.0)) for row in score_rows]
+    metadata_columns = sorted({key for row in metadata_rows for key in row})
+    for column in metadata_columns:
+        classified[column] = [row.get(column, "") for row in metadata_rows]
 
     chunk_path.parent.mkdir(parents=True, exist_ok=True)
     classified.to_parquet(chunk_path, index=False)

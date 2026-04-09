@@ -58,12 +58,22 @@ def test_member_restartable_classification_writes_outputs_and_progress(
         ),
     )
 
-    def fake_predict(sentences: list[str], runtime_manifest: dict[str, str]):
-        return ["Actionable"] * len(sentences), [
-            {"Actionable": 0.8, "Speculative": 0.1, "Irrelevant": 0.1} for _ in sentences
-        ]
+    def fake_predict(sentences: list[str], runtime_manifest: dict[str, str], *, source_sections=None):
+        return (
+            ["Actionable"] * len(sentences),
+            [{"Actionable": 0.8, "Speculative": 0.1, "Irrelevant": 0.1} for _ in sentences],
+            [
+                {
+                    "prediction_source": "local",
+                    "deferred_to_api": False,
+                    "local_label": "Actionable",
+                    "local_confidence": 0.8,
+                }
+                for _ in sentences
+            ],
+        )
 
-    monkeypatch.setattr(member_restartable, "predict_sentences", fake_predict)
+    monkeypatch.setattr(member_restartable, "predict_sentences_with_metadata", fake_predict)
 
     args = argparse.Namespace(
         input_root=str(input_root),
@@ -86,3 +96,13 @@ def test_member_restartable_classification_writes_outputs_and_progress(
     assert report["summary"]["rows_by_year"] == {"2021": 5}
     progress = json.loads(Path(args.progress_report).read_text(encoding="utf-8"))
     assert progress["status"] == "completed"
+    chunk_output = (
+        Path(args.output_root)
+        / "year=2021"
+        / "model=binary_relevance_then_as_v1"
+        / "_chunks"
+        / "chunk_0000.parquet"
+    )
+    classified = pd.read_parquet(chunk_output)
+    assert "prediction_source" in classified.columns
+    assert set(classified["prediction_source"]) == {"local"}
