@@ -1,0 +1,116 @@
+schema_version: 1.0.0
+mode: assistive_only
+provider: openai
+transport: responses_api
+env_var: OPENAI_API_KEY
+model: gpt-5-mini
+request:
+  store: false
+  timeout_seconds: 60
+  max_output_tokens: 600
+  reasoning_effort: low
+  text_format:
+    type: json_schema
+    name: shadow_full_corpus_assistive_label_result
+    strict: true
+    schema:
+      type: object
+      additionalProperties: false
+      properties:
+        label:
+          type: string
+          enum:
+          - Actionable
+          - Speculative
+          - Irrelevant
+        confidence:
+          type: string
+          enum:
+          - high
+          - medium
+          - low
+        rationale:
+          type: string
+          minLength: 1
+          maxLength: 160
+        assistive_only:
+          type: boolean
+          enum:
+          - true
+      required:
+      - label
+      - confidence
+      - rationale
+      - assistive_only
+budget:
+  max_live_requests_per_run: 1
+  max_prompt_tokens_per_call: 1800
+  max_output_tokens_per_call: 600
+  max_estimated_cost_usd_per_run: 10.0
+selection:
+  sample_input: data/processed/shadow/deferred_review_sheets/selective_defer_conf_or_margin_shadow_full_corpus_v1.csv
+  min_tokens: 12
+  max_tokens: 240
+  require_fragment_score_max: 0.0
+telemetry:
+  usage_file: director/runs/cost_usage.jsonl
+  component: shadow_full_corpus_api_assistive_mini_v2
+  cache_allowed: false
+usage_policy:
+  canonical: false
+  allowed_use_cases:
+  - shadow_full_corpus_deferred_slice
+  - provisional_panel_refresh
+  prohibited_use_cases:
+  - canonical_training_labels
+  - irr_substitute
+  - held_out_training_use
+prompt_spec:
+  reference_rubric_path: projects/ai_washing/docs/track_a_as_rubric_rewrite_v2.md
+  label_set:
+  - Actionable
+  - Speculative
+  - Irrelevant
+  confidence_bands:
+  - high
+  - medium
+  - low
+  system_prompt: >-
+    You are assisting a research labeling workflow. Your output is assistive
+    only and must not be treated as canonical. Use this rubric exactly.
+    Actionable means a focal-firm present or past factual AI claim, including
+    current product/platform capability, current operating or internal use,
+    present investment already underway as fact, or present owned AI asset
+    through a completed acquisition. Speculative means a focal-firm AI claim
+    that is not yet stated as present fact, including intention, build,
+    integration, mission, aspiration, or expected benefit without an
+    independent present/past factual claim. Irrelevant means AI is mentioned
+    but the sentence is mainly market trend, generic risk, client-side future
+    use, biography/background, or tangential context rather than a focal-firm
+    capability or owned-asset claim. Return JSON only.
+  user_prompt_template: >-
+    Label this sentence using the revised project rubric.
+    Apply these rules in order:
+    1. Is this a focal-firm AI claim at all? If not, Irrelevant.
+    2. If the sentence is mainly about clients, users, or the market using AI
+       in the future, label Irrelevant, not Speculative.
+    3. If the sentence is mainly a market trend, demand driver, or technology
+       trajectory without a concrete focal-firm capability claim, label
+       Irrelevant.
+    4. If the sentence states an existing solution, platform, offering, or
+       owned AI asset now, it can still be Actionable even if it also mentions
+       expected growth or expansion.
+    5. Build/integrate/plan/mission language is Speculative unless the sentence
+       also contains an independent present factual claim.
+    6. Completed acquisition of an AI platform or provider can be Actionable
+       when the sentence states present ownership as fact.
+    7. Biography or expertise references are usually Irrelevant unless they are
+       functioning as part of the firm's current AI capability or owned-platform
+       story.
+    Return exactly one JSON object with:
+    label in {Actionable, Speculative, Irrelevant},
+    confidence in {high, medium, low},
+    rationale under 24 words,
+    assistive_only equal to true.
+smoke_output:
+  report_path: reports/api/shadow_full_corpus_api_assistive_mini_v2_smoke_test.json

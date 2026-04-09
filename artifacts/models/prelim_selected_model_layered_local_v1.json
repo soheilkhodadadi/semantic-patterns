@@ -1,0 +1,34 @@
+{
+  "status": "selected",
+  "generated_at_utc": "2026-04-09T17:59:15.601342+00:00",
+  "preliminary_only": true,
+  "source_window_id": "active_2021_2024",
+  "selection_reason": "Runnable local layered base manifest for provisional shadow full-corpus classification.",
+  "inputs": {
+    "binary_metadata": "artifacts/models/binary_relevance_then_as_v1/metadata.json",
+    "logreg_metadata": "artifacts/models/mpnet_logreg_prelim_v1/metadata.json",
+    "binary_metadata_sha256": "23ffe5233102581ef9479b936c0dee3bdd1b606bc6840dde57b9f880a529cd55",
+    "logreg_metadata_sha256": "20f7eb690d1318693a16e75f11600aae418782fb316be8514440a8453e3bbe34"
+  },
+  "winner": {
+    "model_id": "layered_binary_relevance_logreg_as_v1",
+    "model_type": "layered_binary_relevance_logreg_as",
+    "status": "trained",
+    "preliminary_only": true,
+    "source_window_id": "active_2021_2024",
+    "runtime": {
+      "relevance_model_pickle": "artifacts/models/binary_relevance_then_as_v1/relevance_model.pkl",
+      "relevance_model_pickle_sha256": "e4fd53b55843ffc5a5e87e2b094444462e08776c6068927c6b05bc049476a8e2",
+      "logreg_model_pickle": "artifacts/models/mpnet_logreg_prelim_v1/model.pkl",
+      "logreg_model_pickle_sha256": "d34b7a19340a0554ff065ff5ed3907c3223a45267d987ca27a63117f1119aada",
+      "binary_metadata": "artifacts/models/binary_relevance_then_as_v1/metadata.json",
+      "binary_metadata_sha256": "23ffe5233102581ef9479b936c0dee3bdd1b606bc6840dde57b9f880a529cd55",
+      "logreg_metadata": "artifacts/models/mpnet_logreg_prelim_v1/metadata.json",
+      "logreg_metadata_sha256": "20f7eb690d1318693a16e75f11600aae418782fb316be8514440a8453e3bbe34",
+      "embedding_backend": "sentence_transformers",
+      "model_name": "sentence-transformers/all-mpnet-base-v2",
+      "hash_dim": 64,
+      "batch_size": 32
+    }
+  }
+}
