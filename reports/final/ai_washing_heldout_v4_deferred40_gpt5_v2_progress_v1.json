@@ -1,0 +1,22 @@
+{
+  "status": "passed",
+  "generated_at_utc": "2026-04-09T17:35:04.166440+00:00",
+  "inputs": {
+    "input_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/validation/held_out_v4/held_out_sentences_v4_deferred40_input.csv",
+    "output_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/validation/held_out_v4/held_out_sentences_v4_deferred40_gpt5_v2.csv",
+    "report_path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/reports/final/ai_washing_heldout_v4_deferred40_gpt5_v2_report_v1.json"
+  },
+  "summary": {
+    "iterations_completed": 40,
+    "max_requests": 80,
+    "total_estimated_cost_usd": 0.0,
+    "last_run_status": "passed"
+  },
+  "counts": {
+    "input_rows": 40,
+    "canonical_labeled_rows": 0,
+    "assistive_labeled_rows": 40,
+    "pending_rows": 0
+  },
+  "last_error": null
+}

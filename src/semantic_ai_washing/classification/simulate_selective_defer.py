@@ -211,6 +211,13 @@ def _policy_specs() -> list[PolicySpec]:
             low_as_margin_threshold=0.15,
         ),
         PolicySpec(
+            name="api_ab_majority_conf_or_margin",
+            description="Defer rows with low confidence or narrow A/S margin, then majority-vote local/API A/API B when API B is available.",
+            low_confidence_threshold=0.60,
+            low_as_margin_threshold=0.15,
+            api_b_majority=True,
+        ),
+        PolicySpec(
             name="api_a_conf_or_margin_or_disagreement",
             description="Defer rows with low confidence, narrow A/S margin, or local component disagreement.",
             low_confidence_threshold=0.60,

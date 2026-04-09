@@ -1,0 +1,341 @@
+{
+  "generated_at": "2026-04-09T17:30:30.162146+00:00",
+  "benchmark_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/validation/held_out_v4/held_out_sentences_v4.csv",
+  "assistive_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/validation/held_out_v4/held_out_sentences_v4_input_gpt5mini_high_output.csv",
+  "score": {
+    "gate_basis": "eligible",
+    "overall": {
+      "matches": 97,
+      "total": 120
+    },
+    "action_spec": {
+      "matches": 56,
+      "total": 74
+    },
+    "raw_overall": {
+      "matches": 97,
+      "total": 120
+    },
+    "raw_action_spec": {
+      "matches": 56,
+      "total": 74
+    },
+    "eligible_overall": {
+      "matches": 97,
+      "total": 120
+    },
+    "eligible_action_spec": {
+      "matches": 56,
+      "total": 74
+    },
+    "excluded_from_gate": {
+      "count": 0,
+      "sentence_ids": []
+    },
+    "manual_distribution": {
+      "Irrelevant": 46,
+      "Actionable": 43,
+      "Speculative": 31
+    },
+    "assistive_distribution": {
+      "Irrelevant": 51,
+      "Actionable": 42,
+      "Speculative": 27
+    },
+    "confusion": {
+      "Actionable": {
+        "Actionable": 35,
+        "Irrelevant": 1,
+        "Speculative": 6
+      },
+      "Irrelevant": {
+        "Actionable": 6,
+        "Irrelevant": 41,
+        "Speculative": 4
+      },
+      "Speculative": {
+        "Actionable": 2,
+        "Irrelevant": 4,
+        "Speculative": 21
+      }
+    },
+    "eligible_confusion": {
+      "Actionable": {
+        "Actionable": 35,
+        "Irrelevant": 1,
+        "Speculative": 6
+      },
+      "Irrelevant": {
+        "Actionable": 6,
+        "Irrelevant": 41,
+        "Speculative": 4
+      },
+      "Speculative": {
+        "Actionable": 2,
+        "Irrelevant": 4,
+        "Speculative": 21
+      }
+    },
+    "mismatch_rows": [
+      {
+        "sentence_id": "6f14a124157d5bf1",
+        "manual_label": "Actionable",
+        "assistive_label": "Irrelevant",
+        "source_section": "nan",
+        "assistive_confidence": "high",
+        "assistive_rationale": "States a present financing agreement with an entity named Beyebe AI, not a claim about the firm's AI capabilities or offerings.",
+        "sentence": "We have entered into a Loan Agreement with Beyebe AI pursuant to which we may borrow up to 1,000,000 to fund our operations.",
+        "eligible_for_gate": true,
+        "skip_reason": "nan"
+      },
+      {
+        "sentence_id": "691019462fccd741",
+        "manual_label": "Irrelevant",
+        "assistive_label": "Speculative",
+        "source_section": "nan",
+        "assistive_confidence": "high",
+        "assistive_rationale": "Future-oriented claim linking generative AI demand to increased requirements for the firm's products\u2014predictive, not a present/past factual usage or deployment.",
+        "sentence": "From endpoint devices to data centers, generative AI applications will drive the need for higher speed and higher bandwidth networks, while increasing the requirements for our precision timing solutions.",
+        "eligible_for_gate": true,
+        "skip_reason": "nan"
+      },
+      {
+        "sentence_id": "c4e09d07456063ba",
+        "manual_label": "Speculative",
+        "assistive_label": "Actionable",
+        "source_section": "nan",
+        "assistive_confidence": "high",
+        "assistive_rationale": "States ongoing present action: building/integrating AI into the firm's offerings (concrete product/service capability).",
+        "sentence": "We continue to build and integrate AI into our offerings, and this innovation presents risks and challenges that could affect its adoption, and therefore our business.",
+        "eligible_for_gate": true,
+        "skip_reason": "nan"
+      },
+      {
+        "sentence_id": "98c50baf6f6271ea",
+        "manual_label": "Irrelevant",
+        "assistive_label": "Speculative",
+        "source_section": "nan",
+        "assistive_confidence": "high",
+        "assistive_rationale": "Describes intent/effort to enter AI and IoT industries, not a present or past factual claim of current capability or deployment.",
+        "sentence": "Plan of Operation We devote substantial efforts to enter into new-emerging application industries of Internet Technology, Artificial Intelligence (AI) and the Internet of Things (IOT).",
+        "eligible_for_gate": true,
+        "skip_reason": "nan"
+      },
+      {
+        "sentence_id": "ea992ace72120c58",
+        "manual_label": "Irrelevant",
+        "assistive_label": "Speculative",
+        "source_section": "nan",
+        "assistive_confidence": "high",
+        "assistive_rationale": "Discusses expected future use of AI/cloud as expansion, not a current/past implemented capability or investment.",
+        "sentence": "Further, we expect that the breadth and complexity of our IT systems and infrastructure will increase as we expand our product offerings to utilize cloud technologies and potentially artificial intelligence, which present inherent enterprise technology risks, including those related to privacy, data protection and cybersecurity, that need to be managed.",
+        "eligible_for_gate": true,
+        "skip_reason": "nan"
+      },
+      {
+        "sentence_id": "0aa31ee48081a32b",
+        "manual_label": "Actionable",
+        "assistive_label": "Irrelevant",
+        "source_section": "nan",
+        "assistive_confidence": "high",
+        "assistive_rationale": "Biographical statement about an individual's expertise and past events, not a firm-specific current AI capability or offering.",
+        "sentence": "He has strong expertise in cyber security, AI, modeling and simulation and has chaired sessions at symposiums on these subjects.",
+        "eligible_for_gate": true,
+        "skip_reason": "nan"
+      },
+      {
+        "sentence_id": "0a204a32529b71a6",
+        "manual_label": "Speculative",
+        "assistive_label": "Irrelevant",
+        "source_section": "nan",
+        "assistive_confidence": "high",
+        "assistive_rationale": "Generic capability statement about deep learning risk assessment without a firm-specific present/past claim or identified product/workflow.",
+        "sentence": "Through deep learning of user behavior characteristics, accurately assess risk levels, effectively improve the efficiency and accuracy of risk control, and escort international business.",
+        "eligible_for_gate": true,
+        "skip_reason": "nan"
+      },
+      {
+        "sentence_id": "a1a64f0ead6aacbe",
+        "manual_label": "Actionable",
+        "assistive_label": "Irrelevant",
+        "source_section": "nan",
+        "assistive_confidence": "high",
+        "assistive_rationale": "Biographical past-employment statement; no claim about the firm's current AI capabilities, products, or investments.",
+        "sentence": "Ms. Xu was as a senior customer manager at Beijing Sensetime Technology Development Co., Ltd., a leading AI software company focused on innovating for a better AI-empowered future, from May 2018.",
+        "eligible_for_gate": true,
+        "skip_reason": "nan"
+      },
+      {
+        "sentence_id": "012872fb0537f778",
+        "manual_label": "Actionable",
+        "assistive_label": "Speculative",
+        "source_section": "nan",
+        "assistive_confidence": "high",
+        "assistive_rationale": "Future-tense statement about planned enhancements to firm ML models (intention to build/improve), not a current factual capability.",
+        "sentence": "For example, we will continue to enhance certain of our machine learning models to improve our customer capture and segmentation capabilities.",
+        "eligible_for_gate": true,
+        "skip_reason": "nan"
+      },
+      {
+        "sentence_id": "b15d0aa3edae02e0",
+        "manual_label": "Speculative",
+        "assistive_label": "Irrelevant",
+        "source_section": "nan",
+        "assistive_confidence": "high",
+        "assistive_rationale": "Generic speculative statement about potential benefits of data and AI, not a firm-specific current capability or offering.",
+        "sentence": "The opportunity to collect data points over time could enable the development of business and insurance liability benchmarking, and through AI, powerful guidance for perpetual safety improvement (and associated cost savings capture).",
+        "eligible_for_gate": true,
+        "skip_reason": "nan"
+      },
+      {
+        "sentence_id": "783343a1e7fee59d",
+        "manual_label": "Actionable",
+        "assistive_label": "Irrelevant",
+        "source_section": "nan",
+        "assistive_confidence": "high",
+        "assistive_rationale": "Generic product-category statement, not a firm-specific current capability or investment claim.",
+        "sentence": "Private AI: This solution enables organizations to use generative AI technologies while addressing privacy and compliance needs of the organization.",
+        "eligible_for_gate": true,
+        "skip_reason": "nan"
+      },
+      {
+        "sentence_id": "d6da40a7b1377410",
+        "manual_label": "Speculative",
+        "assistive_label": "Actionable",
+        "source_section": "nan",
+        "assistive_confidence": "high",
+        "assistive_rationale": "States present investments in adopting AI/ML across the business (a current firm-specific factual claim).",
+        "sentence": "Additionally, we are making, and plan to make in the future, investments in adopting artificial intelligence and machine learning technologies across our business.",
+        "eligible_for_gate": true,
+        "skip_reason": "nan"
+      },
+      {
+        "sentence_id": "07c34a8e945a5789",
+        "manual_label": "Speculative",
+        "assistive_label": "Irrelevant",
+        "source_section": "nan",
+        "assistive_confidence": "high",
+        "assistive_rationale": "Research finding, not a firm-specific present/past capability, product, or investment claim.",
+        "sentence": "Results from a study titled, Novel data preprocessing techniques in an expanded dataset improve machine learning model accuracy for a non-invasive blood glucose monitor.",
+        "eligible_for_gate": true,
+        "skip_reason": "nan"
+      },
+      {
+        "sentence_id": "5c41df841aa3c464",
+        "manual_label": "Actionable",
+        "assistive_label": "Speculative",
+        "source_section": "nan",
+        "assistive_confidence": "high",
+        "assistive_rationale": "Forward-looking statement about expected growth and expansion; describes intended penetration and planned platform expansion, not a current factual claim.",
+        "sentence": "As we grow our ARTAS hair restoration business and expand robotics offerings through the AI.ME platform we expect our penetration into the core practices of dermatology and plastic surgery to increase.",
+        "eligible_for_gate": true,
+        "skip_reason": "nan"
+      },
+      {
+        "sentence_id": "6e9c107b32c17f8b",
+        "manual_label": "Speculative",
+        "assistive_label": "Actionable",
+        "source_section": "nan",
+        "assistive_confidence": "high",
+        "assistive_rationale": "Asserts Roadzen currently powers its auto-insurance offering/mission with advanced AI, a present firm capability claim.",
+        "sentence": "Overview Roadzen Inc. is a leading Insurtech company on a mission to transform global auto insurance powered by advanced artificial intelligence (\"AI\").",
+        "eligible_for_gate": true,
+        "skip_reason": "nan"
+      },
+      {
+        "sentence_id": "00b7f669d50a2cec",
+        "manual_label": "Irrelevant",
+        "assistive_label": "Speculative",
+        "source_section": "nan",
+        "assistive_confidence": "high",
+        "assistive_rationale": "Discusses future evaluation of potential AI use\u2014intent/planning rather than a present or past firm capability or implemented use.",
+        "sentence": "These clients are consciously evaluating potential areas where AI-enabled technologies could be utilized in the future.",
+        "eligible_for_gate": true,
+        "skip_reason": "nan"
+      },
+      {
+        "sentence_id": "dbf16dd1158358fd",
+        "manual_label": "Actionable",
+        "assistive_label": "Irrelevant",
+        "source_section": "nan",
+        "assistive_confidence": "high",
+        "assistive_rationale": "Biographical past-role statement; does not assert a present/past AI capability, product, or operating use by the firm.",
+        "sentence": "From February 2021 to April 2022, Benjamin has served as Senior Capital Market Advisor for Iveda Solutions, Inc. (NASDAQ: IVDA), an AI and IoT technology company to assist with financing and uplisting to Nasdaq.",
+        "eligible_for_gate": true,
+        "skip_reason": "nan"
+      },
+      {
+        "sentence_id": "4a56f6e6ab5a91c1",
+        "manual_label": "Speculative",
+        "assistive_label": "Irrelevant",
+        "source_section": "nan",
+        "assistive_confidence": "high",
+        "assistive_rationale": "Generic future industry expectation, not a firm-specific present/past claim about a concrete product, capability, or investment.",
+        "sentence": "The use of artificial intelligence AI , data analytics, and other technologies are expected in the future to become a key component in the administration and management of health plans and health care delivery.",
+        "eligible_for_gate": true,
+        "skip_reason": "nan"
+      },
+      {
+        "sentence_id": "7ee76409a5f3c861",
+        "manual_label": "Speculative",
+        "assistive_label": "Actionable",
+        "source_section": "nan",
+        "assistive_confidence": "high",
+        "assistive_rationale": "States current employee events (Technology Days) that explore Generative AI as available development opportunities.",
+        "sentence": "These development opportunities are available through live employee events like Technology Days dedicated to exploring new ideas, such as Generative AI.",
+        "eligible_for_gate": true,
+        "skip_reason": "nan"
+      },
+      {
+        "sentence_id": "97d63e6c8eea2dc9",
+        "manual_label": "Speculative",
+        "assistive_label": "Actionable",
+        "source_section": "nan",
+        "assistive_confidence": "high",
+        "assistive_rationale": "States current investments in AI and concrete use-cases (recommendations, advertising, product/features) as present factual claims.",
+        "sentence": "We are making investments in AI initiatives, including generative AI, to, among other things, recommend relevant unconnected content across our products, enhance our advertising tools, develop new products, and develop new features for existing products.",
+        "eligible_for_gate": true,
+        "skip_reason": "nan"
+      },
+      {
+        "sentence_id": "5b5721dc9ba6a21e",
+        "manual_label": "Actionable",
+        "assistive_label": "Irrelevant",
+        "source_section": "nan",
+        "assistive_confidence": "high",
+        "assistive_rationale": "Generic description of a process using ML for building energy savings; no firm-specific present/past capability or offering asserted.",
+        "sentence": "The process continues by acquiring building data to analyze energy consumption to quickly identify savings (and hence, improved NOI) with intelligent machine learning.",
+        "eligible_for_gate": true,
+        "skip_reason": "nan"
+      },
+      {
+        "sentence_id": "8fb857b3e8b06fa0",
+        "manual_label": "Irrelevant",
+        "assistive_label": "Actionable",
+        "source_section": "nan",
+        "assistive_confidence": "high",
+        "assistive_rationale": "States a present factual claim that the firm is increasing use of AI tools in its operations (internal operating use).",
+        "sentence": "Additionally, as we increase our use of artificial intelligence tools into our operations, the risk of unauthorized access to our data and of making compliance errors or erroneous decisions based on our reliance on the AI tool will increase.",
+        "eligible_for_gate": true,
+        "skip_reason": "nan"
+      },
+      {
+        "sentence_id": "664ac1c908e0538b",
+        "manual_label": "Speculative",
+        "assistive_label": "Actionable",
+        "source_section": "nan",
+        "assistive_confidence": "medium",
+        "assistive_rationale": "States use of data analysis and AI to build specific product (disease detection compound libraries for the AMMST), implying current operational capability.",
+        "sentence": "Conduct data analysis and AI required to build the disease detection compound libraries suitable for use with the AMMST.",
+        "eligible_for_gate": true,
+        "skip_reason": "nan"
+      }
+    ]
+  },
+  "cleaned_text_checks": {
+    "table_of_contents_present": false,
+    "form_10k_present": false,
+    "heading_prefix_present": false,
+    "glossary_fragment_present": false
+  }
+}

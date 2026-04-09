@@ -48,9 +48,9 @@ def test_member_evaluate_preliminary_heldout_smoke(tmp_path):
     ).to_csv(split_registry, index=False)
     pd.DataFrame(
         [
-            {"sentence": "Actionable alpha sentence", "label": "Actionable"},
-            {"sentence": "Speculative alpha sentence", "label": "Speculative"},
-            {"sentence": "Irrelevant alpha sentence", "label": "Irrelevant"},
+            {"sentence": "Actionable unseen sentence", "label": "Actionable"},
+            {"sentence": "Speculative unseen sentence", "label": "Speculative"},
+            {"sentence": "Irrelevant unseen sentence", "label": "Irrelevant"},
         ]
     ).to_csv(held_out, index=False)
 

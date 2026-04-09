@@ -1,0 +1,36 @@
+{
+  "generated_at": "2026-04-09T17:35:00.088005+00:00",
+  "status": "passed",
+  "mode": "live",
+  "policy_path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/config/api_assistive_policy_heldout_v4_gpt5_high_output_v2.yaml",
+  "input_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/validation/held_out_v4/held_out_sentences_v4_deferred40_input.csv",
+  "output_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/validation/held_out_v4/held_out_sentences_v4_deferred40_gpt5_v2.csv",
+  "report_path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/reports/final/ai_washing_heldout_v4_deferred40_gpt5_v2_report_v1.json",
+  "model": "gpt-5",
+  "resumed_existing_output": true,
+  "parameters": {
+    "max_rows": 1,
+    "sleep_seconds": 0.0,
+    "checkpoint_every": 1
+  },
+  "counts": {
+    "input_rows": 40,
+    "skipped_canonical_labeled_rows": 0,
+    "skipped_existing_assistive_rows": 39,
+    "skipped_unmatched_noise_rows": 0,
+    "skipped_blank_sentence_rows": 0,
+    "pending_rows_before_run": 1,
+    "processed_rows": 1,
+    "failed_rows": 0,
+    "pending_rows_after_run": 0
+  },
+  "usage": {
+    "request_count": 40,
+    "prompt_tokens": 556,
+    "completion_tokens": 316,
+    "total_tokens": 872,
+    "estimated_cost_usd": 0.0,
+    "cost_estimation_status": "pricing_unconfigured"
+  },
+  "errors": []
+}

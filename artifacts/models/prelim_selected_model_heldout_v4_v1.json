@@ -1,0 +1,10 @@
+{
+  "status": "no_winner",
+  "generated_at_utc": "2026-04-09T17:16:08.479898+00:00",
+  "preliminary_only": true,
+  "source_window_id": "active_2021_2024",
+  "selection_reason": "No wave-1 candidate cleared the preliminary benchmark gate.",
+  "benchmark_matrix": "reports/evaluation/model_benchmark_matrix_heldout_v4_v1.json",
+  "benchmark_matrix_sha256": "90288084e0dc13eff0e1b1b9393cda07d448027dca8bab384a13fb27c252417c",
+  "winner": null
+}

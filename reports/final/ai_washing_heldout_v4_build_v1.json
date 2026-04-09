@@ -1,0 +1,28 @@
+{
+  "generated_at_utc": "2026-04-09T17:13:04.678944+00:00",
+  "inputs": {
+    "master_path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/labels/v1/irr_subset_boundary_revised_v2_master.csv",
+    "rater2_path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/labels/v2/irr_subset_boundary_revised_v2_rater2_blinded_Filled.xlsx",
+    "adjudication_path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/labels/v2/adjudication_boundary_revised_v2_final.parquet"
+  },
+  "summary": {
+    "status": "built",
+    "rows_total": 120,
+    "label_counts": {
+      "Irrelevant": 46,
+      "Actionable": 43,
+      "Speculative": 31
+    },
+    "resolution_source_counts": {
+      "agreement": 93,
+      "third_adjudicator": 27
+    },
+    "rows_with_review_note": 120,
+    "benchmark_name": "held_out_v4",
+    "rubric_version": "track_a_as_rubric_rewrite_v1"
+  },
+  "outputs": {
+    "benchmark_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/validation/held_out_v4/held_out_sentences_v4.csv",
+    "input_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/validation/held_out_v4/held_out_sentences_v4_input.csv"
+  }
+}

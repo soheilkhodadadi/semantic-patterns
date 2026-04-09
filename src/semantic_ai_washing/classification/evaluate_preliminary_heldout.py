@@ -12,3 +12,7 @@ from ai_washing_member.classification.evaluate_preliminary_heldout import (
 __all__ = ["_load_metadata", "_pending_selected_payload", "run_evaluation", "parse_args", "main"]
 
 member = _member
+
+
+if __name__ == "__main__":
+    main()

@@ -231,37 +231,46 @@ Required outputs:
 - refreshed adjudication plan under the tightened rubric
 
 Current posture:
-- second-rater return is now scored
-- revised pack artifacts are now built:
-  - `data/labels/v1/irr_subset_boundary_revised_v2.parquet`
-  - `data/labels/v1/irr_subset_boundary_revised_v2_master.csv`
-  - `data/labels/v1/irr_subset_boundary_revised_v2_rater2_blinded.csv`
-  - `data/labels/v1/irr_subset_boundary_revised_v2_rater2_blinded.xlsx`
-  - `reports/labels/irr_subset_boundary_revised_v2_sampling_report.json`
-- returned workbook and adjudication lane now live under:
-  - `data/labels/v2/irr_subset_boundary_revised_v2_rater2_blinded_Filled.xlsx`
-  - `data/labels/v2/irr_boundary_revised_v2_adjudication_sheet.xlsx`
-  - `data/labels/v2/adjudication_boundary_revised_v2.parquet`
-- the pack is class-balanced and meets the `120`-firm target
-- important caveat:
-  - the current revised label backbone is effectively `2024`-only
-  - so this revised IRR pack is also `2024`-only
-- scored result:
+- `IRR v2` adjudication is complete
+- adjudicated benchmark result:
   - kappa: `0.6625`
-  - disagreements: `27`
-  - gate result: `deferred`
-- interpretation:
-  - selective-defer runtime is ready
-  - human reliability is still not promotion-ready
-  - the remaining blocker is adjudication of the `27` disagreement rows
+  - disagreements resolved: `27`
+  - gate result: `fail`
+- that adjudicated set is now promoted into:
+  - `data/validation/held_out_v4/held_out_sentences_v4.csv`
+- important caveat:
+  - `held_out_v4` fully overlaps the current revised label backbone
+  - so it is a development benchmark, not an independent generalization test
+- current local winner on `held_out_v4`:
+  - `layered_binary_relevance_logreg_as_v1`
+  - dev-surface accuracy: `0.7833`
+  - dev-surface macro F1: `0.7709`
+- current best deployable hybrid on `held_out_v4`:
+  - policy: `api_a_conf_or_margin`
+  - dev-surface accuracy: `0.8500`
+  - dev-surface macro F1: `0.8347`
+  - deferred rows: `40 / 120`
+- bounded API-B upgrade work was tested
+  - replacing or majority-voting with the stronger second API did not beat the
+    simpler API-A defer posture
+- next blinded pack is now built:
+  - `data/labels/v2/irr_subset_boundary_revised_v3.parquet`
+  - `data/labels/v2/irr_subset_boundary_revised_v3_master.csv`
+  - `data/labels/v2/irr_subset_boundary_revised_v3_rater2_blinded.csv`
+  - `data/labels/v2/irr_subset_boundary_revised_v3_rater2_blinded.xlsx`
+  - `reports/labels/irr_subset_boundary_revised_v3_sampling_report.json`
+- `IRR v3` excludes every `held_out_v4` sentence and still meets the
+  `120`-firm / `40-40-40` target
 
 Current decision:
 - do not promote a new full panel build yet
-- keep the selected hybrid manifests ready:
-  - `artifacts/models/prelim_selected_model_selective_defer_conf49_v1.json`
-  - `artifacts/models/prelim_selected_model_selective_defer_conf54_v1.json`
-- use `0.49` as the main operating point and `0.54` as the higher-API
-  robustness posture once adjudication is complete
+- keep the selected hybrid posture as the current deployable candidate:
+  - local layered base
+  - API A defer on low confidence or narrow A/S margin
+- use the updated rubric note:
+  - `projects/ai_washing/docs/track_a_as_rubric_rewrite_v2.md`
+- send the new blinded `IRR v3` workbook before treating the classifier lane as
+  publication-ready
 
 ## Success criteria
 
@@ -277,8 +286,9 @@ Stretch:
 The next step is not blind retraining and not immediate panel promotion.
 
 The next step is:
-1. adjudicate the `27` revised IRR disagreements
-2. recompute the adjudicated benchmark status
-3. compare the `0.49` and `0.54` hybrid manifests against that adjudicated
-   benchmark
-4. only then launch the new full-panel classification refresh
+1. send the blinded `IRR v3` workbook with rubric `V2`
+2. score the returned `IRR v3` workbook
+3. if `IRR v3` clears the gate, promote the current hybrid winner into the
+   full-panel classification refresh
+4. if `IRR v3` still misses the gate, revisit training-backbone expansion
+   rather than adding more API complexity first

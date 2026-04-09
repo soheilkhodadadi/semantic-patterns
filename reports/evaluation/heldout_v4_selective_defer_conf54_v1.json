@@ -1,0 +1,69 @@
+{
+  "status": "failed",
+  "generated_at_utc": "2026-04-09T17:21:35.630038+00:00",
+  "model_id": "selective_defer_layered_api_a_conf54_v1",
+  "summary": {
+    "status": "failed",
+    "preliminary_only": true,
+    "source_window_id": "active_2021_2024",
+    "reviewed_items": 120,
+    "accuracy": 0.8333333333333334,
+    "macro_f1": 0.8211656739321443,
+    "leakage_detected": true,
+    "heldout_overlap_count": 123,
+    "publication_grade_threshold": 0.8,
+    "publication_grade_threshold_passed": true,
+    "valid_evaluation_state": false,
+    "embedding_backend": "sentence_transformers",
+    "model_name": "sentence-transformers/all-mpnet-base-v2",
+    "benchmark_name": "held_out_sentences_v4.csv",
+    "binary_relevance_accuracy": 0.9083333333333333,
+    "actionable_speculative_conditional_accuracy": 0.8513513513513513,
+    "actionable_speculative_conditional_macro_f1": 0.8479925303454715
+  },
+  "inputs": {
+    "held_out": "data/validation/held_out_v4/held_out_sentences_v4.csv",
+    "labels_master": "data/labels/v1/labels_master.parquet",
+    "selected_model_manifest": "artifacts/models/prelim_selected_model_selective_defer_conf54_v1.json",
+    "held_out_sha256": "a989e4d07f796883cebca875f1b540b23c0f534906d8a9cec4cff3c335e63648",
+    "labels_master_sha256": "ec479d493138c27103c00f6b17e0c62bb54e380862fc0d75b12098381db42fc5",
+    "selected_model_manifest_sha256": "e8f3cf89b56ee4b6592f96b94412920649a74854f84f5b79cc1c5830f4317bfe"
+  },
+  "per_class": {
+    "Actionable": {
+      "precision": 0.8604651162790697,
+      "recall": 0.8604651162790697,
+      "f1": 0.8604651162790697,
+      "support": 43
+    },
+    "Speculative": {
+      "precision": 0.7333333333333333,
+      "recall": 0.7096774193548387,
+      "f1": 0.7213114754098361,
+      "support": 31
+    },
+    "Irrelevant": {
+      "precision": 0.8723404255319149,
+      "recall": 0.8913043478260869,
+      "f1": 0.8817204301075269,
+      "support": 46
+    }
+  },
+  "confusion_matrix": {
+    "Actionable": {
+      "Actionable": 37,
+      "Speculative": 4,
+      "Irrelevant": 2
+    },
+    "Speculative": {
+      "Actionable": 5,
+      "Speculative": 22,
+      "Irrelevant": 4
+    },
+    "Irrelevant": {
+      "Actionable": 1,
+      "Speculative": 4,
+      "Irrelevant": 41
+    }
+  }
+}
