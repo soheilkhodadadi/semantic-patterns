@@ -186,13 +186,65 @@ Critical caution:
 - API `A` and API `B` need enough independence in capability or prompting
   posture that the second call adds real arbitration value
 
-## Phase 6. API lane decision
+Current result:
+- selective-defer simulation is now complete on both reviewed benchmark
+  surfaces:
+  - `held_out_v3`
+  - `irr_boundary_benchmark`
+- the fixed-rule maximum-accuracy posture is real but too defer-heavy to be the
+  default operating point
+- the important operational result comes from the confidence sweep:
+  - unified `local_confidence < 0.49` clears the minimum gate on both
+    surfaces at a bounded defer rate
+  - `local_confidence < 0.54` is a stronger but more API-dependent robustness
+    posture
+- observed performance:
+  - `held_out_v3`, threshold `0.49`
+    - accuracy: `0.8079`
+    - macro F1: `0.7755`
+    - deferred rate: `0.1921`
+  - `irr_boundary_benchmark`, threshold `0.49`
+    - accuracy: `0.8250`
+    - macro F1: `0.8215`
+    - deferred rate: `0.0750`
+- that means the hybrid API-A defer lane is the first architecture in this
+  cycle that clears the minimum gate on both reviewed benchmark surfaces
 
-Only open the live API lane if:
-- the local model still cannot clear the publication-grade threshold after the
-  revised-rubric cycle
-- or the hybrid simulation clearly improves A/S accuracy at a reasonable
-  deferral rate and cost
+API-B status:
+- bounded `gpt-5` disagreement probes were run
+- a higher-output strict-schema posture fixed the serialization failure
+- but the bounded smoke still did not beat API A on the disagreement slice
+- so API B is not promoted into the current live design
+
+Primary reference note:
+- `projects/ai_washing/docs/track_a_selective_defer_results_v1.md`
+
+## Phase 6. Revised IRR pack
+
+Goal:
+- use the selected selective-defer posture as the benchmark backdrop for the
+  next human-reliability phase
+
+Required outputs:
+- revised second-rater IRR handoff pack
+- blinded second-rater workbook
+- refreshed adjudication plan under the tightened rubric
+
+Current posture:
+- initialized
+- revised pack artifacts are now built:
+  - `data/labels/v1/irr_subset_boundary_revised_v2.parquet`
+  - `data/labels/v1/irr_subset_boundary_revised_v2_master.csv`
+  - `data/labels/v1/irr_subset_boundary_revised_v2_rater2_blinded.csv`
+  - `data/labels/v1/irr_subset_boundary_revised_v2_rater2_blinded.xlsx`
+  - `reports/labels/irr_subset_boundary_revised_v2_sampling_report.json`
+- the pack is class-balanced and meets the `120`-firm target
+- important caveat:
+  - the current revised label backbone is effectively `2024`-only
+  - so this revised IRR pack is also `2024`-only
+- no additional local-model benchmarking is required before this step
+- the next bottleneck is no longer classifier design
+- it is human-reliability confirmation under the revised rubric
 
 ## Success criteria
 

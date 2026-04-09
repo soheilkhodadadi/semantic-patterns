@@ -1,0 +1,49 @@
+{
+  "generated_at": "2026-04-08T23:57:51.421776+00:00",
+  "status": "request_failed",
+  "mode": "live",
+  "policy_path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/config/api_assistive_policy_heldout_v3_gpt5_loose.yaml",
+  "input_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/validation/held_out_v3/held_out_sentences_v3_defer049_disagreement_slice_smoke5.csv",
+  "output_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/validation/held_out_v3/held_out_sentences_v3_defer049_disagreement_slice_smoke5.csv",
+  "report_path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/reports/final/ai_washing_heldout_v3_defer049_gpt5_loose_smoke5_report_v1.json",
+  "model": "gpt-5",
+  "resumed_existing_output": true,
+  "parameters": {
+    "max_rows": 1,
+    "sleep_seconds": 0.0,
+    "checkpoint_every": 1
+  },
+  "counts": {
+    "input_rows": 5,
+    "skipped_canonical_labeled_rows": 0,
+    "skipped_existing_assistive_rows": 0,
+    "skipped_unmatched_noise_rows": 0,
+    "skipped_blank_sentence_rows": 0,
+    "pending_rows_before_run": 1,
+    "processed_rows": 0,
+    "failed_rows": 1,
+    "pending_rows_after_run": 5
+  },
+  "usage": {
+    "request_count": 0,
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0,
+    "estimated_cost_usd": 0.0,
+    "cost_estimation_status": "not_applicable"
+  },
+  "errors": [
+    {
+      "sentence_id": "7e079ef80866c1f1",
+      "type": "JSONDecodeError",
+      "message": "Unterminated string starting at: line 1 column 44 (char 43)",
+      "response_id": "resp_0ee0dab3d717ea3b0169d6eba4028c81a1b243601eb6d9dbda",
+      "response_status": "incomplete",
+      "output_content_types": [
+        "output_text"
+      ],
+      "response_text_excerpt": "{\"label\":\"Speculative\",\"confidence\":\"0.77\",\"",
+      "parse_attempts": 3
+    }
+  ]
+}

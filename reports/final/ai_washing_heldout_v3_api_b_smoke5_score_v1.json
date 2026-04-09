@@ -1,0 +1,43 @@
+{
+  "rows": 5,
+  "local_correct": 0,
+  "api_a_correct": 5,
+  "api_b_correct": 4,
+  "cases": [
+    {
+      "sentence_id": "7e079ef80866c1f1",
+      "truth_label": "Speculative",
+      "local_label": "Actionable",
+      "api_a_label": "Speculative",
+      "api_b_label": "Speculative"
+    },
+    {
+      "sentence_id": "8568f96ca324f58a",
+      "truth_label": "Irrelevant",
+      "local_label": "Actionable",
+      "api_a_label": "Irrelevant",
+      "api_b_label": "Actionable"
+    },
+    {
+      "sentence_id": "473a115d38a45f8f",
+      "truth_label": "Actionable",
+      "local_label": "Speculative",
+      "api_a_label": "Actionable",
+      "api_b_label": "Actionable"
+    },
+    {
+      "sentence_id": "3ecfe217ac4824e1",
+      "truth_label": "Irrelevant",
+      "local_label": "Actionable",
+      "api_a_label": "Irrelevant",
+      "api_b_label": "Irrelevant"
+    },
+    {
+      "sentence_id": "4f25d4cad00ff50d",
+      "truth_label": "Irrelevant",
+      "local_label": "Actionable",
+      "api_a_label": "Irrelevant",
+      "api_b_label": "Irrelevant"
+    }
+  ]
+}

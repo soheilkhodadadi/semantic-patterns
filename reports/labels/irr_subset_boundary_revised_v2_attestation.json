@@ -1,0 +1,17 @@
+{
+  "generated_at_utc": "2026-04-09T00:28:49.527445+00:00",
+  "git_commit": "20b9bf56e198309a3c6b41ea02508c9e1327613a",
+  "blind_mode": "text_only",
+  "handoff_formats": [
+    "csv",
+    "xlsx"
+  ],
+  "human_human_only": true,
+  "third_adjudicator_used": false,
+  "second_rater_completed": false,
+  "third_adjudicator_completed": false,
+  "rater1_initials": "",
+  "rater2_initials": "",
+  "adjudicator_initials": "",
+  "notes": ""
+}

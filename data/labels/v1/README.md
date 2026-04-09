@@ -65,6 +65,26 @@ Use these for disagreement analysis and benchmark rebuilding:
   - `94` agreement rows
   - `26` third-adjudicator rows
 
+## Revised IRR pack
+
+Use these for the revised-rubric second-rater handoff lane:
+
+- `irr_subset_boundary_revised_v2.parquet`
+  - revised-rubric IRR source subset
+  - `120` rows
+  - `40 / 40 / 40` class-balanced
+- `irr_subset_boundary_revised_v2_master.csv`
+  - rater-1 source sheet for the revised pack
+- `irr_subset_boundary_revised_v2_rater2_blinded.csv`
+- `irr_subset_boundary_revised_v2_rater2_blinded.xlsx`
+  - second-rater handoff files for the revised pack
+
+Important:
+- this pack is currently `2024`-only because the revised label backbone it was
+  sampled from is `2024`-only
+- do not describe it as a multi-year IRR pack without first expanding the
+  revised labeled source pool
+
 ## Manual-workflow residue
 
 These files are useful as audit residue, but they are not the preferred inputs

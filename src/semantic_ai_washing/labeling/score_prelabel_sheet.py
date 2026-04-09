@@ -8,3 +8,7 @@ from ai_washing_member.labeling.score_prelabel_sheet import (
 )
 
 __all__ = ["main", "parse_args", "render_markdown", "score_prelabel_sheet"]
+
+
+if __name__ == "__main__":
+    main()

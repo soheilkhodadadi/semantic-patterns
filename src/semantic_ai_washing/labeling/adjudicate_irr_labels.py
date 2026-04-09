@@ -7,3 +7,7 @@ from ai_washing_member.labeling.adjudicate_irr_labels import (
 )
 
 __all__ = ["run_adjudication", "parse_args", "main"]
+
+
+if __name__ == "__main__":
+    main()

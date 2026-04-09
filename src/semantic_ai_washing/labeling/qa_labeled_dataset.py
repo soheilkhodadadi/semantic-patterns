@@ -9,3 +9,7 @@ from ai_washing_member.labeling.qa_labeled_dataset import (
 )
 
 __all__ = ["OUTPUT_COLUMNS", "REQUIRED_COLUMNS", "run_qa", "parse_args", "main"]
+
+
+if __name__ == "__main__":
+    main()

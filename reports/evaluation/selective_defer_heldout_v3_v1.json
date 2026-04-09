@@ -1,0 +1,116 @@
+{
+  "generated_at_utc": "2026-04-08T23:55:20.074324+00:00",
+  "benchmark": {
+    "path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/validation/held_out_v3/held_out_sentences_v3_review_sheet_labelled.csv",
+    "rows": 177
+  },
+  "local_base_model_id": "layered_binary_relevance_logreg_as_v1",
+  "api_a_column": "assistive_label",
+  "api_b_available": false,
+  "policies": [
+    {
+      "policy_name": "api_a_conf_or_margin",
+      "description": "Defer rows with low confidence or narrow A/S margin.",
+      "deployable": true,
+      "accuracy": 0.9265536723163842,
+      "macro_f1": 0.9166780931486814,
+      "binary_relevance_accuracy": 0.943502824858757,
+      "actionable_speculative_conditional_accuracy": 0.9444444444444444,
+      "deferred_rows": 77,
+      "deferred_rate": 0.4350282485875706,
+      "deferred_errors_captured": 42,
+      "api_b_majority": false
+    },
+    {
+      "policy_name": "api_a_conf_or_margin_or_disagreement",
+      "description": "Defer rows with low confidence, narrow A/S margin, or local component disagreement.",
+      "deployable": true,
+      "accuracy": 0.9265536723163842,
+      "macro_f1": 0.9166780931486814,
+      "binary_relevance_accuracy": 0.943502824858757,
+      "actionable_speculative_conditional_accuracy": 0.9444444444444444,
+      "deferred_rows": 77,
+      "deferred_rate": 0.4350282485875706,
+      "deferred_errors_captured": 42,
+      "api_b_majority": false
+    },
+    {
+      "policy_name": "api_a_low_conf_060",
+      "description": "Defer rows with local top-score confidence below 0.60.",
+      "deployable": true,
+      "accuracy": 0.9265536723163842,
+      "macro_f1": 0.9166780931486814,
+      "binary_relevance_accuracy": 0.943502824858757,
+      "actionable_speculative_conditional_accuracy": 0.9444444444444444,
+      "deferred_rows": 77,
+      "deferred_rate": 0.4350282485875706,
+      "deferred_errors_captured": 42,
+      "api_b_majority": false
+    },
+    {
+      "policy_name": "api_a_low_as_margin_015",
+      "description": "Defer non-irrelevant rows with conditional A/S margin below 0.15.",
+      "deployable": true,
+      "accuracy": 0.7627118644067796,
+      "macro_f1": 0.7216716032505506,
+      "binary_relevance_accuracy": 0.8192090395480226,
+      "actionable_speculative_conditional_accuracy": 0.8555555555555555,
+      "deferred_rows": 21,
+      "deferred_rate": 0.11864406779661017,
+      "deferred_errors_captured": 13,
+      "api_b_majority": false
+    },
+    {
+      "policy_name": "local_only",
+      "description": "No deferral.",
+      "deployable": true,
+      "accuracy": 0.6892655367231638,
+      "macro_f1": 0.6371239660713345,
+      "binary_relevance_accuracy": 0.7853107344632768,
+      "actionable_speculative_conditional_accuracy": 0.7777777777777778,
+      "deferred_rows": 0,
+      "deferred_rate": 0.0,
+      "deferred_errors_captured": 0,
+      "api_b_majority": false
+    },
+    {
+      "policy_name": "api_a_component_disagreement",
+      "description": "Defer rows where binary relevance and logreg disagree on irrelevance.",
+      "deployable": true,
+      "accuracy": 0.6892655367231638,
+      "macro_f1": 0.6371239660713345,
+      "binary_relevance_accuracy": 0.7853107344632768,
+      "actionable_speculative_conditional_accuracy": 0.7777777777777778,
+      "deferred_rows": 3,
+      "deferred_rate": 0.01694915254237288,
+      "deferred_errors_captured": 0,
+      "api_b_majority": false
+    },
+    {
+      "policy_name": "oracle_error_only",
+      "description": "Upper-bound diagnostic: defer only rows the local model gets wrong.",
+      "deployable": false,
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "binary_relevance_accuracy": 1.0,
+      "actionable_speculative_conditional_accuracy": 1.0,
+      "deferred_rows": 55,
+      "deferred_rate": 0.3107344632768362,
+      "deferred_errors_captured": 55,
+      "api_b_majority": false
+    }
+  ],
+  "best_deployable_policy": {
+    "policy_name": "api_a_conf_or_margin",
+    "description": "Defer rows with low confidence or narrow A/S margin.",
+    "deployable": true,
+    "accuracy": 0.9265536723163842,
+    "macro_f1": 0.9166780931486814,
+    "binary_relevance_accuracy": 0.943502824858757,
+    "actionable_speculative_conditional_accuracy": 0.9444444444444444,
+    "deferred_rows": 77,
+    "deferred_rate": 0.4350282485875706,
+    "deferred_errors_captured": 42,
+    "api_b_majority": false
+  }
+}

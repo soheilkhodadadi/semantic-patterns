@@ -3,3 +3,7 @@
 from ai_washing_member.labeling.audit_sentence_integrity import main, parse_args, run_audit
 
 __all__ = ["run_audit", "parse_args", "main"]
+
+
+if __name__ == "__main__":
+    main()

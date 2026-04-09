@@ -1,0 +1,81 @@
+schema_version: 1.0.0
+mode: assistive_only
+provider: openai
+transport: responses_api
+env_var: OPENAI_API_KEY
+model: gpt-5
+request:
+  store: false
+  timeout_seconds: 60
+  max_output_tokens: 600
+  reasoning_effort: low
+  text_format:
+    type: json_schema
+    name: heldout_v3_assistive_label_result
+    strict: true
+    schema:
+      type: object
+      additionalProperties: false
+      properties:
+        label:
+          type: string
+          enum:
+          - Actionable
+          - Speculative
+          - Irrelevant
+        confidence:
+          type: string
+          enum:
+          - high
+          - medium
+          - low
+        rationale:
+          type: string
+          minLength: 1
+          maxLength: 160
+        assistive_only:
+          type: boolean
+          enum:
+          - true
+      required:
+      - label
+      - confidence
+      - rationale
+      - assistive_only
+budget:
+  max_live_requests_per_run: 1
+  max_prompt_tokens_per_call: 1400
+  max_output_tokens_per_call: 600
+  max_estimated_cost_usd_per_run: 5.0
+selection:
+  sample_input: data/validation/held_out_v3/held_out_sentences_v3_defer049_disagreement_slice_review.csv
+  min_tokens: 12
+  max_tokens: 220
+  require_fragment_score_max: 0.0
+telemetry:
+  usage_file: director/runs/cost_usage.jsonl
+  component: heldout_v3_api_assistive_gpt5_high_output
+  cache_allowed: false
+usage_policy:
+  canonical: false
+  allowed_use_cases:
+  - heldout_v3_defer_benchmark
+  - disagreement_arbitration_probe
+  prohibited_use_cases:
+  - canonical_training_labels
+  - irr_substitute
+  - held_out_training_use
+prompt_spec:
+  reference_rubric_path: projects/ai_washing/docs/track_a_as_rubric_rewrite_v1.md
+  label_set:
+  - Actionable
+  - Speculative
+  - Irrelevant
+  confidence_bands:
+  - high
+  - medium
+  - low
+  system_prompt: 'You are assisting a research labeling workflow. Your output is assistive only and must not be treated as canonical. Use this rubric exactly: Actionable means a firm-specific present or past factual AI claim, including current use, implemented workflow, AI product/service offering, current capability, current investment, or current AI-enabled operating process. Speculative means a firm-specific but not yet current AI narrative about intention, exploration, expected benefit, strategic priority, planned build/integration, or future investment without a present or past factual claim of use, capability, or investment. Irrelevant means generic market, industry, regulatory, cyber-risk, biography, acquisition/exposure, or tangential AI mention that is not functioning as a current focal-firm capability claim. If the primary function of the sentence is risk disclosure, competition context, or generic market framing, default to Irrelevant unless the sentence independently states a standalone current firm capability, offering, or present investment. Return JSON only.'
+  user_prompt_template: 'Label this sentence using the revised project rubric. Apply the currentness gate first: present/past factual claim vs future/contingent framing. Then apply the business-claim gate: does the sentence tie AI to a concrete product, workflow, service, operating process, capability, or present investment of the focal firm? Build/integrate/invest language is Speculative unless it clearly states a present or past factual claim. Internal operating use can still be Actionable when it is stated as current fact. Risk, competition, biography, acquisition, or market-context AI language should usually be Irrelevant unless it independently asserts a current firm capability claim. Return exactly one JSON object with: label in {Actionable, Speculative, Irrelevant}, confidence in {high, medium, low}, rationale under 24 words, assistive_only equal to true.'
+smoke_output:
+  report_path: reports/api/heldout_v3_api_assistive_gpt5_high_output_smoke_test.json

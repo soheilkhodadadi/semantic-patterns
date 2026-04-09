@@ -8,3 +8,7 @@ from ai_washing_member.labeling.initialize_review_sheet import (
 )
 
 __all__ = ["DEFAULT_SLICE_SIZE", "initialize_review_sheet", "parse_args", "main"]
+
+
+if __name__ == "__main__":
+    main()

@@ -7,3 +7,7 @@ from ai_washing_member.labeling.publish_preliminary_results_readiness import (
 )
 
 __all__ = ["run_publish", "parse_args", "main"]
+
+
+if __name__ == "__main__":
+    main()

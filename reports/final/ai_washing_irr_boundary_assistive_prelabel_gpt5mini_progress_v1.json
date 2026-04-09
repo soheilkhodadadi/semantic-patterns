@@ -1,0 +1,33 @@
+{
+  "status": "failed",
+  "generated_at_utc": "2026-04-09T00:07:20.271853+00:00",
+  "inputs": {
+    "input_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/validation/irr_boundary_benchmark_v1_review_sheet.csv",
+    "output_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/validation/irr_boundary_benchmark_v1_review_sheet.csv",
+    "report_path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/reports/final/ai_washing_irr_boundary_assistive_prelabel_gpt5mini_report_v1.json"
+  },
+  "summary": {
+    "iterations_completed": 17,
+    "max_requests": 120,
+    "total_estimated_cost_usd": 0.0,
+    "last_run_status": "request_failed"
+  },
+  "counts": {
+    "input_rows": 120,
+    "canonical_labeled_rows": 0,
+    "assistive_labeled_rows": 16,
+    "pending_rows": 104
+  },
+  "last_error": {
+    "sentence_id": "dbf16dd1158358fd",
+    "type": "JSONDecodeError",
+    "message": "Unterminated string starting at: line 1 column 10 (char 9)",
+    "response_id": "resp_0e856db2284b1c970169d6edb507b881a0bb1dd73ac4a4e478",
+    "response_status": "incomplete",
+    "output_content_types": [
+      "output_text"
+    ],
+    "response_text_excerpt": "{\"label\":\"Ir",
+    "parse_attempts": 3
+  }
+}
