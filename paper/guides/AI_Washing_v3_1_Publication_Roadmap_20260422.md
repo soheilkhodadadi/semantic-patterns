@@ -308,6 +308,10 @@ This is the cleanest bridge toward a within-firm interpretation.
 - post-filing return windows;
 - forward valuation changes rather than contemporaneous levels where feasible.
 
+#### Practical note
+
+If the filing-event onset window proves too thin for a credible multi-period design, do not force this test ahead of stronger alternatives. In that case, advance the matched AI-talking design first and return to onset only if the matched layer still leaves the main identification critique unresolved.
+
 ### Test 15. Matched AI-talking comparison sample
 
 #### Question
