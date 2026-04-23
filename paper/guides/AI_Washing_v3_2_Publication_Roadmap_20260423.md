@@ -139,6 +139,8 @@ Candidate tests:
 11. `test_29_sec_ai_washing_enforcement_did`
 12. `test_30_capital_raising_timing`
 13. `test_31_greenwashing_claims_vs_actions_bridge`
+14. `test_32_market_reaction_in_issue_windows`
+15. `test_33_post_enforcement_market_split`
 
 Status after first pass (2026-04-23):
 
@@ -160,6 +162,18 @@ Status after first pass (2026-04-23):
 - Packet H therefore now contributes two distinct paper-facing extensions:
   - regulatory salience and cleanup after SEC attention;
   - financing-window timing consistent with temporary promotional intensification rather than silence.
+- `test_32` is now complete and gives the best narrow market follow-on to Test 30.
+- In filing-year return regressions, outside issue windows `PatentMismatch` predicts weaker `BHAR[+2,+63]`, but the `PatentMismatch × IssueWindow` interaction is positive and significant:
+  - full sample: `+0.0716`, `p=0.038`
+  - non-big sample: `+0.0918`, `p=0.068`
+- Filing-date `CAR[-1,+1]` remains null, so the useful signal is again in the short post-filing window rather than the immediate event reaction.
+- Packet H therefore now contributes a third, narrower market result:
+  - the mismatch-return relation is materially less negative inside financing windows than outside them.
+- Follow-on checklist after Tests 29 and 30:
+  - narrow the market block using these new event definitions rather than broad full-sample sorts;
+  - issue-window market interactions are now done and worth keeping;
+  - a quick direct post-enforcement market screen was weak and limited by 2024-only return coverage, so formalizing that result is currently low priority;
+  - postpone the greenwashing bridge until after the next repositioning checkpoint.
 
 ## 4. Tiering and Priority
 
@@ -190,6 +204,7 @@ These are useful but heavier or more optional.
 11. `test_29_sec_ai_washing_enforcement_did`
 12. `test_30_capital_raising_timing`
 13. `test_31_greenwashing_claims_vs_actions_bridge`
+14. `test_32_market_reaction_in_issue_windows`
 
 ## 5. Packet Logic
 

@@ -402,6 +402,46 @@ Status after first live run (2026-04-23):
 
 Future bridge to a greenwashing project. Not a current-paper blocker.
 
+## Packet H follow-on checklist
+
+1. `test_32_market_reaction_in_issue_windows`
+   - status: completed on `2026-04-23`
+   - design:
+     - filing-event returns collapsed to one firm-year observation
+     - merged to annual `IssueWindow` from Test 30
+     - interaction regressions for:
+       - `CAR[-1,+1]`
+       - `BHAR[+2,+63]`
+       - `BHAR[+2,+252]`
+   - coverage:
+     - merged filing-year rows: `4,455`
+     - firms: `1,605`
+     - issue-window rows: `1,138`
+   - key read:
+     - outside issue windows, `PatentMismatch` predicts weaker `BHAR[+2,+63]`: `-0.0272` (`p=0.004`)
+     - inside issue windows, the negative relation compresses:
+       - `PatentMismatch × IssueWindow`: `+0.0716` (`p=0.038`)
+       - non-big: `+0.0918` (`p=0.068`)
+     - filing-date `CAR[-1,+1]` remains null
+   - current placement:
+     - supporting market refinement alongside Test 30
+
+2. `test_33_post_enforcement_market_split`
+   - screened informally on `2026-04-23`, not yet formalized
+   - quick read:
+     - direct market DID using pre-2022 mismatch exposure and filing-year returns is weak / mostly null
+     - `BHAR[+2,+252]` is effectively not estimable because the linked filing-return panel only contributes through `2024`
+     - `CAR[-1,+1]` is only marginal at best under alternative treatment definitions
+   - current recommendation:
+     - do not promote this into a full packet unless we need an explicit regulatory-market null in the internet appendix
+     - the stronger move is to keep Tests 29, 30, and 32 together as the main Packet H contribution
+
+3. presentation pass
+   - if Tests 29, 30, and 32 all survive, decide whether they are best reported as:
+     - separate tables
+     - one compact multi-panel main-text section
+     - or a mix of main text plus internet appendix
+
 ## 8. Recommended Immediate Sequence
 
 Run in this order:

@@ -39,22 +39,37 @@ That is a stronger and more defensible story than a headline claim about market 
    - key asset: `/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/docx/test_20_comment_letter_cleanup_20260423_aiw_v3_2_test_20_comment_letter_cleanup_main_v1.docx`
    - figure: `/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/figures/test_20_comment_letter_cleanup_20260423_aiw_v3_2_test_20_comment_letter_cleanup_main_v1.png`
 
+5. `test_29_sec_ai_washing_enforcement_did`
+   - role: regulatory-salience extension showing cleanup after a public enforcement shock
+   - preferred use: supporting main-text table if paired with explicit pretrend discipline
+   - key asset: `/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/docx/test_29_sec_ai_washing_enforcement_did_20260423_aiw_v3_2_test_29_sec_ai_washing_enforcement_did_main_v1.docx`
+
+6. `test_30_capital_raising_timing`
+   - role: financing-opportunism extension with a strong timing shape
+   - preferred use: main-text or high appendix table if we want one capital-markets incentive result
+   - key asset: `/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/docx/test_30_capital_raising_timing_20260423_aiw_v3_2_test_30_capital_raising_timing_main_v1.docx`
+
 ### Main-text but softened
 
-5. `test_09_factor_adjusted_alpha`
+7. `test_09_factor_adjusted_alpha`
    - role: narrow market table if we keep a market section
    - required framing: equal-weight and benchmark-surviving, but not broad value-weight evidence of mispricing
    - key asset: `/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_1/docx/test_09_factor_adjusted_alpha_20260422_aiw_v3_1_test_09_factor_adjusted_alpha_main_v1.docx`
 
+8. `test_32_market_reaction_in_issue_windows`
+   - role: supporting market refinement that narrows the return result to financing-salience windows
+   - required framing: mismatch returns look weaker outside issue windows and materially less negative inside them
+   - key asset: `/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/docx/test_32_market_reaction_in_issue_windows_20260423_aiw_v3_2_test_32_market_reaction_in_issue_windows_main_v1.docx`
+
 ### Appendix / robustness
 
-6. `test_19_sec_comment_letter_scrutiny`
+9. `test_19_sec_comment_letter_scrutiny`
    - role: Packet D viability and incidence audit
    - placement: appendix or short robustness paragraph only
    - reason: AI-specific comment-letter counts are too thin for a headline incidence table
    - key asset: `/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/docx/test_19_sec_comment_letter_scrutiny_20260423_aiw_v3_2_test_19_sec_comment_letter_scrutiny_main_v1.docx`
 
-7. `test_10`, `test_12`, `test_13`, `test_15`
+10. `test_10`, `test_12`, `test_13`, `test_15`
    - role: market-discipline checks that narrow the claim
    - placement: appendix or discussion support
    - reason: useful for honesty and defense, but they do not support a strong pricing-anomaly statement
@@ -624,3 +639,57 @@ Tentative placement:
 
 - strong appendix or internet-appendix table
 - plausible supporting main-text financing/opportunism extension if we want one explicit result tying disclosure timing to capital-market incentives
+
+### Test 32. Market reactions in capital-raising windows
+
+- table: [test_32 issue-window market docx](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/docx/test_32_market_reaction_in_issue_windows_20260423_aiw_v3_2_test_32_market_reaction_in_issue_windows_main_v1.docx)
+- figure: [test_32 issue-window market figure](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/figures/test_32_market_reaction_in_issue_windows_20260423_aiw_v3_2_test_32_market_reaction_in_issue_windows_main_v1.png)
+- writer packet: [test_32 writer packet](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/writer_packets/test_32_market_reaction_in_issue_windows_20260423_aiw_v3_2_test_32_market_reaction_in_issue_windows_main_v1_writer_packet.md)
+
+Setup:
+
+- the filing-event return sample is collapsed to one observation per firm-year
+- that filing-year return panel is merged to the annual `IssueWindow` flag from Test 30
+- `IssueWindow = 1` when next-year CRSP shares-outstanding growth exceeds `5%`
+- regressions include filing-year fixed effects, annual controls, and firm-clustered standard errors
+- the key question is whether the mismatch-return relation changes when financing incentives are salient
+
+Coverage:
+
+- merged filing-year rows: `4,455`
+- firms: `1,605`
+- issue-window rows: `1,138`
+- issue-window firms: `709`
+- non-big rows: `2,096`
+
+Read:
+
+- in the full sample, outside issue windows, `PatentMismatch` predicts weaker `BHAR[+2,+63]`:
+  - baseline `PatentMismatch`: `-0.0272`, `p=0.004`
+- inside issue windows, that negative relation compresses materially:
+  - `PatentMismatch × IssueWindow`: `+0.0716`, `p=0.038`
+- the non-big slice is directionally stronger:
+  - `PatentMismatch × IssueWindow`: `+0.0918`, `p=0.068`
+  - `LowCredibility × IssueWindow`: `+0.1139`, `p=0.013`
+- filing-date `CAR[-1,+1]` remains null
+
+Interpretation:
+
+- this is the cleanest market follow-on to Test 30
+- the weak short-horizon post-filing return pattern attached to mismatch is concentrated outside financing windows and becomes materially less negative inside issue windows
+- that gives the market section a narrower and more defensible read than the earlier broad market block
+- it fits a financing-salience story better than a generic market-underreaction story
+
+Tentative placement:
+
+- supporting main-text market refinement if we keep a market section
+- otherwise strong appendix / internet-appendix evidence that the market signal is state-dependent rather than broad
+
+Direct regulatory-market follow-on note:
+
+- I also screened the next obvious Test 33-style extension: a post-2024 filing-return DID using the SEC enforcement shock and pre-2022 exposure.
+- That quick screen was weak / mostly null and effectively capped at `2024` in the linked return sample, so it is not currently worth formalizing into a full packet.
+- The stronger Packet H trio is therefore:
+  - `test_29` for regulatory-salience cleanup,
+  - `test_30` for financing-window opportunism,
+  - `test_32` for the narrower issue-window market refinement.
