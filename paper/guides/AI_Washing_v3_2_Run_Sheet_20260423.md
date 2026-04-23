@@ -351,6 +351,27 @@ Status after first live run (2026-04-23):
 
 Cheap policy-salience extension around the March 18, 2024 SEC AI-washing actions.
 
+Status after first live run (2026-04-23):
+
+- build succeeded and the policy-salience lane is now versioned in `v3_2`
+- design used:
+  - treatment fixed in `2022` among AI-talking firms
+  - `2023` kept as a placebo / pretrend year
+  - `2024-2025` treated as the post-enforcement period after the SEC's March 18, 2024 actions
+- coverage:
+  - analysis sample: `8,055` firm-years across `1,611` firms
+  - main treated firms: `457`
+- empirical read:
+  - strong post-2024 cleanup in disclosure composition for pre-exposed firms
+  - main-treatment DID estimates:
+    - `SpecShare`: `-0.0839` (`p<0.001`)
+    - `A/S`: `0.2907` (`p<0.001`)
+    - `PatentMismatch`: `-0.3121` (`p<0.001`)
+  - alternative treatment definitions (`LowCredibility`, `ApplicationMismatch`) deliver the same directional pattern
+  - `AI_Focus` does not fall materially
+  - the `2023` placebo coefficients are already directional for composition outcomes, so this is not a clean causal enforcement estimate
+- current placement: strong supporting regulatory-salience extension; promote only with explicit language that the result looks like acceleration / cleanup after salience rather than a fully clean DID
+
 ## Test 30. `test_30_capital_raising_timing`
 
 Only reopen if we still want a financing-opportunism angle after Packet F.

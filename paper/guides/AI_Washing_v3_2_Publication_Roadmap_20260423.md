@@ -140,6 +140,19 @@ Candidate tests:
 12. `test_30_capital_raising_timing`
 13. `test_31_greenwashing_claims_vs_actions_bridge`
 
+Status after first pass (2026-04-23):
+
+- `test_29` is stronger than a pure bridge test and is worth keeping.
+- The main result is a clear post-2024 disclosure-composition cleanup among firms already exposed to low-credibility AI disclosure in 2022:
+  - lower `SpecShare`
+  - higher `A/S`
+  - lower `PatentMismatch`
+  - little evidence that firms simply stop talking about AI
+- Alternative pre-shock exposure definitions using `LowCredibility` and `ApplicationMismatch` give the same directional pattern.
+- The important limitation is that `2023` placebo coefficients are already directional for the composition outcomes.
+- Packet H therefore currently supports a `regulatory salience / acceleration` story rather than a clean causal enforcement-DID claim.
+- This makes `test_29` a useful paper-facing extension, but one that should be written with explicit pretrend discipline.
+
 ## 4. Tiering and Priority
 
 ## Tier 1: Run first

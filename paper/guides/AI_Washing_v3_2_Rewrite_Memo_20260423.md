@@ -515,3 +515,60 @@ Tentative placement:
 
 - appendix or internet appendix
 - useful to reference briefly in the main text if we want to say we also checked public institutional ownership and did not find strong discernment there
+
+## 11. Packet H Read
+
+### Test 29. SEC AI-washing enforcement salience DID
+
+- table: [test_29 enforcement DID docx](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/docx/test_29_sec_ai_washing_enforcement_did_20260423_aiw_v3_2_test_29_sec_ai_washing_enforcement_did_main_v1.docx)
+- figure: [test_29 enforcement DID figure](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/figures/test_29_sec_ai_washing_enforcement_did_20260423_aiw_v3_2_test_29_sec_ai_washing_enforcement_did_main_v1.png)
+- writer packet: [test_29 writer packet](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/writer_packets/test_29_sec_ai_washing_enforcement_did_20260423_aiw_v3_2_test_29_sec_ai_washing_enforcement_did_main_v1_writer_packet.md)
+
+Setup:
+
+- public event anchor: SEC AI-washing enforcement actions on March 18, 2024
+- main treatment fixed in `2022` among firms that talk about AI and are already flagged as `PatentMismatch`
+- alternative treatments fixed in `2022`:
+  - `LowCredibility`
+  - `ApplicationMismatch`
+- post period:
+  - `2024-2025`
+- placebo / pretrend year:
+  - `2023`
+
+Coverage:
+
+- analysis sample: `8,055` firm-years across `1,611` firms
+- main treated firms: `457`
+
+Read:
+
+- main-treatment post-2024 DID:
+  - `SpecShare`: `-0.0839`, `p<0.001`
+  - `A/S`: `0.2907`, `p<0.001`
+  - `PatentMismatch`: `-0.3121`, `p<0.001`
+  - `AI_Focus`: `-0.1044`, `p=0.110`
+- alternative treatment definitions are directionally consistent:
+  - `LowCredibility in 2022`
+    - `SpecShare`: `-0.1215`, `p<0.001`
+    - `A/S`: `0.3368`, `p<0.001`
+    - `PatentMismatch`: `-0.2606`, `p<0.001`
+  - `ApplicationMismatch in 2022`
+    - `SpecShare`: `-0.1042`, `p<0.001`
+    - `A/S`: `0.3155`, `p<0.001`
+    - `PatentMismatch`: `-0.2634`, `p<0.001`
+
+Interpretation:
+
+- this is a useful regulatory-salience result:
+  - after the SEC's March 18, 2024 AI-washing actions, pre-exposed firms look more likely to rebalance disclosure toward less speculative and more credible composition
+- importantly, `AI_Focus` does not fall much
+  - so the evidence is more `cleanup without silence` than `stop talking about AI`
+- the main caveat is that the `2023` placebo coefficients are already directional for the composition outcomes
+  - that means this should not be written as a clean causal enforcement-DID
+  - the right paper-facing label is `regulatory salience / acceleration`
+
+Tentative placement:
+
+- strong appendix or supporting main-text extension
+- promote only if paired with explicit pretrend discipline in the text
