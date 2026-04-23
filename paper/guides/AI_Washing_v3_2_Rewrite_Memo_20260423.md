@@ -74,6 +74,40 @@ That is a stronger and more defensible story than a headline claim about market 
    - placement: appendix or discussion support
    - reason: useful for honesty and defense, but they do not support a strong pricing-anomaly statement
 
+## 2A. Packet H Checkpoint
+
+Checkpoint note:
+
+- [AI_Washing_v3_2_Packet_H_Checkpoint_20260423.md](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/guides/AI_Washing_v3_2_Packet_H_Checkpoint_20260423.md)
+
+Current Packet H placement decision:
+
+- keep `test_30` in the main text
+- keep `test_29` in the main text, but as a disciplined regulatory-salience extension rather than a clean causal DID
+- keep `test_32` in the appendix / internet appendix and cite it in the market section as the narrowing refinement
+
+Why:
+
+- `test_30` is the strongest Packet H result because the timing shape is sharp and the economic reading is clean
+- `test_29` is worth main-text space because the event itself is important and the cleanup pattern is strong, even with the `2023` pretrend caveat
+- `test_32` is genuinely useful, but it works best as a supporting explanation for the market block rather than as a separate headline table
+
+Current relative rank of the strongest overall paper-facing results:
+
+1. `test_16_construct_variant_screen`
+2. `test_17_real_outcome_dynamics`
+3. `test_20_comment_letter_cleanup`
+4. `test_25_exec_incentive_mismatch`
+5. `test_30_capital_raising_timing`
+6. `test_29_sec_ai_washing_enforcement_did`
+7. `test_18_financing_incentives_refresh`
+8. `test_09_factor_adjusted_alpha`
+9. `test_32_market_reaction_in_issue_windows`
+
+Current best practical rule:
+
+- if we continue empirical work, new tests should only be promoted if they can beat one of the current main-text keepers above
+
 ## 3. Packet D Definitions and Timing
 
 ### What `narrow AI` means in `test_19`
