@@ -346,6 +346,26 @@ These are useful after Tier 1 and Tier 2 determine what survives.
 
 Do not run Tier 3 just because it sounds rich. Run it only if it sharpens the final story that survives Tier 1.
 
+## 7A. Deferred Construct-Variant Lane
+
+This lane is intentionally deferred until the base `PatentMismatch` identification package has been reviewed.
+
+### Why defer rather than ignore
+
+- `PatentMismatch` remains the paper’s canonical, audited disclosure-credibility measure;
+- but it was built before the current market-identification wave, so it is legitimate to test nearby AI-washing variants later rather than pretending the first construct must do every job;
+- any variant lane should be evaluated as an extension layer, not as retroactive p-hacking of the main audited construct.
+
+### Candidate later-wave tasks
+
+- build a small family of paper-facing alternative AI-washing indicators using already-audited ingredients such as low-credibility disclosure, patent weakness, and stricter credibility cutoffs;
+- test whether those variants better predict future patent realization, valuation outcomes, or post-filing return patterns;
+- compare them against `PatentMismatch` in side-by-side horse races rather than silently replacing the main measure.
+
+### Rule
+
+Do not open this lane until the current Tier 1 and Tier 2 package makes clear whether the paper’s main story survives on the canonical construct.
+
 ## 8. Writing Sequence After Evidence, Not Before
 
 ### Writing changes that should wait
