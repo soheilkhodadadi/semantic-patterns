@@ -12,6 +12,13 @@ Naming rule:
 - `test_06_real_effects`
 - `test_07_chatgpt_did`
 - `test_08_financing_valuation`
+- `test_09_factor_adjusted_alpha`
+- `test_10_adjusted_post_filing_returns`
+- `test_11_mismatch_component_horse_race`
+- `test_12_predictive_return_controls`
+- `test_13_pre_post_event_path`
+- `test_15_matched_ai_talking_sample`
+- `test_16_construct_variant_screen`
 - `validation_refresh`
 
 Operational rule:

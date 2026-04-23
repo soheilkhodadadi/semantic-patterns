@@ -10,6 +10,8 @@ This roadmap turns the current diagnosis into a stable execution plan for the ne
 
 The goal of `v3.1` is not to immediately rewrite the paper. The goal is to strengthen the market-results block until we know whether the paper can support a stronger pricing interpretation or should instead lean more heavily on measurement + validation + suggestive market consequences.
 
+A dedicated non-market execution queue now lives in `paper/guides/AI_Washing_v3_1_NonMarket_Packets_20260422.md`. That queue takes over once the market-identification package stops yielding material upgrades.
+
 The roadmap therefore has four jobs:
 
 1. stabilize the working lane so scripts, outputs, and paper assets are easier to track;

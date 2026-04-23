@@ -159,6 +159,9 @@ Use a strict run-ID scheme for all new work:
 - `test_13_pre_post_event_path`
 - `test_14_first_mismatch_onset`
 - `test_15_matched_ai_talking_sample`
+- `test_16_construct_variant_screen`
+- `test_17_real_outcome_dynamics`
+- `test_18_financing_incentives_refresh`
 
 ### Output contract per run
 
