@@ -90,9 +90,24 @@ Status after first pass (2026-04-23):
 - Full-sample appointment response is directionally positive but not precise.
 - The big-firm refinement is cleaner:
   - mismatch predicts more later science/technology appointments;
-  - the c-level appointment cut is marginal and directionally aligned;
-  - the narrow technology-lead cut remains too imprecise for a headline use.
+- the c-level appointment cut is marginal and directionally aligned;
+- the narrow technology-lead cut remains too imprecise for a headline use.
+- `test_25` is one of the cleaner explanatory results in Packet F:
+  - stronger lagged CEO ownership predicts more mismatch in the big-firm ExecuComp slice;
+  - post-ChatGPT mismatch also rises with lagged CEO equity-award share and lagged CEO ownership;
+  - the result is naturally limited to the ExecuComp-covered large-firm universe, but that is acceptable for an incentives lane.
+- `test_26` gives Packet F a usable board-monitoring result:
+  - broader outside-board exposure is associated with less mismatch in the matched board sample and remains directionally similar in big firms;
+  - larger boards are associated with less `PatentMismatch` and less `LowCredibility` in the post-ChatGPT slice, with a corresponding increase in `A/S`;
+  - governance-committee and audit-share terms are directionally supportive, but less precise than the outside-board and board-size proxies.
+- `test_27` is a supportively useful BoardEx result rather than a headline one:
+  - lagged board technical human-capital share is associated with less mismatch in the matched sample;
+  - the narrow technical-leadership share is also directionally negative for `LowCredibility`, especially in big firms;
+  - the effect weakens in the post-ChatGPT slice, so this lane is better for appendix / internet appendix than for the core Packet F text.
 - Packet F therefore has a viable `organizational catch-up in bigger firms` opening, and that justifies continuing to incentives and board structure rather than stopping here.
+- Packet F is now strong enough to justify continuing, but the next tests should stay disciplined:
+  - keep governance results in the paper only where they sharpen explanation rather than add noise;
+  - prefer the cleaner incentive, board-monitoring, and narrow board-tech proxies over a long list of weak committee-detail specifications.
 
 ### Packet G. Ownership
 

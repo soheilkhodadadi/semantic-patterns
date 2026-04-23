@@ -322,3 +322,141 @@ Tentative placement:
 
 - the big-firm refinement is a live main-text or high-appendix candidate
 - the full-sample table is better as support / appendix
+
+### Test 25. Executive incentives and low-credibility AI disclosure
+
+- table: [test_25 exec incentives docx](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/docx/test_25_exec_incentive_mismatch_20260423_aiw_v3_2_test_25_exec_incentive_mismatch_main_v1.docx)
+- figure: [test_25 exec incentives figure](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/figures/test_25_exec_incentive_mismatch_20260423_aiw_v3_2_test_25_exec_incentive_mismatch_main_v1.png)
+
+Setup:
+
+- source: ExecuComp `anncomp`
+- CEO row rule: use the highest-`TDC1` CEO-designated row in each firm-year when more than one CEO row appears
+- predictors are lagged one year:
+  - CEO equity-award share of total compensation
+  - CEO ownership percentage excluding options
+  - log CEO total pay
+
+Coverage:
+
+- lagged CEO-linked AI-talking rows: `1,007`
+- matched firms: `303`
+- this is therefore a large-firm / ExecuComp-covered slice, not a full-universe result
+
+Read:
+
+- full matched sample is modest
+- the cleaner results appear where incentive salience is highest:
+  - big-firm sample:
+    - `PatentMismatch -> CEO ownership pct (t-1)`: `0.1038`, `p=0.000`
+  - post-ChatGPT sample:
+    - `PatentMismatch -> CEO equity-award share (t-1)`: `0.1787`, `p=0.041`
+    - `PatentMismatch -> CEO ownership pct (t-1)`: `0.0170`, `p=0.036`
+    - `PatentMismatch -> log CEO pay (t-1)`: `0.0528`, `p=0.100`
+  - post-ChatGPT `A/S` also moves in the expected inverse direction for ownership:
+    - `A/S -> CEO ownership pct (t-1)`: `-0.0369`, `p=0.000`
+
+Interpretation:
+
+- this is one of the cleaner explanatory Packet F results so far
+- stronger CEO incentive alignment with equity upside is associated with more low-credibility AI disclosure in the covered universe, especially after ChatGPT
+- that gives the paper a more concrete incentives channel than the earlier financing proxies
+
+Tentative placement:
+
+- live main-text candidate inside Packet F
+- caveat to state explicitly: this is an ExecuComp-covered, mostly larger-firm slice
+
+### Test 26. Board monitoring and low-credibility AI disclosure
+
+- table: [test_26 board monitoring docx](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/docx/test_26_board_monitoring_20260423_aiw_v3_2_test_26_board_monitoring_main_v1.docx)
+- figure: [test_26 board monitoring figure](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/figures/test_26_board_monitoring_20260423_aiw_v3_2_test_26_board_monitoring_main_v1.png)
+
+Setup:
+
+- source: Risk Directors `rmdirectors`
+- merge rule: aggregate board structure to ticker-year, lag one year, then link to the AI-talking annual panel
+- primary monitoring proxies:
+  - average outside public boards held by directors
+  - governance committee share
+  - audit committee share
+  - board size
+
+Coverage:
+
+- board ticker-years: `19,835`
+- lagged board-linked AI-talking rows: `2,269`
+- matched firms: `812`
+- post-ChatGPT matched rows: `1,058` before regression-level control filtering
+
+Read:
+
+- this packet is more useful than a generic governance appendix dump
+- all-sample monitoring terms are already directionally informative:
+  - `PatentMismatch -> avg outside public boards (t-1)`: `-0.0621`, `p=0.050`
+  - `LowCredibility -> avg outside public boards (t-1)`: `-0.0512`, `p=0.099`
+  - `LowCredibility -> governance committee share (t-1)`: `-0.1888`, `p=0.064`
+- the sharper result comes in the post-ChatGPT slice:
+  - `PatentMismatch -> board size (t-1)`: `-0.0736`, `p=0.002`
+  - `LowCredibility -> board size (t-1)`: `-0.0765`, `p=0.002`
+  - `A/S -> board size (t-1)`: `0.0643`, `p=0.007`
+- the big-firm sample keeps the outside-board effect directionally similar:
+  - `PatentMismatch -> avg outside public boards (t-1)`: `-0.0580`, `p=0.059`
+
+Interpretation:
+
+- some board-monitoring structures appear to matter for disclosure quality
+- the cleaner proxies are not every committee label; they are broader monitoring capacity:
+  - how externally seasoned the board is;
+  - how large the board is in the post-ChatGPT period
+- that gives Packet F a governance explanation that fits the current paper better than a simple market-discipline story
+
+Tentative placement:
+
+- strong appendix or internet-appendix candidate
+- possible main-text support table if we want one dedicated governance/explanation result alongside the incentive table
+
+### Test 27. Board technical human capital and low-credibility AI disclosure
+
+- table: [test_27 board tech HC docx](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/docx/test_27_board_tech_human_capital_20260423_aiw_v3_2_test_27_board_tech_human_capital_main_v1.docx)
+- figure: [test_27 board tech HC figure](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/figures/test_27_board_tech_human_capital_20260423_aiw_v3_2_test_27_board_tech_human_capital_main_v1.png)
+
+Setup:
+
+- source: BoardEx
+- board-seat filter: supervisory and executive directors only
+- narrow proxy:
+  - lagged share of board members with distinctive prior technical-leadership titles
+- broader proxy:
+  - lagged technical-human-capital share, which adds a sparse STEM-education overlay
+
+Coverage:
+
+- lagged board-tech linked rows: `3,247`
+- matched firms: `1,155`
+- the technical-leadership proxy is the operative one; the STEM-only layer is sparse and mainly useful as a conservative add-on
+
+Read:
+
+- this is a supportive governance-capability result, not a dominant Packet F headline
+- all-sample disclosure-quality results are directionally useful:
+  - `PatentMismatch -> tech leadership share (t-1)`: `-0.4810`, `p=0.065`
+  - `PatentMismatch -> tech human-capital share (t-1)`: `-0.5158`, `p=0.045`
+  - `LowCredibility -> tech leadership share (t-1)`: `-0.4403`, `p=0.096`
+- the big-firm slice keeps the direction and slightly sharpens one margin:
+  - `LowCredibility -> tech leadership share (t-1)`: `-0.5666`, `p=0.080`
+  - `A/S -> any tech human capital (t-1)`: `0.1050`, `p=0.041`
+- the post-ChatGPT slice is weak, so this is not a clean late-period governance story
+
+Interpretation:
+
+- boards with more genuine technical human capital appear less likely to be associated with low-credibility AI disclosure
+- that helps in two ways:
+  - it gives the paper a capability-side robustness check beyond patents alone
+  - it supports the idea that mismatch is partly about who inside the firm can credibly oversee AI claims
+- but the effect is supportive rather than decisive, so it should stay below the stronger incentive and board-monitoring results
+
+Tentative placement:
+
+- appendix or internet appendix
+- useful to cite in the main text when arguing that capability-side governance structure matters, even if the full table stays out of the main paper

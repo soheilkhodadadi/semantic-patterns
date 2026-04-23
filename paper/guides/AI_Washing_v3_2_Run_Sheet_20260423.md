@@ -230,6 +230,14 @@ Minimum outputs:
 - one interaction / heterogeneity table if justified
 - writer packet
 
+Status after first live run (2026-04-23):
+
+- usable and stronger than the earlier financing-proxy lane
+- best signals are:
+  - big-firm `PatentMismatch` on lagged CEO ownership pct
+  - post-ChatGPT `PatentMismatch` on lagged CEO equity-award share and lagged CEO ownership pct
+- current placement: live Packet F main-text candidate, with explicit note that the evidence is limited to the ExecuComp-covered universe
+
 ## Test 26. `test_26_board_monitoring`
 
 Question:
@@ -252,6 +260,15 @@ Minimum outputs:
 
 - one determinants table
 - one moderation table if usable
+
+Status after first live run (2026-04-23):
+
+- usable without needing a second board-data wave
+- cleanest predictors are:
+  - lagged average outside public boards
+  - lagged board size
+- governance-committee and audit-share terms are directionally helpful, but less precise
+- current placement: strong appendix or internet-appendix candidate, with an upgrade path to main-text support if Packet F remains central
 
 ## Test 27. `test_27_board_tech_human_capital`
 
@@ -279,6 +296,13 @@ Minimum outputs:
 Go / no-go criterion:
 
 - only keep if the constructed board-tech proxy is interpretable and not too sparse.
+
+Status after first live run (2026-04-23):
+
+- keep, but as a supportive capability-governance result rather than a headline table
+- the narrow technical-leadership proxy is interpretable and the better specification
+- the broader board-tech-human-capital share is directionally stronger for `PatentMismatch`, but the STEM layer is sparse
+- current placement: appendix or internet appendix, with the option to reference it in the main text as a capability-side robustness result
 
 ## 6. Packet G: Public Ownership
 
