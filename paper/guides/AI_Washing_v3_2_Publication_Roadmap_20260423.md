@@ -84,6 +84,16 @@ Core tests:
 8. `test_26_board_monitoring`
 9. `test_27_board_tech_human_capital`
 
+Status after first pass (2026-04-23):
+
+- `test_24` is useful and more interesting after a size refinement than in the raw full sample.
+- Full-sample appointment response is directionally positive but not precise.
+- The big-firm refinement is cleaner:
+  - mismatch predicts more later science/technology appointments;
+  - the c-level appointment cut is marginal and directionally aligned;
+  - the narrow technology-lead cut remains too imprecise for a headline use.
+- Packet F therefore has a viable `organizational catch-up in bigger firms` opening, and that justifies continuing to incentives and board structure rather than stopping here.
+
 ### Packet G. Ownership
 
 Goal:

@@ -275,3 +275,50 @@ Tentative placement:
 ## 8. Next Dependency
 
 The next key empirical question is whether governance or leadership structures explain more of the gap than analysts do. That is now the reason Packet F matters.
+
+## 9. Packet F Read
+
+### Test 24. Science/technology appointment response
+
+- full-sample table: [test_24 scitech appointments docx](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/docx/test_24_scitech_appointment_response_20260423_aiw_v3_2_test_24_scitech_appointment_response_main_v1.docx)
+- big-firm refinement: [test_24 scitech appointments big docx](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/docx/test_24_scitech_appointment_response_20260423_aiw_v3_2_test_24_scitech_appointment_response_big_v1.docx)
+- figure: [test_24 scitech appointments big figure](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/figures/test_24_scitech_appointment_response_20260423_aiw_v3_2_test_24_scitech_appointment_response_big_v1.png)
+
+Setup:
+
+- source: Audit Analytics `feed17_director_and_officer_chan`
+- event filter: appointed roles only
+- broad outcome: provider-tagged `is_scitech_pers`
+- narrower outcomes:
+  - c-level science/technology appointments
+  - title-based technology-lead appointments
+
+Density:
+
+- appointment rows in the panel universe: `56,267`
+- science/technology appointment rows: `1,658`
+- c-level science/technology rows: `940`
+- technology-lead rows: `459`
+
+Read:
+
+- full sample is directionally positive, but not sharp enough for a headline claim
+  - `PatentMismatch -> any science/tech appointment (t+1:t+2)`: `0.0144`, `p=0.238`
+  - `PatentMismatch -> c-level science/tech appointment (t+1:t+2)`: `0.0147`, `p=0.123`
+- the big-firm refinement is materially cleaner
+  - `PatentMismatch -> any science/tech appointment (t+1:t+2)`: `0.0398`, `p=0.022`
+  - `PatentMismatch -> c-level science/tech appointment (t+1:t+2)`: `0.0256`, `p=0.060`
+- the narrow technology-lead cut stays positive but not precise
+
+Interpretation:
+
+- this packet does not say mismatch firms immediately fix the capability gap
+- it does suggest a later organizational response in bigger firms, where formal leadership additions are more feasible and more visible
+- that is a useful complement to the earlier real-outcome evidence:
+  - smaller firms show the clearer later operating penalty
+  - bigger firms are the ones that more visibly add science/technology leadership afterward
+
+Tentative placement:
+
+- the big-firm refinement is a live main-text or high-appendix candidate
+- the full-sample table is better as support / appendix
