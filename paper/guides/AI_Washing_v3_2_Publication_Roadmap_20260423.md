@@ -177,6 +177,19 @@ Status after first pass (2026-04-23):
 
 ## 4. Tiering and Priority
 
+## Empirical Closeout Status
+
+Closeout note:
+
+- [AI_Washing_v3_2_Empirical_Closeout_20260423.md](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/guides/AI_Washing_v3_2_Empirical_Closeout_20260423.md)
+
+Current recommendation:
+
+- the empirical lane is ready to close
+- `test_29` is main-text safe with disciplined framing
+- `test_31` remains deferred
+- any further empirical work should clear a high bar and beat one of the current main-text keepers
+
 ## Tier 1: Run first
 
 These are the highest-value tests with the best combination of upside and feasibility.

@@ -400,7 +400,20 @@ Status after first live run (2026-04-23):
 
 ## Test 31. `test_31_greenwashing_claims_vs_actions_bridge`
 
-Future bridge to a greenwashing project. Not a current-paper blocker.
+Status after closeout review (2026-04-23):
+
+- reviewed conceptually against nearby greenwashing methods
+- not a current-paper blocker
+- current recommendation: defer to future work
+
+Reason:
+
+- the current paper already has a claims-actions / decoupling logic through:
+  - text-based disclosure composition
+  - later AI patent realization
+  - scrutiny-driven cleanup
+  - financing-window deterioration and partial unwind
+- a greenwashing bridge would now be more useful for a later cross-domain project than for the current rewrite
 
 ## Packet H follow-on checklist
 

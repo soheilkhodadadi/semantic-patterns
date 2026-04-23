@@ -3,6 +3,14 @@
 Date: 2026-04-23  
 Purpose: preserve the current paper-facing interpretation of the strongest `v3.1` and `v3.2` results, with placement guidance and exact output references.
 
+Rewrite-start packet:
+
+- [rewrite start packet](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/rewrite_start_packet_20260423)
+
+Empirical closeout note:
+
+- [AI_Washing_v3_2_Empirical_Closeout_20260423.md](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/guides/AI_Washing_v3_2_Empirical_Closeout_20260423.md)
+
 ## 1. Current Paper Position
 
 The strongest version of the paper is now:
