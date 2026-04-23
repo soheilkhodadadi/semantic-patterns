@@ -19,6 +19,8 @@ Naming rule:
 - `test_13_pre_post_event_path`
 - `test_15_matched_ai_talking_sample`
 - `test_16_construct_variant_screen`
+- `test_17_real_outcome_dynamics`
+- `test_18_financing_incentives_refresh`
 - `validation_refresh`
 
 Operational rule:
