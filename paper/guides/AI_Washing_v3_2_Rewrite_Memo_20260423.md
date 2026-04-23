@@ -181,14 +181,14 @@ A stronger revised order is:
 - `the market clearly underreacts`
 - `SEC scrutiny directly fixes AI-washing`
 
-## 7. Packet E First Read
+## 7. Packet E Read
 
-`Test 21` is now in place as the first analyst table:
+### Test 21. Analyst discernment
 
 - table: [test_21 analyst discernment docx](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/docx/test_21_analyst_discernment_20260423_aiw_v3_2_test_21_analyst_discernment_main_v1.docx)
 - figure: [test_21 analyst discernment figure](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/figures/test_21_analyst_discernment_20260423_aiw_v3_2_test_21_analyst_discernment_main_v1.png)
 
-Current read:
+Read:
 
 - `PatentMismatch` predicts lower analyst coverage at `t+1`: `-0.0823`, `p=0.004`
 - `PatentMismatch` does not yet produce a clear dispersion result
@@ -196,15 +196,38 @@ Current read:
 
 Interpretation:
 
-- the first analyst signal looks more like `lower intermediary attention` than `higher measured analyst disagreement`
+- the first analyst signal looks more like `lower intermediary attention` than `higher measured disagreement`
 - that is still useful, because it gives a plausible reason why weak market differentiation and later cleanup can coexist
-- but it is not yet the full analyst-discernment story; `test_22` and any later guidance extension still matter
+
+### Test 22. Analyst monitoring interaction
+
+- table: [test_22 analyst monitoring docx](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/docx/test_22_analyst_monitoring_interaction_20260423_aiw_v3_2_test_22_analyst_monitoring_interaction_main_v1.docx)
+- figure: [test_22 analyst monitoring figure](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/figures/test_22_analyst_monitoring_interaction_20260423_aiw_v3_2_test_22_analyst_monitoring_interaction_main_v1.png)
+
+Read:
+
+- interaction on future mismatch persistence: `0.0179`, `p=0.765`
+- interaction on future AI grants: `-0.2084`, `p=0.002`
+- interaction on `ROA t+2`: `0.0451`, `p=0.065`
+
+Interpretation:
+
+- analyst coverage does not reduce future mismatch persistence
+- higher coverage is associated with a weaker later `ROA` penalty for mismatch firms
+- but higher coverage also makes the later AI-grant shortfall of mismatch firms look sharper, not smaller
+
+Best current reading of Packet E:
+
+- analysts do not deliver a clean `monitoring fixes the problem` result
+- instead, the evidence looks more like `selective intermediary attention`
+- mismatch firms receive less coverage overall
+- when coverage is high, technological under-realization becomes more sharply visible, while the operating penalty is partly attenuated
 
 Tentative placement:
 
-- keep `test_21` as a live candidate for either the main text or high appendix
-- do not lock its placement until `test_22` tells us whether analyst monitoring sharpens the interpretation
+- `test_21` is a live main-text or high-appendix candidate if we want an intermediary-attention result
+- `test_22` is more naturally a high appendix or discussion table unless later tests make the mixed interaction more central to the story
 
 ## 8. Next Dependency
 
-The next key empirical question is whether analyst monitoring changes the later consequences of low-credibility AI disclosure. That is now the reason `test_22` matters so much.
+The next key empirical question is whether governance or leadership structures explain more of the gap than analysts do. That is now the reason Packet F matters.
