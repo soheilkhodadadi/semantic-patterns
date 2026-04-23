@@ -191,7 +191,14 @@ def _compute_absorbed_adj_r2(
 
 
 def load_panel(panel_path: str | Path) -> pd.DataFrame:
-    df = pd.read_csv(panel_path, low_memory=False)
+    resolved = Path(panel_path)
+    if resolved.suffix == ".parquet":
+        df = pd.read_parquet(resolved)
+    else:
+        df = pd.read_csv(resolved, low_memory=False)
+    if "sic2" not in df.columns and "sic" in df.columns:
+        sic = pd.to_numeric(df["sic"], errors="coerce")
+        df["sic2"] = (sic // 100).astype("Int64")
     df = add_engineered_cols(df)
     df = make_leads(df, k_list=(0, 1, 2))
     return df

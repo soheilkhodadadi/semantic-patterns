@@ -1,0 +1,17 @@
+filing_id,source_filename,cik,filing_date,gvkey,permno,permco,linktype,linkprim,linkdt,linkenddt,wrds_bridge_status,valid_candidate_count,fallback_ticker,fallback_name,fallback_sic
+21f58aae2e5164c4,20210210_10-K_edgar_data_949039_0001564590-21-005225_classified.csv,0000949039,20210210,061409,,,,,,,no_valid_link,0,DO,Diamond Offshore Drilling Inc,1381
+98b15b1e128b4159,20210225_10-K_edgar_data_787250_0000787250-21-000007_classified.csv,0000787250,20210225,003814,,,,,,,no_valid_link,0,DPL,DPL Inc,4931
+c84fc8d0ffd0fe86,20210305_10-K_edgar_data_1128189_0001079973-21-000148_classified.csv,0001128189,20210305,146539,,,,,,,no_valid_link,0,PKTX,Protokinetix Inc,7389
+0d94df6326219fc8,20210310_10-K_edgar_data_1576169_0001564590-21-011839_classified.csv,0001576169,20210310,,,,,,,,missing_gvkey,0,BNFT,Benefitfocusinc,7372
+a1f133cba5c49a37,20210317_10-K_edgar_data_774569_0001437749-21-006324_classified.csv,0000774569,20210317,,,,,,,,missing_gvkey,0,CLDB,Cortland Bancorp Inc,6035
+5e9fd11d7b7c5488,20210430_10-K-A_edgar_data_1576169_0001193125-21-145439_classified.csv,0001576169,20210430,,,,,,,,missing_gvkey,0,BNFT,Benefitfocusinc,7372
+563eb21020e61d17,20210430_10-K-A_edgar_data_949039_0001193125-21-143645_classified.csv,0000949039,20210430,061409,,,,,,,no_valid_link,0,DO,Diamond Offshore Drilling Inc,1381
+0ade545375db71df,20220228_10-K_edgar_data_787250_0000787250-22-000005_classified.csv,0000787250,20220228,003814,,,,,,,no_valid_link,0,DPL,DPL Inc,4931
+75cb30ca4db26c72,20220304_10-K_edgar_data_1576169_0001564590-22-008597_classified.csv,0001576169,20220304,,,,,,,,missing_gvkey,0,BNFT,Benefitfocusinc,7372
+a3aa2b7a837a1492,20220307_10-K_edgar_data_949039_0000950170-22-003014_classified.csv,0000949039,20220307,061409,,,,,,,no_valid_link,0,DO,Diamond Offshore Drilling Inc,1381
+928771947d7eff7c,20220310_10-K_edgar_data_1128189_0001079973-22-000230_classified.csv,0001128189,20220310,146539,,,,,,,no_valid_link,0,PKTX,Protokinetix Inc,7389
+b57457275083cb84,20220502_10-K-A_edgar_data_1576169_0001193125-22-136767_classified.csv,0001576169,20220502,,,,,,,,missing_gvkey,0,BNFT,Benefitfocusinc,7372
+fd87c8d4f8ccc8db,20230301_10-K_edgar_data_787250_0000787250-23-000006_classified.csv,0000787250,20230301,003814,,,,,,,no_valid_link,0,DPL,DPL Inc,4931
+2816a79dc46510e8,20230317_10-K_edgar_data_1128189_0001079973-23-000353_classified.csv,0001128189,20230317,146539,,,,,,,no_valid_link,0,PKTX,Protokinetix Inc,7389
+bd1a1403c1ae8988,20240227_10-K_edgar_data_787250_0000787250-24-000006_classified.csv,0000787250,20240227,003814,,,,,,,no_valid_link,0,DPL,DPL Inc,4931
+a57ed8c2cbc607bb,20240320_10-K_edgar_data_1128189_0001079973-24-000403_classified.csv,0001128189,20240320,146539,,,,,,,no_valid_link,0,PKTX,Protokinetix Inc,7389

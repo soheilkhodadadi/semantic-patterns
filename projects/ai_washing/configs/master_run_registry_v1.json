@@ -1,0 +1,170 @@
+{
+  "version_date": "2026-04-11",
+  "runtime_posture": {
+    "repo_root": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns",
+    "datawork_root": "/Users/soheilkhodadadi/DataWork/semantic-patterns/ai_washing",
+    "paper_generated_root": "paper/generated",
+    "writer_packet_template": "projects/ai_washing/docs/templates/writer_packet_template_v1.md",
+    "preferred_script_package": "semantic_ai_washing.analysis.publication_runs"
+  },
+  "tests": [
+    {
+      "test_id": "test_01_mismatch_surge",
+      "wave": 1,
+      "title": "Mismatch surge through 2025",
+      "unit": "firm-year",
+      "primary_panel": "data/processed/panel/canonical/ever_speaker_panel_2016_2025_hybrid_api_a_conf49_v1.parquet",
+      "proposed_module": "semantic_ai_washing.analysis.publication_runs.test_01_mismatch_surge",
+      "datawork_run_root": "derived/test_runs/test_01_mismatch_surge",
+      "paper_exports_root": "paper/generated",
+      "expected_outputs": [
+        "dataset_summary.json",
+        "table_main.csv",
+        "figure_main.png",
+        "writer_packet.md",
+        "run_manifest.json"
+      ]
+    },
+    {
+      "test_id": "test_02_filing_date_car",
+      "wave": 1,
+      "title": "Filing-date market reaction",
+      "unit": "firm-filing event",
+      "primary_panel": "data/processed/panel/filing_event_estimation_sample_hybrid_api_a_conf49_v1.parquet",
+      "proposed_module": "semantic_ai_washing.analysis.publication_runs.test_02_filing_date_car",
+      "datawork_run_root": "derived/test_runs/test_02_filing_date_car",
+      "paper_exports_root": "paper/generated",
+      "expected_outputs": [
+        "dataset_summary.json",
+        "table_main.csv",
+        "table_main.tex",
+        "figure_main.png",
+        "writer_packet.md",
+        "run_manifest.json"
+      ]
+    },
+    {
+      "test_id": "test_03_post_filing_drift",
+      "wave": 1,
+      "title": "Post-filing drift and correction",
+      "unit": "firm-filing event",
+      "primary_panel": "data/processed/panel/filing_event_estimation_sample_hybrid_api_a_conf49_v1.parquet",
+      "proposed_module": "semantic_ai_washing.analysis.publication_runs.test_03_post_filing_drift",
+      "datawork_run_root": "derived/test_runs/test_03_post_filing_drift",
+      "paper_exports_root": "paper/generated",
+      "expected_outputs": [
+        "dataset_summary.json",
+        "table_main.csv",
+        "table_main.tex",
+        "figure_main.png",
+        "writer_packet.md",
+        "run_manifest.json"
+      ]
+    },
+    {
+      "test_id": "test_04_portfolio_sorts",
+      "wave": 2,
+      "title": "Portfolio sorts and long-short alpha",
+      "unit": "firm-month portfolio",
+      "primary_panel": "data/processed/panel/canonical/ever_speaker_panel_2016_2025_hybrid_api_a_conf49_v1.parquet",
+      "proposed_module": "semantic_ai_washing.analysis.publication_runs.test_04_portfolio_sorts",
+      "datawork_run_root": "derived/test_runs/test_04_portfolio_sorts",
+      "paper_exports_root": "paper/generated",
+      "expected_outputs": [
+        "dataset_summary.json",
+        "table_main.csv",
+        "table_main.tex",
+        "figure_main.png",
+        "writer_packet.md",
+        "run_manifest.json"
+      ]
+    },
+    {
+      "test_id": "test_05_size_heterogeneity",
+      "wave": 1,
+      "title": "Small-firm and hard-to-value heterogeneity",
+      "unit": "firm-filing event",
+      "primary_panel": "data/processed/panel/filing_event_estimation_sample_hybrid_api_a_conf49_v1.parquet",
+      "proposed_module": "semantic_ai_washing.analysis.publication_runs.test_05_size_heterogeneity",
+      "datawork_run_root": "derived/test_runs/test_05_size_heterogeneity",
+      "paper_exports_root": "paper/generated",
+      "expected_outputs": [
+        "dataset_summary.json",
+        "table_main.csv",
+        "table_main.tex",
+        "figure_main.png",
+        "writer_packet.md",
+        "run_manifest.json"
+      ]
+    },
+    {
+      "test_id": "test_06_real_effects",
+      "wave": 2,
+      "title": "Real effects beyond patents",
+      "unit": "firm-year",
+      "primary_panel": "data/processed/panel/canonical/ever_speaker_panel_2016_2025_hybrid_api_a_conf49_v1.parquet",
+      "proposed_module": "semantic_ai_washing.analysis.publication_runs.test_06_real_effects",
+      "datawork_run_root": "derived/test_runs/test_06_real_effects",
+      "paper_exports_root": "paper/generated",
+      "expected_outputs": [
+        "dataset_summary.json",
+        "table_main.csv",
+        "table_main.tex",
+        "writer_packet.md",
+        "run_manifest.json"
+      ]
+    },
+    {
+      "test_id": "test_07_chatgpt_did",
+      "wave": 1,
+      "title": "ChatGPT salience shock path",
+      "unit": "firm-year or firm-filing event",
+      "primary_panel": "data/processed/panel/canonical/ever_speaker_panel_2016_2025_hybrid_api_a_conf49_v1.parquet",
+      "proposed_module": "semantic_ai_washing.analysis.publication_runs.test_07_chatgpt_did",
+      "datawork_run_root": "derived/test_runs/test_07_chatgpt_did",
+      "paper_exports_root": "paper/generated",
+      "expected_outputs": [
+        "dataset_summary.json",
+        "table_main.csv",
+        "table_main.tex",
+        "figure_main.png",
+        "writer_packet.md",
+        "run_manifest.json"
+      ]
+    },
+    {
+      "test_id": "test_08_financing_valuation",
+      "wave": 2,
+      "title": "Financing and valuation consequences",
+      "unit": "firm-year",
+      "primary_panel": "data/processed/panel/canonical/ever_speaker_panel_2016_2025_hybrid_api_a_conf49_v1.parquet",
+      "proposed_module": "semantic_ai_washing.analysis.publication_runs.test_08_financing_valuation",
+      "datawork_run_root": "derived/test_runs/test_08_financing_valuation",
+      "paper_exports_root": "paper/generated",
+      "expected_outputs": [
+        "dataset_summary.json",
+        "table_main.csv",
+        "table_main.tex",
+        "writer_packet.md",
+        "run_manifest.json"
+      ]
+    },
+    {
+      "test_id": "validation_refresh",
+      "wave": 3,
+      "title": "Legacy validation reruns on the expanded panel",
+      "unit": "firm-year",
+      "primary_panel": "data/processed/panel/canonical/ever_speaker_panel_2016_2025_hybrid_api_a_conf49_v1.parquet",
+      "proposed_module": "semantic_ai_washing.analysis.publication_runs.validation_refresh",
+      "datawork_run_root": "derived/test_runs/validation_refresh",
+      "paper_exports_root": "paper/generated",
+      "expected_outputs": [
+        "dataset_summary.json",
+        "table_bundle.csv",
+        "figure_bundle.png",
+        "writer_packet.md",
+        "run_manifest.json"
+      ]
+    }
+  ]
+}

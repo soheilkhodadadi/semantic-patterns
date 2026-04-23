@@ -1,0 +1,36 @@
+{
+  "generated_at": "2026-04-10T23:14:16.317202+00:00",
+  "status": "passed",
+  "mode": "live",
+  "policy_path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/director/config/api_assistive_policy_shadow_full_corpus_mini_v2.yaml",
+  "input_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/processed/shadow/deferred_review_sheets/shards/conf49/selective_defer_conf49_shadow_remaining_v1_shard01.csv",
+  "output_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/processed/shadow/deferred_review_sheets/shards/conf49/selective_defer_conf49_shadow_remaining_v1_shard01.csv",
+  "report_path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/reports/api/shards/conf49_shard01_overnight_report.json",
+  "model": "gpt-5-mini",
+  "resumed_existing_output": true,
+  "parameters": {
+    "max_rows": 25,
+    "sleep_seconds": 0.0,
+    "checkpoint_every": 1
+  },
+  "counts": {
+    "input_rows": 13608,
+    "skipped_canonical_labeled_rows": 0,
+    "skipped_existing_assistive_rows": 13589,
+    "skipped_unmatched_noise_rows": 0,
+    "skipped_blank_sentence_rows": 0,
+    "pending_rows_before_run": 19,
+    "processed_rows": 19,
+    "failed_rows": 0,
+    "pending_rows_after_run": 0
+  },
+  "usage": {
+    "request_count": 13608,
+    "prompt_tokens": 10914,
+    "completion_tokens": 2933,
+    "total_tokens": 13847,
+    "estimated_cost_usd": 0.021384,
+    "cost_estimation_status": "estimated"
+  },
+  "errors": []
+}

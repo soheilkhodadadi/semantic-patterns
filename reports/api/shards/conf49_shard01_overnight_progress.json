@@ -1,0 +1,22 @@
+{
+  "status": "passed",
+  "generated_at_utc": "2026-04-10T23:15:59.980156+00:00",
+  "inputs": {
+    "input_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/processed/shadow/deferred_review_sheets/shards/conf49/selective_defer_conf49_shadow_remaining_v1_shard01.csv",
+    "output_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/processed/shadow/deferred_review_sheets/shards/conf49/selective_defer_conf49_shadow_remaining_v1_shard01.csv",
+    "report_path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/reports/api/shards/conf49_shard01_overnight_report.json"
+  },
+  "summary": {
+    "iterations_completed": 265,
+    "max_requests": 10000,
+    "total_estimated_cost_usd": 7.41743,
+    "last_run_status": "passed"
+  },
+  "counts": {
+    "input_rows": 13608,
+    "canonical_labeled_rows": 0,
+    "assistive_labeled_rows": 13608,
+    "pending_rows": 0
+  },
+  "last_error": null
+}

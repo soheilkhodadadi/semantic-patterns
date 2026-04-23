@@ -25,6 +25,26 @@ a stronger publication package with:
 - capital-market consequence tests
 - at least one serious identification path
 
+## Current status as of 2026-04-10
+
+Measurement and benchmark status:
+- `2025` filing refresh and patent refresh lanes are largely operational
+- patent fuzzy matching was tested and rejected as too noisy for the main panel
+- the classifier lane now has a provisional deployable winner:
+  - layered local base
+  - API-A selective defer
+- `IRR v3 rerun` passed with the original second rater
+- the shadow full-corpus local pass is complete and the deferred API-A tranche
+  is running on the `conf49` slice
+- first pilot filing-date CAR regressions now exist on the matched filing sample
+- broad-sample WRDS raw fundamentals and monthly market pulls now exist for the `2016-2025` refresh backbone
+
+Implication:
+- the next highest-leverage publication work is no longer basic classifier
+  rescue
+- it is now capital-market design, event-study execution, and panel rebuilding
+  on top of the provisional hybrid classifier
+
 ## Workstreams
 
 ### Workstream A. Data refresh and sample extension
@@ -65,14 +85,23 @@ Success condition:
 Goal:
 - quantify why AI-washing matters economically
 
-Candidate tests:
-- filing-date event study
-- valuation response
-- analyst reaction
+Primary candidate tests:
+- filing-date event study around 10-K filing dates
+- delayed-price / post-filing drift test
+- long-short credibility versus mismatch portfolio
+
+Secondary tests:
+- valuation response in annual panel form
+- institutional or analyst reaction if the first two lanes work cleanly
 - financing or market-access consequences if data access is practical
+
+Primary design note:
+- `projects/ai_washing/docs/track_a_event_study_and_economic_impact_design_v1.md`
 
 Success condition:
 - at least one credible economic-stakes result is implemented and interpretable
+- and the paper can quantify a shareholder consequence of low-credibility AI
+  disclosure
 
 ### Workstream D. Identification design
 
@@ -81,6 +110,12 @@ Goal:
 
 Primary candidate:
 - ChatGPT release as a salience or disclosure-cost shock
+
+Preferred implementation order:
+1. post-ChatGPT interaction in the filing-date event study
+2. delayed-price / portfolio differences pre versus post ChatGPT
+3. only then larger diff-in-diff or triple-difference designs if the first two
+   are promising
 
 Secondary candidates:
 - other disclosure or regulatory shocks if cleaner
@@ -121,6 +156,15 @@ Reason:
 
 ## Near-term 30-day targets
 
+### Target 0
+
+Close the measurement gate enough to support provisional economics work.
+
+Current status:
+- largely achieved
+- the remaining step is to finish and merge the running `conf49` deferred
+  API-A slice
+
 ### Target 1
 
 Stand up the publication-upgrade planning lane.
@@ -147,11 +191,22 @@ Deliverables:
 - one capital-market test design note
 - one identification design note
 - one model-credibility robustness plan
+- one event-ready filing panel specification for WRDS/CRSP/Compustat pulls
+- one explicit delayed-price / portfolio design tied to AI-credibility mismatch
 
 ## Active execution anchor
 
-The current first execution surface for this roadmap is:
+The current execution surfaces for this roadmap are:
 - `projects/ai_washing/docs/track_a_execution_plan_v1.md`
+- `projects/ai_washing/docs/track_a_publication_execution_map_v1.md`
+- `projects/ai_washing/docs/track_a_stage_checkpoint_v1.md`
+- `projects/ai_washing/docs/track_a_event_study_and_economic_impact_design_v1.md`
+- `projects/ai_washing/docs/track_a_event_ready_panel_spec_v1.md`
+- `projects/ai_washing/docs/track_a_event_study_scaffold_progress_v1.md`
+- `projects/ai_washing/docs/track_a_wrds_bridge_progress_v1.md`
+- `projects/ai_washing/docs/track_a_event_return_panel_progress_v1.md`
+- `projects/ai_washing/docs/track_a_first_car_regressions_v1.md`
+- `projects/ai_washing/docs/track_a_full_sample_wrds_raw_progress_v1.md`
 
 ## What this roadmap is not
 

@@ -1,0 +1,106 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+
+\usepackage{setspace}
+\usepackage{amsmath, amssymb, amsfonts}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{threeparttable}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{pdflscape}
+\usepackage{multirow}
+\usepackage{hyperref}
+\usepackage{xurl}
+\usepackage{chngcntr}
+\usepackage{placeins}
+
+\captionsetup[table]{font=small,labelfont=bf,justification=raggedright,singlelinecheck=false}
+
+\newcommand{\tablepdf}[4]{%
+\begin{table}[p]
+\centering
+\captionsetup{justification=raggedright,singlelinecheck=false}
+\caption{#1}
+\label{#2}
+\caption*{\footnotesize #3}
+\vspace{0.5em}
+\includegraphics[width=\textwidth,height=0.86\textheight,keepaspectratio]{#4}
+\end{table}
+}
+
+\newcommand{\apptablepdf}[4]{%
+\begin{table}[H]
+\centering
+\captionsetup{justification=raggedright,singlelinecheck=false}
+\caption{#1}
+\label{#2}
+\caption*{\footnotesize #3}
+\vspace{0.5em}
+\includegraphics[width=\textwidth,height=0.86\textheight,keepaspectratio]{#4}
+\end{table}
+}
+
+\title{Measuring AI-Washing in Corporate Disclosures}
+\author{Soheil Khodadadi \and Kuntara Pukthuanthong \and Thomas Walker}
+\date{April 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\input{sections/abstract}
+\end{abstract}
+
+\noindent\textbf{Keywords:} Artificial intelligence; AI-washing; Corporate disclosure; 10-K filings; Textual analysis; Innovation; Patents
+
+\noindent\textbf{JEL classifications:} D82, G14, M41, O31, O32
+
+\section{Introduction}
+\input{sections/introduction}
+
+\section{Literature Review}
+\input{sections/literature}
+
+\section{Data and Methodology}
+\input{sections/methods}
+
+\section{Empirical Analysis and Results}
+\input{sections/results}
+
+\section{Conclusion}
+\input{sections/conclusion}
+
+\appendix
+
+\renewcommand{\thesection}{Appendix \Alph{section}}
+\counterwithin*{table}{section}
+\renewcommand{\thetable}{\Alph{section}\arabic{table}}
+\counterwithin*{figure}{section}
+\renewcommand{\thefigure}{\Alph{section}\arabic{figure}}
+
+\clearpage
+\section{Measurement audit and sample construction diagnostics}
+\input{appendix/appendixA}
+
+\clearpage
+\section{Supplementary validation and patent-timing results}
+\input{appendix/appendixB}
+
+\clearpage
+\section{Determinants, heterogeneity, and ancillary consequence tests}
+\input{appendix/appendixC}
+
+\clearpage
+\input{sections/references_manual}
+
+\end{document}

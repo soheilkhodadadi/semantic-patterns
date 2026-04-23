@@ -61,7 +61,7 @@ def _load_frame(input_csv: str, output_csv: str) -> tuple[pd.DataFrame, bool]:
     input_path = _resolve(input_csv)
     output_path = _resolve(output_csv)
     source_path = output_path if output_path.exists() else input_path
-    frame = pd.read_csv(source_path)
+    frame = pd.read_csv(source_path, low_memory=False)
     missing = [column for column in REQUIRED_COLUMNS if column not in frame.columns]
     if missing:
         raise ValueError(f"Input labeling batch missing required columns: {missing}")

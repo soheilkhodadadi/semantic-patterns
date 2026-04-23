@@ -1,0 +1,34 @@
+{
+  "status": "passed",
+  "inputs": {
+    "master_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/processed/shadow/deferred_review_sheets/selective_defer_conf49_shadow_full_corpus_v1.csv",
+    "shard_csv": [
+      "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/processed/shadow/deferred_review_sheets/shards/conf49/selective_defer_conf49_shadow_remaining_v1_shard01.csv",
+      "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/processed/shadow/deferred_review_sheets/shards/conf49/selective_defer_conf49_shadow_remaining_v1_shard02.csv"
+    ]
+  },
+  "outputs": {
+    "output_csv": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/processed/shadow/deferred_review_sheets/selective_defer_conf49_shadow_full_corpus_api_a_final_v1.csv"
+  },
+  "summary": {
+    "rows_total": 28721,
+    "rows_merged_from_shards": 27215,
+    "assistive_completed_rows": 28721,
+    "pending_rows": 0,
+    "assistive_label_counts": {
+      "Actionable": 12932,
+      "Irrelevant": 11181,
+      "Speculative": 4608
+    }
+  },
+  "shards": [
+    {
+      "path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/processed/shadow/deferred_review_sheets/shards/conf49/selective_defer_conf49_shadow_remaining_v1_shard01.csv",
+      "rows": 13608
+    },
+    {
+      "path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/data/processed/shadow/deferred_review_sheets/shards/conf49/selective_defer_conf49_shadow_remaining_v1_shard02.csv",
+      "rows": 13607
+    }
+  ]
+}

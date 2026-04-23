@@ -38,7 +38,7 @@ def _summarize_frame(input_csv: str | Path, output_csv: str | Path) -> dict[str,
     source_path = Path(output_csv)
     if not source_path.exists():
         source_path = Path(input_csv)
-    frame = pd.read_csv(source_path)
+    frame = pd.read_csv(source_path, low_memory=False)
 
     canonical_mask = frame["label"].fillna("").astype(str).map(str.strip).ne("")
     if "prelabel_eligible" in frame.columns:

@@ -1,0 +1,41 @@
+{
+  "observed_at_utc": "2026-04-11T00:19:55.468162+00:00",
+  "inputs": {
+    "total_rows": 28721,
+    "base_completed": 1506,
+    "shard_progress_paths": [
+      "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/reports/api/shards/conf49_shard01_overnight_progress.json",
+      "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/reports/api/shards/conf49_shard02_overnight_progress.json"
+    ]
+  },
+  "shards": [
+    {
+      "path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/reports/api/shards/conf49_shard01_overnight_progress.json",
+      "generated_at_utc": "2026-04-10T23:15:59.980156+00:00",
+      "status": "passed",
+      "assistive_labeled_rows": 13608,
+      "pending_rows": 0,
+      "estimated_cost_usd": 7.41743,
+      "age_seconds": 3835.485495567322
+    },
+    {
+      "path": "/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/reports/api/shards/conf49_shard02_overnight_progress.json",
+      "generated_at_utc": "2026-04-10T23:19:56.936174+00:00",
+      "status": "passed",
+      "assistive_labeled_rows": 13607,
+      "pending_rows": 0,
+      "estimated_cost_usd": 7.481027,
+      "age_seconds": 3598.531082868576
+    }
+  ],
+  "summary": {
+    "combined_completed": 28721,
+    "combined_pending": 0,
+    "completion_pct": 1.0,
+    "total_estimated_cost_usd": 14.898457,
+    "delta_rows_since_last_snapshot": null,
+    "delta_minutes_since_last_snapshot": null,
+    "recent_rate_rows_per_hour": null,
+    "eta_hours": null
+  }
+}
