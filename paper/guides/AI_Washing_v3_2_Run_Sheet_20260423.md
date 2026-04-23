@@ -376,6 +376,28 @@ Status after first live run (2026-04-23):
 
 Only reopen if we still want a financing-opportunism angle after Packet F.
 
+Status after first live run (2026-04-23):
+
+- build succeeded and the timing/opportunism lane is now versioned in `v3_2`
+- design used:
+  - first large equity-issuance event per firm
+  - issue rule: `Issue>5%` when next-year CRSP shares-outstanding growth exceeds 5%
+  - event year `0` is the disclosure year before that issuance window
+  - sample focuses on active AI issuers that continue talking about AI in year `0` and year `+1`
+- coverage:
+  - first issue-event firms: `2,105`
+  - active AI issue-event firms: `367`
+  - non-big active AI issue-event firms: `251`
+- empirical read:
+  - low-credibility disclosure intensifies into the issuance window and then partly unwinds afterward
+  - all active AI issuers:
+    - `LowCredibility`: `+0.2334` from `t-1` to event year, then `-0.1063` from event year to `t+1`
+    - `PatentMismatch`: `+0.1787` into event year, then `-0.0926` after issuance
+    - `SpecShare`: `+0.1187` into event year
+    - `AI_Focus`: keeps rising before and after issuance
+  - the non-big sample retains the same rise-then-partial-unwind pattern
+- current placement: stronger than the earlier broad financing-outcome regressions; good supporting financing-opportunism extension with clear timing interpretation
+
 ## Test 31. `test_31_greenwashing_claims_vs_actions_bridge`
 
 Future bridge to a greenwashing project. Not a current-paper blocker.

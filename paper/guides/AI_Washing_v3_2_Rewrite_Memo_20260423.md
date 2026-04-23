@@ -572,3 +572,55 @@ Tentative placement:
 
 - strong appendix or supporting main-text extension
 - promote only if paired with explicit pretrend discipline in the text
+
+## 12. Packet H Follow-On Read
+
+### Test 30. Capital-raising timing and disclosure opportunism
+
+- table: [test_30 capital-raising timing docx](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/docx/test_30_capital_raising_timing_20260423_aiw_v3_2_test_30_capital_raising_timing_main_v1.docx)
+- figure: [test_30 capital-raising timing figure](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/figures/test_30_capital_raising_timing_20260423_aiw_v3_2_test_30_capital_raising_timing_main_v1.png)
+- writer packet: [test_30 writer packet](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/writer_packets/test_30_capital_raising_timing_20260423_aiw_v3_2_test_30_capital_raising_timing_main_v1_writer_packet.md)
+
+Setup:
+
+- event year `0` is the disclosure year before a large equity-issuance window
+- issue rule:
+  - `Issue>5%` when next-year CRSP shares-outstanding growth exceeds `5%`
+- event definition:
+  - each firm's first such issue year
+- sample restriction:
+  - active AI issuers that continue talking about AI in year `0` and year `+1`
+- refinement:
+  - a non-big event-firm split, defined using market cap in the event year
+
+Coverage:
+
+- first issue-event firms: `2,105`
+- active AI issue-event firms: `367`
+- non-big active issue-event firms: `251`
+
+Read:
+
+- all active AI issuers show a clear credibility-timing pattern:
+  - `LowCredibility`: `+0.2334` from `t-1` to event year, then `-0.1063` from event year to `t+1`
+  - `ApplicationMismatch`: `+0.1816` into event year, then `-0.0790` afterward
+  - `PatentMismatch`: `+0.1787` into event year, then `-0.0926` afterward
+  - `SpecShare`: `+0.1187` into event year
+- the non-big refinement preserves the same shape:
+  - `LowCredibility`: `+0.2250` into event year, then `-0.0956` afterward
+  - `PatentMismatch`: `+0.1708` into event year, then `-0.0797` afterward
+- `AI_Focus` keeps rising before and after the issue year:
+  - all active AI issuers: `+1.0051` into event year and `+0.3962` afterward
+
+Interpretation:
+
+- this is a stronger financing-side result than the earlier broad issuance-outcome regressions
+- the right paper-facing read is:
+  - capital-raising windows line up with a temporary deterioration in disclosure credibility
+  - the behavior does not look like simple silence, because AI discussion keeps intensifying
+  - the partial unwind after the issue year makes the opportunism interpretation more plausible than a static level difference
+
+Tentative placement:
+
+- strong appendix or internet-appendix table
+- plausible supporting main-text financing/opportunism extension if we want one explicit result tying disclosure timing to capital-market incentives

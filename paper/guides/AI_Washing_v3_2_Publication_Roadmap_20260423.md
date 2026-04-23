@@ -152,6 +152,14 @@ Status after first pass (2026-04-23):
 - The important limitation is that `2023` placebo coefficients are already directional for the composition outcomes.
 - Packet H therefore currently supports a `regulatory salience / acceleration` story rather than a clean causal enforcement-DID claim.
 - This makes `test_29` a useful paper-facing extension, but one that should be written with explicit pretrend discipline.
+- `test_30` is also worth keeping and is cleaner than the older broad financing-outcome lane.
+- Around first large equity-issuance windows:
+  - `LowCredibility`, `ApplicationMismatch`, and `PatentMismatch` rise sharply into the issuance year;
+  - those credibility-deterioration measures partly unwind in the following year;
+  - `AI_Focus` keeps rising through and after the issue year.
+- Packet H therefore now contributes two distinct paper-facing extensions:
+  - regulatory salience and cleanup after SEC attention;
+  - financing-window timing consistent with temporary promotional intensification rather than silence.
 
 ## 4. Tiering and Priority
 
