@@ -2,6 +2,7 @@
 
 Date: 2026-04-22  
 Status: Active execution roadmap  
+Latest strategic update: `paper/guides/AI_Washing_v3_1_Publication_Roadmap_20260423.md` now carries the active repositioned strategy after Packets A-C.
 Supersedes for market-identification work: `paper/guides/AI_Washing_Codex_Master_Run_Sheet_v1.md` only in the sense of sequencing the next wave. Historical test IDs and outputs remain valid and should not be deleted.
 
 ## 1. Purpose
