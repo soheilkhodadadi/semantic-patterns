@@ -149,9 +149,44 @@ Go / no-go criterion:
 
 - keep only if the interaction is more informative than the level effect in Test 21.
 
+## Test 23. `test_23_analyst_coverage_splits`
+
+Question:
+
+- do the later consequences of mismatch concentrate in low-coverage firms, high-coverage firms, or both?
+
+Minimum inputs:
+
+- annual panel
+- analyst coverage measure from Test 21
+
+Preferred identification:
+
+- same-year coverage buckets
+- at minimum:
+  - lower half vs upper half
+  - bottom quartile vs top quartile
+- re-estimate the canonical consequence regressions within each slice
+
+Primary outcomes:
+
+- future mismatch persistence
+- future AI grants
+- later `ROA`
+
+Minimum outputs:
+
+- one split-sample table
+- one coefficient-comparison figure
+- writer packet explaining whether the split sharpened or complicated the analyst story
+
+Go / no-go criterion:
+
+- keep if the slice design reveals a cleaner attention or monitoring pattern than the interaction-only specification.
+
 ## 5. Packet F: Governance and Incentives
 
-## Test 23. `test_23_scitech_appointment_response`
+## Test 24. `test_24_scitech_appointment_response`
 
 Question:
 
@@ -173,7 +208,7 @@ Minimum outputs:
 - one figure for event timing
 - writer packet framing this as costly catch-up rather than clean causality
 
-## Test 24. `test_24_exec_incentive_mismatch`
+## Test 25. `test_25_exec_incentive_mismatch`
 
 Question:
 
@@ -195,7 +230,7 @@ Minimum outputs:
 - one interaction / heterogeneity table if justified
 - writer packet
 
-## Test 25. `test_25_board_monitoring`
+## Test 26. `test_26_board_monitoring`
 
 Question:
 
@@ -218,7 +253,7 @@ Minimum outputs:
 - one determinants table
 - one moderation table if usable
 
-## Test 26. `test_26_board_tech_human_capital`
+## Test 27. `test_27_board_tech_human_capital`
 
 Question:
 
@@ -247,7 +282,7 @@ Go / no-go criterion:
 
 ## 6. Packet G: Public Ownership
 
-## Test 27. `test_27_public_13f_institutional_discernment`
+## Test 28. `test_28_public_13f_institutional_discernment`
 
 Question:
 
@@ -276,15 +311,15 @@ Go / no-go criterion:
 
 ## 7. Packet H: Optional / Deferred
 
-## Test 28. `test_28_sec_ai_washing_enforcement_did`
+## Test 29. `test_29_sec_ai_washing_enforcement_did`
 
 Cheap policy-salience extension around the March 18, 2024 SEC AI-washing actions.
 
-## Test 29. `test_29_capital_raising_timing`
+## Test 30. `test_30_capital_raising_timing`
 
 Only reopen if we still want a financing-opportunism angle after Packet F.
 
-## Test 30. `test_30_greenwashing_claims_vs_actions_bridge`
+## Test 31. `test_31_greenwashing_claims_vs_actions_bridge`
 
 Future bridge to a greenwashing project. Not a current-paper blocker.
 
@@ -295,9 +330,11 @@ Run in this order:
 1. `test_19_sec_comment_letter_scrutiny`
 2. `test_20_comment_letter_cleanup`
 3. `test_21_analyst_discernment`
-4. `test_23_scitech_appointment_response`
+4. `test_22_analyst_monitoring_interaction`
+5. `test_23_analyst_coverage_splits`
+6. `test_24_scitech_appointment_response`
 
-Checkpoint after these four:
+Checkpoint after these six:
 
 - decide which signals are strong enough for main text
 - only then continue to the rest of Packet E / F

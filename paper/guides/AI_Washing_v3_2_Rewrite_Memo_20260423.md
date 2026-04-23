@@ -132,6 +132,19 @@ Interpretation:
 - there is not enough density for a strong AI-specific scrutiny-incidence headline;
 - the right use is appendix / audit / robustness context.
 
+Keyword-audit addendum:
+
+- I re-checked the saved matched-comment metadata against a broader shared AI term set borrowed from the patent and sentence pipelines:
+  - `natural language processing`
+  - `nlp`
+  - `computer vision`
+  - `reinforcement learning`
+  - `language model(s)`
+  - plus the existing explicit AI / LLM phrases
+- That broader metadata screen added `0` extra issue-phrase / taxonomy matches beyond the current `broad AI` Packet D definition.
+- So the thin AI-specific incidence is not obviously an artifact of an underbroad issue-phrase screen.
+- The remaining way to enlarge Packet D materially would be a manual audit of raw letter bodies, not another automatic broadening of the current metadata definition.
+
 ### Test 20: scrutiny without silence
 
 Main sample:
@@ -227,6 +240,37 @@ Tentative placement:
 
 - `test_21` is a live main-text or high-appendix candidate if we want an intermediary-attention result
 - `test_22` is more naturally a high appendix or discussion table unless later tests make the mixed interaction more central to the story
+
+### Test 23. Analyst-coverage split specifications
+
+- table: [test_23 analyst coverage splits docx](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/docx/test_23_analyst_coverage_splits_20260423_aiw_v3_2_test_23_analyst_coverage_splits_main_v1.docx)
+- figure: [test_23 analyst coverage splits figure](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/figures/test_23_analyst_coverage_splits_20260423_aiw_v3_2_test_23_analyst_coverage_splits_main_v1.png)
+
+Read:
+
+- `PatentMismatch -> ROA t+2` is strongest in the lower-attention slices:
+  - lower half: `-0.0471`, `p=0.042`
+  - bottom quartile: `-0.0644`, `p=0.032`
+- `PatentMismatch -> Log(1 + AI grants) t+1` is strongest in the higher-attention slices:
+  - upper half: `-0.2105`, `p=0.002`
+  - top quartile: `-0.2369`, `p=0.028`
+- `PatentMismatch -> PatentMismatch t+1` remains null across the slices
+
+Interpretation:
+
+- the split design sharpens Packet E, but not into a simple `more analysts fix the problem` result
+- instead:
+  - low-coverage firms carry the later operating penalty more clearly
+  - high-coverage firms show the sharper future-grant shortfall
+- the cleanest paper-facing read is therefore:
+  - analysts are part of the information environment,
+  - but they do not mechanically eliminate mismatch;
+  - different outcome margins become visible in different attention environments
+
+Tentative placement:
+
+- `test_23` is a strong appendix / discussion table
+- promote only if we want a richer intermediary subsection rather than a single analyst table
 
 ## 8. Next Dependency
 

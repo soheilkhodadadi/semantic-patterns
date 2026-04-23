@@ -60,6 +60,16 @@ Core tests:
 
 3. `test_21_analyst_discernment`
 4. `test_22_analyst_monitoring_interaction`
+5. `test_23_analyst_coverage_splits`
+
+Status after refinement pass (2026-04-23):
+
+- `test_21` shows a clear intermediary-attention result: mismatch firms receive lower later analyst coverage.
+- `test_22` does not deliver a simple `monitoring fixes the problem` interaction.
+- `test_23` sharpens the picture, but in a mixed way:
+  - the later `ROA` penalty is clearer in lower-coverage firms;
+  - the future AI-grant shortfall is sharper in higher-coverage firms.
+- Packet E is therefore useful, but it currently supports a `heterogeneous intermediary attention` story more than a clean analyst-discipline headline.
 
 ### Packet F. Governance and Incentives
 
@@ -69,10 +79,10 @@ Goal:
 
 Core tests:
 
-5. `test_23_scitech_appointment_response`
-6. `test_24_exec_incentive_mismatch`
-7. `test_25_board_monitoring`
-8. `test_26_board_tech_human_capital`
+6. `test_24_scitech_appointment_response`
+7. `test_25_exec_incentive_mismatch`
+8. `test_26_board_monitoring`
+9. `test_27_board_tech_human_capital`
 
 ### Packet G. Ownership
 
@@ -82,7 +92,7 @@ Goal:
 
 Core test:
 
-9. `test_27_public_13f_institutional_discernment`
+10. `test_28_public_13f_institutional_discernment`
 
 ### Packet H. Optional Bridge / Future Work
 
@@ -92,9 +102,9 @@ Goal:
 
 Candidate tests:
 
-10. `test_28_sec_ai_washing_enforcement_did`
-11. `test_29_capital_raising_timing`
-12. `test_30_greenwashing_claims_vs_actions_bridge`
+11. `test_29_sec_ai_washing_enforcement_did`
+12. `test_30_capital_raising_timing`
+13. `test_31_greenwashing_claims_vs_actions_bridge`
 
 ## 4. Tiering and Priority
 
@@ -105,25 +115,26 @@ These are the highest-value tests with the best combination of upside and feasib
 1. `test_19_sec_comment_letter_scrutiny`
 2. `test_20_comment_letter_cleanup`
 3. `test_21_analyst_discernment`
-4. `test_23_scitech_appointment_response`
+4. `test_22_analyst_monitoring_interaction`
+5. `test_23_analyst_coverage_splits`
 
 ## Tier 2: Run after first results are in
 
 These are likely valuable, but should use what we learn from Tier 1.
 
-5. `test_22_analyst_monitoring_interaction`
-6. `test_24_exec_incentive_mismatch`
-7. `test_25_board_monitoring`
-8. `test_26_board_tech_human_capital`
+6. `test_24_scitech_appointment_response`
+7. `test_25_exec_incentive_mismatch`
+8. `test_26_board_monitoring`
+9. `test_27_board_tech_human_capital`
 
 ## Tier 3: Open only after a deliberate checkpoint
 
 These are useful but heavier or more optional.
 
-9. `test_27_public_13f_institutional_discernment`
-10. `test_28_sec_ai_washing_enforcement_did`
-11. `test_29_capital_raising_timing`
-12. `test_30_greenwashing_claims_vs_actions_bridge`
+10. `test_28_public_13f_institutional_discernment`
+11. `test_29_sec_ai_washing_enforcement_did`
+12. `test_30_capital_raising_timing`
+13. `test_31_greenwashing_claims_vs_actions_bridge`
 
 ## 5. Packet Logic
 
