@@ -119,6 +119,15 @@ Core test:
 
 10. `test_28_public_13f_institutional_discernment`
 
+Status after first pass (2026-04-23):
+
+- `test_28` is a disciplined public-data build, but it does not produce a strong institutional-discernment result.
+- In the matched 13F sample:
+  - `PatentMismatch` is essentially null for next-year ownership share, ownership change, holder breadth, and holder concentration;
+  - the only directional signal is that higher `A/S` is associated with weaker subsequent ownership growth and slightly lower breadth in the big-firm slice.
+- The post-ChatGPT split is not estimable under firm fixed effects because the ownership-linked post sample contributes only one observation per firm.
+- Packet G therefore currently works as a useful null / boundary result rather than a headline empirical contribution.
+
 ### Packet H. Optional Bridge / Future Work
 
 Goal:

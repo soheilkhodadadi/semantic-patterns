@@ -333,6 +333,18 @@ Go / no-go criterion:
 
 - only start after Packet D and Packet E are complete.
 
+Status after first live run (2026-04-23):
+
+- build succeeded and the public 13F ingestion lane is now cached through 2025 Q4
+- linkage coverage:
+  - CRSP-linked panel rows: `7,378`
+  - t+1 ownership-linked rows: `4,278`
+- empirical read:
+  - `PatentMismatch` is broadly null for next-year ownership share, ownership change, holder breadth, and concentration
+  - the big-firm slice shows a weak positive level association for next-year ownership share, not a disciplining result
+  - the post-ChatGPT split is not estimable with firm fixed effects because there is no within-firm predictor variation in the ownership-linked post sample
+- current placement: appendix / boundary-result table unless a later ownership refinement yields a cleaner discernment signal
+
 ## 7. Packet H: Optional / Deferred
 
 ## Test 29. `test_29_sec_ai_washing_enforcement_did`

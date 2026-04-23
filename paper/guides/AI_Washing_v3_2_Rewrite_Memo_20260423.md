@@ -460,3 +460,58 @@ Tentative placement:
 
 - appendix or internet appendix
 - useful to cite in the main text when arguing that capability-side governance structure matters, even if the full table stays out of the main paper
+
+## 10. Packet G Read
+
+### Test 28. Public SEC 13F institutional discernment
+
+- table: [test_28 public 13F docx](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/docx/test_28_public_13f_institutional_discernment_20260423_aiw_v3_2_test_28_public_13f_institutional_discernment_main_v1.docx)
+- figure: [test_28 public 13F figure](/Users/soheilkhodadadi/Documents/Projects/semantic-patterns/paper/generated/v3_2/figures/test_28_public_13f_institutional_discernment_20260423_aiw_v3_2_test_28_public_13f_institutional_discernment_main_v1.png)
+
+Setup:
+
+- source: official SEC Form 13F structured data sets
+- frequency choice:
+  - year-end Q4 holdings snapshots
+  - linked to the annual panel through CRSP historical CUSIP mapping
+- outcomes:
+  - next-year 13F ownership share
+  - change in next-year ownership share
+  - next-year holder breadth
+  - next-year holder concentration HHI
+
+Coverage:
+
+- CRSP-linked panel rows: `7,378`
+- linked firms: `2,805`
+- t+1 ownership-linked rows: `4,278`
+- t+1 ownership-linked firms: `1,543`
+- SEC Q4 years processed and cached: `10` (`2016` through `2025`)
+
+Read:
+
+- this is a useful public-data null, not a strong institutional-discernment result
+- in the all-sample 13F panel:
+  - `PatentMismatch -> next-year ownership share`: `0.0085`, `p=0.305`
+  - `PatentMismatch -> change in ownership share`: `0.0111`, `p=0.302`
+  - `PatentMismatch -> next-year holder breadth`: `-0.0079`, `p=0.648`
+  - `PatentMismatch -> next-year concentration HHI`: `0.0045`, `p=0.309`
+- the big-firm slice does not strengthen the expected story:
+  - `PatentMismatch -> next-year ownership share`: `0.0178`, `p=0.051`
+  - that is directionally opposite a simple disciplining interpretation
+- the only mild directional pattern is on the disclosure-composition side:
+  - higher `A/S` is associated with weaker subsequent ownership growth and lower breadth in the big-firm slice
+- the post-ChatGPT split is not estimable under firm fixed effects because the ownership-linked post sample contributes only one observation per firm
+
+Interpretation:
+
+- public 13F ownership does not currently support a clean claim that institutional investors systematically step away from low-credibility AI disclosers
+- that is still informative:
+  - it limits how strongly we can lean on an institutional-discernment story
+  - it keeps the paper honest by showing that not every intermediary/ownership channel disciplines the behavior in a clean way
+- this packet is therefore better as a boundary result than as a main-text mechanism table
+
+Tentative placement:
+
+- appendix or internet appendix
+- useful to reference briefly in the main text if we want to say we also checked public institutional ownership and did not find strong discernment there
