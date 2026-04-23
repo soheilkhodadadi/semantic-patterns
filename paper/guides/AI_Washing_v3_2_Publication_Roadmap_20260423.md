@@ -1,0 +1,250 @@
+# AI-Washing v3.2 Publication Roadmap
+
+Date: 2026-04-23  
+Status: Active execution roadmap for the post-`v3.1` external-wave packet sequence.  
+Built from:
+
+- `paper/guides/AI_Washing_v3_1_Referee_Memo_20260423.md`
+- `paper/guides/AI_Washing_v3_1_External_Wave_Menu_20260423.md`
+
+## 1. Purpose
+
+`v3.1` answered the question:
+
+"What survives if we stress-test the original market-heavy story?"
+
+`v3.2` answers the next question:
+
+"What additional packets can materially strengthen the paper using realistic, readable data?"
+
+This is not a reset. It is a deeper second wave that keeps the strongest `v3.1` results and builds outward from them.
+
+## 2. v3.2 Thesis
+
+The working thesis for `v3.2` is:
+
+- the filing-based AI-disclosure credibility measure is already validated enough to keep;
+- the biggest remaining upside is not another return transform;
+- the biggest remaining upside is to show how external scrutiny, analysts, boards, and incentives interact with low-credibility AI disclosure;
+- the paper gets stronger when it shows not only that the disclosure measure predicts later outcomes, but also who notices, who disciplines it, and which firms respond.
+
+## 3. v3.2 Lane Structure
+
+`v3.2` is organized into four active packets and one optional future bridge.
+
+### Packet D. Scrutiny
+
+Goal:
+
+- test whether low-credibility AI disclosure attracts external SEC scrutiny;
+- test whether scrutiny changes subsequent disclosure composition.
+
+Core tests:
+
+1. `test_19_sec_comment_letter_scrutiny`
+2. `test_20_comment_letter_cleanup`
+
+Status after first pass (2026-04-23):
+
+- `test_19` is best kept as a viability and incidence audit; AI-specific comment-letter counts are too thin for a standalone headline scrutiny-incidence result.
+- `test_20` is the stronger Packet D result: among active AI disclosers, first SEC scrutiny is followed by lower speculative share, higher A/S, and lower PatentMismatch, while AI Focus rises.
+- Packet D therefore currently supports a `scrutiny without silence` story: oversight does not suppress AI talk, but it can discipline disclosure composition among firms that continue to talk about AI.
+
+### Packet E. Intermediaries
+
+Goal:
+
+- test whether analysts recognize or constrain low-credibility AI disclosure.
+
+Core tests:
+
+3. `test_21_analyst_discernment`
+4. `test_22_analyst_monitoring_interaction`
+
+### Packet F. Governance and Incentives
+
+Goal:
+
+- test whether boards, senior-leadership structure, and managerial incentives explain or moderate low-credibility AI disclosure.
+
+Core tests:
+
+5. `test_23_scitech_appointment_response`
+6. `test_24_exec_incentive_mismatch`
+7. `test_25_board_monitoring`
+8. `test_26_board_tech_human_capital`
+
+### Packet G. Ownership
+
+Goal:
+
+- test whether institutional ownership discriminates against low-credibility AI disclosure using public SEC 13F data rather than blocked WRDS ownership tables.
+
+Core test:
+
+9. `test_27_public_13f_institutional_discernment`
+
+### Packet H. Optional Bridge / Future Work
+
+Goal:
+
+- preserve high-value spillovers for the current paper or future greenwashing projects.
+
+Candidate tests:
+
+10. `test_28_sec_ai_washing_enforcement_did`
+11. `test_29_capital_raising_timing`
+12. `test_30_greenwashing_claims_vs_actions_bridge`
+
+## 4. Tiering and Priority
+
+## Tier 1: Run first
+
+These are the highest-value tests with the best combination of upside and feasibility.
+
+1. `test_19_sec_comment_letter_scrutiny`
+2. `test_20_comment_letter_cleanup`
+3. `test_21_analyst_discernment`
+4. `test_23_scitech_appointment_response`
+
+## Tier 2: Run after first results are in
+
+These are likely valuable, but should use what we learn from Tier 1.
+
+5. `test_22_analyst_monitoring_interaction`
+6. `test_24_exec_incentive_mismatch`
+7. `test_25_board_monitoring`
+8. `test_26_board_tech_human_capital`
+
+## Tier 3: Open only after a deliberate checkpoint
+
+These are useful but heavier or more optional.
+
+9. `test_27_public_13f_institutional_discernment`
+10. `test_28_sec_ai_washing_enforcement_did`
+11. `test_29_capital_raising_timing`
+12. `test_30_greenwashing_claims_vs_actions_bridge`
+
+## 5. Packet Logic
+
+The sequencing is intentional.
+
+### Why Packet D first
+
+If comment-letter scrutiny works, it gives the paper something the current version lacks:
+
+- an external enforcement / scrutiny result;
+- a reason markets may look mixed while regulators still care;
+- a dynamic disclosure-adjustment channel.
+
+That is high-value and highly legible.
+
+### Why Packet E second
+
+Analysts are the cleanest next information-intermediary test because:
+
+- the data are readable now;
+- the literature already treats them as monitors;
+- they let us test discernment without overclaiming a return anomaly.
+
+### Why Packet F third
+
+Governance and incentives are more construction-heavy and easier to overdo.
+They should be guided by what we learn from scrutiny and analyst evidence.
+
+### Why Packet G later
+
+Public 13F is feasible, but it is a new ingestion lane.
+It should not slow down higher-value readable-now tests.
+
+## 6. What Success Looks Like
+
+The best-case `v3.2` paper is no longer just:
+
+- validated text measure;
+- weaker later outcomes;
+- mixed market evidence.
+
+The best-case `v3.2` paper becomes:
+
+- validated disclosure-credibility measure;
+- later real-outcome consequences;
+- SEC scrutiny is more likely for low-credibility AI disclosure;
+- disclosure adjusts after scrutiny;
+- analysts and/or boards partially discipline the behavior;
+- stronger incentives and weaker oversight help explain why the behavior occurs.
+
+That is a much stronger paper.
+
+## 7. Stop / Go Rules
+
+To keep the project disciplined, each packet has a stop/go rule.
+
+### Packet D stop/go
+
+Proceed with Packet E regardless, but:
+
+- if AI-specific scrutiny counts are too thin, keep `test_19` as an audit-plus-pilot and shift more weight to `test_20` or a broader technology-scrutiny variant.
+
+### Packet E stop/go
+
+- if analyst discernment is strong, the market section can be rewritten around intermediary attention rather than returns;
+- if analyst results are weak, do not force analyst-monitoring rhetoric and shift more emphasis to governance/incentives.
+
+### Packet F stop/go
+
+- if governance and incentive tests do not differentiate cleanly, keep only the strongest one or two and do not turn the paper into a governance omnibus.
+
+### Packet G stop/go
+
+- open only if Tier 1 and Tier 2 are already stable and we still want one additional investor-discernment extension.
+
+## 8. Operational Lane
+
+`v3.2` should use separate roots from `v3.1`.
+
+Source-of-truth outputs:
+
+- `/Users/soheilkhodadadi/DataWork/semantic-patterns/ai_washing/derived/v3_2/`
+
+Paper-facing outputs:
+
+- `paper/generated/v3_2/`
+
+The manuscript remains in:
+
+- `paper/full paper/ai_washing_v3.0/`
+
+until the `v3.2` evidence wave is mature enough to justify a fresh writing pass.
+
+## 9. Writing Implications
+
+We still do not rewrite the paper fully yet.
+
+But `v3.2` is now explicitly targeting stronger sections for the later manuscript revision:
+
+- scrutiny / enforcement
+- information intermediaries
+- governance and incentives
+
+Those sections will sit between:
+
+- the core validation block
+- and the later mixed market-evidence block
+
+## 10. Immediate Next Steps
+
+1. create the `v3.2` operational run sheet with exact contracts;
+2. scaffold Packet D;
+3. run `test_19_sec_comment_letter_scrutiny`;
+4. evaluate event counts and match quality;
+5. decide whether `test_20` should remain narrow AI scrutiny or broaden to technology/disclosure scrutiny.
+
+## 11. Definition of Done For v3.2 Planning
+
+The planning phase is complete when:
+
+- the packet sequence is fixed;
+- each test has a named contract;
+- the output lane is versioned;
+- Packet D has started.

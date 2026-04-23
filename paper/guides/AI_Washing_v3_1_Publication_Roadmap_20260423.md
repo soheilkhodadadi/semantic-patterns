@@ -4,6 +4,7 @@ Date: 2026-04-23
 Status: Repositioned roadmap after the market-identification package and non-market Packets A-C.  
 Supersedes for active strategy: `paper/guides/AI_Washing_v3_1_Publication_Roadmap_20260422.md`
 Expansion menu: `paper/guides/AI_Washing_v3_1_External_Wave_Menu_20260423.md`
+Latest execution lane: `paper/guides/AI_Washing_v3_2_Publication_Roadmap_20260423.md`
 
 ## 1. Purpose
 
