@@ -1,261 +1,117 @@
-# Semantic Patterns: AI Disclosure, Composition, and Patent Validation
+# Semantic Patterns
 
-## Overview
+**AI/NLP pipelines for financial disclosure, source validation, and quantitative testing.**
 
-This repository contains a research pipeline for measuring AI-related corporate disclosure in SEC filings and validating those disclosure measures against external innovation outcomes.
+This repository contains the code and lightweight documentation behind a research workflow for measuring AI-related language in corporate filings and testing whether those disclosure signals are supported by external evidence. The main use case is an AI-washing / disclosure-credibility project using U.S. 10-K filings, sentence-level NLP classification, patent evidence, market data, and empirical finance validation.
 
-The current `2016-2024` delivery lane does four things:
+The project is designed around one practical question:
 
-1. extracts AI-related sentences from annual filings
-2. classifies those sentences as `Actionable`, `Speculative`, or `Irrelevant`
-3. aggregates sentence-level outputs into firm-year disclosure measures
-4. merges those measures with AI patent outcomes and Compustat controls for panel analysis
+> Can noisy corporate AI language be converted into audited, source-linked, decision-ready signals rather than treated as raw mention counts?
 
-The repo still contains legacy-compatible extraction/classification entry points, but the authoritative preliminary-delivery artifacts now live in the broader `2016-2024` panel and reporting workflow described below.
+## What This Repository Demonstrates
 
-## Start Here
+- **Financial-text NLP:** extraction and classification of AI-related sentences from SEC filings.
+- **Rubric-based AI evaluation:** actionable, speculative, and irrelevant AI-language taxonomy with human-audited labels.
+- **Model benchmarking:** transformer embeddings, centroid classifiers, logistic baselines, held-out evaluation, and selective-defer logic.
+- **Disclosure credibility scoring:** firm-year measures that combine language quality with contemporaneous patent evidence.
+- **Quantitative validation:** links from text-derived signals to patents, filing-window returns, BHARs, factor-adjusted portfolios, scrutiny, incentives, and financing windows.
+- **Research QA:** versioned documentation, manifests, validation reports, generated tables, and manuscript-support workflows.
 
-If you are orienting to the repo today, read these first:
+## Project Snapshot
 
-1. current restructure/navigation state:
-   - `docs/roadmap_v2/current_state_navigation_v1.md`
-2. target lab structure:
-   - `docs/roadmap_v2/target_repo_layout_v2.md`
-3. active project-member front door:
-   - `projects/ai_washing/README.md`
-4. shared package fronts:
-   - `packages/director/README.md`
-   - `packages/labcore/README.md`
-5. public-safe project docs workspace:
-   - `docs/projects/README.md`
+The current AI-washing research build covers U.S. public firms from **2016 to 2025**.
 
-Use `docs/roadmap_v2/history/` as the audit trail, not as the first place to
-start reading.
+Selected project-scale metrics:
 
-## Environment
+| Layer | Evidence |
+| --- | --- |
+| Classified corpus | 147,879 AI-related sentences |
+| Sentence taxonomy | actionable, speculative, irrelevant |
+| Human audit | 551 adjudicated labels |
+| Held-out benchmark | 120 adjudicated cases |
+| Human-audit reliability | Cohen's kappa = 0.850 after adjudication |
+| Held-out model quality | 85.0% accuracy; 83.6% macro-F1; 91.7% binary AI relevance |
+| Firm-year panel | 50,840 firm-year observations across 5,084 firms |
+| AI-talking firm-years | 13,777 firm-years with at least one classified AI sentence |
+| Credibility flag | PatentMismatch exceeds 40% of AI-talking firm-years in both 2024 and 2025 |
 
-- Python baseline: `3.11+`
-- canonical local environment: repo-local `.venv`
-- workspace packages seeded during the lab restructure:
-  - `semantic_labcore`
-  - `semantic_director`
-- recommended setup:
+These figures are project-level research outputs, not packaged sample data. Raw SEC, WRDS, CRSP, Compustat, and patent-linkage inputs are not bundled in the public repository.
+
+## Pipeline Overview
+
+```text
+SEC 10-K filings
+    -> sentence extraction and AI-term screening
+    -> human-audited sentence taxonomy
+    -> model training, benchmarking, and held-out evaluation
+    -> firm-year disclosure measures
+    -> patent evidence and industry-year benchmarks
+    -> PatentMismatch / disclosure-credibility scores
+    -> market, patent, scrutiny, incentive, and financing-window tests
+    -> tables, figures, validation reports, and manuscript assets
+```
+
+The key design choice is to separate three layers that are often mixed together:
+
+1. **Rubric reliability:** can human reviewers consistently distinguish actionable AI use from vague or irrelevant AI language?
+2. **Classifier quality:** can the model scale that taxonomy without leaking future outcomes into the label construction?
+3. **External validation:** do the resulting firm-year signals line up with patents, market behavior, scrutiny, incentives, and financing windows?
+
+## Repository Structure
+
+```text
+src/semantic_ai_washing/
+  data/             Filing ingestion, sentence extraction, external data pulls
+  labeling/         Labeling batches, adjudication, IRR, held-out split management
+  classification/   Embeddings, classifiers, model benchmarks, selective-defer tools
+  aggregation/      Firm-year measures, patent merges, panel construction
+  patents/          Patent keyword filters, assignee matching, patent-count construction
+  analysis/         Regressions, event studies, portfolios, generated tables/figures
+  diagnostics/      Environment and runtime checks
+  director/         Agent-assisted workflow orchestration experiments
+  labcore/          Shared runtime, registry, evidence, and manifest utilities
+
+docs/               Environment notes, pipeline maps, project documentation
+projects/           Project-scoped documentation and run registries
+packages/           Extracted shared packages under development
+reports/            Analysis reports, validation summaries, audit notes
+paper/              Manuscript support files, generated snippets, tables, and figures
+output/             Local generated reports and delivery artifacts
+```
+
+The repository has been evolving from a single-paper codebase into a reusable research-lab workspace. Some legacy modules remain for compatibility, but new code should use the canonical `semantic_ai_washing.*` namespace.
+
+## Public / Private Boundary
+
+This is a code-and-documentation repository. It intentionally does **not** include large or licensed research inputs such as:
+
+- raw SEC filing corpora;
+- WRDS / CRSP / Compustat extracts;
+- private patent-assignee linkage workbooks;
+- heavyweight intermediate panels;
+- unpublished coauthor review packages.
+
+Heavy runtime artifacts are kept outside git in a local runtime workspace. The GitHub repository keeps the code, lightweight documentation, reproducibility scaffolding, and public-safe project structure.
+
+## Environment Setup
+
+Python baseline: **3.11+**
+
+Recommended local setup:
 
 ```bash
 make bootstrap
 source .venv/bin/activate
 make doctor
-make format
 make lint
 pytest -q
 ```
 
-Detailed environment notes are in [docs/environment_setup.md](docs/environment_setup.md).
+The Makefile configures the local path profile needed by the current workspace layout. For detailed environment notes, see [docs/environment_setup.md](docs/environment_setup.md).
 
-Until the workspace restructure is fully tool-managed, repo commands use a
-workspace path profile equivalent to:
+## Core Workflow Commands
 
-```bash
-PYTHONPATH=src:packages/labcore/src:packages/director/src:projects/ai_washing/src
-```
-
-The Makefile now applies that profile for repo-owned module commands and doctor
-checks.
-
-## Current State
-
-The repo is now in a usable preliminary-delivery state for the `2016-2024` analysis window.
-
-Current authoritative artifacts include:
-
-- cleaned narrative backbone:
-  - `data/processed/aggregates/firm_year_narrative_measures_prelim_clean_v1.parquet`
-- promoted patent series:
-  - `data/processed/patents/ai_patent_counts_filtered_active_annual_allyears_2016plus_applied_v2_legalnorm_unique_lightweight.csv`
-- controls backbone:
-  - `data/interim/controls/controls_by_firm_year_active_annual_allyears_2016_2024_v3.csv`
-- merged conditional panel:
-  - `data/processed/panel/panel_ai_patents_controls_2016_2024_applied_v2_legalnorm_unique.csv`
-- regression-ready conditional panel:
-  - `data/processed/panel/panel_reg_ready_2016_2024_applied_v2_legalnorm_unique.csv`
-- merged ever-speaker annual panel:
-  - `data/processed/panel/panel_ai_patents_controls_ever_speaker_2016_2024_v1.csv`
-- regression-ready ever-speaker annual panel:
-  - `data/processed/panel/panel_reg_ready_ever_speaker_2016_2024_v1.csv`
-
-Current delivery status is tracked in [docs/preliminary_delivery_status_2026-03-20.md](docs/preliminary_delivery_status_2026-03-20.md).
-
-## Lab Restructure Transition
-
-The repo is now also being prepared to operate as a multi-program lab rather than a single-project workspace.
-
-Current restructure front door:
-- `docs/roadmap_v2/README.md`
-- `docs/roadmap_v2/current_state_navigation_v1.md`
-- latest checkpoint:
-  - `docs/roadmap_v2/history/checkpoints/restructure_progress_checkpoint_v23.md`
-
-Wave 2 of that restructure creates the first stable destination lanes for future shared and project-scoped artifacts:
-
-- lab-wide docs:
-  - `docs/lab/`
-- project docs:
-  - `docs/projects/`
-- shared registry and inventory reports:
-  - `reports/registry/`
-- project report lanes:
-  - `reports/projects/`
-- shared and project processed-data destination markers:
-  - `data/manifests/`
-  - `data/processed/shared/`
-  - `data/processed/projects/`
-- shared and project delivery destination markers:
-  - `output/doc/shared/`
-  - `output/doc/projects/`
-  - `output/figures/shared/`
-  - `output/figures/projects/`
-
-The first registry-style map for those lanes is:
-
-- `reports/registry/artifact_registry_v1.md`
-
-The current AI-washing replacement map and Wave 3 note are:
-
-- `docs/lab/migration/ai_washing_legacy_to_new_mapping_v1.md`
-- `docs/roadmap_v2/migration_wave_3_v1.md`
-
-Round A and Round B now add:
-- shared contracts and acceptance gates under `docs/lab/schemas/` and `docs/lab/control_plane/`
-- visible root landing zones:
-  - `packages/`
-  - `projects/`
-  - `shared/`
-- the Round B workspace-skeleton note:
-  - `docs/roadmap_v2/history/rounds/migration_round_b_workspace_skeleton_v1.md`
-
-Round C now adds:
-- package/member seed plans for:
-  - `packages/labcore/`
-  - `packages/director/`
-  - `projects/ai_washing/`
-- staged placeholder decisions for:
-  - `projects/eri/`
-  - `projects/allocationlab/`
-- the Round C package-seeding note:
-  - `docs/roadmap_v2/history/rounds/migration_round_c_package_seeding_v1.md`
-
-Important transition rule:
-- existing authoritative AI-washing artifacts remain authoritative in their current legacy paths until later migration waves create explicit replacement maps
-
-## Current Paper-Support Audit
-
-For the March 25, 2026 Pass C draft, the current technical audit and reproducibility note live here:
-
-- tracked report (markdown):
-  - `reports/analysis/pass_c_technical_audit_2026-03-25_v1.md`
-- local working copy (markdown):
-  - `output/paper/reports/2026-03/pass_c_technical_audit_2026-03-25_v1.md`
-- report (Word):
-  - `output/doc/reports/2026-03/pass_c_technical_audit_2026-03-25_v1.docx`
-
-This report consolidates the current answers to three paper-facing technical questions:
-- measurement-audit evidence for the sentence classifier and IRR workflow
-- the exact live `PatentMismatch` coding rule
-- sample-attrition mechanics across the main empirical tables
-
-Primary source-of-truth inputs for that report:
-- `reports/models/preliminary_results_readiness_v1.json`
-- `reports/labels/irr_report.json`
-- `reports/labels/irr_disagreement_diagnostic_v1.json`
-- `reports/evaluation/heldout_eval_prelim_v2.json`
-- `reports/evaluation/model_benchmark_matrix_prelim_v1.json`
-- `data/labels/v1/labels_master.parquet`
-- `data/processed/panel/panel_reg_ready_ever_speaker_2016_2024_v1.csv`
-
-## Panels and Sample Definitions
-
-Two panel objects are relevant right now:
-
-### 1. Conditional AI-speaking panel
-
-This panel keeps firm-years in which companies are already speaking about AI.
-
-Use it for:
-- conditional validation checks
-- appendix-style regressions
-- comparing results against earlier exploratory runs
-
-Main files:
-- `data/processed/panel/panel_ai_patents_controls_2016_2024_applied_v2_legalnorm_unique.csv`
-- `data/processed/panel/panel_reg_ready_2016_2024_applied_v2_legalnorm_unique.csv`
-
-### 2. Ever-speaker annual panel
-
-This panel keeps all years from `2016` through `2024` for firms that mention AI at least once during the window, including zero-disclosure years.
-
-Use it for:
-- main-text timing analysis
-- lag / contemporaneous / lead patent tests
-- the current delivery package
-
-Main files:
-- `data/processed/panel/panel_ai_patents_controls_ever_speaker_2016_2024_v1.csv`
-- `data/processed/panel/panel_reg_ready_ever_speaker_2016_2024_v1.csv`
-
-The rationale for this rebuild is documented in:
-- [reports/analysis/sample_construction_audit_v1.md](reports/analysis/sample_construction_audit_v1.md)
-- [reports/analysis/sample_comparison_ever_speaker_v1.md](reports/analysis/sample_comparison_ever_speaker_v1.md)
-
-## Patents and Controls
-
-The current external-validation backbone depends on two major inputs beyond the disclosure layer.
-
-### Patent series
-
-The promoted patent series is generated from the lightweight patent extraction path with improved assignee matching and legal-suffix normalization.
-
-Key output:
-- `data/processed/patents/ai_patent_counts_filtered_active_annual_allyears_2016plus_applied_v2_legalnorm_unique_lightweight.csv`
-
-Key script family:
-- `python -m semantic_ai_washing.patents.extract_filtered_patents_lightweight`
-
-### Compustat controls
-
-The annual controls backbone covers `2016-2024` and feeds the merged panel build.
-
-Key output:
-- `data/interim/controls/controls_by_firm_year_active_annual_allyears_2016_2024_v3.csv`
-
-Key script:
-- `python -m semantic_ai_washing.data.pull_compustat_controls`
-
-## Legacy vs Current Classification Backbone
-
-The repo still supports the legacy-compatible extract/classify/aggregate flow:
-
-1. `*_ai_sentences.txt`
-2. `*_classified.csv`
-3. aggregated counts
-
-That path remains useful for:
-- new extraction runs
-- sentence-level QA
-- classifier evaluation and benchmarking
-
-The current `2016-2024` delivery lane, however, is anchored on cleaned downstream artifacts:
-
-- `firm_year_narrative_measures_prelim_clean_v1.parquet`
-- merged panel files under `data/processed/panel/`
-- delivery tables under `paper/generated/tables/`
-- Word review outputs under `output/doc/`
-
-So the sentence pipeline is still the foundation, but the authoritative delivery objects are the cleaned panel and table/report outputs built on top of it.
-
-## How To Run the Current Pipeline
-
-All examples below assume the repo-local environment is active.
-Use `PYTHONPATH=src` only where a command still explicitly relies on legacy root-lane imports during the migration.
+The exact end-to-end run depends on access to local data inputs. The commands below show the canonical module pattern used throughout the repo.
 
 ### 1. Extract AI-related sentences
 
@@ -263,150 +119,100 @@ Use `PYTHONPATH=src` only where a command still explicitly relies on legacy root
 python -m semantic_ai_washing.data.extract_ai_sentences \
   --input-dir data/processed/sec \
   --keywords data/metadata/ai_keywords.txt \
-  --include-forms 10-K \
-  --years 2024
+  --include-forms 10-K
 ```
 
 ### 2. Classify extracted sentences
 
 ```bash
-python -m semantic_ai_washing.classification.classify_all_ai_sentences \
-  --years 2024 \
-  --two-stage \
-  --rule-boosts \
-  --tau 0.07 \
-  --eps-irr 0.03 \
-  --min-tokens 6
+python -m semantic_ai_washing.classification.classify_all_ai_sentences
 ```
 
-### 3. Build cleaned narrative measures
+### 3. Evaluate held-out classification quality
 
 ```bash
-env PYTHONPATH=src ./.venv/bin/python -m semantic_ai_washing.aggregation.build_preliminary_narrative_measures
+python -m semantic_ai_washing.tests.evaluate_classifier_on_held_out
 ```
 
-### 4. Pull controls
+### 4. Aggregate firm-year disclosure measures
 
 ```bash
-env PYTHONPATH=src ./.venv/bin/python -m semantic_ai_washing.data.pull_compustat_controls \
-  --start-year 2016 \
-  --end-year 2024 \
-  --company-list data/metadata/company_lookup_active_annual_allyears_2021_2024.csv \
-  --out-crosswalk data/externals/crosswalks/cik_gvkey_active_annual_allyears_2021_2024_v3.csv \
-  --out-controls data/interim/controls/controls_by_firm_year_active_annual_allyears_2016_2024_v3.csv \
-  --out-qc reports/controls_qc_active_annual_allyears_2016_2024_v3.md
+python -m semantic_ai_washing.aggregation.aggregate_classification_counts
 ```
 
-### 5. Build the ever-speaker annual panel
+### 5. Build panels and empirical outputs
+
+Representative modules:
 
 ```bash
-env PYTHONPATH=src ./.venv/bin/python -m semantic_ai_washing.aggregation.build_ever_speaker_annual_panel \
-  --narrative data/processed/aggregates/firm_year_narrative_measures_prelim_clean_v1.parquet \
-  --patents data/processed/patents/ai_patent_counts_filtered_active_annual_allyears_2016plus_applied_v2_legalnorm_unique_lightweight.csv \
-  --controls data/interim/controls/controls_by_firm_year_active_annual_allyears_2016_2024_v3.csv \
-  --out data/processed/panel/panel_ai_patents_controls_ever_speaker_2016_2024_v1.csv
+python -m semantic_ai_washing.aggregation.build_ever_speaker_annual_panel
+python -m semantic_ai_washing.analysis.prepare_panel_for_regression
+python -m semantic_ai_washing.analysis.run_modular_regression_portfolio
+python -m semantic_ai_washing.analysis.generate_delivery_table_artifacts
+python -m semantic_ai_washing.analysis.generate_paper_assets
 ```
 
-### 6. Prepare the regression-ready ever-speaker sample
+Use `python -m semantic_ai_washing.<module>` for new work. Legacy direct `src/...` script calls are compatibility paths, not the preferred public interface.
 
-```bash
-env PYTHONPATH=src ./.venv/bin/python -m semantic_ai_washing.analysis.prepare_panel_for_regression \
-  --input data/processed/panel/panel_ai_patents_controls_ever_speaker_2016_2024_v1.csv \
-  --output data/processed/panel/panel_reg_ready_ever_speaker_2016_2024_v1.csv \
-  --qc reports/panel_clean_qc_ever_speaker_2016_2024_v1.md
-```
+## Selected Technical Components
 
-### 7. Run modular regression bundles
+### AI sentence taxonomy
 
-```bash
-env PYTHONPATH=src ./.venv/bin/python -m semantic_ai_washing.analysis.run_modular_regression_portfolio \
-  --panel data/processed/panel/panel_reg_ready_ever_speaker_2016_2024_v1.csv \
-  --spec-path reports/analysis/regression_specification_prelim_v1.json \
-  --outdir results/01_baseline/tables_2016_2024_applied_v2_legalnorm_unique \
-  --bundle-name example_bundle
-```
+The classification layer separates AI-related sentences into:
 
-### 8. Generate standalone delivery tables
+- **Actionable:** concrete AI deployment, embedded workflow, internal tool, or productized use.
+- **Speculative:** aspirational or forward-looking AI language without enough operational detail.
+- **Irrelevant:** generic or tangential AI references that do not indicate the firm's own capability.
 
-Markdown:
+### PatentMismatch scoring
 
-```bash
-env PYTHONPATH=src ./.venv/bin/python -m semantic_ai_washing.analysis.generate_delivery_table_artifacts
-```
+`PatentMismatch` flags AI-talking firm-years where low-credibility disclosure composition coincides with weak contemporaneous AI patent support relative to industry-year peers. Future patent outcomes are excluded from score construction and used only for validation.
 
-DOCX:
+### Market and outcome validation
 
-```bash
-env PYTHONPATH=src ./.venv/bin/python -m semantic_ai_washing.analysis.build_delivery_table_docs
-```
+The analysis layer includes event-window returns, post-filing BHARs, calendar-time long-short portfolios, factor-adjusted alpha tests, patent-realization tests, SEC scrutiny blocks, executive-incentive links, and capital-raising windows. Results are interpreted with bounded claims: broad validation evidence is separated from sparse or exploratory evidence.
 
-### 9. Refresh paper-facing snippets and draft
+## Documentation Map
 
-```bash
-env PYTHONPATH=src ./.venv/bin/python -m semantic_ai_washing.analysis.generate_paper_assets
-env PYTHONPATH=src ./.venv/bin/python scripts/build_paper.py
-```
+Good starting points:
 
-## Delivery Outputs
+- [docs/environment_setup.md](docs/environment_setup.md) - local environment and tooling
+- [docs/pipeline_map.md](docs/pipeline_map.md) - pipeline orientation
+- [docs/labeling_protocol.md](docs/labeling_protocol.md) - sentence-labeling logic
+- [docs/preliminary_delivery_status_2026-03-20.md](docs/preliminary_delivery_status_2026-03-20.md) - historical delivery checkpoint
+- [projects/ai_washing/README.md](projects/ai_washing/README.md) - project-scoped front door
+- [docs/roadmap_v2/current_state_navigation_v1.md](docs/roadmap_v2/current_state_navigation_v1.md) - current restructure/navigation state
 
-Current delivery-facing objects include:
+## Development Notes
 
-- generated markdown tables:
-  - `paper/generated/tables/`
-- standalone Word tables:
-  - `output/doc/delivery_tables_v1/`
-- monthly reports:
-  - `output/doc/reports/`
-- compiled paper outputs:
-  - `output/paper/manuscript_compiled.md`
-  - `output/doc/ai_washing_preliminary_draft.docx`
-
-## Evaluation and QA
-
-Classifier evaluation:
-
-```bash
-python -m semantic_ai_washing.tests.evaluate_classifier_on_held_out \
-  --two-stage \
-  --rule-boosts \
-  --tau 0.07 \
-  --eps-irr 0.03 \
-  --min-tokens 6
-```
-
-Project QA:
+Quality checks:
 
 ```bash
 make format
 make lint
-.venv/bin/pytest -q
+pytest -q
 ```
 
-## Repository Structure
+Project conventions:
 
-- `src/semantic_ai_washing/data/`: extraction, external pulls, and raw data preparation
-- `src/semantic_ai_washing/classification/`: sentence classification, embeddings, centroids, evaluation helpers
-- `src/semantic_ai_washing/aggregation/`: disclosure aggregation, patent merges, panel builders
-- `src/semantic_ai_washing/analysis/`: regressions, delivery tables, paper assets, reporting
-- `paper/`: manuscript sections, generated tables/snippets, literature inputs
-- `output/`: compiled paper artifacts, Word review docs, monthly reports
-- `reports/analysis/`: planning notes, spec cards, delivery blueprints, sample audits
-- `docs/`: environment, workflow, and pipeline notes
+- Use `semantic_ai_washing.*` imports for new code.
+- Keep heavyweight private data out of git.
+- Prefer small, auditable modules and generated manifests over one-off notebooks.
+- Record validation outputs and assumptions in `reports/` or project-scoped docs.
+- Treat AI-assisted classification and writing workflows as auditable systems: preserve rubrics, held-out tests, source checks, and human review decisions.
 
-## Documentation Map
+## Related Portfolio Angles
 
-Useful starting points:
+This repository supports three public-facing portfolio themes:
 
-- [docs/environment_setup.md](docs/environment_setup.md)
-- [docs/preliminary_delivery_status_2026-03-20.md](docs/preliminary_delivery_status_2026-03-20.md)
-- [docs/preliminary_results_execution_plan.md](docs/preliminary_results_execution_plan.md)
-- [docs/modular_regression_workflow.md](docs/modular_regression_workflow.md)
-- [reports/analysis/preliminary_delivery_story_roadmap_v1.md](reports/analysis/preliminary_delivery_story_roadmap_v1.md)
+1. **AI/NLP Evaluation for Financial Text** - audited sentence taxonomy, model benchmarking, held-out evaluation, and leakage checks.
+2. **Disclosure Credibility Scoring** - source-linked scoring that combines text composition with patent evidence and documented interpretation limits.
+3. **Quantitative Validation of AI/Text Signals** - empirical finance tests that connect NLP-derived disclosure signals to patents, returns, scrutiny, incentives, and financing windows.
 
-## Development Workflow
+## Status
 
-Use canonical module execution (`python -m semantic_ai_washing...`) for all new work.
+Active research codebase. The AI-washing project is an active manuscript and technical research build, while the repository is also being refactored into a more reusable research-lab workspace. Public users should treat this as a technical research portfolio and codebase rather than a plug-and-play data package.
 
-Legacy `src/...` entrypoints are compatibility shims and should not be the default for new automation or public documentation.
+## License
 
-Branching and merge conventions are documented in [CONTRIBUTING.md](CONTRIBUTING.md).
+See [LICENSE](LICENSE).

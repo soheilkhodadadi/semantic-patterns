@@ -238,6 +238,18 @@ data/metadata/sec_source_dir.txt
 director/plans/*
 !director/plans/.gitkeep
 director/decisions/*
+
+# Private manuscript working artifacts generated during paper rewrites.
+# Canonical manuscript rewrite work lives outside this repository in private runtime workspaces.
+paper/full paper/ai_washing_v3.0/main.pdf
+paper/full paper/ai_washing_v3.0/figures/*.pdf
+paper/full paper/ai_washing_v3.0/table_inputs/
+paper/full paper/ai_washing_v3.0/overleaf_handoff_prelim_20260424/
+paper/full paper/ai_washing_v3.0/overleaf_handoff_prelim_20260424.zip
+paper/full paper/ai_washing_v4.0/
+paper/full paper/ai_washing_v4.2/
+paper/full paper/exhibit map v2 /
+paper/full paper/presentation/
 !director/decisions/.gitkeep
 director/runs/*
 !director/runs/.gitkeep
